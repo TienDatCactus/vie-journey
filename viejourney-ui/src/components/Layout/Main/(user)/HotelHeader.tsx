@@ -41,7 +41,7 @@ const HotelHeader: React.FC = () => {
                 VieJournal's <span className="">Hotel</span>
               </h1>
             </div>
-            <ul className="gap-8 *:text-[14px] *:hover:underline *:cursor-pointer ">
+            <ul className="gap-8 *:text-sm *:hover:underline *:cursor-pointer ">
               <li>Home</li>
               <li>Rooms</li>
               <li>Facilities</li>

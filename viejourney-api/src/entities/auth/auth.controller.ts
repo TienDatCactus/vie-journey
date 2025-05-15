@@ -17,21 +17,17 @@ export class AuthController {
     return this.authService.register(req.email, req.password);
   }
   @Post('refresh')
-  async refresh(@Body() req: { refreshToken: string }) {
-    return this.authService.refresh(req.refreshToken);
+  async refresh(@Body() req: { userId: string }) {
+    return this.authService.refresh(req.userId);
   }
   @Post('logout')
-  async logout(@Body() req: { userId: string; refreshToken: string }) {
-    return this.authService.logout(req.userId, req.refreshToken);
+  async logout(@Body() req: { userId: string }) {
+    return this.authService.logout(req.userId);
   }
 
   @Post('verify')
-  async verify(@Body() req: { token: string }) {
-    return this.authService.verifyEmail(req.token);
-  }
-  @UseGuards(JwtAuthGuard)
-  @Post('profile')
-  getProfile(@Request() req: { user: Account }) {
-    return req.user;
+  async verify(@Body() req: { otp: string }) {
+    console.log(req);
+    return this.authService.verifyEmail(req.otp);
   }
 }

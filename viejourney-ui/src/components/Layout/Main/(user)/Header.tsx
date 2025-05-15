@@ -5,6 +5,7 @@ import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import {
   AppBar,
   Avatar,
+  CircularProgress,
   Divider,
   IconButton,
   InputAdornment,
@@ -18,6 +19,8 @@ import {
   useScrollTrigger,
 } from "@mui/material";
 import React, { useState } from "react";
+import { doLogout } from "../../../../services/api";
+import { useAuth } from "../../../../services/contexts";
 interface Props {
   window?: () => Window;
   children?: React.ReactElement<unknown>;
@@ -44,8 +47,20 @@ const Header = () => {
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
+  const [loading, setLoading] = useState(false);
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  const { user } = useAuth();
+  const handleLogout = async () => {
+    try {
+      setLoading(true);
+      await doLogout({ userId: user?._id || "" });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
   const headerNav: Array<{ name: string; link: string }> = [
     {
@@ -185,7 +200,10 @@ const Header = () => {
                 </ListItemIcon>
                 Settings
               </MenuItem>
-              <MenuItem onClick={handleClose}>
+              <MenuItem onClick={handleLogout} disabled={loading}>
+                {loading && (
+                  <CircularProgress size={20} className="animate-spin" />
+                )}
                 <ListItemIcon>
                   <Logout fontSize="small" />
                 </ListItemIcon>

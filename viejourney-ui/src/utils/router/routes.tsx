@@ -7,6 +7,7 @@ import { PlanningFormation } from "../../pages/(user)/Trip";
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
 const Home = lazy(() => import("../../pages/(user)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -14,15 +15,24 @@ const router = createBrowserRouter([
     errorElement: <ErrorBoundary />,
   },
   {
-    path: "/login",
-    element: <Access />,
+    path: "/auth",
     errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: "login",
+        element: <Access />,
+      },
+      {
+        path: "register",
+        element: <Access />,
+      },
+      {
+        path: "verify-email",
+        element: <Access />,
+      },
+    ],
   },
-  {
-    path: "/register",
-    element: <Access />,
-    errorElement: <ErrorBoundary />,
-  },
+
   {
     path: "/profile",
     element: <Dashboard />,

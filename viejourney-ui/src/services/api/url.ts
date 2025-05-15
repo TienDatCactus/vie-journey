@@ -1,4 +1,13 @@
+export const AUTH = {
+  LOGIN: "/auth/login",
+  REGISTER: "/auth/register",
+  VERIFY: "/auth/verify",
+  LOGOUT: "/auth/logout",
+  REFRESH_TOKEN: "/auth/refresh",
+  // FORGOT_PASSWORD: "/auth/forgot-password",
+  // RESET_PASSWORD: "/auth/reset-password",
+};
+
 export const USER = {
-  LOGIN: `/user/login`,
-  REGISTER: `/user/register`,
+  GET_PROFILE: "/account/profile",
 };

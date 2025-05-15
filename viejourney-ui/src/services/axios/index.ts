@@ -1,11 +1,17 @@
 import axios from "axios";
 import { showSnackbar } from "../snackbar/ShowSnackbar";
+import { getAccessToken, isTokenValid } from "../api/token";
+import { refreshToken } from "../api";
+import { useAuth } from "../contexts";
+
 interface ErrorHandlerOptions {
   redirectOnUnauthorized?: boolean;
   loginRedirectPath?: string;
   defaultSystemErrorMessage?: string;
   logger?: (message: string, error?: any) => void;
+  authErrorExceptions?: string[];
 }
+
 // Create an Axios instance with default config
 const http = axios.create({
   headers: {
@@ -14,32 +20,14 @@ const http = axios.create({
   baseURL: import.meta.env.VITE_PRIVATE_URL,
 });
 
-// const bodyParse = (resp: any) => {
-//   const respData = resp.data;
-//   console.log(resp?.status);
-//   if (+resp?.status >= 500) {
-//     return showSnackbar(
-//       `Hệ thống đang tạm thời gián đoạn. Xin vui lòng trở lại sau hoặc thông báo với ban quản trị để được hỗ trợ`
-//     );
-//   }
-//   if (+resp?.status < 500 && +resp?.status !== 200) {
-//     return showSnackbar(
-//       "Hệ thống xảy ra lỗi. Xin vui lòng trở lại sau hoặc thông báo với ban quản trị để được hỗ trợ "
-//     );
-//   }
-//   if (respData?.statusCode === 401) {
-//     localStorage.removeItem("edu-token");
-//     return window.location.replace("/auth/login");
-//   }
-//   return resp;
-// };
-
 const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
   const {
     redirectOnUnauthorized = true,
-    loginRedirectPath = "/login",
+    loginRedirectPath = "/auth/login",
     defaultSystemErrorMessage = "The system is experiencing issues. Please try again later.",
     logger = console.error,
+    // List of auth error messages that should NOT trigger a redirect
+    authErrorExceptions = ["Invalid credentials", "Invalid email or password"],
   } = options;
 
   const errorMessages: Record<number, string> = {
@@ -51,7 +39,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
     406: "Not acceptable format.",
     408: "Request timeout. Please try again.",
     409: "Data conflict. Please check the information.",
-    422: "Unimport.meta.able entity. Please check the information.",
+    422: "Unprocessable entity. Please check the information.",
     429: "Too many requests. Please wait and try again.",
     500: "Internal server error. Please try again later.",
     501: "Not implemented.",
@@ -63,7 +51,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
   const errorHandler = (err: any): Promise<never> => {
     const status = err?.response?.status || err?.status;
     const errorData = err?.response?.data;
-    const errorMessage = err?.message;
+    const errorMessage = errorData?.message || errorData?.error || err?.message;
 
     logger("Error caught:", err);
 
@@ -75,25 +63,54 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       return Promise.reject(err);
     }
 
-    // Handle unauthorized errors
-    if (status === 401 || status === 403) {
-      localStorage.removeItem("edu-token");
-      if (redirectOnUnauthorized) {
-        showSnackbar(errorMessages[401], {
+    // Handle unauthorized errors with special cases for login attempts
+    if (status === 401) {
+      // Check if this is a login attempt with invalid credentials
+      const isAuthErrorException = authErrorExceptions.some(
+        (exceptionMsg) =>
+          errorMessage &&
+          typeof errorMessage === "string" &&
+          errorMessage.toLowerCase().includes(exceptionMsg.toLowerCase())
+      );
+
+      if (isAuthErrorException) {
+        // For login failures, show the specific message without redirect
+        showSnackbar(errorMessage || "Invalid username or password", {
           variant: "error",
           autoHideDuration: 3000,
         });
-        setTimeout(() => {
-          window.location.replace(loginRedirectPath);
-        }, 1000);
+      } else {
+        // For other auth errors (expired token, etc.), clear token and redirect
+        localStorage.removeItem("token");
+
+        if (redirectOnUnauthorized) {
+          showSnackbar("Your session has expired. Please log in again.", {
+            variant: "error",
+            autoHideDuration: 3000,
+          });
+
+          setTimeout(() => {
+            window.location.replace(loginRedirectPath);
+          }, 1000);
+        }
       }
+
+      return Promise.reject(err);
+    }
+
+    // Handle forbidden errors
+    if (status === 403) {
+      showSnackbar(errorMessage || errorMessages[403], {
+        variant: "error",
+        autoHideDuration: 3000,
+      });
 
       return Promise.reject(err);
     }
 
     // Handle specific error status codes
     if (status in errorMessages) {
-      showSnackbar(errorMessages[status], {
+      showSnackbar(errorMessage || errorMessages[status], {
         variant: "error",
         autoHideDuration: 3000,
       });
@@ -104,9 +121,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
     if (status >= 400 && status < 500) {
       // Try to use more specific error message from server
       const specificError =
-        errorData?.message ||
-        errorMessage ||
-        "An error occurred. Please try again.";
+        errorMessage || "An error occurred. Please try again.";
 
       showSnackbar(specificError, {
         variant: "error",
@@ -117,7 +132,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
 
     // Handle server-side errors (5xx)
     if (status >= 500) {
-      showSnackbar(defaultSystemErrorMessage, {
+      showSnackbar(errorMessage || defaultSystemErrorMessage, {
         variant: "error",
         autoHideDuration: 3000,
       });
@@ -138,29 +153,36 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
 // Usage example
 const handleError = createErrorHandler({
   redirectOnUnauthorized: true,
-  loginRedirectPath: "/login",
+  loginRedirectPath: "/auth/login",
   defaultSystemErrorMessage: "An error occurred. Please try again.",
+  // List auth error messages that should not trigger a redirect
+  authErrorExceptions: ["Invalid credentials", "Invalid email or password"],
   logger: (message, error) => {
-    // Custom logging logic (e.g., send to monitoring service)
+    // Custom logging logic
     console.error(message, error);
   },
 });
 
 // Add request interceptor
-http.interceptors.request.use((config) => {
-  const tokenString = localStorage.getItem("edu-token");
-  const token: {
-    accessToken: string;
-    refreshToken: string;
-  } | null = tokenString ? JSON.parse(tokenString) : null;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token?.accessToken}`;
+http.interceptors.request.use(async (config) => {
+  // Check if token is valid, redirect if not
+  if (!isTokenValid() && window.location.pathname !== "/auth/login") {
+    localStorage.removeItem("token");
+    await refreshToken();
+    return config;
   }
+
+  // Add token to Authorization header if available
+  const accessToken = getAccessToken();
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
   return config;
 });
-
 http.interceptors.response.use(
   (response) => response,
   (error) => handleError(error)
 );
+
 export default http;

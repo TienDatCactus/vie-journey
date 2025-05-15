@@ -63,28 +63,42 @@ export class AuthService {
 
     const accessToken = this.createAccessToken(user._id, user.email);
     const refreshToken = this.createRefreshToken(user._id);
+    const expiresIn = parseInt(process.env.JWT_EXPIRATION || '3600', 10);
+    const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
-    await this.tokenModel.create({
-      token: refreshToken,
-      userId: user._id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
+    await this.tokenModel.updateOne(
+      {
+        userId: user._id,
+      },
+      {
+        token: refreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    );
     user.active = true;
     await user.save();
 
-    return { accessToken, refreshToken };
+    return { accessToken, expiresAt: expiresAt.toISOString(), expiresIn };
   }
-  async logout(userId: string, refreshToken: string) {
-    const user = await this.accountModel.findById(userId);
+  async logout(userId: string) {
+    console.log(userId);
+    const user = await this.accountModel.findById({
+      _id: new Types.ObjectId(userId),
+    });
     if (!user) throw new UnauthorizedException('Invalid user');
 
-    await this.tokenModel.deleteOne({ token: refreshToken });
+    await this.tokenModel.deleteMany({ userId: user._id });
     user.active = false;
     await user.save();
     return { message: 'Logged out successfully' };
   }
-  async refresh(refreshToken: string) {
-    const payload = this.jwtService.verify(refreshToken, {
+  async refresh(userId: string) {
+    const refreshToken = await this.tokenModel.findOne({ userId });
+    if (!refreshToken || refreshToken.expiresAt < new Date()) {
+      await this.tokenModel.deleteMany({ userId });
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    const payload = this.jwtService.verify(refreshToken.token, {
       secret: process.env.JWT_SECRET,
     });
 

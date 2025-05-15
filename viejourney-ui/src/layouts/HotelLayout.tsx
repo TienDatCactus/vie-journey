@@ -3,8 +3,7 @@ import React from "react";
 import { VerticalAlignTop } from "@mui/icons-material";
 import { Divider, Fab } from "@mui/material";
 import { animate } from "motion/react";
-import HotelHeader from "../components/Layout/Main/(user)/HotelHeader";
-import Footer from "../components/Layout/Main/Footer";
+import { Footer, HotelAuthHeader } from "../components/Layout";
 
 const HotelLayout = ({ children }: { children: React.ReactNode }) => {
   const smoothScrollTo = (targetY: number) => {
@@ -20,7 +19,7 @@ const HotelLayout = ({ children }: { children: React.ReactNode }) => {
   };
   return (
     <div>
-      <HotelHeader />
+      <HotelAuthHeader />
       <main className="flex flex-col items-center mx-auto justify-center bg-[#f5f5f5]">
         {children}
       </main>

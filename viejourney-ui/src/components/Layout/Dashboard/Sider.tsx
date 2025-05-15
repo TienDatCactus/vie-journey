@@ -22,11 +22,11 @@ const Sider: React.FC = () => {
         justifyContent={"center"}
         className="my-4"
       >
-        <div className="*:my-0 text-center *:text-[#828282] *:text-[14px]">
+        <div className="*:my-0 text-center *:text-[#828282] *:text-sm">
           <p>0</p>
           <p>Followers</p>
         </div>
-        <div className=" text-center *:my-0 *:text-[#828282] *:text-[14px]">
+        <div className=" text-center *:my-0 *:text-[#828282] *:text-sm">
           <p>0</p>
           <p>Following</p>
         </div>

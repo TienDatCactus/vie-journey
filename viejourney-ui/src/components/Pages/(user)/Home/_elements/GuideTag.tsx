@@ -17,7 +17,7 @@ interface GuideTagProps {
 const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
   return (
     <Card className="w-full">
-      <CardActionArea className="p-2">
+      <div className="p-2">
         <CardMedia
           component="img"
           className="h-full w-full rounded-md"
@@ -59,7 +59,7 @@ const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
             </Stack>
           </div>
         </CardContent>
-      </CardActionArea>
+      </div>
     </Card>
   );
 };

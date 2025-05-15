@@ -103,7 +103,7 @@ const Header = () => {
           ""
         )}
         <ButtonGroup variant="contained" aria-label="Disabled button group">
-          <Button size="small" variant="outlined" href="/login">
+          <Button size="small" variant="outlined" href="/auth/login">
             Login
           </Button>
           <Button size="small">SignUp</Button>

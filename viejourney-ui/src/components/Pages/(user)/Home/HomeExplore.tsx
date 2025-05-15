@@ -40,9 +40,8 @@ const HomeExplore: React.FC = () => {
       <Grid2 container alignItems={"center"} spacing={2}>
         {!!fakeData.length &&
           fakeData?.map((item, index) => (
-            <Grid2 size={4}>
+            <Grid2 size={4} key={index}>
               <ExploreCard
-                key={index}
                 author={item?.author}
                 description={item?.description}
                 img={item?.img}

@@ -158,7 +158,7 @@ const HomeFastSearch: React.FC = () => {
                 justifyContent={"space-between"}
               >
                 <HotelIcon />
-                <p className="my-0 text-[14px]">Rooms</p>
+                <p className="my-0 text-sm">Rooms</p>
                 <Stack direction={"row"} alignItems={"center"} gap={2}>
                   <IconButton
                     className="bg-[#f5f5f5]"
@@ -182,7 +182,7 @@ const HomeFastSearch: React.FC = () => {
                 justifyContent={"space-between"}
               >
                 <PersonIcon />
-                <p className="my-0 text-[14px]">Adults</p>
+                <p className="my-0 text-sm">Adults</p>
                 <Stack direction={"row"} alignItems={"center"} gap={2}>
                   <IconButton
                     className="bg-[#f5f5f5]"
@@ -206,7 +206,7 @@ const HomeFastSearch: React.FC = () => {
                 justifyContent={"space-between"}
               >
                 <ChildCareIcon />
-                <p className="my-0 text-[14px]">Childrens</p>
+                <p className="my-0 text-sm">Childrens</p>
                 <Stack direction={"row"} alignItems={"center"} gap={2}>
                   <IconButton
                     className="bg-[#f5f5f5]"

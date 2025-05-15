@@ -48,10 +48,7 @@ const LoginForm: React.FC = () => {
   ) => {
     try {
       setLoading(true);
-      const loginAttempt = await doLogin(data);
-      if (loginAttempt) {
-        navigate("/");
-      }
+      const resp = await doLogin(data);
     } catch (error) {
       enqueueSnackbar(String(error), { variant: "error" });
     } finally {
@@ -64,37 +61,44 @@ const LoginForm: React.FC = () => {
       noValidate
       onSubmit={handleSubmit(onSubmit)}
       autoComplete="off"
-      className="w-full mt-8 p-8 bg-white border-solid border-[#ccc] border rounded-md shadow-md flex flex-col gap-2"
+      className="w-full mt-8 p-8 bg-white border-solid border-[#ccc] border rounded-md shadow-md flex flex-col gap-4"
     >
       <FormGroup>
-        <InputLabel className="font-bold text-[14px]">Email</InputLabel>
+        <InputLabel className="font-bold text-sm">Email</InputLabel>
         <OutlinedInput
-          className="w-full *:text-[14px]"
+          className="w-full *:text-sm"
           error={!!errors.email}
           size="small"
           placeholder="Enter your email address"
-          {...register("email", { required: true })}
+          {...register("email", {
+            required: true,
+            validate: (value) => {
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              return emailRegex.test(value) || "Invalid email address";
+            },
+          })}
+          type="email"
         />
         {errors.email && (
           <FormHelperText error={!!errors.email}>
             {" "}
-            This field is required
+            This field is required and must be a valid email address
           </FormHelperText>
         )}
       </FormGroup>
       <FormGroup>
-        <InputLabel className="font-bold text-[14px]">Password</InputLabel>
+        <InputLabel className="font-bold text-sm">Password</InputLabel>
         <OutlinedInput
           type="password"
           size="small"
           error={!!errors.password}
-          {...register("password", { required: true })}
-          className="w-full *:text-[14px]"
+          {...register("password", { required: true, minLength: 6 })}
+          className="w-full *:text-sm"
           placeholder="Enter your password"
         />
         {errors.password && (
           <FormHelperText error={!!errors.password}>
-            This field is required
+            This field is required and must be at least 6 characters long
           </FormHelperText>
         )}
       </FormGroup>
@@ -103,11 +107,11 @@ const LoginForm: React.FC = () => {
           <FormControlLabel
             control={<Checkbox />}
             label="Remember me"
-            className="*:text-[14px]"
+            className="*:text-sm"
           />
           <a
             href=""
-            className="text-[14px] no-underline text-[#3861b0] font-medium"
+            className="text-sm no-underline text-[#3861b0] font-medium"
           >
             Forgot your password ?
           </a>
@@ -129,6 +133,7 @@ const LoginForm: React.FC = () => {
         {!!loginMets.length &&
           loginMets?.map((loginMet, index) => (
             <Button
+              disabled
               key={index}
               className="w-full py-3 text-center border-solid border-[#ccc] border rounded-md text-[#30373f] *:text-[16px]"
             >
