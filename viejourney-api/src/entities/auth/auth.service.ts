@@ -78,7 +78,12 @@ export class AuthService {
     user.active = true;
     await user.save();
 
-    return { accessToken, expiresAt: expiresAt.toISOString(), expiresIn };
+    return {
+      userId: user._id,
+      accessToken,
+      expiresAt: expiresAt.toISOString(),
+      expiresIn,
+    };
   }
   async logout(userId: string) {
     console.log(userId);

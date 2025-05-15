@@ -12,8 +12,7 @@ import {
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import { Account } from './entities/account.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('account')
 export class AccountController {
@@ -44,9 +43,8 @@ export class AccountController {
     return this.accountService.remove(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('profile')
-  getProfile(@Request() req: { user: Account }) {
-    return req.user;
+  getProfile(@Body() req: { userId: string }) {
+    return this.accountService.findOne(req.userId);
   }
 }

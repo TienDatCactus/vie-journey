@@ -15,9 +15,11 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { doLogin } from "../../services/api";
+import { doGetUser, doLogin } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
+import { useAuth } from "../../services/contexts";
+import { LoginRespDTO } from "../../services/api/dto";
 const loginMets: Array<{
   icon: React.ReactNode;
 }> = [
@@ -41,6 +43,7 @@ const LoginForm: React.FC = () => {
     email: string;
     password: string;
   }>();
+  const { setCredential } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
 
   const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
@@ -48,14 +51,17 @@ const LoginForm: React.FC = () => {
   ) => {
     try {
       setLoading(true);
-      const resp = await doLogin(data);
+      const loginResp = (await doLogin(data)) as LoginRespDTO | undefined;
+      if (loginResp && loginResp?.accessToken) {
+        setCredential({ userId: loginResp?.userId || "" });
+        navigate("/");
+      }
     } catch (error) {
       enqueueSnackbar(String(error), { variant: "error" });
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <form
       noValidate

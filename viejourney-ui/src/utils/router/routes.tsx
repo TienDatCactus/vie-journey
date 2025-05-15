@@ -1,55 +1,94 @@
-import React, { lazy } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import React, { lazy, Suspense } from "react";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Guides from "../../pages/(user)/Guides/Guides";
 import Hotels from "../../pages/(user)/Hotels/Hotels";
 import { PlanningFormation } from "../../pages/(user)/Trip";
+import Fallback from "../handlers/loading/Fallback";
+import ProtectedRoute from "./ProtectedRoute";
+
+// Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
+
+// Protected routes (auth required)
 const Home = lazy(() => import("../../pages/(user)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
+
+// Wrap lazy-loaded components with Suspense
+const SuspenseWrapper = ({
+  component: Component,
+}: {
+  component: React.ComponentType<any>;
+}) => (
+  <Suspense fallback={<Fallback />}>
+    <Component />
+  </Suspense>
+);
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <SuspenseWrapper component={Home} />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorBoundary />,
   },
   {
     path: "/auth",
+    element: <ProtectedRoute requireAuth={false} />,
     errorElement: <ErrorBoundary />,
     children: [
       {
+        path: "",
+        element: <Navigate to="/auth/login" replace />,
+      },
+      {
         path: "login",
-        element: <Access />,
+        element: <SuspenseWrapper component={Access} />,
       },
       {
         path: "register",
-        element: <Access />,
+        element: <SuspenseWrapper component={Access} />,
       },
       {
         path: "verify-email",
-        element: <Access />,
+        element: <SuspenseWrapper component={Access} />,
       },
     ],
   },
-
+  // Protected routes
   {
     path: "/profile",
-    element: <Dashboard />,
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <SuspenseWrapper component={Dashboard} />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorBoundary />,
   },
   {
     path: "/guides",
-    element: <Guides />,
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <Guides />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorBoundary />,
   },
   {
     path: "/hotels",
-    element: <Hotels />,
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <Hotels />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorBoundary />,
   },
   {
     path: "/plan",
+    element: <ProtectedRoute requireAuth={true} />,
     errorElement: <ErrorBoundary />,
     children: [
       {

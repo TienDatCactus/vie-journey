@@ -1,22 +1,39 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Account } from 'src/entities/account/entities/account.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Account } from '../../account/entities/account.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(@InjectModel(Account.name) private accountModel: Model<Account>) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET,
+      ignoreExpiration: false,
+      secretOrKey: process.env.JWT_SECRET || 'your-secret-key',
     });
   }
+  async validate(payload: any) {
+    // Enhanced debugging
+    console.log('JWT Payload received:', payload);
+    console.log('Looking up user with ID:', payload.sub);
 
-  async validate(payload: Account) {
-    return {
-      _id: payload._id,
-      email: payload.email,
-      role: payload.role,
-    };
+    try {
+      const user = await this.accountModel.findById(payload.sub).exec();
+      console.log('User found:', user ? 'Yes' : 'No');
+
+      if (!user) {
+        console.log('User not found for ID:', payload.sub);
+        throw new UnauthorizedException('User not found');
+      }
+
+      const result = { userId: payload.sub, email: payload.email };
+      console.log('Returning user data:', result);
+      return result;
+    } catch (error) {
+      console.error('Error in JWT validation:', error);
+      throw error;
+    }
   }
 }

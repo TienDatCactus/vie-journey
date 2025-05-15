@@ -1,12 +1,10 @@
-import { MoreHoriz } from "@mui/icons-material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { CardActionArea, IconButton, Stack } from "@mui/material";
+import { IconButton, Stack } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import React from "react";
 interface GuideTagProps {
   img: string;
   title: string;

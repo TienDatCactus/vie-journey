@@ -27,7 +27,6 @@ export const getToken = (): TokenData | null => {
 export const isTokenValid = (): boolean => {
   const token = getToken();
   if (!token) return false;
-
   const { expiresAt } = token;
   const expirationTime = new Date(expiresAt).getTime();
   const currentTime = new Date().getTime();

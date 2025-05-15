@@ -23,7 +23,7 @@ const VerifyEmail: React.FC = () => {
   const onSubmit: SubmitHandler<{ otp: string }> = async (data) => {
     try {
       setLoading(true);
-      await doVerify(data);
+      await doVerify({ otp: data.otp });
     } catch (error) {
       enqueueSnackbar(String(error), { variant: "error" });
     } finally {

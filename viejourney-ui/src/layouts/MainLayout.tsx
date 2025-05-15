@@ -5,8 +5,10 @@ import { Divider, Fab } from "@mui/material";
 import { animate } from "motion/react";
 import Header from "../components/Layout/Main/(user)/Header";
 import Footer from "../components/Layout/Main/Footer";
+import { useAuth } from "../services/contexts";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
   const smoothScrollTo = (targetY: number) => {
     const currentY = window.scrollY;
 
@@ -18,6 +20,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       },
     });
   };
+  console.log(user);
+
   return (
     <div>
       <Header />

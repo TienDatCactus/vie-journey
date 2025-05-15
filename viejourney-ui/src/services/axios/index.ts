@@ -2,7 +2,7 @@ import axios from "axios";
 import { showSnackbar } from "../snackbar/ShowSnackbar";
 import { getAccessToken, isTokenValid } from "../api/token";
 import { refreshToken } from "../api";
-import { useAuth } from "../contexts";
+import { enqueueSnackbar, SnackbarKey } from "notistack";
 
 interface ErrorHandlerOptions {
   redirectOnUnauthorized?: boolean;
@@ -12,7 +12,45 @@ interface ErrorHandlerOptions {
   authErrorExceptions?: string[];
 }
 
-// Create an Axios instance with default config
+// Track recent snackbar messages to prevent duplicates
+const recentMessages = new Map<
+  string,
+  { key: SnackbarKey; timestamp: number }
+>();
+const MESSAGE_DEBOUNCE_TIME = 3000; // 3 seconds
+
+/**
+ * Show snackbar message with debouncing to prevent duplicates
+ * @param message The message to display
+ * @param options Snackbar options
+ * @returns The snackbar key if shown, null if debounced
+ */
+const showDebouncedSnackbar = (message: string, options: any = {}) => {
+  // Create a simple hash of the message + variant to identify similar messages
+  const messageKey = `${message}-${options.variant || "default"}`;
+
+  const now = Date.now();
+  const recent = recentMessages.get(messageKey);
+
+  // If this message was shown recently, skip showing it again
+  if (recent && now - recent.timestamp < MESSAGE_DEBOUNCE_TIME) {
+    return null;
+  }
+
+  // Show the message and store it in recent messages
+  const key = enqueueSnackbar(message, options);
+  recentMessages.set(messageKey, { key, timestamp: now });
+
+  // Clean up old messages from the tracking map
+  setTimeout(() => {
+    if (recentMessages.has(messageKey)) {
+      recentMessages.delete(messageKey);
+    }
+  }, MESSAGE_DEBOUNCE_TIME + 1000);
+
+  return key;
+};
+
 const http = axios.create({
   headers: {
     "Content-Type": "application/json",
@@ -20,13 +58,84 @@ const http = axios.create({
   baseURL: import.meta.env.VITE_PRIVATE_URL,
 });
 
+// Track current operation groups to consolidate messages
+let currentOperationCount = 0;
+let pendingMessages = new Map<string, number>(); // message -> count
+
+/**
+ * Tracks the start of an operation that might produce a snackbar
+ */
+const trackOperationStart = () => {
+  currentOperationCount++;
+  return currentOperationCount;
+};
+
+/**
+ * Tracks the completion of an operation and shows consolidated snackbars
+ */
+const trackOperationEnd = () => {
+  currentOperationCount--;
+
+  // When all operations complete, show consolidated messages
+  if (currentOperationCount === 0 && pendingMessages.size > 0) {
+    // Show consolidated success message if there are multiple
+    const successMessages = [...pendingMessages.entries()]
+      .filter(([message, count]) => message.includes("success"))
+      .sort((a, b) => b[1] - a[1]); // Sort by count descending
+
+    if (successMessages.length === 1) {
+      // Single success message
+      showDebouncedSnackbar(successMessages[0][0], {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    } else if (successMessages.length > 1) {
+      // Multiple success messages, consolidate them
+      showDebouncedSnackbar(
+        `${successMessages.length} operations completed successfully`,
+        {
+          variant: "success",
+          autoHideDuration: 3000,
+        }
+      );
+    }
+
+    // Clear pending messages
+    pendingMessages.clear();
+  }
+};
+
+// Response interceptor for success messages
+http.interceptors.response.use(
+  (response) => {
+    const { data } = response;
+
+    // Handle success messages from NestJS ResponseInterceptor
+    if (data && data.status === "success" && data.message) {
+      // If there are multiple ongoing operations, collect messages
+      if (currentOperationCount > 1) {
+        const message = data.message;
+        pendingMessages.set(message, (pendingMessages.get(message) || 0) + 1);
+      } else {
+        // For single operations, show message immediately
+        showDebouncedSnackbar(data.message, {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      }
+    }
+
+    return response;
+  },
+  (error) => Promise.reject(error)
+);
+
 const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
   const {
     redirectOnUnauthorized = true,
     loginRedirectPath = "/auth/login",
     defaultSystemErrorMessage = "The system is experiencing issues. Please try again later.",
     logger = console.error,
-    // List of auth error messages that should NOT trigger a redirect
     authErrorExceptions = ["Invalid credentials", "Invalid email or password"],
   } = options;
 
@@ -49,23 +158,31 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
   };
 
   const errorHandler = (err: any): Promise<never> => {
-    const status = err?.response?.status || err?.status;
-    const errorData = err?.response?.data;
-    const errorMessage = errorData?.message || errorData?.error || err?.message;
-
     logger("Error caught:", err);
 
+    // Extract error details from the NestJS ResponseInterceptor format
+    const responseData = err?.response?.data;
+    const status =
+      err?.response?.statusCode || err?.response?.status || err?.status;
+
+    const errorMessage =
+      responseData?.message || responseData?.error || err?.message;
+
+    // Additional error details provided by ResponseInterceptor
+    const errors = responseData?.errors;
+
     if (!status) {
-      showSnackbar("Lost connection. Please check the network connection.", {
-        variant: "error",
-        autoHideDuration: 3000,
-      });
+      showDebouncedSnackbar(
+        "Lost connection. Please check the network connection.",
+        {
+          variant: "error",
+          autoHideDuration: 3000,
+        }
+      );
       return Promise.reject(err);
     }
 
-    // Handle unauthorized errors with special cases for login attempts
     if (status === 401) {
-      // Check if this is a login attempt with invalid credentials
       const isAuthErrorException = authErrorExceptions.some(
         (exceptionMsg) =>
           errorMessage &&
@@ -74,20 +191,20 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       );
 
       if (isAuthErrorException) {
-        // For login failures, show the specific message without redirect
-        showSnackbar(errorMessage || "Invalid username or password", {
+        showDebouncedSnackbar(errorMessage || "Invalid username or password", {
           variant: "error",
           autoHideDuration: 3000,
         });
       } else {
-        // For other auth errors (expired token, etc.), clear token and redirect
         localStorage.removeItem("token");
-
         if (redirectOnUnauthorized) {
-          showSnackbar("Your session has expired. Please log in again.", {
-            variant: "error",
-            autoHideDuration: 3000,
-          });
+          showDebouncedSnackbar(
+            "Your session has expired. Please log in again.",
+            {
+              variant: "error",
+              autoHideDuration: 3000,
+            }
+          );
 
           setTimeout(() => {
             window.location.replace(loginRedirectPath);
@@ -98,52 +215,41 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       return Promise.reject(err);
     }
 
-    // Handle forbidden errors
-    if (status === 403) {
-      showSnackbar(errorMessage || errorMessages[403], {
+    // Handle other error cases (with proper messages from ResponseInterceptor)
+    if (errorMessage) {
+      // If we have specific validation errors, show those details
+      if (errors) {
+        const errorDetails = Array.isArray(errors)
+          ? errors.join(", ")
+          : typeof errors === "object"
+          ? Object.values(errors).join(", ")
+          : errors.toString();
+
+        showDebouncedSnackbar(`${errorMessage}: ${errorDetails}`, {
+          variant: "error",
+          autoHideDuration: 5000,
+        });
+      } else {
+        // Show the main error message
+        showDebouncedSnackbar(errorMessage, {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    } else if (status in errorMessages) {
+      // Use predefined messages for known status codes
+      showDebouncedSnackbar(errorMessages[status], {
         variant: "error",
         autoHideDuration: 3000,
       });
-
-      return Promise.reject(err);
-    }
-
-    // Handle specific error status codes
-    if (status in errorMessages) {
-      showSnackbar(errorMessage || errorMessages[status], {
+    } else {
+      // Fallback error handling
+      showDebouncedSnackbar(defaultSystemErrorMessage, {
         variant: "error",
         autoHideDuration: 3000,
       });
-      return Promise.reject(err);
     }
 
-    // Handle client-side errors (4xx)
-    if (status >= 400 && status < 500) {
-      // Try to use more specific error message from server
-      const specificError =
-        errorMessage || "An error occurred. Please try again.";
-
-      showSnackbar(specificError, {
-        variant: "error",
-        autoHideDuration: 3000,
-      });
-      return Promise.reject(err);
-    }
-
-    // Handle server-side errors (5xx)
-    if (status >= 500) {
-      showSnackbar(errorMessage || defaultSystemErrorMessage, {
-        variant: "error",
-        autoHideDuration: 3000,
-      });
-      return Promise.reject(err);
-    }
-
-    // Fallback error handling
-    showSnackbar(defaultSystemErrorMessage, {
-      variant: "error",
-      autoHideDuration: 3000,
-    });
     return Promise.reject(err);
   };
 
@@ -155,34 +261,70 @@ const handleError = createErrorHandler({
   redirectOnUnauthorized: true,
   loginRedirectPath: "/auth/login",
   defaultSystemErrorMessage: "An error occurred. Please try again.",
-  // List auth error messages that should not trigger a redirect
   authErrorExceptions: ["Invalid credentials", "Invalid email or password"],
   logger: (message, error) => {
-    // Custom logging logic
     console.error(message, error);
   },
 });
 
-// Add request interceptor
-http.interceptors.request.use(async (config) => {
-  // Check if token is valid, redirect if not
-  if (!isTokenValid() && window.location.pathname !== "/auth/login") {
-    localStorage.removeItem("token");
-    await refreshToken();
+// Create tracking interceptors for request/response cycle
+http.interceptors.request.use(
+  (config) => {
+    // Track the start of this operation
+    const operationId = trackOperationStart();
+    config.headers["X-Operation-ID"] = operationId;
+
+    // The rest of your existing request interceptor
+    if (!isTokenValid() && window.location.pathname !== "/auth/login") {
+      localStorage.removeItem("token");
+      refreshToken();
+    }
+
+    const accessToken = getAccessToken();
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     return config;
+  },
+  (error) => {
+    // Track operation completion even on request error
+    trackOperationEnd();
+    return Promise.reject(error);
   }
-
-  // Add token to Authorization header if available
-  const accessToken = getAccessToken();
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-
-  return config;
-});
-http.interceptors.response.use(
-  (response) => response,
-  (error) => handleError(error)
 );
+
+// Update the response interceptor to track operation completion
+http.interceptors.response.use(
+  (response) => {
+    // Track operation completion
+    trackOperationEnd();
+    return response;
+  },
+  (error) => {
+    // Track operation completion even on error
+    trackOperationEnd();
+    return handleError(error);
+  }
+);
+
+// Export the enhanced methods for use in components
+export const enhancedHttp = {
+  ...http,
+  /**
+   * Group multiple operations to show single consolidated snackbar
+   * @param callback Function containing multiple API calls
+   * @returns Result from the callback function
+   */
+  bulkOperations: async <T>(callback: () => Promise<T>): Promise<T> => {
+    // Force operation count to at least 2 to trigger batching
+    trackOperationStart();
+    try {
+      return await callback();
+    } finally {
+      trackOperationEnd();
+    }
+  },
+};
 
 export default http;

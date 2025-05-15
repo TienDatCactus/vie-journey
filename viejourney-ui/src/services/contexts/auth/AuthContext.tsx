@@ -10,10 +10,12 @@ import { doGetUser } from "../../api";
 const AuthContext = createContext({
   user: null as User | null,
   setUser: (user: User | null) => {},
+  credential: {} as { userId: string },
+  setCredential: (credential: { userId: string }) => {},
 });
 
 interface User {
-  _id: string;
+  userId: string;
   email: string;
   role: string;
   active: boolean;
@@ -21,30 +23,30 @@ interface User {
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token] = useState<{
-    accessToken: string;
-    refreshToken: string;
-  } | null>();
+  const [credential, setCredential] = useState<{ userId: string }>(
+    {} as { userId: string }
+  );
 
   useEffect(() => {
-    console.log(token);
-    if (token) {
-      const fetchUserProfile = async () => {
+    if (!!credential?.userId?.length && credential?.userId !== "") {
+      const fetchUser = async () => {
         try {
-          const resp = await doGetUser();
-          if (resp) {
-            setUser(resp?.data);
+          const response = await doGetUser({ userId: credential.userId });
+          if (response) {
+            setUser(response);
           }
         } catch (error) {
-          console.error(error);
+          console.error("Failed to fetch user:", error);
         }
       };
-      fetchUserProfile();
+      fetchUser();
     }
-  }, []);
+  }, [credential]);
   const context = {
     user,
     setUser,
+    credential,
+    setCredential,
   };
   return (
     <AuthContext.Provider value={context}>{children}</AuthContext.Provider>
