@@ -21,7 +21,7 @@ export interface RegisterRespDTO {
 }
 
 export interface VerifyReqDTO {
-  otp: string;
+  token: string;
 }
 
 export interface LogoutReqDTO {

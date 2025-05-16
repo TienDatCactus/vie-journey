@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './entities/auth/auth.module';
 import { AccountModule } from './entities/account/account.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -19,6 +20,21 @@ import { AccountModule } from './entities/account/account.module';
       load: [],
     }),
     MongooseModule.forRoot(process.env.MONGODB_URI || ''),
+    MailerModule.forRoot({
+      transport: {
+        service: process.env.MAIL_SERVICE,
+        host: process.env.MAIL_HOST,
+        port: Number(process.env.MAIL_PORT),
+        secure: process.env.MAIL_SECURE === 'true',
+        auth: {
+          user: process.env.MAIL_USER,
+          pass: process.env.MAIL_PASS,
+        },
+      },
+      defaults: {
+        from: `"VieJourney" <${process.env.MAIL_FROM}>`,
+      },
+    }),
     AuthModule,
     AccountModule,
   ],

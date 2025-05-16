@@ -9,12 +9,14 @@ import ProtectedRoute from "./ProtectedRoute";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
+const VerifyScreen = lazy(
+  () => import("../../pages/(anonymous)/Auth/VerifyScreen")
+);
 
 // Protected routes (auth required)
 const Home = lazy(() => import("../../pages/(user)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
-
-// Wrap lazy-loaded components with Suspense
+// Wrap lazy-loaded components wimport VerifyScreen from './../../pages/(anonymous)/Auth/VerifyScreen';
 const SuspenseWrapper = ({
   component: Component,
 }: {
@@ -54,7 +56,7 @@ const router = createBrowserRouter([
       },
       {
         path: "verify-email",
-        element: <SuspenseWrapper component={Access} />,
+        element: <SuspenseWrapper component={VerifyScreen} />,
       },
     ],
   },
@@ -80,7 +82,7 @@ const router = createBrowserRouter([
   {
     path: "/hotels",
     element: (
-      <ProtectedRoute requireAuth={true}>
+      <ProtectedRoute requireAuth={false}>
         <Hotels />
       </ProtectedRoute>
     ),

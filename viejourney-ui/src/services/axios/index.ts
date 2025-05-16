@@ -1,8 +1,7 @@
 import axios from "axios";
-import { showSnackbar } from "../snackbar/ShowSnackbar";
-import { getAccessToken, isTokenValid } from "../api/token";
-import { refreshToken } from "../api";
 import { enqueueSnackbar, SnackbarKey } from "notistack";
+import { getAccessToken, shouldRefreshToken } from "../api/token";
+import { refreshToken } from "../api";
 
 interface ErrorHandlerOptions {
   redirectOnUnauthorized?: boolean;
@@ -18,6 +17,27 @@ const recentMessages = new Map<
   { key: SnackbarKey; timestamp: number }
 >();
 const MESSAGE_DEBOUNCE_TIME = 3000; // 3 seconds
+
+// Token refresh state management
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+// Function to add request to queue
+const subscribeTokenRefresh = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback);
+};
+
+// Function to resolve all queued requests after token refresh
+const onTokenRefreshed = (newToken: string) => {
+  refreshSubscribers.forEach((callback) => callback(newToken));
+  refreshSubscribers = [];
+};
+
+// Function to reject all queued requests after token refresh fails
+const onRefreshFailure = () => {
+  refreshSubscribers = [];
+  // Redirect to login page will be handled separately
+};
 
 /**
  * Show snackbar message with debouncing to prevent duplicates
@@ -51,11 +71,13 @@ const showDebouncedSnackbar = (message: string, options: any = {}) => {
   return key;
 };
 
+// Create Axios instance
 const http = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
   baseURL: import.meta.env.VITE_PRIVATE_URL,
+  withCredentials: true,
 });
 
 // Track current operation groups to consolidate messages
@@ -80,7 +102,7 @@ const trackOperationEnd = () => {
   if (currentOperationCount === 0 && pendingMessages.size > 0) {
     // Show consolidated success message if there are multiple
     const successMessages = [...pendingMessages.entries()]
-      .filter(([message, count]) => message.includes("success"))
+      .filter(([message]) => message.includes("success"))
       .sort((a, b) => b[1] - a[1]); // Sort by count descending
 
     if (successMessages.length === 1) {
@@ -104,31 +126,6 @@ const trackOperationEnd = () => {
     pendingMessages.clear();
   }
 };
-
-// Response interceptor for success messages
-http.interceptors.response.use(
-  (response) => {
-    const { data } = response;
-
-    // Handle success messages from NestJS ResponseInterceptor
-    if (data && data.status === "success" && data.message) {
-      // If there are multiple ongoing operations, collect messages
-      if (currentOperationCount > 1) {
-        const message = data.message;
-        pendingMessages.set(message, (pendingMessages.get(message) || 0) + 1);
-      } else {
-        // For single operations, show message immediately
-        showDebouncedSnackbar(data.message, {
-          variant: "success",
-          autoHideDuration: 3000,
-        });
-      }
-    }
-
-    return response;
-  },
-  (error) => Promise.reject(error)
-);
 
 const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
   const {
@@ -157,7 +154,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
     504: "Gateway timeout. Please try again.",
   };
 
-  const errorHandler = (err: any): Promise<never> => {
+  const errorHandler = async (err: any): Promise<never> => {
     logger("Error caught:", err);
 
     // Extract error details from the NestJS ResponseInterceptor format
@@ -182,7 +179,9 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       return Promise.reject(err);
     }
 
+    // Check if the error is due to an expired token (status 401)
     if (status === 401) {
+      // Check if this is a login attempt with invalid credentials
       const isAuthErrorException = authErrorExceptions.some(
         (exceptionMsg) =>
           errorMessage &&
@@ -191,12 +190,15 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       );
 
       if (isAuthErrorException) {
+        // For login failures, show the specific message without redirect
         showDebouncedSnackbar(errorMessage || "Invalid username or password", {
           variant: "error",
           autoHideDuration: 3000,
         });
       } else {
+        // For other auth errors (expired token, etc.), clear token and redirect
         localStorage.removeItem("token");
+
         if (redirectOnUnauthorized) {
           showDebouncedSnackbar(
             "Your session has expired. Please log in again.",
@@ -267,22 +269,131 @@ const handleError = createErrorHandler({
   },
 });
 
-// Create tracking interceptors for request/response cycle
+// Success response interceptor
+http.interceptors.response.use(
+  (response) => {
+    const { data } = response;
+
+    // Handle success messages from NestJS ResponseInterceptor
+    if (data && data.status === "success" && data.message) {
+      // If there are multiple ongoing operations, collect messages
+      if (currentOperationCount > 1) {
+        const message = data.message;
+        pendingMessages.set(message, (pendingMessages.get(message) || 0) + 1);
+      } else {
+        // For single operations, show message immediately
+        showDebouncedSnackbar(data.message, {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      }
+    }
+
+    trackOperationEnd();
+    return response;
+  },
+  async (error) => {
+    trackOperationEnd();
+
+    // Handle token refresh for 401 errors
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // Skip token refresh for auth endpoints to prevent infinite loops
+      const isAuthEndpoint = [
+        "/auth/login",
+        "/auth/register",
+        "/auth/refresh",
+      ].some((endpoint) => originalRequest.url?.includes(endpoint));
+
+      if (isAuthEndpoint) {
+        return handleError(error);
+      }
+
+      // Mark request as retried to prevent infinite loops
+      originalRequest._retry = true;
+
+      try {
+        // If a refresh is already in progress, wait for it
+        if (isRefreshing) {
+          return new Promise((resolve) => {
+            subscribeTokenRefresh((token) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              resolve(http(originalRequest));
+            });
+          });
+        }
+
+        isRefreshing = true;
+
+        // Attempt token refresh
+        const refreshResult = await refreshToken();
+
+        if (refreshResult && refreshResult.accessToken) {
+          // Update Authorization header
+          originalRequest.headers.Authorization = `Bearer ${refreshResult.accessToken}`;
+
+          // Notify subscribers
+          onTokenRefreshed(refreshResult.accessToken);
+
+          // Reset refreshing state
+          isRefreshing = false;
+
+          // Retry original request
+          return http(originalRequest);
+        } else {
+          // If refresh failed, redirect
+          onRefreshFailure();
+          isRefreshing = false;
+          return handleError(error);
+        }
+      } catch (refreshError) {
+        isRefreshing = false;
+        onRefreshFailure();
+        return handleError(error);
+      }
+    }
+
+    return handleError(error);
+  }
+);
+
+// Request interceptor for token checking and tracking operations
 http.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // Track the start of this operation
     const operationId = trackOperationStart();
     config.headers["X-Operation-ID"] = operationId;
 
-    // The rest of your existing request interceptor
-    if (!isTokenValid() && window.location.pathname !== "/auth/login") {
-      localStorage.removeItem("token");
-      refreshToken();
-    }
+    // Skip token handling for auth endpoints
+    const isAuthEndpoint = [
+      "/auth/login",
+      "/auth/register",
+      "/auth/refresh",
+    ].some((endpoint) => config.url?.includes(endpoint));
 
-    const accessToken = getAccessToken();
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    if (!isAuthEndpoint) {
+      // Check if token needs refreshing before making the request
+      if (shouldRefreshToken() && !isRefreshing) {
+        try {
+          isRefreshing = true;
+          const newTokenData = await refreshToken();
+          isRefreshing = false;
+
+          if (newTokenData?.accessToken) {
+            config.headers.Authorization = `Bearer ${newTokenData.accessToken}`;
+          }
+        } catch (error) {
+          isRefreshing = false;
+          console.error("Failed to refresh token:", error);
+        }
+      } else {
+        // Add token to request if it exists
+        const accessToken = getAccessToken();
+        if (accessToken) {
+          config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+      }
     }
 
     return config;
@@ -291,20 +402,6 @@ http.interceptors.request.use(
     // Track operation completion even on request error
     trackOperationEnd();
     return Promise.reject(error);
-  }
-);
-
-// Update the response interceptor to track operation completion
-http.interceptors.response.use(
-  (response) => {
-    // Track operation completion
-    trackOperationEnd();
-    return response;
-  },
-  (error) => {
-    // Track operation completion even on error
-    trackOperationEnd();
-    return handleError(error);
   }
 );
 

@@ -1,6 +1,8 @@
 import { enqueueSnackbar } from "notistack";
+import axios from "axios";
 import http from "../axios";
 import { extractApiData } from "./apiHelpers";
+import { getToken, clearToken } from "./token";
 import { AUTH, USER } from "./url";
 import {
   GetUserReqDTO,
@@ -52,12 +54,9 @@ export const doRegister = async (data: RegisterReqDTO) => {
 
 export const doVerify = async (data: VerifyReqDTO) => {
   try {
-    const resp = await http.post(AUTH?.VERIFY, data);
+    const resp = await http.get(`${AUTH?.VERIFY}?token=${data.token}`);
     if (resp) {
       window.location.href = "/auth/login";
-      enqueueSnackbar(resp?.data?.message, {
-        variant: "success",
-      });
     }
     return extractApiData(resp);
   } catch (error) {
@@ -88,17 +87,44 @@ export const doGetUser = async (data: GetUserReqDTO) => {
   }
 };
 
-export const refreshToken = async () => {
+export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
   try {
-    const resp = await http.post(AUTH?.REFRESH_TOKEN);
-    if (resp) {
-      localStorage.setItem("token", JSON.stringify(resp?.data?.data));
-      enqueueSnackbar("Token refreshed successfully", {
-        variant: "success",
-      });
-      return extractApiData<RefreshTokenRespDTO>(resp);
+    // Get current token
+    const currentToken = getToken();
+    if (!currentToken?.refreshToken) {
+      console.error("No refresh token available");
+      clearToken();
+      return null;
+    }
+
+    // Create a new axios instance without interceptors to avoid infinite loops
+    const axiosInstance = axios.create({
+      baseURL: import.meta.env.VITE_PRIVATE_URL,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Call the refresh endpoint with current refresh token
+    const resp = await axiosInstance.post(AUTH?.REFRESH_TOKEN, {
+      refreshToken: currentToken.refreshToken,
+    });
+
+    const newTokenData = extractApiData<RefreshTokenRespDTO>(resp);
+
+    if (newTokenData && newTokenData.accessToken) {
+      // Store the new token
+      localStorage.setItem("token", JSON.stringify(newTokenData));
+      console.log("Token refreshed successfully");
+      return newTokenData;
+    } else {
+      console.error("Invalid token response format");
+      clearToken();
+      return null;
     }
   } catch (error) {
-    console.error(error);
+    console.error("Failed to refresh token:", error);
+    clearToken();
+    return null;
   }
 };

@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -9,19 +11,35 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { AccountService } from 'src/entities/account/account.service';
-import { RegistrationTokenSchema } from 'src/common/db/registration_token.schema';
 import { Account } from '../account/entities/account.entity';
-import { RegistrationToken } from './entities/registration_token.entity';
+import { Request, Response } from 'express';
+import { MailerService } from '@nestjs-modules/mailer';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly accountService: AccountService,
     private readonly jwtService: JwtService,
     @InjectModel(Account.name) private readonly accountModel: Model<Account>,
-    @InjectModel(RegistrationToken.name)
-    private readonly tokenModel: Model<RegistrationToken>,
+    private readonly mailService: MailerService,
   ) {}
 
+  async sendEMail(token: string, mail: string) {
+    try {
+      const link = `${process.env.FE_URL}/auth/verify-email?token=${token}`;
+      const message = `Verify your email address by clicking on the link below: <br> <a href="${link}">Verify Email</a>`;
+
+      await this.mailService.sendMail({
+        to: mail,
+        subject: `Verify your email address`,
+        html: message,
+      });
+    } catch (error) {
+      console.error(`Failed to send verification email to ${mail}:`, error);
+      throw new ConflictException(
+        'Failed to send verification email. Please try again.',
+      );
+    }
+  }
   async register(email: string, password: string) {
     // Hash password
     const existingUser = await this.accountModel.findOne({ email });
@@ -36,18 +54,9 @@ export class AuthService {
       password: hashedPassword,
       active: false,
     });
-
-    const token = crypto.randomUUID();
-    const createToken = this.tokenModel.create({
-      userId: user._id,
-      token: token,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    });
-
-    await createToken;
     await user.save();
-
-    // In a real app, you would send an email with the token here
+    const registrationToken = this.createAccessToken(user._id, user.email);
+    this.sendEMail(registrationToken, email);
 
     return {
       message:
@@ -55,64 +64,113 @@ export class AuthService {
     };
   }
 
-  async login(email: string, password: string) {
+  async login(res: Response, email: string, password: string) {
     const user = await this.accountModel.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new HttpException('Invalid credentials', HttpStatus.I_AM_A_TEAPOT);
     }
-
+    if (!user.active) {
+      throw new HttpException(
+        'Please verify your email',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const accessToken = this.createAccessToken(user._id, user.email);
     const refreshToken = this.createRefreshToken(user._id);
-    const expiresIn = parseInt(process.env.JWT_EXPIRATION || '3600', 10);
-    const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
-    await this.tokenModel.updateOne(
-      {
-        userId: user._id,
-      },
-      {
-        token: refreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-    );
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     user.active = true;
     await user.save();
 
     return {
       userId: user._id,
       accessToken,
-      expiresAt: expiresAt.toISOString(),
-      expiresIn,
     };
   }
-  async logout(userId: string) {
-    console.log(userId);
-    const user = await this.accountModel.findById({
-      _id: new Types.ObjectId(userId),
+  async logout(req: Request, res: Response) {
+    // Clear the refresh token cookie
+    res.cookie('refreshToken', '', {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+      maxAge: 0, // Expires immediately
     });
-    if (!user) throw new UnauthorizedException('Invalid user');
 
-    await this.tokenModel.deleteMany({ userId: user._id });
-    user.active = false;
-    await user.save();
+    // If user ID is in request body or JWT, update user status
+    try {
+      const token = this.extractTokenFromHeader(req);
+      if (token) {
+        const payload = this.jwtService.decode(token);
+        if (payload && payload.sub) {
+          const user = await this.accountModel.findById(payload.sub);
+          if (user) {
+            user.active = false;
+            await user.save();
+          }
+        }
+      }
+    } catch (e) {
+      // Silently fail - we still want to clear the cookie even if getting the user fails
+    }
+
     return { message: 'Logged out successfully' };
   }
-  async refresh(userId: string) {
-    const refreshToken = await this.tokenModel.findOne({ userId });
-    if (!refreshToken || refreshToken.expiresAt < new Date()) {
-      await this.tokenModel.deleteMany({ userId });
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-    const payload = this.jwtService.verify(refreshToken.token, {
-      secret: process.env.JWT_SECRET,
-    });
 
-    const user = await this.accountModel.findById(payload.sub);
-    if (!user || !this.tokenModel.findOne({ token: refreshToken })) {
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const authHeader = request.headers.authorization;
+    if (!authHeader) return undefined;
+
+    const [type, token] = authHeader.split(' ');
+    return type === 'Bearer' ? token : undefined;
+  }
+  async refresh(req: Request, res: Response) {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+
+    try {
+      // Verify the refresh token
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_SECRET,
+      });
+
+      // Check that the user exists
+      const user = await this.accountModel.findById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Create a new access token
+      const accessToken = this.createAccessToken(user._id, user.email);
+
+      // Create a new refresh token and update the cookie
+      const newRefreshToken = this.createRefreshToken(user._id);
+      res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      return { accessToken };
+    } catch (error) {
+      // If token verification fails, clear the cookie and throw an error
+      res.cookie('refreshToken', '', {
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+        maxAge: 0,
+      });
+
       throw new UnauthorizedException('Invalid refresh token');
     }
-    const accessToken = this.createAccessToken(user._id, user.email);
-    return { accessToken };
   }
 
   private createAccessToken(userId: string, email: string) {
@@ -125,30 +183,61 @@ export class AuthService {
       { expiresIn: '7d' }, // Refresh token lasts for 7 days
     );
   }
-
   async verifyEmail(token: string): Promise<any> {
-    const tokenRecord = await this.tokenModel.findOne({ token });
-
-    if (!tokenRecord) {
+    if (!token) {
       throw new NotFoundException('Invalid verification token');
     }
 
-    if (tokenRecord.expiresAt < new Date()) {
-      throw new UnauthorizedException('Verification token has expired');
-    }
-    if (tokenRecord.confirmedAt) {
-      throw new UnauthorizedException('Email already verified');
-    }
-    tokenRecord.confirmedAt = new Date();
-    await tokenRecord.save();
-    const user = await this.accountModel.findById(tokenRecord.userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    try {
+      // Try to verify the token - this will throw if the token is invalid or expired
+      const payload = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET,
+      });
 
-    user.active = true;
-    await user.save();
+      const user = await this.accountModel.findById(payload.sub);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
-    return { message: 'Email verified successfully' };
+      // Activate the user
+      user.active = true;
+      await user.save();
+
+      return { message: 'Email verified successfully' };
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new HttpException(
+          'Verification link has expired. Please request a new one.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw new UnauthorizedException('Invalid verification token');
+    }
+  }
+
+  // Method to validate token and throw correct status codes (useful for middleware)
+  async validateToken(token: string): Promise<any> {
+    try {
+      const payload = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET,
+      });
+
+      const user = await this.accountModel.findById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      return { userId: payload.sub, email: payload.email };
+    } catch (error) {
+      // Provide different status codes based on error type
+      if (error.name === 'TokenExpiredError') {
+        throw new HttpException('Token has expired', HttpStatus.UNAUTHORIZED);
+      } else if (error.name === 'JsonWebTokenError') {
+        throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+      }
+
+      throw new UnauthorizedException('Authentication failed');
+    }
   }
 }

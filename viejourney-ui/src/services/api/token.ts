@@ -2,6 +2,7 @@ interface TokenData {
   accessToken: string;
   expiresAt: string;
   expiresIn: number;
+  refreshToken?: string; // Optional refresh token field
 }
 
 /**
@@ -26,14 +27,31 @@ export const getToken = (): TokenData | null => {
  */
 export const isTokenValid = (): boolean => {
   const token = getToken();
-  if (!token) return false;
-  const { expiresAt } = token;
-  const expirationTime = new Date(expiresAt).getTime();
+  if (!token?.accessToken) return false;
+
+  if (!token.expiresAt) return false;
+
+  const expirationTime = new Date(token.expiresAt).getTime();
   const currentTime = new Date().getTime();
 
-  // Consider token invalid if it expires in less than a minute
-  const isValid = expirationTime > currentTime + 60000;
-  return isValid;
+  // Consider token valid if it expires in more than 30 seconds
+  return expirationTime > currentTime + 30000;
+};
+
+/**
+ * Check if token should be refreshed soon (less than 2 minutes remaining)
+ */
+export const shouldRefreshToken = (): boolean => {
+  const token = getToken();
+  if (!token?.accessToken) return false;
+
+  if (!token.expiresAt) return false;
+
+  const expirationTime = new Date(token.expiresAt).getTime();
+  const currentTime = new Date().getTime();
+
+  // Refresh if less than 2 minutes remaining
+  return expirationTime > currentTime && expirationTime - currentTime < 120000;
 };
 
 /**
@@ -57,6 +75,14 @@ export const getTokenRemainingTime = (): number => {
 export const getAccessToken = (): string | null => {
   const token = getToken();
   return token?.accessToken || null;
+};
+
+/**
+ * Check if refresh token is available
+ */
+export const hasRefreshToken = (): boolean => {
+  const token = getToken();
+  return !!token?.refreshToken;
 };
 
 /**

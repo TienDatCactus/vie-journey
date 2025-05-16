@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { doGetUser } from "../../api";
+import { useLocation } from "react-router-dom";
 
 const AuthContext = createContext({
   user: null as User | null,
@@ -26,7 +27,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [credential, setCredential] = useState<{ userId: string }>(
     {} as { userId: string }
   );
-
   useEffect(() => {
     if (!!credential?.userId?.length && credential?.userId !== "") {
       const fetchUser = async () => {
