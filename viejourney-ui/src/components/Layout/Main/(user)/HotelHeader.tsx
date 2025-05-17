@@ -38,7 +38,7 @@ const HotelHeader: React.FC = () => {
             <div className="gap-2">
               <LuggageIcon className="text-[1.875rem] " />
               <h1>
-                VieJournal's <span className="">Hotel</span>
+                VieJourney's <span className="">Hotel</span>
               </h1>
             </div>
             <ul className="gap-8 *:text-sm *:hover:underline *:cursor-pointer ">

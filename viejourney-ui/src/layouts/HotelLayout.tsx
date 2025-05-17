@@ -20,7 +20,7 @@ const HotelLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div>
       <HotelAuthHeader />
-      <main className="flex flex-col items-center mx-auto justify-center bg-[#f5f5f5]">
+      <main className="flex flex-col items-center mx-auto justify-center bg-neutral-100">
         {children}
       </main>
       <Fab

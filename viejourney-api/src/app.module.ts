@@ -10,8 +10,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
-    AdminModule,
-    AccountModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.development.local', '.env.development', '.env'],
@@ -20,6 +18,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
       load: [],
     }),
     MongooseModule.forRoot(process.env.MONGODB_URI || ''),
+    AdminModule,
+    AccountModule,
     MailerModule.forRoot({
       transport: {
         service: process.env.MAIL_SERVICE,

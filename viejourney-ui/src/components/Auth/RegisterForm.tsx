@@ -59,7 +59,7 @@ const RegisterForm: React.FC = () => {
       noValidate
       onSubmit={handleSubmit(onSubmit)}
       autoComplete="off"
-      className="w-full mt-8 p-8 bg-white border-solid border-[#ccc] border rounded-md shadow-md flex flex-col gap-4"
+      className="w-full mt-8 p-8 bg-white border-solid border-accent-border border rounded-md shadow-md flex flex-col gap-4 z-10"
     >
       <FormGroup>
         <InputLabel className="font-bold text-sm">Email</InputLabel>
@@ -127,14 +127,14 @@ const RegisterForm: React.FC = () => {
           Register
         </Button>
       </div>
-      <Divider className="text-[12px] text-[#5b5b5b]">Or continue with</Divider>
+      <Divider className="text-sm theme-light">Or continue with</Divider>
       <Stack direction={"row"} spacing={2} justifyContent={"center"}>
         {!!loginMets.length &&
           loginMets?.map((loginMet, index) => (
             <Button
               key={index}
               disabled
-              className="w-full py-3 text-center border-solid border-[#ccc] border rounded-md text-[#30373f] *:text-[16px]"
+              className="w-full py-3 text-center border-solid border-[#ccc] border rounded-md theme-light *:text-base"
             >
               {loginMet.icon}
             </Button>

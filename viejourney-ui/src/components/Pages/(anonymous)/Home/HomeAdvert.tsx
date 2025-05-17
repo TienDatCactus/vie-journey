@@ -34,23 +34,23 @@ const HomeAdvert: React.FC = () => {
   return (
     <div className="max-w-[1000px] py-10">
       <div className="text-center">
-        <h1 className="my-0 text-[60px]">Top values for you</h1>
-        <p className="text-[#4b4b4b]">
+        <h1 className="my-4 font-bold text-6xl">Top values for you</h1>
+        <p className="text-neutral-800 text-lg">
           Discover top-rated tours, activities, and attraction tickets
         </p>
       </div>
       <ul className="flex list-none *:text-center py-6">
         {!!topValues.length &&
           topValues?.map((value, index) => (
-            <li>
+            <li key={index}>
               <div className="flex justify-center">
-                <div className="bg-[#f4f4f4] px-2 py-4 w-1/4 shadow-md rounded-full flex items-center justify-center">
+                <div className="bg-neutral-100 px-2 py-4 w-1/4 shadow-md rounded-full flex items-center justify-center">
                   {value?.icons}
                 </div>
               </div>
               <div className="my-4">
-                <h1 className="text-[16px] my-0">{value?.title}</h1>
-                <p className="text-[#7c7c7c] text-[10px] my-0">{value?.sub}</p>
+                <h1 className="text-base my-0">{value?.title}</h1>
+                <p className="text-neutral-600 text-sm my-0">{value?.sub}</p>
               </div>
             </li>
           ))}

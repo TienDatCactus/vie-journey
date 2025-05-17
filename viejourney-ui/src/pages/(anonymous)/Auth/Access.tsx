@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { LoginForm, RegisterForm, VerifyEmail } from "../../../components/Auth";
+import { LoginForm, RegisterForm } from "../../../components/Auth";
 
 const Access: React.FC = () => {
   const location = useLocation();
@@ -18,13 +18,6 @@ const Access: React.FC = () => {
         return {
           form: <RegisterForm />,
           title: "Register for an account",
-          link: "/auth/login",
-          subTitle: "log into your account",
-        };
-      case "/auth/verify-email":
-        return {
-          form: <VerifyEmail />,
-          title: "Verify your email",
           link: "/auth/login",
           subTitle: "log into your account",
         };

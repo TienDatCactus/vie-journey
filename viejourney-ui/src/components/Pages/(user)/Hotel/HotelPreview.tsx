@@ -1,10 +1,10 @@
 import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
 import { Button, ImageList, ImageListItem, Stack } from "@mui/material";
 import React from "react";
-import ht1 from "../../../../assets/images/pexels-julieaagaard-2467285.jpg";
-import ht4 from "../../../../assets/images/pexels-jvdm-1457842.jpg";
-import ht3 from "../../../../assets/images/pexels-pixabay-271618.jpg";
-import ht2 from "../../../../assets/images/pexels-pixabay-271624.jpg";
+import ht1 from "/images/pexels-julieaagaard-2467285.jpg";
+import ht4 from "/images/pexels-jvdm-1457842.jpg";
+import ht3 from "/images/pexels-pixabay-271618.jpg";
+import ht2 from "/images/pexels-pixabay-271624.jpg";
 const HotelPreview: React.FC = () => {
   return (
     <Stack direction={"column"} className="mt-32 px-20 min-h-[100px]">

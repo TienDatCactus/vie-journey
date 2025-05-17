@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { Request, Response } from 'express';
 import { MailerService } from '@nestjs-modules/mailer';
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly accountService: AccountService,
     private readonly jwtService: JwtService,
@@ -25,9 +27,21 @@ export class AuthService {
 
   async sendEMail(token: string, mail: string) {
     try {
-      const link = `${process.env.FE_URL}/auth/verify-email?token=${token}`;
-      const message = `Verify your email address by clicking on the link below: <br> <a href="${link}">Verify Email</a>`;
-
+      const link = `${process.env.FE_URL}/auth/verify-email/${token}`;
+      const message = `
+            <div style="font-family: 'Roboto', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; border: 1px solid #ddd; border-radius: 8px;">
+                <div style="text-align: center;">
+                    <h2 style="color: #3f51b5;">Verify Your Email Address</h2>
+                    <p style="font-size: 16px; color: #333;">
+                        Click the button below to verify your email address and complete your registration.
+                    </p>
+                    <a href="${link}" style="display: inline-block; margin-top: 15px; padding: 12px 25px; background-color: #3f51b5; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px;">Verify Email</a>
+                </div>
+                <p style="font-size: 14px; color: #666; text-align: center; margin-top: 20px;">
+                    If you did not request this, please ignore this email.
+                </p>
+            </div>
+        `;
       await this.mailService.sendMail({
         to: mail,
         subject: `Verify your email address`,
@@ -40,6 +54,7 @@ export class AuthService {
       );
     }
   }
+
   async register(email: string, password: string) {
     // Hash password
     const existingUser = await this.accountModel.findOne({ email });
@@ -54,8 +69,20 @@ export class AuthService {
       password: hashedPassword,
       active: false,
     });
-    await user.save();
-    const registrationToken = this.createAccessToken(user._id, user.email);
+    await user.save(); // Create a specific verification token with purpose
+    const secret = process.env.JWT_SECRET || 'secret';
+    const registrationToken = this.jwtService.sign(
+      {
+        sub: user._id,
+        email: user.email,
+        purpose: 'email-verification',
+      },
+      {
+        expiresIn: '24h',
+        secret: secret,
+      },
+    );
+
     this.sendEMail(registrationToken, email);
 
     return {
@@ -70,8 +97,25 @@ export class AuthService {
       throw new HttpException('Invalid credentials', HttpStatus.I_AM_A_TEAPOT);
     }
     if (!user.active) {
+      // Create a verification token and send it
+      const secret = process.env.JWT_SECRET || 'secret';
+      this.logger.log(`Using secret for signing: ${secret.substring(0, 5)}...`);
+
+      const verificationToken = this.jwtService.sign(
+        {
+          sub: user._id,
+          email: user.email,
+          purpose: 'email-verification',
+        },
+        {
+          expiresIn: '24h',
+          secret: secret,
+        },
+      );
+
+      this.sendEMail(verificationToken, email);
       throw new HttpException(
-        'Please verify your email',
+        'Please verify your email, check your inbox',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -102,33 +146,9 @@ export class AuthService {
       maxAge: 0, // Expires immediately
     });
 
-    // If user ID is in request body or JWT, update user status
-    try {
-      const token = this.extractTokenFromHeader(req);
-      if (token) {
-        const payload = this.jwtService.decode(token);
-        if (payload && payload.sub) {
-          const user = await this.accountModel.findById(payload.sub);
-          if (user) {
-            user.active = false;
-            await user.save();
-          }
-        }
-      }
-    } catch (e) {
-      // Silently fail - we still want to clear the cookie even if getting the user fails
-    }
-
     return { message: 'Logged out successfully' };
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const authHeader = request.headers.authorization;
-    if (!authHeader) return undefined;
-
-    const [type, token] = authHeader.split(' ');
-    return type === 'Bearer' ? token : undefined;
-  }
   async refresh(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
@@ -137,8 +157,9 @@ export class AuthService {
 
     try {
       // Verify the refresh token
+      const secret = process.env.JWT_SECRET || 'secret';
       const payload = this.jwtService.verify(refreshToken, {
-        secret: process.env.JWT_SECRET,
+        secret: secret,
       });
 
       // Check that the user exists
@@ -172,27 +193,32 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
-
-  private createAccessToken(userId: string, email: string) {
-    return this.jwtService.sign({ sub: userId, email });
-  }
-
-  private createRefreshToken(userId: string) {
-    return this.jwtService.sign(
-      { sub: userId },
-      { expiresIn: '7d' }, // Refresh token lasts for 7 days
-    );
-  }
-  async verifyEmail(token: string): Promise<any> {
+  async verifyEmail(token: string) {
     if (!token) {
       throw new NotFoundException('Invalid verification token');
     }
-
     try {
-      // Try to verify the token - this will throw if the token is invalid or expired
+      // Log the token to help with debugging
+      this.logger.debug(`Verifying token: ${token.substring(0, 20)}...`);
+
+      // Ensure we're using the same secret for verification
+      const secret = process.env.JWT_SECRET || 'secret';
+      this.logger.log(
+        `Using secret for verification: ${secret.substring(0, 5)}...`,
+      );
+
+      // Verify the token
       const payload = this.jwtService.verify(token, {
-        secret: process.env.JWT_SECRET,
+        secret: secret,
       });
+
+      this.logger.log('Payload:', payload);
+
+      // Check if this is an email verification token
+      if (payload.purpose !== 'email-verification') {
+        this.logger.warn('Token purpose mismatch:', payload.purpose);
+        throw new UnauthorizedException('Invalid token type');
+      }
 
       const user = await this.accountModel.findById(payload.sub);
       if (!user) {
@@ -203,24 +229,52 @@ export class AuthService {
       user.active = true;
       await user.save();
 
-      return { message: 'Email verified successfully' };
+      return {
+        message: 'Email verified successfully',
+      };
     } catch (error) {
+      this.logger.error('Token verification error:', error);
+
       if (error.name === 'TokenExpiredError') {
         throw new HttpException(
           'Verification link has expired. Please request a new one.',
           HttpStatus.BAD_REQUEST,
         );
+      } else if (error.name === 'JsonWebTokenError') {
+        throw new HttpException(
+          'Invalid verification token format. Please request a new one.',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
-      throw new UnauthorizedException('Invalid verification token');
+      throw new HttpException(
+        'Verification failed. Please request a new link.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
+  }
+  private createAccessToken(userId: string, email: string) {
+    const secret = process.env.JWT_SECRET || 'secret';
+    return this.jwtService.sign({ sub: userId, email }, { secret: secret });
+  }
+
+  private createRefreshToken(userId: string) {
+    const secret = process.env.JWT_SECRET || 'secret';
+    return this.jwtService.sign(
+      { sub: userId },
+      {
+        expiresIn: '7d', // Refresh token lasts for 7 days
+        secret: secret,
+      },
+    );
   }
 
   // Method to validate token and throw correct status codes (useful for middleware)
   async validateToken(token: string): Promise<any> {
     try {
+      const secret = process.env.JWT_SECRET || 'secret';
       const payload = this.jwtService.verify(token, {
-        secret: process.env.JWT_SECRET,
+        secret: secret,
       });
 
       const user = await this.accountModel.findById(payload.sub);

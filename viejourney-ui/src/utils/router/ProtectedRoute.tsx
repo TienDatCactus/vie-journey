@@ -16,17 +16,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAuth = true,
 }) => {
-  const { user } = useAuth();
+  const { credential } = useAuth();
   const location = useLocation();
 
   // If requireAuth is true and user is not logged in, redirect to login
-  if (requireAuth && !user) {
+  // if (!requireAuth && !credential) {
+  //   return <Navigate to="/landing" state={{ from: location }} replace />;
+  // }
+  if (requireAuth && !credential) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
   // If requireAuth is false and user is logged in, redirect to home
   // This is for routes like login/register that shouldn't be accessible when logged in
-  if (!requireAuth && user) {
+  if (!requireAuth && credential && credential.userId) {
     return <Navigate to="/" replace />;
   }
 

@@ -8,6 +8,7 @@ export interface LoginRespDTO {
   accessToken: string;
   expiresIn: number;
   expiredAt: Date;
+  statusCode: number;
 }
 
 export interface RegisterReqDTO {
@@ -23,7 +24,10 @@ export interface RegisterRespDTO {
 export interface VerifyReqDTO {
   token: string;
 }
-
+export interface VerifyRespDTO {
+  message: string;
+  status: "success" | "error";
+}
 export interface LogoutReqDTO {
   userId: string;
 }

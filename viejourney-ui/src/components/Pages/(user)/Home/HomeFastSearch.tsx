@@ -161,14 +161,14 @@ const HomeFastSearch: React.FC = () => {
                 <p className="my-0 text-sm">Rooms</p>
                 <Stack direction={"row"} alignItems={"center"} gap={2}>
                   <IconButton
-                    className="bg-[#f5f5f5]"
+                    className="bg-neutral-100"
                     onClick={() => setRooms(rooms - 1)}
                   >
                     <RemoveIcon />
                   </IconButton>
                   <Typography>{rooms}</Typography>
                   <IconButton
-                    className="bg-[#f5f5f5]"
+                    className="bg-neutral-100"
                     onClick={() => setRooms(rooms + 1)}
                   >
                     <AddIcon />
@@ -185,14 +185,14 @@ const HomeFastSearch: React.FC = () => {
                 <p className="my-0 text-sm">Adults</p>
                 <Stack direction={"row"} alignItems={"center"} gap={2}>
                   <IconButton
-                    className="bg-[#f5f5f5]"
+                    className="bg-neutral-100"
                     onClick={() => setAdults(adults - 1)}
                   >
                     <RemoveIcon />
                   </IconButton>
                   <Typography>{adults}</Typography>
                   <IconButton
-                    className="bg-[#f5f5f5]"
+                    className="bg-neutral-100"
                     onClick={() => setAdults(adults + 1)}
                   >
                     <AddIcon />
@@ -209,14 +209,14 @@ const HomeFastSearch: React.FC = () => {
                 <p className="my-0 text-sm">Childrens</p>
                 <Stack direction={"row"} alignItems={"center"} gap={2}>
                   <IconButton
-                    className="bg-[#f5f5f5]"
+                    className="bg-neutral-100"
                     onClick={() => setChildrens(childrens - 1)}
                   >
                     <RemoveIcon />
                   </IconButton>
                   <Typography>{childrens}</Typography>
                   <IconButton
-                    className="bg-[#f5f5f5]"
+                    className="bg-neutral-100"
                     onClick={() => setChildrens(childrens + 1)}
                   >
                     <AddIcon />

@@ -3,7 +3,7 @@ import React from "react";
 import { VerticalAlignTop } from "@mui/icons-material";
 import { Divider, Fab } from "@mui/material";
 import { animate } from "motion/react";
-import Header from "../components/Layout/Main/(user)/Header";
+import { MainAuthHeader, MainUnAuthHeader } from "../components/Layout";
 import Footer from "../components/Layout/Main/Footer";
 import { useAuth } from "../services/contexts";
 
@@ -20,11 +20,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       },
     });
   };
-  console.log(user);
 
   return (
     <div>
-      <Header />
+      <MainAuthHeader />
       <main className="flex flex-col items-center justify-center">
         {children}
       </main>

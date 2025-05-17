@@ -1,5 +1,5 @@
-import React from "react";
 import { Button, ButtonGroup, Grid2, Stack } from "@mui/material";
+import React from "react";
 import { TourCard } from "./_elements";
 const HomeTours: React.FC = () => {
   const tours: Array<{
@@ -36,12 +36,12 @@ const HomeTours: React.FC = () => {
     },
   ];
   return (
-    <div className="max-w-[1000px] pb-10">
-      <div className="w-[60%] mx-auto mb-6">
-        <h1 className="text-center my-0 text-[40px]">
+    <div className="max-w-[62.5rem] py-10">
+      <div className="w-[80%] mx-auto mb-10">
+        <h1 className="text-center my-0 text-6xl font-bold">
           Find your next adventure
         </h1>
-        <p className="text-center my-0 text-[#4b4b4b]">
+        <p className="text-center text-xl my-4 text-neutral-900">
           Browse through itineraries and guides crafted by fellow travelers. Get
           inspired by real experiences and detailed plans for your next
           adventure
@@ -64,7 +64,7 @@ const HomeTours: React.FC = () => {
       </Grid2>
       <Stack className="mt-8" alignItems={"center"}>
         <ButtonGroup>
-          <Button>Start planning</Button>
+          <Button href="/trip/create">Start planning</Button>
           <Button>Get the app</Button>
         </ButtonGroup>
       </Stack>

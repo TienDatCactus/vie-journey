@@ -1,5 +1,5 @@
 import { enqueueSnackbar } from "notistack";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import http from "../axios";
 import { extractApiData } from "./apiHelpers";
 import { getToken, clearToken } from "./token";
@@ -14,6 +14,7 @@ import {
   RegisterReqDTO,
   RegisterRespDTO,
   VerifyReqDTO,
+  VerifyRespDTO,
 } from "./dto";
 
 export const doLogin = async (data: LoginReqDTO) => {
@@ -52,15 +53,24 @@ export const doRegister = async (data: RegisterReqDTO) => {
   }
 };
 
-export const doVerify = async (data: VerifyReqDTO) => {
+export const doVerify = async (
+  data: VerifyReqDTO,
+  setError: React.Dispatch<React.SetStateAction<boolean>>,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+) => {
   try {
+    if (!data.token) {
+      enqueueSnackbar("Verification token is missing", { variant: "error" });
+      return null;
+    }
     const resp = await http.get(`${AUTH?.VERIFY}?token=${data.token}`);
     if (resp) {
-      window.location.href = "/auth/login";
+      setLoading(false);
     }
-    return extractApiData(resp);
+    return resp;
   } catch (error) {
-    return error;
+    setError(true);
+    setLoading(false);
   }
 };
 export const doLogout = async (data: LogoutReqDTO) => {

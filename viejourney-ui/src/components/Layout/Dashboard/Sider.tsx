@@ -7,14 +7,14 @@ const Sider: React.FC = () => {
     <Stack
       direction={"column"}
       justifyContent={"space-around"}
-      className="min-h-[400px] border border-solid border-[#ccc] p-2 py-6 shadow-md rounded-md"
+      className="min-h-[400px] border p-2 py-6 shadow-md rounded-md"
     >
       <Stack direction={"column"} className="text-center">
         <div className="w-full p-4">
           <Avatar className="w-full h-[200px]">H</Avatar>
         </div>
         <h1 className="my-0 text-[18px]">Tien Dat</h1>
-        <p className="text-[10px] my-0 text-[#7b7b7b]">@tien65</p>
+        <p className="text-xs my-0 text-neutral-500">@tien65</p>
       </Stack>
       <Stack
         direction={"row"}
@@ -22,11 +22,11 @@ const Sider: React.FC = () => {
         justifyContent={"center"}
         className="my-4"
       >
-        <div className="*:my-0 text-center *:text-[#828282] *:text-sm">
+        <div className="*:my-0 text-center *:text-neutral-700 *:text-sm">
           <p>0</p>
           <p>Followers</p>
         </div>
-        <div className=" text-center *:my-0 *:text-[#828282] *:text-sm">
+        <div className=" text-center *:my-0 *:text-neutral-700 *:text-sm">
           <p>0</p>
           <p>Following</p>
         </div>

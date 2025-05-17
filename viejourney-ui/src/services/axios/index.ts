@@ -260,7 +260,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
 
 // Usage example
 const handleError = createErrorHandler({
-  redirectOnUnauthorized: true,
+  redirectOnUnauthorized: false,
   loginRedirectPath: "/auth/login",
   defaultSystemErrorMessage: "An error occurred. Please try again.",
   authErrorExceptions: ["Invalid credentials", "Invalid email or password"],

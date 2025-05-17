@@ -1,5 +1,5 @@
 import React from "react";
-import bg from "../../../../assets/images/banner.jpg";
+import bg from "/images/banner.jpg";
 import { Button, ButtonGroup, Stack } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import XIcon from "@mui/icons-material/X";
@@ -10,7 +10,7 @@ const HomeHero: React.FC = () => {
       <img
         src={bg}
         alt="banner"
-        className="w-full h-[400px] object-cover object-bottom"
+        className="w-full h-[400px] object-cover object-center"
       />
       <Stack
         direction={"row"}

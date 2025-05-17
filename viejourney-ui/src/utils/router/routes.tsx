@@ -10,11 +10,12 @@ import ProtectedRoute from "./ProtectedRoute";
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
 const VerifyScreen = lazy(
-  () => import("../../pages/(anonymous)/Auth/VerifyScreen")
+  () => import("../../pages/(anonymous)/Auth/VerifyEmail")
 );
 
 // Protected routes (auth required)
-const Home = lazy(() => import("../../pages/(user)/Home/Home"));
+const AuthHome = lazy(() => import("../../pages/(user)/Home/Home"));
+const UnAuthHome = lazy(() => import("../../pages/(anonymous)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
 // Wrap lazy-loaded components wimport VerifyScreen from './../../pages/(anonymous)/Auth/VerifyScreen';
 const SuspenseWrapper = ({
@@ -32,14 +33,18 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <ProtectedRoute requireAuth={true}>
-        <SuspenseWrapper component={Home} />
+        <SuspenseWrapper component={AuthHome} />
       </ProtectedRoute>
     ),
     errorElement: <ErrorBoundary />,
   },
   {
+    path: "/landing",
+    element: <SuspenseWrapper component={UnAuthHome} />,
+    errorElement: <ErrorBoundary />,
+  },
+  {
     path: "/auth",
-    element: <ProtectedRoute requireAuth={false} />,
     errorElement: <ErrorBoundary />,
     children: [
       {
@@ -55,7 +60,7 @@ const router = createBrowserRouter([
         element: <SuspenseWrapper component={Access} />,
       },
       {
-        path: "verify-email",
+        path: "verify-email/:token",
         element: <SuspenseWrapper component={VerifyScreen} />,
       },
     ],

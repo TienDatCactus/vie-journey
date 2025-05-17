@@ -1,18 +1,19 @@
 import React from "react";
 
-const Fallback = () => {
+const Fallback: React.FC = () => {
   return (
-    <div className="flex h-svh justify-center bg-[#f3f4f5] items-center">
-      <div className="rounded-none card">
+    <div className="flex h-svh justify-center bg-neutral-200 items-center">
+      <div className="card">
         <div className="loader">
-          <p className="m-0">loading</p>
+          Loading
           <div className="words">
-            <span className="word">buttons</span>
-            <span className="word">forms</span>
-            <span className="word">switches</span>
-            <span className="word">cards</span>
-            <span className="word">buttons</span>
+            <div className="word">website</div>
+            <div className="word">data</div>
+            <div className="word">resources</div>
+            <div className="word">content</div>
+            <div className="word">website</div>
           </div>
+          <span className="font-bold">.</span>
         </div>
       </div>
     </div>

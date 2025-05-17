@@ -1,16 +1,16 @@
 import {
-  Controller,
-  Post,
   Body,
-  UseGuards,
+  Controller,
   Get,
+  HttpException,
+  HttpStatus,
+  Post,
   Query,
   Req,
   Res,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -40,10 +40,11 @@ export class AuthController {
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return this.authService.logout(req, res);
   }
-
   @Get('verify-email')
   async verify(@Query('token') token: string) {
-    console.log(token);
+    if (!token) {
+      throw new HttpException('Token is required', HttpStatus.BAD_REQUEST);
+    }
     return this.authService.verifyEmail(token);
   }
 }

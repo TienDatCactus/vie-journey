@@ -1,5 +1,5 @@
 import React from "react";
-import bg from "../../../../assets/images/ocean-beach-mountains-ud.jpg";
+import bg from "/images/ocean-beach-mountains-ud.jpg";
 
 const HomeBanner: React.FC = () => {
   return (

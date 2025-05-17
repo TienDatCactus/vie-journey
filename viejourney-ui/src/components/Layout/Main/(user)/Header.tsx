@@ -51,11 +51,11 @@ const Header = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const { user } = useAuth();
+  const { credential } = useAuth();
   const handleLogout = async () => {
     try {
       setLoading(true);
-      await doLogout({ userId: user?._id || "" });
+      await doLogout({ userId: credential?.userId || "" });
     } catch (error) {
       console.error(error);
     } finally {
@@ -91,7 +91,7 @@ const Header = () => {
             gap={1}
           >
             <TravelExploreIcon />
-            <h1 className="text-[20px]">VieJournal</h1>
+            <h1 className="text-[20px]">VieJourney</h1>
             <Stack direction={"row"} gap={2} className="h-full mx-4 ">
               {!!headerNav.length &&
                 headerNav?.map((nav, index) => (

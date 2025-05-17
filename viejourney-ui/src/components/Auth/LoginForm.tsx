@@ -13,13 +13,13 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { doGetUser, doLogin } from "../../services/api";
 import { useNavigate } from "react-router-dom";
-import { enqueueSnackbar } from "notistack";
-import { useAuth } from "../../services/contexts";
+import { doLogin } from "../../services/api";
 import { LoginRespDTO } from "../../services/api/dto";
+import { useAuth } from "../../services/contexts";
 const loginMets: Array<{
   icon: React.ReactNode;
 }> = [
@@ -66,12 +66,12 @@ const LoginForm: React.FC = () => {
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      autoComplete="off"
-      className="w-full mt-8 p-8 bg-white border-solid border-[#ccc] border rounded-md shadow-md flex flex-col gap-4"
+      className="w-full mt-8 p-8 bg-white border-solid border-accent-border border rounded-md shadow-md flex flex-col gap-4"
     >
       <FormGroup>
         <InputLabel className="font-bold text-sm">Email</InputLabel>
         <OutlinedInput
+          disabled={loading}
           className="w-full *:text-sm"
           error={!!errors.email}
           size="small"
@@ -95,6 +95,7 @@ const LoginForm: React.FC = () => {
       <FormGroup>
         <InputLabel className="font-bold text-sm">Password</InputLabel>
         <OutlinedInput
+          disabled={loading}
           type="password"
           size="small"
           error={!!errors.password}
@@ -115,10 +116,7 @@ const LoginForm: React.FC = () => {
             label="Remember me"
             className="*:text-sm"
           />
-          <a
-            href=""
-            className="text-sm no-underline text-[#3861b0] font-medium"
-          >
+          <a href="" className="text-sm no-underline theme-light font-medium">
             Forgot your password ?
           </a>
         </Grid2>
@@ -134,14 +132,14 @@ const LoginForm: React.FC = () => {
           Login
         </Button>
       </div>
-      <Divider className="text-[12px] text-[#5b5b5b]">Or continue with</Divider>
+      <Divider className="text-sm theme-light">Or continue with</Divider>
       <Stack direction={"row"} spacing={2} justifyContent={"center"}>
         {!!loginMets.length &&
           loginMets?.map((loginMet, index) => (
             <Button
               disabled
               key={index}
-              className="w-full py-3 text-center border-solid border-[#ccc] border rounded-md text-[#30373f] *:text-[16px]"
+              className="w-full py-3 text-center border-solid  border rounded-md theme-light *:text-base"
             >
               {loginMet.icon}
             </Button>

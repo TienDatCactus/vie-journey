@@ -28,7 +28,12 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     {} as { userId: string }
   );
   useEffect(() => {
-    if (!!credential?.userId?.length && credential?.userId !== "") {
+    if (
+      credential?.userId &&
+      credential.userId.length > 0 &&
+      credential.userId !== "" &&
+      window.location.pathname === "/auth"
+    ) {
       const fetchUser = async () => {
         try {
           const response = await doGetUser({ userId: credential.userId });
@@ -41,7 +46,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       fetchUser();
     }
-  }, [credential]);
+  }, [credential?.userId]);
   const context = {
     user,
     setUser,
@@ -53,8 +58,12 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+// Define the hook separately to make it compatible with Fast Refresh
+// This function needs to be defined outside of the component
+// and consistently exported for Fast Refresh to work properly
+function useAuth() {
   return useContext(AuthContext);
-};
+}
 
+export { useAuth };
 export default AuthProvider;

@@ -4,7 +4,7 @@ import "swiper/css";
 import "swiper/css/scrollbar";
 import { Scrollbar } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import ht from "../../../../assets/images/pexels-quark-studio-1159039-2507010.jpg";
+import ht from "/images/pexels-quark-studio-1159039-2507010.jpg";
 const HotelCiting: React.FC = () => {
   const fakeData = [
     {

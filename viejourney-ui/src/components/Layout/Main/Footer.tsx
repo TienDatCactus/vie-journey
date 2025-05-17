@@ -19,11 +19,11 @@ const Footer = () => {
       <Stack
         direction={"row"}
         gap={2}
-        className="min-h-[80px]"
+        className="min-h-[5rem]"
         alignItems={"center"}
       >
-        <div className="bg-[#f7f9fa] p-8 shadow-md rounded-2xl">
-          <PublicIcon className="text-[36px]" />
+        <div className="theme-light p-8 shadow-md rounded-2xl">
+          <PublicIcon className="text-4xl" />
         </div>
         <Stack direction={"column"} className="max-h-[80px]" gap={1}>
           <ul className="flex flex-wrap gap-2 px-0 list-none">
@@ -34,14 +34,14 @@ const Footer = () => {
                 </li>
               ))}
           </ul>
-          <p className="text-[12px] text-[#5b5b5b] ">
-            © 2024 VieJournal, Inc. All rights reserved. Made with ❤️ in Vietnam
+          <p className="theme-light text-xs">
+            © 2024 VieJourney, Inc. All rights reserved. Made with ❤️ in Vietnam
           </p>
         </Stack>
       </Stack>
       <Divider className="py-4" />
       <Stack direction={"row"} justifyContent={"space-between"}>
-        <ul className="flex gap-2 px-0 list-none text-[12px] text-[#959595]">
+        <ul className="flex gap-2 px-0 list-none text-xs text-neutral-500">
           <li>Help center</li>
           <li>Trust & Safety</li>
           <li>Privacy settings</li>
