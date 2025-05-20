@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { doVerify } from "../../../services/api";
-import { useAuth } from "../../../services/contexts";
-import { isAxiosError } from "axios";
 const VerifyScreen: React.FC = () => {
   const { token } = useParams();
   const [loading, setLoading] = useState(false);
@@ -10,27 +8,27 @@ const VerifyScreen: React.FC = () => {
   const navigate = useNavigate();
   console.log(token);
   useEffect(() => {
-    return () => {
-      (async () => {
-        try {
-          setLoading(true);
-          const resp = await doVerify(
-            { token: token || "" },
-            setError,
-            setLoading
-          );
-          if (resp?.status == 200) {
-            setLoading(false);
-            setTimeout(() => {
-              navigate("/auth/login");
-            }, 2000);
-          }
-        } catch (error) {
-          console.error(error);
+    // Fix: Don't use return function for the main effect logic
+    // This was causing the verification to run on unmount instead of on mount
+    (async () => {
+      try {
+        setLoading(true);
+        const resp = await doVerify(
+          { token: token || "" },
+          setError,
+          setLoading
+        );
+        if (resp?.status == 200) {
+          setLoading(false);
+          setTimeout(() => {
+            navigate("/auth/login");
+          }, 2000);
         }
-      })();
-    };
-  }, []);
+      } catch (error) {
+        console.error(error);
+      }
+    })();
+  }, [token, navigate]);
   return (
     <div className="h-screen min-w-screen flex flex-col items-center justify-center bg-[#f8fafc]">
       {loading ? (

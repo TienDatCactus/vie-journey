@@ -42,9 +42,16 @@ const Access: React.FC = () => {
             Or{" "}
             <a
               href={checkPath()?.link}
-              className="text-[#3f61d3] font-medium no-underline"
+              className="text-[#3f61d3] font-medium hover:underline no-underline"
             >
               {checkPath()?.subTitle}
+            </a>{" "}
+            Or{" "}
+            <a
+              href="/"
+              className="text-[#3f61d3] font-medium hover:underline no-underline"
+            >
+              go home
             </a>
           </span>
         </div>

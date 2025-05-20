@@ -50,7 +50,7 @@ const HomeTours: React.FC = () => {
       <Grid2 container spacing={2}>
         {!!tours.length &&
           tours?.map((tour, index) => (
-            <Grid2 size={4}>
+            <Grid2 size={4} key={index}>
               <TourCard
                 img={tour.img}
                 title={tour.title}

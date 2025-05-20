@@ -1,9 +1,9 @@
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Guides from "../../pages/(user)/Guides/Guides";
 import Hotels from "../../pages/(user)/Hotels/Hotels";
 import { PlanningFormation } from "../../pages/(user)/Trip";
+import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -17,7 +17,8 @@ const VerifyScreen = lazy(
 const AuthHome = lazy(() => import("../../pages/(user)/Home/Home"));
 const UnAuthHome = lazy(() => import("../../pages/(anonymous)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
-// Wrap lazy-loaded components wimport VerifyScreen from './../../pages/(anonymous)/Auth/VerifyScreen';
+
+// Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
   component: Component,
 }: {
@@ -27,22 +28,28 @@ const SuspenseWrapper = ({
     <Component />
   </Suspense>
 );
-
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <ProtectedRoute requireAuth={true}>
-        <SuspenseWrapper component={AuthHome} />
-      </ProtectedRoute>
-    ),
+    children: [
+      {
+        path: "",
+        element: <SuspenseWrapper component={UnAuthHome} />,
+        errorElement: <ErrorBoundary />,
+      },
+      {
+        path: "/home",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <SuspenseWrapper component={AuthHome} />
+          </ProtectedRoute>
+        ),
+        errorElement: <ErrorBoundary />,
+      },
+    ],
     errorElement: <ErrorBoundary />,
   },
-  {
-    path: "/landing",
-    element: <SuspenseWrapper component={UnAuthHome} />,
-    errorElement: <ErrorBoundary />,
-  },
+
   {
     path: "/auth",
     errorElement: <ErrorBoundary />,
@@ -53,19 +60,30 @@ const router = createBrowserRouter([
       },
       {
         path: "login",
-        element: <SuspenseWrapper component={Access} />,
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Access} />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "register",
-        element: <SuspenseWrapper component={Access} />,
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Access} />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "verify-email/:token",
-        element: <SuspenseWrapper component={VerifyScreen} />,
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={VerifyScreen} />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
-  // Protected routes
   {
     path: "/profile",
     element: (
@@ -79,7 +97,7 @@ const router = createBrowserRouter([
     path: "/guides",
     element: (
       <ProtectedRoute requireAuth={true}>
-        <Guides />
+        <SuspenseWrapper component={Guides} />
       </ProtectedRoute>
     ),
     errorElement: <ErrorBoundary />,
@@ -88,7 +106,7 @@ const router = createBrowserRouter([
     path: "/hotels",
     element: (
       <ProtectedRoute requireAuth={false}>
-        <Hotels />
+        <SuspenseWrapper component={Hotels} />
       </ProtectedRoute>
     ),
     errorElement: <ErrorBoundary />,
@@ -100,7 +118,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "create",
-        element: <PlanningFormation />,
+        element: <SuspenseWrapper component={PlanningFormation} />,
       },
     ],
   },

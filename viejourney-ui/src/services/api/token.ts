@@ -1,8 +1,6 @@
 interface TokenData {
   accessToken: string;
-  expiresAt: string;
-  expiresIn: number;
-  refreshToken?: string; // Optional refresh token field
+  userId: string;
 }
 
 /**
@@ -23,50 +21,12 @@ export const getToken = (): TokenData | null => {
 };
 
 /**
- * Check if the token is valid and not expired
+ * Check if there's a token in localStorage
+ * Since we no longer receive expiration time, we can only check if a token exists
  */
 export const isTokenValid = (): boolean => {
   const token = getToken();
-  if (!token?.accessToken) return false;
-
-  if (!token.expiresAt) return false;
-
-  const expirationTime = new Date(token.expiresAt).getTime();
-  const currentTime = new Date().getTime();
-
-  // Consider token valid if it expires in more than 30 seconds
-  return expirationTime > currentTime + 30000;
-};
-
-/**
- * Check if token should be refreshed soon (less than 2 minutes remaining)
- */
-export const shouldRefreshToken = (): boolean => {
-  const token = getToken();
-  if (!token?.accessToken) return false;
-
-  if (!token.expiresAt) return false;
-
-  const expirationTime = new Date(token.expiresAt).getTime();
-  const currentTime = new Date().getTime();
-
-  // Refresh if less than 2 minutes remaining
-  return expirationTime > currentTime && expirationTime - currentTime < 120000;
-};
-
-/**
- * Get remaining time until token expiration in seconds
- */
-export const getTokenRemainingTime = (): number => {
-  const token = getToken();
-  if (!token) return 0;
-
-  const { expiresAt } = token;
-  const expirationTime = new Date(expiresAt).getTime();
-  const currentTime = new Date().getTime();
-
-  // Return remaining time in seconds, minimum 0
-  return Math.max(0, Math.floor((expirationTime - currentTime) / 1000));
+  return !!token?.accessToken && !!token?.userId;
 };
 
 /**
@@ -78,11 +38,12 @@ export const getAccessToken = (): string | null => {
 };
 
 /**
- * Check if refresh token is available
+ * Check if we have authentication credentials with a user ID.
+ * This means we likely have an active session.
  */
-export const hasRefreshToken = (): boolean => {
+export const hasAuthCredentials = (): boolean => {
   const token = getToken();
-  return !!token?.refreshToken;
+  return !!token?.accessToken && !!token?.userId;
 };
 
 /**

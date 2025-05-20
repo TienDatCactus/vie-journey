@@ -27,8 +27,8 @@ const GuideCard = ({ title, tags, mins, img }: GuideCardProps) => {
       <CardContent className="py-0">
         <h1 className="my-0 text-[30px]">{title}</h1>
         <Stack direction="row" spacing={1}>
-          {tags.map((tag) => (
-            <Chip label={tag} className="font-normal" clickable />
+          {tags.map((tag, index) => (
+            <Chip label={tag} key={index} className="font-normal" clickable />
           ))}
         </Stack>
       </CardContent>
