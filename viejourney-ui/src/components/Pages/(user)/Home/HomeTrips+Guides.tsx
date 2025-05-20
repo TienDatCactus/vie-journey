@@ -1,13 +1,5 @@
 import { Add } from "@mui/icons-material";
-import {
-  Button,
-  Divider,
-  Grid2,
-  List,
-  ListItem,
-  Paper,
-  Stack,
-} from "@mui/material";
+import { Button, Divider, Grid2, Paper, Stack } from "@mui/material";
 import React from "react";
 import { GuideTag, TripTag } from "./_elements";
 const HomeTrips: React.FC = () => {
@@ -45,7 +37,8 @@ const HomeTrips: React.FC = () => {
     <div className="w-full max-w-[1000px] pb-10">
       <Grid2 container spacing={2}>
         <Grid2 size={6}>
-          <Paper className="flex flex-col justify-between bg-[#f3f4f5] p-4 h-[21.25rem] max-h-[25rem]">
+          {" "}
+          <Paper className="flex flex-col justify-between bg-neutral-200 p-4 h-[21.25rem] max-h-[25rem]">
             <Stack
               direction={"row"}
               justifyContent={"space-between"}
@@ -55,7 +48,7 @@ const HomeTrips: React.FC = () => {
               <div>
                 <Button
                   variant="outlined"
-                  className="bg-[#dee2e6] border-[#dee2e6] text-[#495057] hover:bg-[#adb5bd] hover:border-[#adb5bd] hover:text-[#212529] rounded-4xl"
+                  className="bg-accent-button border-[--color-accent-button] text-[--color-dark-700] hover:bg-[--color-accent-button-hover] hover:border-[--color-accent-button-hover] hover:text-[--color-dark-950] rounded-4xl"
                   startIcon={<Add />}
                 >
                   Plan new trip
@@ -72,9 +65,9 @@ const HomeTrips: React.FC = () => {
                       places={item?.places}
                       from={item?.from}
                       to={item?.to}
-                    />
+                    />{" "}
                     {index < fakeData1?.length - 1 && (
-                      <Divider className="border-[#d9d9d9] border my-4" />
+                      <Divider className="border-[--color-neutral-400] border my-4" />
                     )}
                   </Stack>
                 ))}
@@ -87,7 +80,8 @@ const HomeTrips: React.FC = () => {
           </Paper>
         </Grid2>
         <Grid2 size={6}>
-          <Paper className="bg-[#f3f4f5] p-4  h-[21.25rem] max-h-[400px] overflow-auto">
+          {" "}
+          <Paper className="bg-[--color-neutral-200] p-4  h-[21.25rem] max-h-[400px] overflow-auto">
             <Stack
               direction={"row"}
               justifyContent={"space-between"}
@@ -98,7 +92,7 @@ const HomeTrips: React.FC = () => {
                 <Button
                   variant="outlined"
                   className="
-                bg-[#dee2e6] border-[#dee2e6] text-[#495057] hover:bg-[#adb5bd] hover:border-[#adb5bd] hover:text-[#212529] rounded-4xl"
+                bg-[--color-accent-button] border-[--color-accent-button] text-[--color-dark-700] hover:bg-[--color-accent-button-hover] hover:border-[--color-accent-button-hover] hover:text-[--color-dark-950] rounded-4xl"
                   startIcon={<Add />}
                 >
                   Create new guide

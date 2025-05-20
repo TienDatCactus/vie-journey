@@ -37,23 +37,23 @@ const TourCard = ({ img, title, sub, author, views, liked }: TourCardProps) => {
               {author.split("")[0]}
             </Avatar>
             <div>
-              <Typography variant="body2">{author}</Typography>
-              <Stack direction={"row"} gap={2} alignItems={"center"}>
+              <Typography variant="body1">{author}</Typography>
+              <Stack
+                direction={"row"}
+                gap={2}
+                alignItems={"center"}
+                className="*:text-neutral-700"
+              >
                 <Stack direction={"row"} alignItems={"center"} spacing={1}>
-                  <IconButton>
-                    <VisibilityIcon className="text-[22px]" />
-                  </IconButton>
+                  <VisibilityIcon className="text-xl" />
                   <Typography variant="body2" color="text.secondary">
-                    {views} views
+                    {views}
                   </Typography>
                 </Stack>
-                <span>⁜</span>
                 <Stack direction={"row"} alignItems={"center"} spacing={1}>
-                  <IconButton>
-                    <FavoriteBorderIcon className="text-[22px]" />
-                  </IconButton>
+                  <FavoriteBorderIcon className="text-xl" />
                   <Typography variant="body2" color="text.secondary">
-                    {liked} likes
+                    {liked}
                   </Typography>
                 </Stack>
               </Stack>

@@ -2,7 +2,84 @@
 @import "tailwindcss" important;
 
 @theme {
-  --color-main-1: #;
+  /* Primary colors - main brand colors */
+  --color-primary-50: #f0f4ff;
+  --color-primary-100: #e0e8ff;
+  --color-primary-200: #c7d4ff;
+  --color-primary-300: #a5b8fd;
+  --color-primary-400: #8294fb;
+  --color-primary-500: #5e71f6;
+  --color-primary-600: #3f61d3; /* Your brand blue */
+  --color-primary-700: #3861b0; /* Your secondary blue */
+  --color-primary-800: #2c4a9e;
+  --color-primary-900: #25397f;
+  --color-primary-950: #1a2554;
+
+  /* Neutral colors - grays for text and backgrounds */
+  --color-neutral-50: #f8fafc; /* Lightest background */
+  --color-neutral-100: #f5f5f5; /* Light background */
+  --color-neutral-200: #f3f4f5; /* Light background alternate */
+  --color-neutral-300: #e7e7e7; /* Light background for errors/alerts */
+  --color-neutral-400: #d9d9d9;
+  --color-neutral-500: #b2b2b2;
+  --color-neutral-600: #7c7c7c; /* Subtle text */
+  --color-neutral-700: #6d6d6d; /* Secondary text */
+  --color-neutral-800: #5b5b5b; /* Primary text gray */
+  --color-neutral-900: #4b4b4b; /* Dark text */
+  --color-neutral-950: #30373f; /* Darkest text */
+
+  /* Dark mode colors */
+  --color-dark-50: #f4f4f4; /* Light text on dark bg */
+  --color-dark-100: #e5e5e5;
+  --color-dark-200: #d9d9d9;
+  --color-dark-300: #cacaca;
+  --color-dark-400: #adb5bd;
+  --color-dark-500: #797979;
+  --color-dark-600: #616161;
+  --color-dark-700: #495057;
+  --color-dark-800: #2e2e2e; /* Dark background alternate */
+  --color-dark-900: #181818; /* Main dark background */
+  --color-dark-950: #141414; /* Darkest background */
+
+  /* Accent colors - additional UI elements */
+  --color-accent-border: #ccc;
+  --color-accent-button: #dee2e6;
+  --color-accent-button-hover: #adb5bd;
+}
+
+/* Theme configurations */
+.theme-light {
+  --bg-primary: var(--color-neutral-100);
+  --bg-secondary: var(--color-neutral-200);
+  --bg-tertiary: var(--color-neutral-300);
+  --text-primary: var(--color-neutral-950);
+  --text-secondary: var(--color-neutral-800);
+  --text-muted: var(--color-neutral-700);
+  --accent-primary: var(--color-primary-600);
+  --accent-secondary: var(--color-primary-700);
+  --border-color: var(--color-accent-border);
+}
+
+.theme-dark {
+  --bg-primary: var(--color-dark-900);
+  --bg-secondary: var(--color-dark-800);
+  --bg-tertiary: var(--color-dark-700);
+  --text-primary: var(--color-dark-50);
+  --text-secondary: var(--color-dark-100);
+  --text-muted: var(--color-dark-300);
+  --accent-primary: var(--color-primary-400);
+  --accent-secondary: var(--color-primary-300);
+  --border-color: var(--color-dark-600);
+}
+
+/* Apply default theme */
+:root {
+  color-scheme: light;
+}
+
+/* You can add a class to the HTML element to switch themes */
+html.dark {
+  color-scheme: dark;
 }
 
 html {
@@ -27,20 +104,6 @@ input:-webkit-autofill:active {
   /* Safari and Chrome */
 }
 
-.swiper {
-  width: 240px;
-  height: 320px;
-}
-
-.swiper-slide {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 18px;
-  font-size: 22px;
-  font-weight: bold;
-  color: #fff;
-}
 .swiper {
   width: 240px;
   height: 320px;

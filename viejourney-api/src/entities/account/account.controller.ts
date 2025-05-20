@@ -6,10 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('account')
 export class AccountController {
@@ -38,5 +41,10 @@ export class AccountController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.accountService.remove(id);
+  }
+
+  @Post('profile')
+  getProfile(@Body() req: { userId: string }) {
+    return this.accountService.findOne(req.userId);
   }
 }

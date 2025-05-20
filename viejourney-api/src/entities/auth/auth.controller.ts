@@ -1,15 +1,27 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt.guard';
-import { Account } from '../account/entities/account.entity';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(@Body() req: { email: string; password: string }) {
-    return this.authService.login(req.email, req.password);
+  async login(
+    @Body() req: { email: string; password: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.login(res, req.email, req.password);
   }
 
   @Post('register')
@@ -17,21 +29,22 @@ export class AuthController {
     return this.authService.register(req.email, req.password);
   }
   @Post('refresh')
-  async refresh(@Body() req: { refreshToken: string }) {
-    return this.authService.refresh(req.refreshToken);
-  }
-  @Post('logout')
-  async logout(@Body() req: { userId: string; refreshToken: string }) {
-    return this.authService.logout(req.userId, req.refreshToken);
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.refresh(req, res);
   }
 
-  @Post('verify')
-  async verify(@Body() req: { token: string }) {
-    return this.authService.verifyEmail(req.token);
+  @Post('logout')
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return this.authService.logout(req, res);
   }
-  @UseGuards(JwtAuthGuard)
-  @Post('profile')
-  getProfile(@Request() req: { user: Account }) {
-    return req.user;
+  @Get('verify-email')
+  async verify(@Query('token') token: string) {
+    if (!token) {
+      throw new HttpException('Token is required', HttpStatus.BAD_REQUEST);
+    }
+    return this.authService.verifyEmail(token);
   }
 }

@@ -8,6 +8,7 @@ import {
   TextField,
 } from "@mui/material";
 import React from "react";
+import { headerNav } from "../(user)/Header";
 const Header = () => {
   const headerCheck = () => {
     return window.scrollY === 0;
@@ -25,27 +26,9 @@ const Header = () => {
     };
   }, []);
 
-  const headerNav: Array<{ name: string; link: string }> = [
-    {
-      name: "Home",
-      link: "/",
-    },
-    {
-      name: "Explore",
-      link: "/explore",
-    },
-    {
-      name: "Log",
-      link: "/log",
-    },
-    {
-      name: "Profile",
-      link: "/profile",
-    },
-  ];
   return (
     <div
-      className={`fixed w-full rounded-md min-h-[50px] px-10 flex justify-between items-center  shadow-md z-10 ${
+      className={`fixed w-full rounded-md min-h-[50px] px-10 flex justify-between items-center transition-all duration-75 shadow-md z-10 ${
         !isScrolled ? "bg-white" : ""
       }`}
     >
@@ -54,7 +37,7 @@ const Header = () => {
           className={`text-[40px] ${isScrolled ? "text-white" : ""}`}
         />
         <h1 className={`text-[20px] ${isScrolled ? "text-white" : ""}`}>
-          VieJournal
+          VieJourney
         </h1>
         {!isScrolled ? (
           <Stack direction={"row"} gap={2} className="h-full mx-4 ">
@@ -103,10 +86,17 @@ const Header = () => {
           ""
         )}
         <ButtonGroup variant="contained" aria-label="Disabled button group">
-          <Button size="small" variant="outlined" href="/login">
+          <Button
+            size="small"
+            className="bg-white"
+            variant="outlined"
+            href="/auth/login"
+          >
             Login
           </Button>
-          <Button size="small">SignUp</Button>
+          <Button size="small" href="/auth/register">
+            SignUp
+          </Button>
         </ButtonGroup>
       </Stack>
     </div>

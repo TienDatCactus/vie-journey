@@ -13,11 +13,13 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { doLogin } from "../../services/api";
 import { useNavigate } from "react-router-dom";
-import { enqueueSnackbar } from "notistack";
+import { doLogin } from "../../services/api";
+import { LoginRespDTO } from "../../services/api/dto";
+import { useAuth } from "../../services/contexts";
 const loginMets: Array<{
   icon: React.ReactNode;
 }> = [
@@ -41,6 +43,7 @@ const LoginForm: React.FC = () => {
     email: string;
     password: string;
   }>();
+  const { setCredential } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
 
   const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
@@ -48,8 +51,9 @@ const LoginForm: React.FC = () => {
   ) => {
     try {
       setLoading(true);
-      const loginAttempt = await doLogin(data);
-      if (loginAttempt) {
+      const loginResp = (await doLogin(data)) as LoginRespDTO | undefined;
+      if (loginResp && loginResp?.accessToken) {
+        setCredential({ userId: loginResp?.userId || "" });
         navigate("/");
       }
     } catch (error) {
@@ -58,43 +62,50 @@ const LoginForm: React.FC = () => {
       setLoading(false);
     }
   };
-
   return (
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      autoComplete="off"
-      className="w-full mt-8 p-8 bg-white border-solid border-[#ccc] border rounded-md shadow-md flex flex-col gap-2"
+      className="w-full mt-8 p-8 bg-white border-solid border-accent-border border rounded-md shadow-md flex flex-col gap-4"
     >
       <FormGroup>
-        <InputLabel className="font-bold text-[14px]">Email</InputLabel>
+        <InputLabel className="font-bold text-sm">Email</InputLabel>
         <OutlinedInput
-          className="w-full *:text-[14px]"
+          disabled={loading}
+          className="w-full *:text-sm"
           error={!!errors.email}
           size="small"
           placeholder="Enter your email address"
-          {...register("email", { required: true })}
+          {...register("email", {
+            required: true,
+            validate: (value) => {
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              return emailRegex.test(value) || "Invalid email address";
+            },
+          })}
+          type="email"
         />
         {errors.email && (
           <FormHelperText error={!!errors.email}>
             {" "}
-            This field is required
+            This field is required and must be a valid email address
           </FormHelperText>
         )}
       </FormGroup>
       <FormGroup>
-        <InputLabel className="font-bold text-[14px]">Password</InputLabel>
+        <InputLabel className="font-bold text-sm">Password</InputLabel>
         <OutlinedInput
+          disabled={loading}
           type="password"
           size="small"
           error={!!errors.password}
-          {...register("password", { required: true })}
-          className="w-full *:text-[14px]"
+          {...register("password", { required: true, minLength: 6 })}
+          className="w-full *:text-sm"
           placeholder="Enter your password"
         />
         {errors.password && (
           <FormHelperText error={!!errors.password}>
-            This field is required
+            This field is required and must be at least 6 characters long
           </FormHelperText>
         )}
       </FormGroup>
@@ -103,12 +114,9 @@ const LoginForm: React.FC = () => {
           <FormControlLabel
             control={<Checkbox />}
             label="Remember me"
-            className="*:text-[14px]"
+            className="*:text-sm"
           />
-          <a
-            href=""
-            className="text-[14px] no-underline text-[#3861b0] font-medium"
-          >
+          <a href="" className="text-sm no-underline theme-light font-medium">
             Forgot your password ?
           </a>
         </Grid2>
@@ -124,13 +132,14 @@ const LoginForm: React.FC = () => {
           Login
         </Button>
       </div>
-      <Divider className="text-[12px] text-[#5b5b5b]">Or continue with</Divider>
+      <Divider className="text-sm theme-light">Or continue with</Divider>
       <Stack direction={"row"} spacing={2} justifyContent={"center"}>
         {!!loginMets.length &&
           loginMets?.map((loginMet, index) => (
             <Button
+              disabled
               key={index}
-              className="w-full py-3 text-center border-solid border-[#ccc] border rounded-md text-[#30373f] *:text-[16px]"
+              className="w-full py-3 text-center border-solid  border rounded-md theme-light *:text-base"
             >
               {loginMet.icon}
             </Button>

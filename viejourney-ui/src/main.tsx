@@ -16,6 +16,7 @@ import Fallback from "./utils/handlers/loading/Fallback";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
 import "maplibre-gl/dist/maplibre-gl.css";
+import { AuthProvider } from "./services/contexts";
 
 const theme = createTheme({
   cssVariables: true,
@@ -51,7 +52,9 @@ root.render(
             {/* <ScrollProvider> */}
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <React.Suspense fallback={<Fallback />}>
-                <RouterProvider router={router} />
+                <AuthProvider>
+                  <RouterProvider router={router} />
+                </AuthProvider>
               </React.Suspense>
             </LocalizationProvider>
             {/* </ScrollProvider> */}

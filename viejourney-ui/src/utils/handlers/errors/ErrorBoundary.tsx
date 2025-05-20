@@ -3,9 +3,11 @@ import { useRouteError, isRouteErrorResponse } from "react-router-dom";
 
 const ErrorBoundary: React.FC = () => {
   const error = useRouteError();
+  console.error(error);
+
   if (isRouteErrorResponse(error)) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 text-center h-svh bg-[#e7e7e7]">
+      <div className="flex flex-col items-center justify-center p-6 text-center h-svh bg-neutral-300">
         <div className="flex bg-[rgb(239,239,239)] p-4  items-center w-full justify-between rounded-md shadow-lg">
           <div className="flex ">
             <h1 className="code font-extrabold text-[60px]">ERROR</h1>
@@ -44,7 +46,7 @@ const ErrorBoundary: React.FC = () => {
 
   // Handle any other unexpected errors
   return (
-    <div className="p-6 text-center error-page">
+    <div className="flex flex-col items-center justify-center p-6 text-center h-svh bg-neutral-300">
       <h1 className="mb-4 text-3xl font-bold text-red-600">Unexpected Error</h1>
       <p className="mb-4 text-lg">
         An unexpected error occurred while rendering the page.

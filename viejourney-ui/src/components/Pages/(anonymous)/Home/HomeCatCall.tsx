@@ -1,6 +1,6 @@
 import { Button, ButtonGroup, Grid2 } from "@mui/material";
 import React from "react";
-import join from "../../../../assets/images/join.jpg";
+import join from "/images/join.jpg";
 const HomeCatCall: React.FC = () => {
   return (
     <Grid2
@@ -14,12 +14,12 @@ const HomeCatCall: React.FC = () => {
       <Grid2 size={4}>
         <img
           src={join}
-          alt="join us in VieJournal v0 beta"
+          alt="join us in VieJourney v0 beta"
           className=" rounded-2xl max-h-[400px] w-full object-cover"
         />
       </Grid2>
       <Grid2 size={8}>
-        <h1 className="my-0">Join VieJournal </h1>
+        <h1 className="my-0">Join VieJourney </h1>
         <p className="my-0 text-[#6e6e6e]">
           Plan your itinerary, find lodging, and import reservations — all in
           one app.

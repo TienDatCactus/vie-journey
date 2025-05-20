@@ -1,12 +1,10 @@
-import { MoreHoriz } from "@mui/icons-material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { CardActionArea, IconButton, Stack } from "@mui/material";
+import { IconButton, Stack } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import React from "react";
 interface GuideTagProps {
   img: string;
   title: string;
@@ -17,7 +15,7 @@ interface GuideTagProps {
 const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
   return (
     <Card className="w-full">
-      <CardActionArea className="p-2">
+      <div className="p-2">
         <CardMedia
           component="img"
           className="h-full w-full rounded-md"
@@ -59,7 +57,7 @@ const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
             </Stack>
           </div>
         </CardContent>
-      </CardActionArea>
+      </div>
     </Card>
   );
 };

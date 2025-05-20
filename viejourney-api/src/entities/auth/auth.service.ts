@@ -1,6 +1,9 @@
 import {
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,18 +12,48 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { AccountService } from 'src/entities/account/account.service';
-import { RegistrationTokenSchema } from 'src/common/db/registration_token.schema';
 import { Account } from '../account/entities/account.entity';
-import { RegistrationToken } from './entities/registration_token.entity';
+import { Request, Response } from 'express';
+import { MailerService } from '@nestjs-modules/mailer';
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly accountService: AccountService,
     private readonly jwtService: JwtService,
     @InjectModel(Account.name) private readonly accountModel: Model<Account>,
-    @InjectModel(RegistrationToken.name)
-    private readonly tokenModel: Model<RegistrationToken>,
+    private readonly mailService: MailerService,
   ) {}
+
+  async sendEMail(token: string, mail: string) {
+    try {
+      const link = `${process.env.FE_URL}/auth/verify-email/${token}`;
+      const message = `
+            <div style="font-family: 'Roboto', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; border: 1px solid #ddd; border-radius: 8px;">
+                <div style="text-align: center;">
+                    <h2 style="color: #3f51b5;">Verify Your Email Address</h2>
+                    <p style="font-size: 16px; color: #333;">
+                        Click the button below to verify your email address and complete your registration.
+                    </p>
+                    <a href="${link}" style="display: inline-block; margin-top: 15px; padding: 12px 25px; background-color: #3f51b5; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px;">Verify Email</a>
+                </div>
+                <p style="font-size: 14px; color: #666; text-align: center; margin-top: 20px;">
+                    If you did not request this, please ignore this email.
+                </p>
+            </div>
+        `;
+      await this.mailService.sendMail({
+        to: mail,
+        subject: `Verify your email address`,
+        html: message,
+      });
+    } catch (error) {
+      console.error(`Failed to send verification email to ${mail}:`, error);
+      throw new ConflictException(
+        'Failed to send verification email. Please try again.',
+      );
+    }
+  }
 
   async register(email: string, password: string) {
     // Hash password
@@ -36,18 +69,21 @@ export class AuthService {
       password: hashedPassword,
       active: false,
     });
+    await user.save(); // Create a specific verification token with purpose
+    const secret = process.env.JWT_SECRET || 'secret';
+    const registrationToken = this.jwtService.sign(
+      {
+        sub: user._id,
+        email: user.email,
+        purpose: 'email-verification',
+      },
+      {
+        expiresIn: '24h',
+        secret: secret,
+      },
+    );
 
-    const token = crypto.randomUUID();
-    const createToken = this.tokenModel.create({
-      userId: user._id,
-      token: token,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    });
-
-    await createToken;
-    await user.save();
-
-    // In a real app, you would send an email with the token here
+    this.sendEMail(registrationToken, email);
 
     return {
       message:
@@ -55,81 +91,207 @@ export class AuthService {
     };
   }
 
-  async login(email: string, password: string) {
+  async login(res: Response, email: string, password: string) {
     const user = await this.accountModel.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new HttpException('Invalid credentials', HttpStatus.I_AM_A_TEAPOT);
     }
+    if (!user.active) {
+      // Create a verification token and send it
+      const secret = process.env.JWT_SECRET || 'secret';
+      this.logger.log(`Using secret for signing: ${secret.substring(0, 5)}...`);
 
+      const verificationToken = this.jwtService.sign(
+        {
+          sub: user._id,
+          email: user.email,
+          purpose: 'email-verification',
+        },
+        {
+          expiresIn: '24h',
+          secret: secret,
+        },
+      );
+
+      this.sendEMail(verificationToken, email);
+      throw new HttpException(
+        'Please verify your email, check your inbox',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const accessToken = this.createAccessToken(user._id, user.email);
     const refreshToken = this.createRefreshToken(user._id);
 
-    await this.tokenModel.create({
-      token: refreshToken,
-      userId: user._id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
     user.active = true;
     await user.save();
 
-    return { accessToken, refreshToken };
+    return {
+      userId: user._id,
+      accessToken,
+    };
   }
-  async logout(userId: string, refreshToken: string) {
-    const user = await this.accountModel.findById(userId);
-    if (!user) throw new UnauthorizedException('Invalid user');
-
-    await this.tokenModel.deleteOne({ token: refreshToken });
-    user.active = false;
-    await user.save();
-    return { message: 'Logged out successfully' };
-  }
-  async refresh(refreshToken: string) {
-    const payload = this.jwtService.verify(refreshToken, {
-      secret: process.env.JWT_SECRET,
+  async logout(req: Request, res: Response) {
+    // Clear the refresh token cookie
+    res.cookie('refreshToken', '', {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+      maxAge: 0, // Expires immediately
     });
 
-    const user = await this.accountModel.findById(payload.sub);
-    if (!user || !this.tokenModel.findOne({ token: refreshToken })) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-    const accessToken = this.createAccessToken(user._id, user.email);
-    return { accessToken };
+    return { message: 'Logged out successfully' };
   }
 
+  async refresh(req: Request, res: Response) {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+
+    try {
+      // Verify the refresh token
+      const secret = process.env.JWT_SECRET || 'secret';
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: secret,
+      });
+
+      // Check that the user exists
+      const user = await this.accountModel.findById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Create a new access token
+      const accessToken = this.createAccessToken(user._id, user.email);
+
+      // Create a new refresh token and update the cookie
+      const newRefreshToken = this.createRefreshToken(user._id);
+      res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      return { accessToken };
+    } catch (error) {
+      // If token verification fails, clear the cookie and throw an error
+      res.cookie('refreshToken', '', {
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+        maxAge: 0,
+      });
+
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+  async verifyEmail(token: string) {
+    if (!token) {
+      throw new NotFoundException('Invalid verification token');
+    }
+    try {
+      // Log the token to help with debugging
+      this.logger.debug(`Verifying token: ${token.substring(0, 20)}...`);
+
+      // Ensure we're using the same secret for verification
+      const secret = process.env.JWT_SECRET || 'secret';
+      this.logger.log(
+        `Using secret for verification: ${secret.substring(0, 5)}...`,
+      );
+
+      // Verify the token
+      const payload = this.jwtService.verify(token, {
+        secret: secret,
+      });
+
+      this.logger.log('Payload:', payload);
+
+      // Check if this is an email verification token
+      if (payload.purpose !== 'email-verification') {
+        this.logger.warn('Token purpose mismatch:', payload.purpose);
+        throw new UnauthorizedException('Invalid token type');
+      }
+
+      const user = await this.accountModel.findById(payload.sub);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      // Activate the user
+      user.active = true;
+      await user.save();
+
+      return {
+        message: 'Email verified successfully',
+      };
+    } catch (error) {
+      this.logger.error('Token verification error:', error);
+
+      if (error.name === 'TokenExpiredError') {
+        throw new HttpException(
+          'Verification link has expired. Please request a new one.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else if (error.name === 'JsonWebTokenError') {
+        throw new HttpException(
+          'Invalid verification token format. Please request a new one.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw new HttpException(
+        'Verification failed. Please request a new link.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
   private createAccessToken(userId: string, email: string) {
-    return this.jwtService.sign({ sub: userId, email });
+    const secret = process.env.JWT_SECRET || 'secret';
+    return this.jwtService.sign({ sub: userId, email }, { secret: secret });
   }
 
   private createRefreshToken(userId: string) {
+    const secret = process.env.JWT_SECRET || 'secret';
     return this.jwtService.sign(
       { sub: userId },
-      { expiresIn: '7d' }, // Refresh token lasts for 7 days
+      {
+        expiresIn: '7d', // Refresh token lasts for 7 days
+        secret: secret,
+      },
     );
   }
 
-  async verifyEmail(token: string): Promise<any> {
-    const tokenRecord = await this.tokenModel.findOne({ token });
+  // Method to validate token and throw correct status codes (useful for middleware)
+  async validateToken(token: string): Promise<any> {
+    try {
+      const secret = process.env.JWT_SECRET || 'secret';
+      const payload = this.jwtService.verify(token, {
+        secret: secret,
+      });
 
-    if (!tokenRecord) {
-      throw new NotFoundException('Invalid verification token');
-    }
+      const user = await this.accountModel.findById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
 
-    if (tokenRecord.expiresAt < new Date()) {
-      throw new UnauthorizedException('Verification token has expired');
-    }
-    if (tokenRecord.confirmedAt) {
-      throw new UnauthorizedException('Email already verified');
-    }
-    tokenRecord.confirmedAt = new Date();
-    await tokenRecord.save();
-    const user = await this.accountModel.findById(tokenRecord.userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+      return { userId: payload.sub, email: payload.email };
+    } catch (error) {
+      // Provide different status codes based on error type
+      if (error.name === 'TokenExpiredError') {
+        throw new HttpException('Token has expired', HttpStatus.UNAUTHORIZED);
+      } else if (error.name === 'JsonWebTokenError') {
+        throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+      }
 
-    user.active = true;
-    await user.save();
-
-    return { message: 'Email verified successfully' };
+      throw new UnauthorizedException('Authentication failed');
+    }
   }
 }
