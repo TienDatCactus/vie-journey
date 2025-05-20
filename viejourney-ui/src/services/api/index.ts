@@ -78,7 +78,9 @@ export const doVerify = async (
 };
 export const doLogout = async (data: LogoutReqDTO) => {
   try {
+    // The backend will clear the refresh token cookie
     await http.post(AUTH?.LOGOUT, data);
+    // Clear access token from localStorage
     localStorage.removeItem("token");
     window.dispatchEvent(new CustomEvent("auth:logout"));
   } catch (error) {

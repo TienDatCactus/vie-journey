@@ -1,3 +1,14 @@
+/**
+ * Authentication has been updated to use HTTP-only cookies for refresh tokens
+ * and to not include expiration times in access tokens.
+ *
+ * Key changes:
+ * 1. Refresh tokens are sent automatically via HTTP-only cookies (secure from JS access)
+ * 2. Access tokens no longer include expiration information
+ * 3. Token validity is determined by the server - on 401 response, we attempt refresh
+ * 4. No proactive token refresh - we rely on 401 responses to trigger token refresh
+ */
+
 interface TokenData {
   accessToken: string;
   userId: string;
@@ -44,6 +55,15 @@ export const getAccessToken = (): string | null => {
 export const hasAuthCredentials = (): boolean => {
   const token = getToken();
   return !!token?.accessToken && !!token?.userId;
+};
+
+/**
+ * Check if we likely have a refresh token cookie
+ * Note: We can't directly access the HTTP-only cookie contents from JavaScript
+ * This is just a best guess based on auth state - the server will validate the actual cookie
+ */
+export const hasRefreshTokenCookie = (): boolean => {
+  return !!getToken()?.userId;
 };
 
 /**
