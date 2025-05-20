@@ -25,7 +25,24 @@ interface Props {
   window?: () => Window;
   children?: React.ReactElement<unknown>;
 }
-
+export const headerNav: Array<{ name: string; link: string }> = [
+  {
+    name: "Home",
+    link: "/home",
+  },
+  {
+    name: "Travel guides",
+    link: "/guides",
+  },
+  {
+    name: "Hotels",
+    link: "/hotels",
+  },
+  {
+    name: "Profile",
+    link: "/profile",
+  },
+];
 function HideOnScroll(props: Props) {
   const { children, window } = props;
   // Note that you normally won't need to set the window ref as useScrollTrigger
@@ -47,6 +64,7 @@ const Header = () => {
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
+  const { setUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const handleClose = () => {
     setAnchorEl(null);
@@ -56,30 +74,14 @@ const Header = () => {
     try {
       setLoading(true);
       await doLogout({ userId: credential?.userId || "" });
+      setUser(null);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
-  const headerNav: Array<{ name: string; link: string }> = [
-    {
-      name: "Home",
-      link: "/",
-    },
-    {
-      name: "Travel guides",
-      link: "/guides",
-    },
-    {
-      name: "Hotels",
-      link: "/hotels",
-    },
-    {
-      name: "Profile",
-      link: "/profile",
-    },
-  ];
+
   return (
     <HideOnScroll>
       <AppBar position="sticky" color="default" elevation={4}>

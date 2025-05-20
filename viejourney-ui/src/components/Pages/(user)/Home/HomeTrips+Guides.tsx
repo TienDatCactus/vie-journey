@@ -1,13 +1,5 @@
 import { Add } from "@mui/icons-material";
-import {
-  Button,
-  Divider,
-  Grid2,
-  List,
-  ListItem,
-  Paper,
-  Stack,
-} from "@mui/material";
+import { Button, Divider, Grid2, Paper, Stack } from "@mui/material";
 import React from "react";
 import { GuideTag, TripTag } from "./_elements";
 const HomeTrips: React.FC = () => {

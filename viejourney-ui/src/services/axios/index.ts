@@ -1,6 +1,6 @@
 import axios from "axios";
 import { enqueueSnackbar, SnackbarKey } from "notistack";
-import { getAccessToken, shouldRefreshToken } from "../api/token";
+import { getAccessToken } from "../api/token";
 import { refreshToken } from "../api";
 
 interface ErrorHandlerOptions {
@@ -260,7 +260,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
 
 // Usage example
 const handleError = createErrorHandler({
-  redirectOnUnauthorized: false,
+  redirectOnUnauthorized: true,
   loginRedirectPath: "/auth/login",
   defaultSystemErrorMessage: "An error occurred. Please try again.",
   authErrorExceptions: ["Invalid credentials", "Invalid email or password"],
@@ -297,7 +297,6 @@ http.interceptors.response.use(
 
     // Handle token refresh for 401 errors
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Skip token refresh for auth endpoints to prevent infinite loops
       const isAuthEndpoint = [
@@ -307,8 +306,17 @@ http.interceptors.response.use(
       ].some((endpoint) => originalRequest.url?.includes(endpoint));
 
       if (isAuthEndpoint) {
+        console.log(
+          "Auth endpoint returned 401, not attempting refresh",
+          originalRequest.url
+        );
         return handleError(error);
       }
+
+      console.log("Received 401 error, attempting token refresh", {
+        url: originalRequest.url,
+        method: originalRequest.method,
+      });
 
       // Mark request as retried to prevent infinite loops
       originalRequest._retry = true;
@@ -328,10 +336,14 @@ http.interceptors.response.use(
 
         // Attempt token refresh
         const refreshResult = await refreshToken();
-
         if (refreshResult && refreshResult.accessToken) {
           // Update Authorization header
           originalRequest.headers.Authorization = `Bearer ${refreshResult.accessToken}`;
+
+          console.log("Token refresh successful, retrying original request", {
+            url: originalRequest.url,
+            method: originalRequest.method,
+          });
 
           // Notify subscribers
           onTokenRefreshed(refreshResult.accessToken);
@@ -343,6 +355,7 @@ http.interceptors.response.use(
           return http(originalRequest);
         } else {
           // If refresh failed, redirect
+          console.log("Token refresh failed, redirecting to login");
           onRefreshFailure();
           isRefreshing = false;
           return handleError(error);
@@ -371,28 +384,12 @@ http.interceptors.request.use(
       "/auth/register",
       "/auth/refresh",
     ].some((endpoint) => config.url?.includes(endpoint));
-
     if (!isAuthEndpoint) {
-      // Check if token needs refreshing before making the request
-      if (shouldRefreshToken() && !isRefreshing) {
-        try {
-          isRefreshing = true;
-          const newTokenData = await refreshToken();
-          isRefreshing = false;
-
-          if (newTokenData?.accessToken) {
-            config.headers.Authorization = `Bearer ${newTokenData.accessToken}`;
-          }
-        } catch (error) {
-          isRefreshing = false;
-          console.error("Failed to refresh token:", error);
-        }
-      } else {
-        // Add token to request if it exists
-        const accessToken = getAccessToken();
-        if (accessToken) {
-          config.headers.Authorization = `Bearer ${accessToken}`;
-        }
+      // Add token to request if it exists - no proactive refresh anymore
+      // We now rely exclusively on 401 responses to trigger token refresh
+      const accessToken = getAccessToken();
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
       }
     }
 

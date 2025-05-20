@@ -1,9 +1,7 @@
+import axios from "axios";
 import { enqueueSnackbar } from "notistack";
-import axios, { isAxiosError } from "axios";
 import http from "../axios";
 import { extractApiData } from "./apiHelpers";
-import { getToken, clearToken } from "./token";
-import { AUTH, USER } from "./url";
 import {
   GetUserReqDTO,
   GetUserRespDTO,
@@ -14,14 +12,17 @@ import {
   RegisterReqDTO,
   RegisterRespDTO,
   VerifyReqDTO,
-  VerifyRespDTO,
 } from "./dto";
+import { clearToken } from "./token";
+import { AUTH, USER } from "./url";
 
 export const doLogin = async (data: LoginReqDTO) => {
   try {
     const resp = await http.post(AUTH?.LOGIN, data);
     const tokenData = extractApiData<LoginRespDTO>(resp);
     if (tokenData && tokenData.accessToken) {
+      // Store only access token related data in localStorage
+      // Refresh token is now handled via HTTP-only cookies
       localStorage.setItem("token", JSON.stringify(tokenData));
     }
     return tokenData;
@@ -41,10 +42,12 @@ export const doRegister = async (data: RegisterReqDTO) => {
     }
     const resp = await http.post(AUTH?.REGISTER, data);
     if (resp) {
-      window.location.href = "/auth/login";
       enqueueSnackbar("Check your email for verification link", {
         variant: "success",
       });
+      setTimeout(() => {
+        window.location.href = "/auth/login";
+      }, 2000);
     }
     return extractApiData<RegisterRespDTO>(resp);
   } catch (error) {
@@ -75,14 +78,17 @@ export const doVerify = async (
 };
 export const doLogout = async (data: LogoutReqDTO) => {
   try {
+    // The backend will clear the refresh token cookie
     await http.post(AUTH?.LOGOUT, data);
+    // Clear access token from localStorage
     localStorage.removeItem("token");
-    enqueueSnackbar("Logout successful", {
-      variant: "success",
-    });
-    window.location.href = "/auth/login";
+    // Notify auth context that logout has occurred
+    window.dispatchEvent(new CustomEvent("auth:logout"));
   } catch (error) {
     console.error(error);
+    // Even if the server call fails, clear client-side tokens
+    localStorage.removeItem("token");
+    window.dispatchEvent(new CustomEvent("auth:logout"));
   }
 };
 
@@ -99,13 +105,9 @@ export const doGetUser = async (data: GetUserReqDTO) => {
 
 export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
   try {
-    // Get current token
-    const currentToken = getToken();
-    if (!currentToken?.refreshToken) {
-      console.error("No refresh token available");
-      clearToken();
-      return null;
-    }
+    console.log(
+      "Attempting to refresh access token using HTTP-only refresh token cookie"
+    );
 
     // Create a new axios instance without interceptors to avoid infinite loops
     const axiosInstance = axios.create({
@@ -113,28 +115,39 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
       headers: {
         "Content-Type": "application/json",
       },
+      withCredentials: true, // Critical: needed to send and receive cookies
     });
 
-    // Call the refresh endpoint with current refresh token
-    const resp = await axiosInstance.post(AUTH?.REFRESH_TOKEN, {
-      refreshToken: currentToken.refreshToken,
-    });
+    // Call the refresh endpoint - refresh token is sent automatically via HTTP-only cookie
+    const resp = await axiosInstance.post(AUTH?.REFRESH_TOKEN);
 
     const newTokenData = extractApiData<RefreshTokenRespDTO>(resp);
 
     if (newTokenData && newTokenData.accessToken) {
-      // Store the new token
+      // Store the new access token data (refresh token remains as HTTP-only cookie)
       localStorage.setItem("token", JSON.stringify(newTokenData));
       console.log("Token refreshed successfully");
       return newTokenData;
     } else {
       console.error("Invalid token response format");
       clearToken();
+      // Trigger redirect to login in case of refresh failure
+      window.dispatchEvent(new CustomEvent("auth:refresh-failed"));
       return null;
     }
   } catch (error) {
     console.error("Failed to refresh token:", error);
     clearToken();
+
+    // Only dispatch the auth failure event for 401/403 errors
+    if (
+      axios.isAxiosError(error) &&
+      (error.response?.status === 401 || error.response?.status === 403)
+    ) {
+      // Notify the app that authentication failed
+      window.dispatchEvent(new CustomEvent("auth:refresh-failed"));
+    }
+
     return null;
   }
 };

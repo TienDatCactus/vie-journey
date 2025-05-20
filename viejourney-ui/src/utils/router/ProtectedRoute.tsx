@@ -1,39 +1,61 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../services/contexts/auth/AuthContext";
+import { enqueueSnackbar } from "notistack";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import Fallback from "../handlers/loading/Fallback";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
   requireAuth?: boolean;
 }
 
-/**
- * ProtectedRoute component that controls access to routes based on authentication status
- * @param requireAuth - if true, route requires authentication; if false, route requires user to be unauthenticated
- * @param children - optional children to render inside the route
- */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAuth = true,
 }) => {
-  const { credential } = useAuth();
+  const { isAuthenticated, isVerified, user, credential, isLoading } =
+    useAuth();
   const location = useLocation();
 
-  // If requireAuth is true and user is not logged in, redirect to login
-  // if (!requireAuth && !credential) {
-  //   return <Navigate to="/landing" state={{ from: location }} replace />;
-  // }
-  if (requireAuth && !credential) {
+  // Show loading spinner when authentication is still in progress
+  if (isLoading) {
+    console.log("Auth is loading - showing spinner");
+    return <Fallback />;
+  }
+
+  // Redirect unauthenticated users to login
+  if (requireAuth && !isAuthenticated) {
+    console.log("User is not authenticated");
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // If requireAuth is false and user is logged in, redirect to home
-  // This is for routes like login/register that shouldn't be accessible when logged in
-  if (!requireAuth && credential && credential.userId) {
+  // Redirect verified users away from login/register
+  if (!requireAuth && isAuthenticated) {
+    console.log("User is authenticated");
     return <Navigate to="/" replace />;
   }
 
-  // Render children or outlet
+  // Show warning and redirect if user is not verified
+  useEffect(() => {
+    if (requireAuth && isAuthenticated && !isVerified) {
+      enqueueSnackbar(
+        "Please verify your email to access this page. Login again to resend the verification email.",
+        { variant: "error" }
+      );
+    }
+  }, [requireAuth, isAuthenticated, isVerified]);
+
+  if (requireAuth && isAuthenticated && !isVerified) {
+    console.log("User is not verified");
+    enqueueSnackbar(
+      "Please verify your email to access this page. Login again to resend the verification email.",
+      { variant: "error" }
+    );
+    return <Navigate to="/auth/login" replace />;
+  }
+
+  // Authorized and verified
   return <>{children || <Outlet />}</>;
 };
 

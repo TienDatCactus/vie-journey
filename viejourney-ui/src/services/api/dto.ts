@@ -6,9 +6,8 @@ export interface LoginReqDTO {
 export interface LoginRespDTO {
   userId: string;
   accessToken: string;
-  expiresIn: number;
-  expiredAt: Date;
   statusCode: number;
+  // Note: expiration information is no longer included
 }
 
 export interface RegisterReqDTO {
@@ -42,8 +41,6 @@ export interface GetUserRespDTO {
 export interface RefreshTokenRespDTO {
   userId: string;
   accessToken: string;
-  expiresIn: number;
-  expiredAt: Date;
 }
 
 export interface GetUserReqDTO {
