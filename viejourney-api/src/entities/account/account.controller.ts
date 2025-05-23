@@ -13,7 +13,12 @@ import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/entities/role.enum';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
+@Roles(Role.Admin, Role.User)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}

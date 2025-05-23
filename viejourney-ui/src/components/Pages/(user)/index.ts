@@ -12,4 +12,4 @@ export { default as HotelHero } from "./Hotel/HotelHero";
 export { default as HotelPreview } from "./Hotel/HotelPreview";
 export { default as HotelRating } from "./Hotel/HotelRating";
 export { default as HotelRelatedBlogs } from "./Hotel/HotelRelatedBlogs";
-export { default as CreatePlanForm } from "./Trips/CreatePlanForm";
+export { default as CreateTripForm } from "./Trips/CreateTripForm";
