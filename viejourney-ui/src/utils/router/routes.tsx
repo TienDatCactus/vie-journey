@@ -6,6 +6,7 @@ import { PlanningFormation } from "../../pages/(user)/Trip";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -96,8 +97,17 @@ const router = createBrowserRouter([
   {
     path: "/guides",
     element: (
-      <ProtectedRoute requireAuth={true}>
+      <ProtectedRoute requireAuth={false}>
         <SuspenseWrapper component={Guides} />
+      </ProtectedRoute>
+    ),
+    errorElement: <ErrorBoundary />,
+  },
+  {
+    path: "/guides/detail",
+    element: (
+      <ProtectedRoute requireAuth={false}>
+        <SuspenseWrapper component={GuideDetail} />
       </ProtectedRoute>
     ),
     errorElement: <ErrorBoundary />,

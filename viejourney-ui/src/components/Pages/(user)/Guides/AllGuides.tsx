@@ -1,6 +1,7 @@
 import { Button, Grid2, Stack } from "@mui/material";
 import React from "react";
 import GuideCard from "./_elements/GuideCard";
+import { Outlet } from "react-router-dom";
 const AllGuides: React.FC = () => {
   const fakeGuides: Array<{
     img: string;
