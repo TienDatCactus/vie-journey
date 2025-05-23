@@ -1,7 +1,7 @@
 import { Stack, TextField } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import React from "react";
-export const CreatePlanForm: React.FC = () => {
+export const CreateTripForm: React.FC = () => {
   return (
     <Stack className="w-full gap-4">
       <TextField
@@ -25,4 +25,4 @@ export const CreatePlanForm: React.FC = () => {
   );
 };
 
-export default CreatePlanForm;
+export default CreateTripForm;
