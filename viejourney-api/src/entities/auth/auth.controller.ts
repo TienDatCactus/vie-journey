@@ -47,4 +47,14 @@ export class AuthController {
     }
     return this.authService.verifyEmail(token);
   }
+  @Post('/resend-verification-email')
+  async resendVerificationEmail(
+    @Body() body: { email: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (!body.email) {
+      throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
+    }
+    return this.authService.resendVerificationEmail(body.email, res);
+  }
 }

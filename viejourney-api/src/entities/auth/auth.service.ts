@@ -25,6 +25,16 @@ export class AuthService {
     private readonly mailService: MailerService,
   ) {}
 
+  async resendVerificationEmail(email: string, res: Response) {
+    const user = await this.accountModel.findOne({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.active) {
+      throw new ConflictException('User already verified');
+    }
+    this.sendRegistrationEmail(user);
+  }
   async sendEMail(token: string, mail: string) {
     try {
       const link = `${process.env.FE_URL}/auth/verify-email/${token}`;
@@ -54,7 +64,22 @@ export class AuthService {
       );
     }
   }
+  async sendRegistrationEmail(user: Account) {
+    const secret = process.env.JWT_SECRET || 'secret';
+    const registrationToken = this.jwtService.sign(
+      {
+        sub: user._id,
+        email: user.email,
+        purpose: 'email-verification',
+      },
+      {
+        expiresIn: '24h',
+        secret: secret,
+      },
+    );
 
+    this.sendEMail(registrationToken, user.email);
+  }
   async register(email: string, password: string) {
     // Hash password
     const existingUser = await this.accountModel.findOne({ email });
@@ -69,22 +94,9 @@ export class AuthService {
       password: hashedPassword,
       active: false,
     });
-    await user.save(); // Create a specific verification token with purpose
-    const secret = process.env.JWT_SECRET || 'secret';
-    const registrationToken = this.jwtService.sign(
-      {
-        sub: user._id,
-        email: user.email,
-        purpose: 'email-verification',
-      },
-      {
-        expiresIn: '24h',
-        secret: secret,
-      },
-    );
+    await user.save();
 
-    this.sendEMail(registrationToken, email);
-
+    this.sendRegistrationEmail(user);
     return {
       message:
         'Registration successful, please check your email to verify account',
@@ -198,23 +210,12 @@ export class AuthService {
       throw new NotFoundException('Invalid verification token');
     }
     try {
-      // Log the token to help with debugging
-      this.logger.debug(`Verifying token: ${token.substring(0, 20)}...`);
-
-      // Ensure we're using the same secret for verification
       const secret = process.env.JWT_SECRET || 'secret';
-      this.logger.log(
-        `Using secret for verification: ${secret.substring(0, 5)}...`,
-      );
 
-      // Verify the token
       const payload = this.jwtService.verify(token, {
         secret: secret,
       });
 
-      this.logger.log('Payload:', payload);
-
-      // Check if this is an email verification token
       if (payload.purpose !== 'email-verification') {
         this.logger.warn('Token purpose mismatch:', payload.purpose);
         throw new UnauthorizedException('Invalid token type');

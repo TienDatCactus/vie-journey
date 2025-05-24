@@ -58,8 +58,7 @@ export const doRegister = async (data: RegisterReqDTO) => {
 
 export const doVerify = async (
   data: VerifyReqDTO,
-  setError: React.Dispatch<React.SetStateAction<boolean>>,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setCurrentState: React.Dispatch<React.SetStateAction<any>>
 ) => {
   try {
     if (!data.token) {
@@ -68,12 +67,11 @@ export const doVerify = async (
     }
     const resp = await http.get(`${AUTH?.VERIFY}?token=${data.token}`);
     if (resp) {
-      setLoading(false);
+      setCurrentState({ loading: false, err: false, success: true });
     }
     return resp;
   } catch (error) {
-    setError(true);
-    setLoading(false);
+    setCurrentState({ loading: false, err: true, success: false });
   }
 };
 export const doLogout = async (data: LogoutReqDTO) => {
@@ -147,5 +145,16 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
     }
 
     return null;
+  }
+};
+
+export const doResendVerificationEmail = async (email: string) => {
+  try {
+    const resp = await http.post(AUTH?.RESEND_VERIFICATION_EMAIL, { email });
+    if (resp) {
+      return true;
+    }
+  } catch (error) {
+    console.log(error);
   }
 };

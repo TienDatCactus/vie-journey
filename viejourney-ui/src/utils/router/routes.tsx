@@ -2,10 +2,10 @@ import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Guides from "../../pages/(user)/Guides/Guides";
 import Hotels from "../../pages/(user)/Hotels/Hotels";
-import { PlanningFormation } from "../../pages/(user)";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import { CreateTrip, CreateTripDetails } from "../../pages/(user)";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -118,7 +118,16 @@ const router = createBrowserRouter([
     children: [
       {
         path: "create",
-        element: <SuspenseWrapper component={PlanningFormation} />,
+        children: [
+          {
+            path: "",
+            element: <SuspenseWrapper component={CreateTrip} />,
+          },
+          {
+            path: ":tripId",
+            element: <SuspenseWrapper component={CreateTripDetails} />,
+          },
+        ],
       },
     ],
   },
