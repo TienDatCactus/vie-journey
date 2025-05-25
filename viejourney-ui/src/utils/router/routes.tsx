@@ -17,6 +17,9 @@ const VerifyScreen = lazy(
 const AuthHome = lazy(() => import("../../pages/(user)/Home/Home"));
 const UnAuthHome = lazy(() => import("../../pages/(anonymous)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
+const Admin = lazy(() => import("../../pages/(user)/Admin/index"));
+const Accounts = lazy(() => import("../../pages/(user)/Admin/Accounts/index"));
+
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
@@ -110,6 +113,28 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     errorElement: <ErrorBoundary />,
+  },
+  {
+    path: "/admin",
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: "dashboard",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Admin} />
+          </ProtectedRoute>
+        ),
+      },
+       {
+        path: "accounts",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Accounts} />
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
   {
     path: "/trip",
