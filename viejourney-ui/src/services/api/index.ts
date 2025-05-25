@@ -156,5 +156,29 @@ export const doResendVerificationEmail = async (email: string) => {
     }
   } catch (error) {
     console.log(error);
+    return false;
   }
+};
+export const doSendForgotPasswordEmail = async (email: string) => {
+  try {
+    const resp = await http.post(AUTH?.SEND_FORGOT_PASSWORD_EMAIL, { email });
+    if (resp) {
+      return true;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+export const doForgotPassword = async (token: string, password: string) => {
+  try {
+    const resp = await http.post(AUTH?.FORGOT_PASSWORD, { token, password });
+    if (resp) {
+      return true;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  return false;
 };

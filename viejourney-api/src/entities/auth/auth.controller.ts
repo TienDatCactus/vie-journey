@@ -57,4 +57,24 @@ export class AuthController {
     }
     return this.authService.resendVerificationEmail(body.email, res);
   }
+  @Post('/send-forgot-password-email')
+  async sendForgotPasswordEmail(
+    @Body() body: { email: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (!body.email) {
+      throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
+    }
+    return this.authService.sendForgotPasswordEmail(body.email);
+  }
+  @Post('/forgot-password')
+  async forgotPassword(
+    @Body() body: { token: string; password: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (!body.token) {
+      throw new HttpException('Token is required', HttpStatus.BAD_REQUEST);
+    }
+    return this.authService.forgotPassword(body.token, body.password);
+  }
 }
