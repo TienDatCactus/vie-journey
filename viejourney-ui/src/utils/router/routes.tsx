@@ -17,12 +17,14 @@ const UnAuthHome = lazy(() => import("../../pages/(anonymous)/Home/Home"));
 // Protected routes (auth required)
 const AuthHome = lazy(() => import("../../pages/(user)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
+const Admin = lazy(() => import("../../pages/(user)/Admin/index"));
 const Guides = lazy(() => import("../../pages/(user)/Guides/Guides"));
 const Hotels = lazy(() => import("../../pages/(user)/Hotels/Hotels"));
 const CreateTrip = lazy(() => import("../../pages/(user)/Trip/CreateTrip"));
 const CreateTripDetails = lazy(
   () => import("../../pages/(user)/Trip/CreateTripDetails/CreateTripDetails")
 );
+
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
@@ -124,6 +126,28 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     errorElement: <ErrorBoundary />,
+  },
+  {
+    path: "/admin",
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: "dashboard",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Admin} />
+          </ProtectedRoute>
+        ),
+      },
+       {
+        path: "accounts",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Accounts} />
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
   {
     path: "/trip",
