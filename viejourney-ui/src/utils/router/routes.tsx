@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import Accounts from "../../pages/(admin)/Accounts";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -17,14 +18,13 @@ const UnAuthHome = lazy(() => import("../../pages/(anonymous)/Home/Home"));
 // Protected routes (auth required)
 const AuthHome = lazy(() => import("../../pages/(user)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
-const Admin = lazy(() => import("../../pages/(user)/Admin/index"));
+const Admin = lazy(() => import("../../pages/(admin)/Dashboard/index"));
 const Guides = lazy(() => import("../../pages/(user)/Guides/Guides"));
 const Hotels = lazy(() => import("../../pages/(user)/Hotels/Hotels"));
 const CreateTrip = lazy(() => import("../../pages/(user)/Trip/CreateTrip"));
 const CreateTripDetails = lazy(
   () => import("../../pages/(user)/Trip/CreateTripDetails/CreateTripDetails")
 );
-
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
@@ -139,7 +139,7 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-       {
+      {
         path: "accounts",
         element: (
           <ProtectedRoute requireAuth={false}>

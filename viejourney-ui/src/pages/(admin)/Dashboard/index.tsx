@@ -1,11 +1,9 @@
-import AdminLayout from "../../../layouts/AdminLayout";
+import { AdminLayout } from "../../../layouts";
 
 function AdminPage() {
   return (
     <AdminLayout>
-      <div>
-        DashBoard
-      </div>
+      <div>DashBoard</div>
     </AdminLayout>
   );
 }

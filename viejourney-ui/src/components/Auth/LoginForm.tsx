@@ -1,6 +1,3 @@
-import FacebookIcon from "@mui/icons-material/Facebook";
-import GoogleIcon from "@mui/icons-material/Google";
-import XIcon from "@mui/icons-material/X";
 import {
   Button,
   Checkbox,
@@ -23,22 +20,14 @@ import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { doLogin, doSendForgotPasswordEmail } from "../../services/api";
+import {
+  doLogin,
+  doLoginWithGoogle,
+  doSendForgotPasswordEmail,
+} from "../../services/api";
 import { LoginRespDTO } from "../../services/api/dto";
 import { useAuth } from "../../services/contexts";
-const loginMets: Array<{
-  icon: React.ReactNode;
-}> = [
-  {
-    icon: <FacebookIcon />,
-  },
-  {
-    icon: <XIcon />,
-  },
-  {
-    icon: <GoogleIcon />,
-  },
-];
+
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -79,7 +68,9 @@ const LoginForm: React.FC = () => {
       setLoading(false);
     }
   };
-
+  const handleGoogleLogin = async () => {
+    doLoginWithGoogle();
+  };
   const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
     data
   ) => {
@@ -175,16 +166,17 @@ const LoginForm: React.FC = () => {
         </div>
         <Divider className="text-sm theme-light">Or continue with</Divider>
         <Stack direction={"row"} spacing={2} justifyContent={"center"}>
-          {!!loginMets.length &&
-            loginMets?.map((loginMet, index) => (
-              <Button
-                disabled
-                key={index}
-                className="w-full py-3 text-center border-solid  border rounded-md theme-light *:text-base"
-              >
-                {loginMet.icon}
-              </Button>
-            ))}
+          <Button
+            variant="outlined"
+            className="w-full shadow-lg py-2 border-neutral-300 text-center *:text-base"
+            onClick={handleGoogleLogin}
+          >
+            <img
+              src="/icons/icons8-google.svg"
+              alt="Google"
+              className="w-6 h-6 "
+            />
+          </Button>
         </Stack>
       </form>
       <Dialog

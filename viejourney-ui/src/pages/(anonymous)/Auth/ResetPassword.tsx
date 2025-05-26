@@ -1,3 +1,4 @@
+import { Send } from "@mui/icons-material";
 import {
   Alert,
   Button,
@@ -5,12 +6,10 @@ import {
   LinearProgress,
   TextField,
 } from "@mui/material";
-import { enqueueSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { doForgotPassword } from "../../../services/api";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { Send } from "@mui/icons-material";
 const ResetPassword: React.FC = () => {
   const { token } = useParams();
   const [currentState, setCurrentState] = useState<{

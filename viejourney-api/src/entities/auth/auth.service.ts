@@ -24,7 +24,6 @@ export class AuthService {
     @InjectModel(Account.name) private readonly accountModel: Model<Account>,
     private readonly mailService: MailerService,
   ) {}
-
   async resendVerificationEmail(email: string, res: Response) {
     const user = await this.accountModel.findOne({ email });
     if (!user) {
@@ -438,6 +437,48 @@ export class AuthService {
       console.error(`Failed to send verification email to ${mail}:`, error);
       throw new ConflictException(
         'Failed to send verification email. Please try again.',
+      );
+    }
+  }
+  async googleAuth(profile: any, res: Response) {
+    try {
+      console.log(profile);
+      const { email } = profile;
+      if (!email) {
+        throw new HttpException(
+          'No email found in Google profile',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      let user = await this.accountModel.findOne({ email: email.value }).exec();
+      if (!user) {
+        // If user does not exist, create a new account
+        user = new this.accountModel({
+          email: email,
+          password: '', // Password is not used for Google auth
+          active: true, // Automatically activate user for Google auth
+        });
+        await user.save();
+      }
+      const accessToken = this.createAccessToken(user._id, user.email);
+      const refreshToken = this.createRefreshToken(user._id);
+
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.redirect(
+        `${process.env.FE_URL}/auth/social-login-success?` +
+          `accessToken=${accessToken}&userId=${user._id}`,
+      );
+    } catch (error) {
+      this.logger.error('Google authentication error:', error);
+      throw new HttpException(
+        'Google authentication failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

@@ -1,4 +1,4 @@
-import AdminLayout from "../../../../layouts/AdminLayout";
+import { AdminLayout } from "../../../layouts";
 
 function Accounts() {
   return <AdminLayout>Account manage</AdminLayout>;

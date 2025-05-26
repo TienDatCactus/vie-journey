@@ -76,9 +76,7 @@ export const doVerify = async (
 };
 export const doLogout = async (data: LogoutReqDTO) => {
   try {
-    // The backend will clear the refresh token cookie
     await http.post(AUTH?.LOGOUT, data);
-    // Clear access token from localStorage
     localStorage.removeItem("token");
     window.dispatchEvent(new CustomEvent("auth:logout"));
   } catch (error) {
@@ -114,7 +112,6 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
       withCredentials: true, // Critical: needed to send and receive cookies
     });
 
-    // Call the refresh endpoint - refresh token is sent automatically via HTTP-only cookie
     const resp = await axiosInstance.post(AUTH?.REFRESH_TOKEN);
 
     const newTokenData = extractApiData<RefreshTokenRespDTO>(resp);
@@ -135,7 +132,6 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
     console.error("Failed to refresh token:", error);
     clearToken();
 
-    // Only dispatch the auth failure event for 401/403 errors
     if (
       axios.isAxiosError(error) &&
       (error.response?.status === 401 || error.response?.status === 403)
@@ -181,4 +177,14 @@ export const doForgotPassword = async (token: string, password: string) => {
     console.log(error);
   }
   return false;
+};
+
+export const doLoginWithGoogle = () => {
+  try {
+    window.location.href = "http://localhost:5000/api/auth/google";
+  } catch (error) {
+    console.error("Google login failed:", error);
+    return null;
+  }
+  return null;
 };
