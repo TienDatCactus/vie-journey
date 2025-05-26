@@ -32,7 +32,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         email: payload.email,
         role: user.role, // Pass the role to the request
       };
-      console.log('Returning user data:', result);
       return result;
     } catch (error) {
       console.error('Error in JWT validation:', error);

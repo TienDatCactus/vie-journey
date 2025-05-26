@@ -14,7 +14,9 @@ const ErrorBoundary: React.FC = () => {
             <p className="play-fair text-[40px]">{error?.status}</p>
           </div>
           <div>
-            <p className="text-[16px] uppercase code">{error?.data}</p>
+            <p className="text-[16px] uppercase code">
+              {error?.data.substring(0, 100) || "An error occurred"}
+            </p>
             <p className="text-[16px] uppercase code">
               But we find a cool{" "}
               <a
