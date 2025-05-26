@@ -49,4 +49,14 @@ async deleteAccount(id: string): Promise<Account | null> {
     }
     return account;
 }
+
+// update Active Status
+async updateActiveStatus(id: string, active: boolean): Promise<Account | undefined> {
+ const account = await this.accountModel.findById(id).exec();
+    if (!account) {
+        throw new Error(`Account with ID ${id} not found`);
+    }
+    account.active = active;
+    return account.save();
+}
 }

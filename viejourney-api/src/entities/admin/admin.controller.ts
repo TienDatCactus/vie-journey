@@ -38,4 +38,8 @@ async createAccount(@Body() createAccountDto: CreateAccountDto) {
 async deleteAccount(@Param('id') id: string) {
     return this.adminService.deleteAccount(id);
   }
+@Patch('accounts/updateActive/:id')
+async updateActiveStatus(@Param('id') id: string, @Body('active') active: boolean) {
+    return this.adminService.updateActiveStatus(id, active);
+}
 }
