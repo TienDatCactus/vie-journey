@@ -8,6 +8,7 @@ export const AUTH = {
   SEND_FORGOT_PASSWORD_EMAIL: "/auth/send-forgot-password-email",
   FORGOT_PASSWORD: "/auth/forgot-password",
   GOOGLE_LOGIN: "/auth/google-login",
+  VALIDATE_ACCESS_TOKEN: "/auth/validate-token",
   // FORGOT_PASSWORD: "/auth/forgot-password",
   // RESET_PASSWORD: "/auth/reset-password",
 };

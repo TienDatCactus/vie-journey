@@ -116,7 +116,7 @@ const RegisterForm: React.FC = () => {
       <Stack direction={"row"} spacing={2} justifyContent={"center"}>
         <Button
           variant="outlined"
-          className="w-full shadow-lg py-2 border-neutral-300 text-center *:text-base"
+          className="w-full hover:shadow-lg py-2 border-neutral-300 text-center *:text-base"
         >
           <img
             src="/icons/icons8-google.svg"

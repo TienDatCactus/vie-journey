@@ -25,6 +25,9 @@ const CreateTrip = lazy(() => import("../../pages/(user)/Trip/CreateTrip"));
 const CreateTripDetails = lazy(
   () => import("../../pages/(user)/Trip/CreateTripDetails/CreateTripDetails")
 );
+const OauthSuccess = lazy(
+  () => import("./../../pages/(anonymous)/Auth/OauthSuccess")
+);
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
@@ -97,6 +100,10 @@ const router = createBrowserRouter([
             <SuspenseWrapper component={ResetPassword} />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "oauth-success",
+        element: <SuspenseWrapper component={OauthSuccess} />,
       },
     ],
   },

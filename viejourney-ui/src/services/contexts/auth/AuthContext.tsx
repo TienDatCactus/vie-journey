@@ -87,7 +87,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // Fetch user data when credentials change
   useEffect(() => {
     if (credential?.userId && credential.userId.length > 0) {
       const fetchUser = async () => {
