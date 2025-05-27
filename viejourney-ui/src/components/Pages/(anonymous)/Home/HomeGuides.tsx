@@ -1,4 +1,4 @@
-import { Button, Grid2 } from "@mui/material";
+import { Button, Chip, Grid2 } from "@mui/material";
 import React from "react";
 import "swiper/css";
 import "swiper/css/effect-cards";
@@ -34,40 +34,43 @@ const HomeGuides: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-[1000px] pb-20">
-      <Grid2 container spacing={4} alignItems={"center"}>
-        <Grid2 size={6}>
-          <h1 className="text-6xl font-bold">Our traveling guides</h1>
-          <p className="text-neutral-600 py-6">
-            The most exotic island in Europe in the center of the vast blue
-            ocean. enveloped by a mild maritime climate and the paradisiacal
-            beauty of untouched nature imaginable
+    <div className="max-w-[1200px] pb-20">
+      <div className="grid grid-cols-12">
+        <div className="lg:col-span-6 col-span-12 flex flex-col justify-center items-start gap-4">
+          <Chip label="# Our destination" />
+          <h2>Your next favorite place awaits</h2>
+        </div>
+        <div className="lg:col-span-6 col-span-12 flex flex-col justify-center items-start gap-4">
+          <p>
+            Get the best value for your trips with exclusive discounts, seasonal
+            promotions, and deals to save while exploring the world!
           </p>
-          <Button className="px-4 py-2 text-black border-2 border-neutral-600 border-solid rounded-full ">
-            Read all guides
+          <Button className="px-4 py-2 text-black border-2 border-neutral-600 border-solid rounded-full">
+            See All
           </Button>
-        </Grid2>
-        <Grid2 size={6}>
-          <Swiper
-            effect={"cards"}
-            grabCursor={true}
-            modules={[EffectCards]}
-            className="w-[80%] shadow-md rounded-2xl mySwiper"
-          >
-            {!!guideCards?.length &&
-              guideCards?.map((guide, index) => (
-                <SwiperSlide key={index}>
-                  <GuideCard
-                    title={guide.title}
-                    img={guide.img}
-                    tags={guide.tags}
-                    mins={guide.mins}
-                  />
-                </SwiperSlide>
-              ))}
-          </Swiper>
-        </Grid2>
-      </Grid2>
+        </div>
+      </div>
+
+      <div>
+        <Swiper
+          effect={"cards"}
+          grabCursor={true}
+          modules={[EffectCards]}
+          className="w-[80%] shadow-md rounded-2xl mySwiper"
+        >
+          {!!guideCards?.length &&
+            guideCards?.map((guide, index) => (
+              <SwiperSlide key={index}>
+                <GuideCard
+                  title={guide.title}
+                  img={guide.img}
+                  tags={guide.tags}
+                  mins={guide.mins}
+                />
+              </SwiperSlide>
+            ))}
+        </Swiper>
+      </div>
     </div>
   );
 };
