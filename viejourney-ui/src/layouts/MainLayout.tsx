@@ -24,7 +24,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div>
       {isAuthenticated ? <MainAuthHeader /> : <MainUnAuthHeader />}
-      <main className="flex flex-col items-center justify-center bg-gray-50">
+      <main className="flex flex-col items-center justify-center bg-neutral-50">
         {children}
       </main>
       <Fab
