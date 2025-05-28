@@ -30,12 +30,12 @@ const HomeGuides: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-[1200px] pb-20">
+    <div className="max-w-[75rem] pb-20">
       <div className="grid grid-cols-12 ">
         <div className="lg:col-span-6 col-span-12 flex flex-col justify-center items-start gap-4 py-10">
           <Chip
             label="# Our destination"
-            className="bg-white border border-neutral-400"
+            className="bg-white border text-neutral-600 border-neutral-400"
           />
           <h2 className="font-semibold lg:text-6xl text-3xl">
             Your next favorite place awaits

@@ -82,7 +82,7 @@ const HomeAdvert: React.FC = () => {
   const swiperRef = useRef<any>(null);
 
   return (
-    <div className="max-w-[1200px] py-10  w-full">
+    <div className="max-w-[75rem] py-10  w-full">
       <div className="grid grid-cols-12 gap-4 p-4 ">
         <div className="col-span-3 flex items-start justify-start">
           <Chip

@@ -1,61 +1,94 @@
+import { ExpandMore, TravelExplore } from "@mui/icons-material";
 import PublicIcon from "@mui/icons-material/Public";
-import { Divider, Stack } from "@mui/material";
+import { Button, Divider, Stack } from "@mui/material";
+import { useLocation } from "react-router-dom";
 const Footer = () => {
-  const footerNav: Array<{ name: string; link: string }> = [
-    { name: "Hotels", link: "#" },
-    { name: "Roadtrip", link: "#" },
-    { name: "Trip planner AI", link: "#" },
-    { name: "Plan a trip", link: "#" },
-    { name: "Trip planner mobile app", link: "#" },
-    { name: "Travel maps", link: "#" },
-    { name: "Blog", link: "#" },
-    { name: "Report security issue", link: "#" },
-    { name: "Terms, Privacy policy & Copyright", link: "#" },
-    { name: "Browser extension", link: "#" },
+  const path = useLocation().pathname;
+  console.log(path);
+  const footerList = [
+    {
+      title: "Explore",
+      items: ["Destinations", "Top Tours", "Travel Guides", "Adventure Ideas"],
+    },
+    {
+      title: "About Us",
+      items: [
+        "Our Story",
+        "Testimonials",
+        "Sustainability Commitment",
+        "Careers",
+      ],
+    },
+    {
+      title: "Support",
+      items: ["FAQs", "Contact Us", "Booking Policies", "Travel Insurance"],
+    },
   ];
-
+  const footerNav = ["Home", "Travel guides", "Hotels", "Profile"];
   return (
-    <div className="px-60 min-h-[300px] -z-10 flex flex-col justify-center">
-      <Stack
-        direction={"row"}
-        gap={2}
-        className="min-h-[5rem]"
-        alignItems={"center"}
-      >
-        <div className="theme-light p-8 shadow-md rounded-2xl">
-          <PublicIcon className="text-4xl" />
-        </div>
-        <Stack direction={"column"} className="max-h-[80px]" gap={1}>
-          <ul className="flex flex-wrap gap-2 px-0 list-none">
-            {!!footerNav.length &&
-              footerNav?.map((nav, index) => (
-                <li key={index} className="hover:underline cursor-pointer">
-                  {nav.name}
+    <footer className="w-full lg:h-90  bg-dark-900 px-10 py-10 pb-20 ">
+      <div className="flex gap-10">
+        {footerList.map((section, index) => (
+          <div key={index}>
+            <h4 className="text-neutral-50 lg:text-2xl">{section.title}</h4>
+            <ul className="">
+              {section.items.map((item, itemIndex) => (
+                <li
+                  key={itemIndex}
+                  className="text-neutral-500 my-4 lg:text-base hover:underline cursor-pointer transition-all duration-300 hover:text-neutral-50"
+                >
+                  {item}
                 </li>
               ))}
-          </ul>
-          <p className="theme-light text-xs">
-            © 2024 VieJourney, Inc. All rights reserved. Made with ❤️ in Vietnam
-          </p>
+            </ul>
+          </div>
+        ))}
+      </div>
+      <Divider className="w-full my-4 bg-neutral-800" />
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Stack direction={"row"} spacing={2} alignItems="center">
+          <TravelExplore className="text-neutral-50 text-5xl" />
+          <h1 className="text-neutral-50 text-2xl font-medium font-sans italic">
+            VieJourney
+          </h1>
+        </Stack>
+        <Stack direction="row" spacing={2} className="mt-4">
+          {!!footerNav?.length &&
+            footerNav?.map((item, index) => (
+              <Button
+                key={index}
+                className={` font-medium text-base normal-case px-6 rounded-full ${
+                  path === `/${item.toLowerCase()}`
+                    ? "bg-neutral-50 text-dark-900"
+                    : ""
+                } ${
+                  item === "Home" && path === "/"
+                    ? "bg-neutral-50 text-dark-900"
+                    : "text-neutral-500"
+                } `}
+                href={`/${item.toLowerCase()}`}
+              >
+                {item}
+              </Button>
+            ))}
+        </Stack>
+        <Stack
+          direction={"row"}
+          gap={1}
+          className="*:text-neutral-500 *:border *:border-neutral-800 *:hover:bg-neutral-800 *:hover:text-neutral-50 *:rounded-full *:px-4 *:py-2"
+        >
+          <Button startIcon={<PublicIcon />} endIcon={<ExpandMore />}>
+            English
+          </Button>
+          <Button>Contact Us</Button>
         </Stack>
       </Stack>
-      <Divider className="py-4" />
-      <Stack direction={"row"} justifyContent={"space-between"}>
-        <ul className="flex gap-2 px-0 list-none text-xs text-neutral-500">
-          <li>Help center</li>
-          <li>Trust & Safety</li>
-          <li>Privacy settings</li>
-        </ul>
-        <div className="flex items-center gap-2 text-[12px]">
-          <p>English</p>
-          <span>/</span>
-          <p className="text-[#959595]">Vietnamese</p>{" "}
-          {
-            // check browser language
-          }
-        </div>
-      </Stack>
-    </div>
+    </footer>
   );
 };
 

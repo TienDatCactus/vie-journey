@@ -115,12 +115,12 @@ const HomeBanner: React.FC = () => {
     }
   }, []);
   return (
-    <div className=" max-w-[1200px] pb-10  relative ">
+    <div className=" max-w-[75rem] pb-10  relative ">
       <div className="grid lg:grid-cols-2 sm:grid-cols-1 gap-4">
         <div>
           <Chip
             label="# Top Tours"
-            className="bg-white border border-neutral-400"
+            className="bg-white border text-neutral-600 border-neutral-400"
           />
         </div>
         <div>
