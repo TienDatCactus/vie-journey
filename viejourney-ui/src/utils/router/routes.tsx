@@ -2,7 +2,6 @@ import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Guides from "../../pages/(user)/Guides/Guides";
 import Hotels from "../../pages/(user)/Hotels/Hotels";
-import { PlanningFormation } from "../../pages/(user)";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
@@ -128,7 +127,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "create",
-        element: <SuspenseWrapper component={PlanningFormation} />,
+        // element: <SuspenseWrapper component={PlanningFormation} />,
       },
     ],
   },
