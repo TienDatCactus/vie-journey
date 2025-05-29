@@ -38,7 +38,7 @@ export const CreateTripForm: React.FC = () => {
         </Stack>
       </div>
       <Stack direction={"row"} gap={2} justifyContent={"space-between"}>
-        <a className="flex items-center justify-center gap-1 *:text-neutral-700 hover:underline">
+        <a className="flex items-center justify-center gap-1 cursor-pointer *:text-neutral-700 hover:underline">
           <Add className="text-base" />
           <span>Invite tripmates</span>
         </a>
@@ -48,7 +48,10 @@ export const CreateTripForm: React.FC = () => {
         </a>
       </Stack>
       <div className="mx-auto mt-10">
-        <Button variant="contained" className="p-4 rounded-4xl font-semibold">
+        <Button
+          variant="contained"
+          className="p-4 rounded-4xl text-xl font-medium"
+        >
           Start planning
         </Button>
         <a className="mt-6 text-center block text-neutral-600 font-semibold cursor-pointer hover:underline text-sm">

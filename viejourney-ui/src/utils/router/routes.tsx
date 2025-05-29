@@ -1,7 +1,5 @@
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Guides from "../../pages/(user)/Guides/Guides";
-import Hotels from "../../pages/(user)/Hotels/Hotels";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
@@ -121,22 +119,28 @@ const router = createBrowserRouter([
   },
   {
     path: "/guides",
-    element: (
-      <ProtectedRoute requireAuth={false}>
-        <SuspenseWrapper component={Guides} />
-      </ProtectedRoute>
-    ),
-    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: "",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Guides} />
+          </ProtectedRoute>
+        ),
+        errorElement: <ErrorBoundary />,
+      },
+      {
+        path: "detail",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={GuideDetail} />
+          </ProtectedRoute>
+        ),
+        errorElement: <ErrorBoundary />,
+      },
+    ],
   },
-  {
-    path: "/guides/detail",
-    element: (
-      <ProtectedRoute requireAuth={false}>
-        <SuspenseWrapper component={GuideDetail} />
-      </ProtectedRoute>
-    ),
-    errorElement: <ErrorBoundary />,
-  },
+
   {
     path: "/hotels",
     element: (

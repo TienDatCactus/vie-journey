@@ -1,5 +1,4 @@
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
-import "@openmapvn/openmapvn-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
 const HomeMap = () => {

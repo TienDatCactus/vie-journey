@@ -13,7 +13,6 @@ const BlogAppBar = () => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
-      // Show AppBar when scrolling past the user avatar section (approximately 400px)
       if (currentScrollY > 400) {
         setIsVisible(true);
       } else {

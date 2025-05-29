@@ -13,3 +13,4 @@ export { default as HotelPreview } from "./Hotel/HotelPreview";
 export { default as HotelRating } from "./Hotel/HotelRating";
 export { default as HotelRelatedBlogs } from "./Hotel/HotelRelatedBlogs";
 export { default as CreateTripForm } from "./Trips/CreateTripForm";
+export { default as TripMap } from "./Trips/TripMap";
