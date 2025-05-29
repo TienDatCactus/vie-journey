@@ -1,8 +1,11 @@
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import Guides from "../../pages/(user)/Guides/Guides";
+import Hotels from "../../pages/(user)/Hotels/Hotels";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
 import Accounts from "../../pages/(admin)/Accounts";
 
 // Anonymous routes (no auth required)
@@ -119,8 +122,17 @@ const router = createBrowserRouter([
   {
     path: "/guides",
     element: (
-      <ProtectedRoute requireAuth={true}>
+      <ProtectedRoute requireAuth={false}>
         <SuspenseWrapper component={Guides} />
+      </ProtectedRoute>
+    ),
+    errorElement: <ErrorBoundary />,
+  },
+  {
+    path: "/guides/detail",
+    element: (
+      <ProtectedRoute requireAuth={false}>
+        <SuspenseWrapper component={GuideDetail} />
       </ProtectedRoute>
     ),
     errorElement: <ErrorBoundary />,
