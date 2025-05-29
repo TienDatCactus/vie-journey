@@ -7,17 +7,31 @@ import Accounts from "../../pages/(admin)/Accounts";
 import Guides from "../../pages/(user)/Guides/Guides";
 import Hotels from "../../pages/(user)/Hotels/Hotels";
 import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
+import Accounts from "../../pages/(admin)/Accounts";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
 const VerifyScreen = lazy(
   () => import("../../pages/(anonymous)/Auth/VerifyEmail")
 );
+const ResetPassword = lazy(
+  () => import("../../pages/(anonymous)/Auth/ResetPassword")
+);
+const UnAuthHome = lazy(() => import("../../pages/(anonymous)/Home/Home"));
 
 // Protected routes (auth required)
 const AuthHome = lazy(() => import("../../pages/(user)/Home/Home"));
-const UnAuthHome = lazy(() => import("../../pages/(anonymous)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
+const Admin = lazy(() => import("../../pages/(admin)/Dashboard/index"));
+const Guides = lazy(() => import("../../pages/(user)/Guides/Guides"));
+const Hotels = lazy(() => import("../../pages/(user)/Hotels/Hotels"));
+const CreateTrip = lazy(() => import("../../pages/(user)/Trip/CreateTrip"));
+const CreateTripDetails = lazy(
+  () => import("../../pages/(user)/Trip/CreateTripDetails/CreateTripDetails")
+);
+const OauthSuccess = lazy(
+  () => import("./../../pages/(anonymous)/Auth/OauthSuccess")
+);
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
@@ -83,6 +97,18 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: "reset-password/:token",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={ResetPassword} />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "oauth-success",
+        element: <SuspenseWrapper component={OauthSuccess} />,
+      },
     ],
   },
   {
@@ -96,22 +122,28 @@ const router = createBrowserRouter([
   },
   {
     path: "/guides",
-    element: (
-      <ProtectedRoute requireAuth={false}>
-        <SuspenseWrapper component={Guides} />
-      </ProtectedRoute>
-    ),
-    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: "",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Guides} />
+          </ProtectedRoute>
+        ),
+        errorElement: <ErrorBoundary />,
+      },
+      {
+        path: "detail",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={GuideDetail} />
+          </ProtectedRoute>
+        ),
+        errorElement: <ErrorBoundary />,
+      },
+    ],
   },
-  {
-    path: "/guides/detail",
-    element: (
-      <ProtectedRoute requireAuth={false}>
-        <SuspenseWrapper component={GuideDetail} />
-      </ProtectedRoute>
-    ),
-    errorElement: <ErrorBoundary />,
-  },
+
   {
     path: "/hotels",
     element: (
@@ -120,6 +152,28 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     errorElement: <ErrorBoundary />,
+  },
+  {
+    path: "/admin",
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: "dashboard",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Admin} />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "accounts",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Accounts} />
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
   {
     path: "/trip",

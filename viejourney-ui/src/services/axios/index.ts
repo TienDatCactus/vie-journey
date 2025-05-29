@@ -377,16 +377,12 @@ http.interceptors.request.use(
     // Track the start of this operation
     const operationId = trackOperationStart();
     config.headers["X-Operation-ID"] = operationId;
-
-    // Skip token handling for auth endpoints
     const isAuthEndpoint = [
       "/auth/login",
       "/auth/register",
       "/auth/refresh",
     ].some((endpoint) => config.url?.includes(endpoint));
     if (!isAuthEndpoint) {
-      // Add token to request if it exists - no proactive refresh anymore
-      // We now rely exclusively on 401 responses to trigger token refresh
       const accessToken = getAccessToken();
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;

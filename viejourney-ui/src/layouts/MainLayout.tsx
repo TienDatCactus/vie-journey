@@ -22,23 +22,22 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div>
+    <>
       {isAuthenticated ? <MainAuthHeader /> : <MainUnAuthHeader />}
-      <main className="flex flex-col items-center justify-center">
+      <main className="flex flex-col items-center justify-center bg-neutral-50">
         {children}
       </main>
       <Fab
-        size="small"
-        color="primary"
+        size="large"
         aria-label="add"
-        className="fixed bottom-4 right-4"
+        className="fixed bottom-10 right-10 bg-neutral-50"
         onClick={() => smoothScrollTo(0)}
       >
         <VerticalAlignTop />
       </Fab>
-      <Divider />
+      <Divider className="w-full bg-neutral-800" />
       <Footer />
-    </div>
+    </>
   );
 };
 

@@ -33,11 +33,6 @@ export class AccountController {
     return this.accountService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.accountService.findOne(id);
-  }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
     return this.accountService.update(id, updateAccountDto);

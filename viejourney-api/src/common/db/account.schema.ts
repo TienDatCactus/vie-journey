@@ -8,7 +8,7 @@ class Account extends Document {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop({})
   password: string;
   @Prop({ default: 'USER', enum: ['USER', 'ADMIN', 'MANAGER'] })
   role: string;
