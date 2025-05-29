@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
 import Accounts from "../../pages/(admin)/Accounts";
 
 // Anonymous routes (no auth required)
@@ -24,6 +25,9 @@ const Hotels = lazy(() => import("../../pages/(user)/Hotels/Hotels"));
 const CreateTrip = lazy(() => import("../../pages/(user)/Trip/CreateTrip"));
 const CreateTripDetails = lazy(
   () => import("../../pages/(user)/Trip/CreateTripDetails/CreateTripDetails")
+);
+const OauthSuccess = lazy(
+  () => import("./../../pages/(anonymous)/Auth/OauthSuccess")
 );
 
 // Wrap lazy-loaded components with Suspense
@@ -98,6 +102,10 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: "oauth-success",
+        element: <SuspenseWrapper component={OauthSuccess} />,
+      },
     ],
   },
   {
@@ -111,13 +119,28 @@ const router = createBrowserRouter([
   },
   {
     path: "/guides",
-    element: (
-      <ProtectedRoute requireAuth={true}>
-        <SuspenseWrapper component={Guides} />
-      </ProtectedRoute>
-    ),
-    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: "",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Guides} />
+          </ProtectedRoute>
+        ),
+        errorElement: <ErrorBoundary />,
+      },
+      {
+        path: "detail",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={GuideDetail} />
+          </ProtectedRoute>
+        ),
+        errorElement: <ErrorBoundary />,
+      },
+    ],
   },
+
   {
     path: "/hotels",
     element: (

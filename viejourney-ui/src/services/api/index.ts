@@ -13,7 +13,7 @@ import {
   RegisterRespDTO,
   VerifyReqDTO,
 } from "./dto";
-import { clearToken } from "./token";
+import { clearToken, setToken } from "./token";
 import { AUTH, USER } from "./url";
 
 export const doLogin = async (data: LoginReqDTO) => {
@@ -21,9 +21,7 @@ export const doLogin = async (data: LoginReqDTO) => {
     const resp = await http.post(AUTH?.LOGIN, data);
     const tokenData = extractApiData<LoginRespDTO>(resp);
     if (tokenData && tokenData.accessToken) {
-      // Store only access token related data in localStorage
-      // Refresh token is now handled via HTTP-only cookies
-      localStorage.setItem("token", JSON.stringify(tokenData));
+      setToken(tokenData);
     }
     return tokenData;
   } catch (error) {
@@ -181,10 +179,25 @@ export const doForgotPassword = async (token: string, password: string) => {
 
 export const doLoginWithGoogle = () => {
   try {
-    window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = `${import.meta.env.VITE_PRIVATE_URL}/auth/google`;
   } catch (error) {
     console.error("Google login failed:", error);
     return null;
   }
   return null;
+};
+
+export const doValidateAccessToken = async (accessToken: string) => {
+  try {
+    const resp = await http.post(AUTH?.VALIDATE_ACCESS_TOKEN, {
+      token: accessToken,
+    });
+    if (resp) {
+      return extractApiData<{
+        userId: string;
+      }>(resp);
+    }
+  } catch (error) {
+    console.error(error);
+  }
 };

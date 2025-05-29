@@ -2,10 +2,10 @@ import { MainLayout } from "../../../layouts";
 import {
   HomeAdvert,
   HomeBanner,
-  HomeCatCall,
+  HomeCall,
   HomeGuides,
   HomeHero,
-  HomeTours,
+  HomeTestimonial,
 } from "../../../components/Pages/(anonymous)/Home";
 
 const Home = () => {
@@ -15,8 +15,8 @@ const Home = () => {
       <HomeAdvert />
       <HomeGuides />
       <HomeBanner />
-      <HomeTours />
-      <HomeCatCall />
+      <HomeTestimonial />
+      <HomeCall />
     </MainLayout>
   );
 };

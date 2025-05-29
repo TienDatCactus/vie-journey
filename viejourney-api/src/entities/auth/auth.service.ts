@@ -450,9 +450,9 @@ export class AuthService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      let user = await this.accountModel.findOne({ email: email.value }).exec();
+      let user = await this.accountModel.findOne({ email: email }).exec();
+      console.log(user);
       if (!user) {
-        // If user does not exist, create a new account
         user = new this.accountModel({
           email: email,
           password: '', // Password is not used for Google auth
@@ -471,13 +471,49 @@ export class AuthService {
       });
 
       return res.redirect(
-        `${process.env.FE_URL}/auth/social-login-success?` +
-          `accessToken=${accessToken}&userId=${user._id}`,
+        `${process.env.FE_URL}/auth/oauth-success?` +
+          `accessToken=${accessToken}`,
       );
     } catch (error) {
       this.logger.error('Google authentication error:', error);
       throw new HttpException(
         'Google authentication failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async validateAccessToken(accessToken: string) {
+    try {
+      const secret = process.env.JWT_SECRET ? process.env.JWT_SECRET : 'secret';
+      const payload = this.jwtService.verify(accessToken, {
+        secret: secret,
+      });
+      if (!payload || !payload.sub) {
+        this.logger.warn('Invalid access token payload:', payload);
+        return null;
+      }
+      const userId = payload.sub;
+      const user = await this.accountModel.findById(userId).exec();
+      if (!user) {
+        this.logger.warn(`User not found for ID: ${userId}`);
+        return null;
+      }
+      if (!user.active) {
+        this.logger.warn(`User with ID ${userId} is not active`);
+        return null;
+      }
+      return {
+        userId: user._id,
+      };
+    } catch (error) {
+      this.logger.error('Access token validation error:', error);
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Access token has expired');
+      } else if (error.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Invalid access token');
+      }
+      throw new HttpException(
+        'Failed to validate access token',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

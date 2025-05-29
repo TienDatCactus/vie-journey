@@ -3,7 +3,7 @@ import { TripLayout } from "../../../../layouts";
 const CreateTripDetails: React.FC = () => {
   return (
     <TripLayout>
-      <h1>CreateTripDetails</h1>
+      <div className="h-screen">dat</div>
     </TripLayout>
   );
 };

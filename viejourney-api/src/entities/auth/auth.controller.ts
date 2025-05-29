@@ -89,4 +89,14 @@ export class AuthController {
   async googleAuth(@Req() req: Request, @Res() res: Response) {
     return this.authService.googleAuth(req.user, res);
   }
+  @Post('validate-token')
+  async validateToken(
+    @Body() body: { token: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (!body.token) {
+      throw new HttpException('Token is required', HttpStatus.BAD_REQUEST);
+    }
+    return this.authService.validateAccessToken(body.token);
+  }
 }

@@ -31,7 +31,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Redirect verified users away from login/register
   if (!requireAuth && isAuthenticated) {
     console.log("User is authenticated");
-    return <Navigate to="/" replace />;
+    return <>{children || <Outlet />}</>;
   }
 
   // Show warning and redirect if user is not verified

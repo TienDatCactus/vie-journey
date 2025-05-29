@@ -31,6 +31,18 @@ export const getToken = (): TokenData | null => {
   }
 };
 
+export const setToken = (token: TokenData): void => {
+  if (!token || !token.accessToken || !token.userId) {
+    console.error("Invalid token data provided");
+    return;
+  }
+  try {
+    localStorage.setItem("token", JSON.stringify(token));
+  } catch (error) {
+    console.error("Error setting token:", error);
+  }
+};
+
 /**
  * Check if there's a token in localStorage
  * Since we no longer receive expiration time, we can only check if a token exists
