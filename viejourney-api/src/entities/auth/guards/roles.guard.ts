@@ -31,7 +31,7 @@ export class RolesGuard implements CanActivate {
     // Debug log to check what roles are required and what user has
     this.logger.debug(`Required roles: ${JSON.stringify(requiredRoles)}`);
     this.logger.debug(`User info: ${JSON.stringify(user)}`);
-
+    console.log('User info:', user);
     if (!user || !user.role) {
       this.logger.warn('No user or role found in request');
       return false;

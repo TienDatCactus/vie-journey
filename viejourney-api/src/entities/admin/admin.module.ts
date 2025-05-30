@@ -1,18 +1,21 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { forwardRef, Module } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
-import { BlogSchema } from '../../common/db/blog.schema';
-import { CommentSchema } from '../../common/db/comment.schema';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AccountSchema } from 'src/common/db/account.schema';
+import { Account } from '../account/entities/account.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: 'Blog', schema: BlogSchema },
-      { name: 'Comment', schema: CommentSchema },
-    ]),
+ MongooseModule.forFeature([{
+  name: Account.name,
+  schema: AccountSchema,
+ }]),
+ forwardRef(() => AuthModule) // Use forwardRef to avoid circular dependency
   ],
   controllers: [AdminController],
   providers: [AdminService],
+  exports: [AdminService],
 })
 export class AdminModule {}

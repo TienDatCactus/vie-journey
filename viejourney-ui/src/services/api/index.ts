@@ -13,7 +13,7 @@ import {
   RegisterRespDTO,
   VerifyReqDTO,
 } from "./dto";
-import { clearToken } from "./token";
+import { clearToken, setToken } from "./token";
 import { AUTH, USER } from "./url";
 
 export const doLogin = async (data: LoginReqDTO) => {
@@ -21,9 +21,7 @@ export const doLogin = async (data: LoginReqDTO) => {
     const resp = await http.post(AUTH?.LOGIN, data);
     const tokenData = extractApiData<LoginRespDTO>(resp);
     if (tokenData && tokenData.accessToken) {
-      // Store only access token related data in localStorage
-      // Refresh token is now handled via HTTP-only cookies
-      localStorage.setItem("token", JSON.stringify(tokenData));
+      setToken(tokenData);
     }
     return tokenData;
   } catch (error) {
@@ -58,8 +56,7 @@ export const doRegister = async (data: RegisterReqDTO) => {
 
 export const doVerify = async (
   data: VerifyReqDTO,
-  setError: React.Dispatch<React.SetStateAction<boolean>>,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setCurrentState: React.Dispatch<React.SetStateAction<any>>
 ) => {
   try {
     if (!data.token) {
@@ -68,19 +65,16 @@ export const doVerify = async (
     }
     const resp = await http.get(`${AUTH?.VERIFY}?token=${data.token}`);
     if (resp) {
-      setLoading(false);
+      setCurrentState({ loading: false, err: false, success: true });
     }
     return resp;
   } catch (error) {
-    setError(true);
-    setLoading(false);
+    setCurrentState({ loading: false, err: true, success: false });
   }
 };
 export const doLogout = async (data: LogoutReqDTO) => {
   try {
-    // The backend will clear the refresh token cookie
     await http.post(AUTH?.LOGOUT, data);
-    // Clear access token from localStorage
     localStorage.removeItem("token");
     window.dispatchEvent(new CustomEvent("auth:logout"));
   } catch (error) {
@@ -116,7 +110,6 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
       withCredentials: true, // Critical: needed to send and receive cookies
     });
 
-    // Call the refresh endpoint - refresh token is sent automatically via HTTP-only cookie
     const resp = await axiosInstance.post(AUTH?.REFRESH_TOKEN);
 
     const newTokenData = extractApiData<RefreshTokenRespDTO>(resp);
@@ -137,7 +130,6 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
     console.error("Failed to refresh token:", error);
     clearToken();
 
-    // Only dispatch the auth failure event for 401/403 errors
     if (
       axios.isAxiosError(error) &&
       (error.response?.status === 401 || error.response?.status === 403)
@@ -147,5 +139,65 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
     }
 
     return null;
+  }
+};
+
+export const doResendVerificationEmail = async (email: string) => {
+  try {
+    const resp = await http.post(AUTH?.RESEND_VERIFICATION_EMAIL, { email });
+    if (resp) {
+      return true;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+export const doSendForgotPasswordEmail = async (email: string) => {
+  try {
+    const resp = await http.post(AUTH?.SEND_FORGOT_PASSWORD_EMAIL, { email });
+    if (resp) {
+      return true;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+export const doForgotPassword = async (token: string, password: string) => {
+  try {
+    const resp = await http.post(AUTH?.FORGOT_PASSWORD, { token, password });
+    if (resp) {
+      return true;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  return false;
+};
+
+export const doLoginWithGoogle = () => {
+  try {
+    window.location.href = `${import.meta.env.VITE_PRIVATE_URL}/auth/google`;
+  } catch (error) {
+    console.error("Google login failed:", error);
+    return null;
+  }
+  return null;
+};
+
+export const doValidateAccessToken = async (accessToken: string) => {
+  try {
+    const resp = await http.post(AUTH?.VALIDATE_ACCESS_TOKEN, {
+      token: accessToken,
+    });
+    if (resp) {
+      return extractApiData<{
+        userId: string;
+      }>(resp);
+    }
+  } catch (error) {
+    console.error(error);
   }
 };

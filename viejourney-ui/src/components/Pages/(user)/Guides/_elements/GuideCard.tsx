@@ -7,6 +7,7 @@ import CardActionArea from "@mui/material/CardActionArea";
 import { Avatar, IconButton, Stack } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { useNavigate } from "react-router-dom";
 
 interface GuideCardProps {
   index: number;
@@ -19,7 +20,13 @@ interface GuideCardProps {
 }
 
 const GuideCard = (props: GuideCardProps) => {
+  const navigate = useNavigate();
   const { index, img, title, description, author, likes, views } = props;
+
+  const handleNavigate = () => {
+    navigate(`/guides/detail`); // 🔗 Điều hướng tới trang chi tiết
+  };
+
   return (
     <Card
       sx={{ maxWidth: 345 }}
@@ -34,6 +41,7 @@ const GuideCard = (props: GuideCardProps) => {
           image={"https://placehold.co/600x400"}
           alt="green iguana"
           className="duration-200 ease-in-out rounded-lg hover:scale-115 cursor-pointer"
+          onClick={handleNavigate}
         />
       </div>
       <CardContent>
@@ -42,6 +50,7 @@ const GuideCard = (props: GuideCardProps) => {
           variant="h5"
           component="div"
           className="my-0 truncate"
+          onClick={handleNavigate}
         >
           {title}
         </Typography>
