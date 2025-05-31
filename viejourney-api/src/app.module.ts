@@ -9,6 +9,7 @@ import { AccountModule } from './entities/account/account.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { UploadModule } from './upload/upload.module';
+import { HotelModule } from './entities/hotel/hotel.module';
 
 
 @Module({
@@ -22,6 +23,7 @@ import { UploadModule } from './upload/upload.module';
     }),
     MongooseModule.forRoot(process.env.MONGODB_URI || ''),
     AdminModule,
+    HotelModule,
     AccountModule,
     CloudinaryModule,
     UploadModule,

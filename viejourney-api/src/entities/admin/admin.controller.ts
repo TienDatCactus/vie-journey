@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
   UseGuards,
   Req,
 } from '@nestjs/common';
@@ -42,4 +43,18 @@ async deleteAccount(@Param('id') id: string) {
 async updateActiveStatus(@Param('id') id: string, @Body('active') active: boolean) {
     return this.adminService.updateActiveStatus(id, active);
 }
+
+ @Get('reports/blogs')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async getBlogsReport(@Query('views') views?: number) {
+    return this.adminService.getBlogsReport(views);
+  }
+
+  @Get('reports/comments')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async getCommentsReport() {
+    return this.adminService.getCommentsReport();
+  }
 }
