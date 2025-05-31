@@ -1,7 +1,6 @@
 import { Grid2 } from "@mui/material";
 import React from "react";
 import SideHeader from "../components/Layout/Blog/SideHeader";
-import Map from "../components/Layout/Blog/Map";
 
 const BlogLayout = () => {
   return (
@@ -19,9 +18,7 @@ const BlogLayout = () => {
       <Grid2 size={9}>
         <SideHeader />
       </Grid2>
-      <Grid2 size={3}>
-        <Map />
-      </Grid2>
+      <Grid2 size={3}></Grid2>
     </Grid2>
   );
 };

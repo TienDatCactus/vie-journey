@@ -3,7 +3,6 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MailIcon from "@mui/icons-material/Mail";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Button, Stack } from "@mui/material";
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import MuiDrawer from "@mui/material/Drawer";
@@ -12,12 +11,13 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import { CSSObject, styled, Theme, useTheme } from "@mui/material/styles";
+import { CSSObject, styled, Theme } from "@mui/material/styles";
 import * as React from "react";
 import { TripHeader } from "../components/Layout";
 import { TripMap } from "../components/Pages/(user)";
+import { APIProvider } from "@vis.gl/react-google-maps";
 
-const drawerWidth = 240;
+const drawerWidth = 200;
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -40,70 +40,25 @@ const closedMixin = (theme: Theme): CSSObject => ({
   },
 });
 
-const DrawerHeader = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-}));
-
-interface AppBarProps extends MuiAppBarProps {
-  open?: boolean;
-}
-
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
-})<AppBarProps>(({ theme }) => ({
-  zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(["width", "margin"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  variants: [
-    {
-      props: ({ open }) => open,
-      style: {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(["width", "margin"], {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
-      },
-    },
-  ],
-}));
-
 const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== "open",
-})(({ theme }) => ({
+})(({ theme, open }) => ({
   width: drawerWidth,
   flexShrink: 0,
   whiteSpace: "nowrap",
   boxSizing: "border-box",
-  variants: [
-    {
-      props: ({ open }) => open,
-      style: {
-        ...openedMixin(theme),
-        "& .MuiDrawer-paper": openedMixin(theme),
-      },
-    },
-    {
-      props: ({ open }) => !open,
-      style: {
-        ...closedMixin(theme),
-        "& .MuiDrawer-paper": closedMixin(theme),
-      },
-    },
-  ],
+  ...(open && {
+    ...openedMixin(theme),
+    "& .MuiDrawer-paper": openedMixin(theme),
+  }),
+  ...(!open && {
+    ...closedMixin(theme),
+    "& .MuiDrawer-paper": closedMixin(theme),
+  }),
 }));
 
 const TripLayout = ({ children }: { children: React.ReactNode }) => {
   // Share the drawer open state between components
-  const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
   const handleDrawerOpen = () => {
@@ -115,58 +70,54 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <Drawer variant="permanent" open={open}>
+    <Box
+      sx={{
+        display: "flex",
+        height: "100vh", // Use full viewport height
+        overflow: "hidden", // Prevent outer scrolling
+      }}
+    >
+      {/* Left sidebar drawer */}
+      <Drawer
+        variant="permanent"
+        open={open}
+        sx={{
+          height: "100%",
+          "& .MuiDrawer-paper": {
+            position: "relative", // Make drawer position relative instead of fixed
+            height: "100%",
+          },
+        }}
+      >
         <Stack justifyContent={"space-between"} sx={{ height: "100%" }}>
           <div>
             <Divider />
+            {/* Your sidebar menu items */}
             <List>
               {["Inbox", "Starred", "Send email", "Drafts"].map(
                 (text, index) => (
                   <ListItem key={text} disablePadding sx={{ display: "block" }}>
                     <ListItemButton
-                      sx={[
-                        {
-                          minHeight: 48,
-                          px: 2.5,
-                        },
-                        open
-                          ? {
-                              justifyContent: "initial",
-                            }
-                          : {
-                              justifyContent: "center",
-                            },
-                      ]}
+                      sx={{
+                        minHeight: 48,
+                        px: 2.5,
+                        justifyContent: open ? "initial" : "center",
+                      }}
                     >
                       <ListItemIcon
-                        sx={[
-                          {
-                            minWidth: 0,
-                            justifyContent: "center",
-                          },
-                          open
-                            ? {
-                                mr: 3,
-                              }
-                            : {
-                                mr: "auto",
-                              },
-                        ]}
+                        sx={{
+                          minWidth: 0,
+                          justifyContent: "center",
+                          mr: open ? 3 : "auto",
+                        }}
                       >
                         {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
                       </ListItemIcon>
                       <ListItemText
                         primary={text}
-                        sx={[
-                          open
-                            ? {
-                                opacity: 1,
-                              }
-                            : {
-                                opacity: 0,
-                              },
-                        ]}
+                        sx={{
+                          opacity: open ? 1 : 0,
+                        }}
                       />
                     </ListItemButton>
                   </ListItem>
@@ -178,48 +129,26 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
               {["All mail", "Trash", "Spam"].map((text, index) => (
                 <ListItem key={text} disablePadding sx={{ display: "block" }}>
                   <ListItemButton
-                    sx={[
-                      {
-                        minHeight: 48,
-                        px: 2.5,
-                      },
-                      open
-                        ? {
-                            justifyContent: "initial",
-                          }
-                        : {
-                            justifyContent: "center",
-                          },
-                    ]}
+                    sx={{
+                      minHeight: 48,
+                      px: 2.5,
+                      justifyContent: open ? "initial" : "center",
+                    }}
                   >
                     <ListItemIcon
-                      sx={[
-                        {
-                          minWidth: 0,
-                          justifyContent: "center",
-                        },
-                        open
-                          ? {
-                              mr: 3,
-                            }
-                          : {
-                              mr: "auto",
-                            },
-                      ]}
+                      sx={{
+                        minWidth: 0,
+                        justifyContent: "center",
+                        mr: open ? 3 : "auto",
+                      }}
                     >
                       {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
                     </ListItemIcon>
                     <ListItemText
                       primary={text}
-                      sx={[
-                        open
-                          ? {
-                              opacity: 1,
-                            }
-                          : {
-                              opacity: 0,
-                            },
-                      ]}
+                      sx={{
+                        opacity: open ? 1 : 0,
+                      }}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -234,11 +163,40 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
           </Button>
         </Stack>
       </Drawer>
-      <Box width={"40%"}>
+
+      {/* Content area */}
+      <Box
+        sx={{
+          width: "50%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "4.0px 8.0px 8.0px rgba(0,0,0,0.38)",
+          zIndex: 10,
+          overflow: "hidden",
+        }}
+      >
         <TripHeader />
-        <div className="flex-grow overflow-auto p-4">{children}</div>
+        <Box
+          sx={{
+            flexGrow: 1,
+            overflowY: "auto",
+            p: 2,
+          }}
+        >
+          {children}
+        </Box>
       </Box>
-      <TripMap />
+
+      <Box
+        sx={{
+          width: "50%",
+          height: "100%",
+          position: "relative",
+        }}
+      >
+        <TripMap />
+      </Box>
     </Box>
   );
 };

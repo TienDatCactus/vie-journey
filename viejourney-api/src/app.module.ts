@@ -7,6 +7,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './entities/auth/auth.module';
 import { AccountModule } from './entities/account/account.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { UploadModule } from './upload/upload.module';
+import { HotelModule } from './entities/hotel/hotel.module';
+
 
 @Module({
   imports: [
@@ -19,7 +23,10 @@ import { MailerModule } from '@nestjs-modules/mailer';
     }),
     MongooseModule.forRoot(process.env.MONGODB_URI || ''),
     AdminModule,
+    HotelModule,
     AccountModule,
+    CloudinaryModule,
+    UploadModule,
     MailerModule.forRoot({
       transport: {
         service: process.env.MAIL_SERVICE,
@@ -37,6 +44,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
     }),
     AuthModule,
     AccountModule,
+    CloudinaryModule,
+    UploadModule,
   ],
 
   controllers: [AppController],

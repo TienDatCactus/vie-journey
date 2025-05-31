@@ -156,12 +156,10 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
 
   const errorHandler = async (err: any): Promise<never> => {
     logger("Error caught:", err);
-
-    // Extract error details from the NestJS ResponseInterceptor format
     const responseData = err?.response?.data;
     const status =
       err?.response?.statusCode || err?.response?.status || err?.status;
-
+    console.log(status);
     const errorMessage =
       responseData?.message || responseData?.error || err?.message;
 
@@ -196,9 +194,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
           autoHideDuration: 3000,
         });
       } else {
-        // For other auth errors (expired token, etc.), clear token and redirect
         localStorage.removeItem("token");
-
         if (redirectOnUnauthorized) {
           showDebouncedSnackbar(
             "Your session has expired. Please log in again.",

@@ -484,6 +484,7 @@ export class AuthService {
   }
   async validateAccessToken(accessToken: string) {
     try {
+      this.logger.log('Validating access token:', accessToken);
       const secret = process.env.JWT_SECRET ? process.env.JWT_SECRET : 'secret';
       const payload = this.jwtService.verify(accessToken, {
         secret: secret,

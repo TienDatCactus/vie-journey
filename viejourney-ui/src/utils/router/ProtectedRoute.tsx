@@ -16,26 +16,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { isAuthenticated, isVerified, isLoading } = useAuth();
   const location = useLocation();
 
-  // Show loading spinner when authentication is still in progress
-  if (isLoading) {
-    console.log("Auth is loading - showing spinner");
-    return <Fallback />;
-  }
-
-  // Redirect unauthenticated users to login
-  if (requireAuth && !isAuthenticated) {
-    console.log("User is not authenticated");
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
-  }
-
-  // Redirect verified users away from login/register
-  if (!requireAuth && isAuthenticated) {
-    console.log("User is authenticated");
-    return <>{children || <Outlet />}</>;
-  }
-
-  // Show warning and redirect if user is not verified
+  // Make sure all hooks are called unconditionally at the top level
   useEffect(() => {
+    // Handle notification for unverified users
     if (requireAuth && isAuthenticated && !isVerified) {
       enqueueSnackbar(
         "Please verify your email to access this page. Login again to resend the verification email.",
@@ -44,16 +27,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [requireAuth, isAuthenticated, isVerified]);
 
+  // All rendering logic should come after hooks
+  if (isLoading) {
+    return <Fallback />;
+  }
+
+  if (requireAuth && !isAuthenticated) {
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  }
+
+  if (!requireAuth && isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
   if (requireAuth && isAuthenticated && !isVerified) {
-    console.log("User is not verified");
-    enqueueSnackbar(
-      "Please verify your email to access this page. Login again to resend the verification email.",
-      { variant: "error" }
-    );
     return <Navigate to="/auth/login" replace />;
   }
 
-  // Authorized and verified
   return <>{children || <Outlet />}</>;
 };
 
