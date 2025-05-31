@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
@@ -33,7 +32,6 @@ async function bootstrap() {
   // Initialize Passport with session support
   app.use(passport.initialize());
   app.use(passport.session());
-  app.useGlobalInterceptors(new ResponseInterceptor());
   await app.listen(process.env.PORT ?? 5000);
 }
 bootstrap();
