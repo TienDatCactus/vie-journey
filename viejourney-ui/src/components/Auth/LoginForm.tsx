@@ -110,6 +110,7 @@ const LoginForm: React.FC = () => {
               },
             })}
             type="email"
+            autoComplete="email"
           />
           {errors.email && (
             <FormHelperText error={!!errors.email}>
@@ -127,6 +128,7 @@ const LoginForm: React.FC = () => {
             {...register("password", { required: true, minLength: 6 })}
             className="w-full *:text-sm"
             placeholder="Enter your password"
+            autoComplete="current-password"
           />
           {errors.password && (
             <FormHelperText error={!!errors.password}>
