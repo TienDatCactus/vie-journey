@@ -15,7 +15,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/entities/role.enum';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
-@Roles(Role.Admin, Role.User)
+@Roles(Role.Admin)
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('blog')
 export class BlogController {

@@ -15,7 +15,7 @@ export class AdminService {
     @InjectModel('Comment') private readonly commentModel: Model<Comment>,
     @InjectModel('Account') private readonly accountModel: Model<Account>,
   ) { }
-
+  // getBlogReport
   async getBlogsReport(minViews?: number) {
     const query = minViews ? { views: { $gte: minViews } } : {};
     const totalBlogs = await this.blogModel.countDocuments(query);
@@ -29,7 +29,7 @@ export class AdminService {
       totalViews: totalViews[0]?.total || 0,
     };
   }
-
+  // getCommentsReport
   async getCommentsReport() {
     const totalComments = await this.commentModel.countDocuments();
     const commentsPerBlog = await this.commentModel.aggregate([

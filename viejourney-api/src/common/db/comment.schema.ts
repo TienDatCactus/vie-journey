@@ -15,7 +15,7 @@ export class Comment extends Document {
   updatedBy: string;
 
   @Prop({ default: Date.now })
-  createdAt: Date;
+  createdAt: Date;    
 
   @Prop({ default: Date.now })
   updatedAt: Date;
