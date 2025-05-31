@@ -7,7 +7,6 @@ import Accounts from "../../pages/(admin)/Accounts";
 import Guides from "../../pages/(user)/Guides/Guides";
 import Hotels from "../../pages/(user)/Hotels/Hotels";
 import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
-import Accounts from "../../pages/(admin)/Accounts";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -182,7 +181,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "create",
-        children: [],
+        // element: <SuspenseWrapper component={PlanningFormation} />,
       },
     ],
   },
