@@ -37,7 +37,7 @@ const AllGuides: React.FC = () => {
     },
   ];
   return (
-    <div className="w-full max-w-[1000px]">
+    <div className="w-full max-w-[1200px]">
       <h1 className="mb-4 text-[1.25rem] font-bold">Recent guides</h1>
       <Grid2 container spacing={2}>
         {!!fakeGuides.length &&

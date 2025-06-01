@@ -15,8 +15,11 @@ import "./index.css";
 import { AuthProvider } from "./services/contexts";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
+import { PlaceSearchProvider } from "./services/contexts/PlaceSearchContext";
+import { APIProvider } from "@vis.gl/react-google-maps";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
+const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
 const theme = createTheme({
   cssVariables: true,
@@ -52,7 +55,11 @@ root.render(
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <React.Suspense fallback={<Fallback />}>
                 <AuthProvider>
-                  <RouterProvider router={router} />
+                  <APIProvider apiKey={apiKey} libraries={["places", "marker"]}>
+                    <PlaceSearchProvider>
+                      <RouterProvider router={router} />
+                    </PlaceSearchProvider>
+                  </APIProvider>
                 </AuthProvider>
               </React.Suspense>
             </LocalizationProvider>

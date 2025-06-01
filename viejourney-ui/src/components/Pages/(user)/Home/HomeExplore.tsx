@@ -30,7 +30,7 @@ const HomeExplore: React.FC = () => {
     },
   ];
   return (
-    <div className="max-w-[1000px] w-full pb-10">
+    <div className="max-w-[75rem] w-full pb-10">
       <div>
         <h1 className="text-[2.5rem] font-bold">Explore</h1>
         <h2 className="my-4 text-[1.375rem] font-semibold">

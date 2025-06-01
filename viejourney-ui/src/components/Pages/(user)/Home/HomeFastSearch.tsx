@@ -5,11 +5,15 @@ import PersonIcon from "@mui/icons-material/Person";
 import ReduceCapacityIcon from "@mui/icons-material/ReduceCapacity";
 import RemoveIcon from "@mui/icons-material/Remove";
 import SearchIcon from "@mui/icons-material/Search";
+import { Clear, Place as PlaceIcon } from "@mui/icons-material";
 import {
   Autocomplete,
+  Box,
   Button,
+  CircularProgress,
   Grid2,
   IconButton,
+  InputAdornment,
   InputLabel,
   Popover,
   Stack,
@@ -18,36 +22,52 @@ import {
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import React, { useState } from "react";
-import { getPlaces } from "../../../../services/api/customs";
+import { usePlaceSearch } from "../../../../services/contexts/PlaceSearchContext";
+
 const HomeFastSearch: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popover" : undefined;
-
-  const [query, setQuery] = useState("");
-  const [opts, setOpts] = useState([]);
   const [adults, setAdults] = useState(1);
   const [childrens, setChildrens] = useState(0);
   const [rooms, setRooms] = useState(1);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
+
+  // Use the global place search context
+  const {
+    searchInput,
+    options,
+    isLoading,
+    open,
+    setOpen,
+    selectedOption,
+    handlePlaceSelect, // This now handles map panning automatically
+    handleInputChange,
+    resetSearch,
+  } = usePlaceSearch();
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
   };
-  const autocomplete = async () => {
-    const resp = await getPlaces(query);
-    console.log(resp);
-    setOpts(resp);
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const popoverOpen = Boolean(anchorEl);
+  const popoverId = popoverOpen ? "simple-popover" : undefined;
+
+  const handleSearch = () => {
+    // Add search functionality here
+    console.log("Searching for", {
+      place: selectedOption?.primaryText || searchInput,
+      adults,
+      childrens,
+      rooms,
+    });
   };
 
   return (
-    <div className="w-full max-w-[1000px] py-10">
+    <div className="w-full max-w-[1200px] py-10">
       <h1 className="my-0 text-[1.875rem] font-bold">
         Find your loving places
       </h1>
@@ -58,49 +78,89 @@ const HomeFastSearch: React.FC = () => {
         spacing={2}
       >
         <Autocomplete
-          disablePortal
-          sx={{ width: 300 }}
-          options={[
-            "Hanoi",
-            "Ho Chi Minh City",
-            "Da Nang",
-            "Hoi An",
-            "Hue",
-            "Nha Trang",
-            "Phu Quoc",
-            "Sapa",
-            "Ha Long Bay",
-            "Can Tho",
-            "Da Lat",
-            "Vung Tau",
-            "Ninh Binh",
-            "Quy Nhon",
-            "Mui Ne",
-            "Phan Thiet",
-            "Con Dao",
-            "Cat Ba",
-            "Bac Ha",
-            "Mai Chau",
-            "Ba Be Lake",
-            "Cao Bang",
-            "Dong Hoi",
-            "Dong Ha",
-            "Pleiku",
-            "Buon Ma Thuot",
-            "Chau Doc",
-            "Rach Gia",
-            "Long Xuyen",
-            "My Tho",
-          ]}
+          id="google-map-search"
+          open={open}
+          onOpen={() => setOpen(true)}
+          onClose={() => setOpen(false)}
+          options={options}
+          loading={isLoading}
+          getOptionLabel={(option) => option.primaryText}
+          isOptionEqualToValue={(option, value) =>
+            option.placeId === value.placeId
+          }
+          noOptionsText={searchInput ? "No places found" : "Type to search"}
+          filterOptions={(x) => x}
+          onChange={(_event, value) => handlePlaceSelect(value)}
+          onInputChange={handleInputChange}
+          inputValue={searchInput}
+          value={selectedOption}
+          clearOnBlur={false}
+          popupIcon={null}
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Checkin"
-              variant="standard"
-              onChange={handleChange}
+              placeholder="Search destinations"
+              variant="outlined"
+              size="small"
+              InputProps={{
+                ...params.InputProps,
+                className: "p-2",
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon className="text-2xl" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <React.Fragment>
+                    {isLoading && (
+                      <CircularProgress color="primary" size={20} />
+                    )}
+                    {searchInput && (
+                      <IconButton size="small" onClick={() => resetSearch()}>
+                        <Clear />
+                      </IconButton>
+                    )}
+                    {params.InputProps.endAdornment}
+                  </React.Fragment>
+                ),
+              }}
             />
           )}
+          renderOption={(props, option) => (
+            <li {...props}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  width: "100%",
+                  py: 0.5,
+                }}
+              >
+                <PlaceIcon
+                  color="primary"
+                  fontSize="small"
+                  sx={{ mr: 1.5, ml: 0.5, minWidth: 24 }}
+                />
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="body2" component="span">
+                    {option.primaryText}
+                  </Typography>
+                  {option.secondaryText && (
+                    <Typography
+                      variant="caption"
+                      component="div"
+                      color="text.secondary"
+                      sx={{ display: "block" }}
+                    >
+                      {option.secondaryText}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </li>
+          )}
         />
+
         <Grid2 container direction={"row"} alignItems={"center"} spacing={2}>
           <Grid2 size={6}>
             <DatePicker label="from" />
@@ -109,9 +169,10 @@ const HomeFastSearch: React.FC = () => {
             <DatePicker label="to" />
           </Grid2>
         </Grid2>
+
         <div>
           <Button
-            aria-describedby={id}
+            aria-describedby={popoverId}
             variant="outlined"
             onClick={handleClick}
             className="text-[black] border-[#b2b2b2]"
@@ -135,8 +196,8 @@ const HomeFastSearch: React.FC = () => {
             </Stack>
           </Button>
           <Popover
-            id={id}
-            open={open}
+            id={popoverId}
+            open={popoverOpen}
             anchorEl={anchorEl}
             onClose={handleClose}
             anchorOrigin={{
@@ -162,7 +223,8 @@ const HomeFastSearch: React.FC = () => {
                 <Stack direction={"row"} alignItems={"center"} gap={2}>
                   <IconButton
                     className="bg-neutral-100"
-                    onClick={() => setRooms(rooms - 1)}
+                    onClick={() => setRooms(Math.max(1, rooms - 1))}
+                    disabled={rooms <= 1}
                   >
                     <RemoveIcon />
                   </IconButton>
@@ -186,7 +248,8 @@ const HomeFastSearch: React.FC = () => {
                 <Stack direction={"row"} alignItems={"center"} gap={2}>
                   <IconButton
                     className="bg-neutral-100"
-                    onClick={() => setAdults(adults - 1)}
+                    onClick={() => setAdults(Math.max(1, adults - 1))}
+                    disabled={adults <= 1}
                   >
                     <RemoveIcon />
                   </IconButton>
@@ -210,7 +273,8 @@ const HomeFastSearch: React.FC = () => {
                 <Stack direction={"row"} alignItems={"center"} gap={2}>
                   <IconButton
                     className="bg-neutral-100"
-                    onClick={() => setChildrens(childrens - 1)}
+                    onClick={() => setChildrens(Math.max(0, childrens - 1))}
+                    disabled={childrens <= 0}
                   >
                     <RemoveIcon />
                   </IconButton>
@@ -226,9 +290,10 @@ const HomeFastSearch: React.FC = () => {
             </Stack>
           </Popover>
         </div>
+
         <IconButton
           className="border border-[#ccc] p-2 shadow-none"
-          popover="auto"
+          onClick={handleSearch}
         >
           <SearchIcon fontSize="medium" className="text-[#000]" />
         </IconButton>
