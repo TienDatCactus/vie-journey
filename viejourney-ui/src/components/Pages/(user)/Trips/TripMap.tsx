@@ -1,6 +1,7 @@
-import { Box, Snackbar, Alert } from "@mui/material";
+import { Box } from "@mui/material";
 import React, { useState } from "react";
-import Map, { POIData } from "../../../Maps/Map";
+import Map from "../../../Maps/Map";
+import { POIData } from "../../../Maps/types";
 
 const TripMap: React.FC = () => {
   const [selectedPOI, setSelectedPOI] = useState<POIData | null>(null);
