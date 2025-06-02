@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { doValidateAccessToken } from "../../../services/api";
 import { setToken } from "../../../services/api/token";
-import { useAuth } from "../../../services/contexts";
+import { useAuth } from "../../../services/stores";
 const OauthSuccess: React.FC = () => {
   const params = useSearchParams();
   const { setCredential } = useAuth();

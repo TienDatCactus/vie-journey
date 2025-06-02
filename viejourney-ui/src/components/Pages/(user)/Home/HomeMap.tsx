@@ -1,9 +1,9 @@
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
+import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 import { useEffect, useRef } from "react";
-import { AdvancedMarker, Pin, useMap } from "@vis.gl/react-google-maps";
+import { usePlaceSearch } from "../../../../services/contexts/PlaceSearchContext";
 import Map from "../../../Maps/Map";
 import { POIData } from "../../../Maps/types";
-import { usePlaceSearch } from "../../../../services/contexts/PlaceSearchContext";
 
 const HomeMap = () => {
   const mapRef = useRef<google.maps.Map | null>(null);

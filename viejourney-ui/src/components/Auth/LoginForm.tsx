@@ -26,7 +26,7 @@ import {
   doSendForgotPasswordEmail,
 } from "../../services/api";
 import { LoginRespDTO } from "../../services/api/dto";
-import { useAuth } from "../../services/contexts";
+import { useAuth } from "../../services/stores";
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();

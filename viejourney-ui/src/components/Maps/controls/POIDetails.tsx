@@ -1,27 +1,31 @@
-import React, { useState } from "react";
 import {
-  Box,
-  Stack,
-  Typography,
-  Chip,
-  Button,
-  IconButton,
-  Divider,
-  Link,
-} from "@mui/material";
-import {
-  Place as PlaceIcon,
-  Phone as PhoneIcon,
-  Language as WebsiteIcon,
-  AccessTime as TimeIcon,
-  Star as StarIcon,
-  Close as CloseIcon,
-  Favorite as FavoriteIcon,
-  FavoriteBorder as FavoriteBorderIcon,
   Add as AddIcon,
+  BookmarkAdd,
+  BookmarkAdded,
+  Close as CloseIcon,
+  LibraryAdd,
+  Phone as PhoneIcon,
+  Place as PlaceIcon,
+  Star as StarIcon,
+  AccessTime as TimeIcon,
+  Language as WebsiteIcon,
 } from "@mui/icons-material";
-import { Swiper, SwiperSlide } from "swiper/react";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  Divider,
+  Grid2,
+  IconButton,
+  Link,
+  Stack,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import React, { useState } from "react";
 import "swiper/css";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { POIData } from "../types";
 
 interface POIDetailsProps {
@@ -38,55 +42,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
   onToggleFavorite,
 }) => {
   const [isFavorite, setIsFavorite] = useState(false);
-
-  const getPhotoUrl = (photo: any): string => {
-    try {
-      if (photo && photo.flagContentURI) {
-        const imageKeyMatch = photo.flagContentURI.match(/image_key=([^&]+)/);
-        if (imageKeyMatch && imageKeyMatch[1]) {
-          // The format is typically: !1e10!2sCIHM0ogKEICAgIDBksL6zwE
-          const photoRef = imageKeyMatch[1].split("!2s")[1];
-
-          if (photoRef) {
-            // Construct the Google Places photo URL with the photo reference
-            const p = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${
-              photo.widthPx || 800
-            }&photoreference=${photoRef}&key=${
-              import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-            }`;
-            console.log(p);
-            return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${
-              photo.widthPx || 800
-            }&photoreference=${photoRef}&key=${
-              import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-            }`;
-          }
-        }
-
-        // Simpler alternative approach if API key is not available or extraction fails:
-        // This directly modifies the URL to fetch the image instead of the report form
-        return photo.flagContentURI.replace("/report", "/photo");
-      }
-
-      // Legacy Places API with getUrl function
-      if (photo && typeof photo.getUrl === "function") {
-        return photo.getUrl();
-      }
-
-      // Handle string URL
-      if (typeof photo === "string") {
-        return photo;
-      }
-    } catch (error) {
-      console.error("Error processing photo:", error);
-    }
-
-    // Fallback to placeholder
-    return `https://placehold.co/600x400?text=${encodeURIComponent(
-      poi.displayName || "Place"
-    )}`;
-  };
-
+  console.log(JSON.stringify(poi, null, 2));
   const handleFavoriteToggle = () => {
     const newState = !isFavorite;
     setIsFavorite(newState);
@@ -184,7 +140,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
             poi.photos.map((photo, index) => (
               <SwiperSlide key={index}>
                 <img
-                  src={getPhotoUrl(photo)}
+                  src={photo.getURI()}
                   onError={(e) => {
                     e.currentTarget.src = `https://placehold.co/600x400?text=Image+not+available`;
                   }}
@@ -226,37 +182,74 @@ const POIDetails: React.FC<POIDetailsProps> = ({
 
       {/* Content */}
       <div className="p-4 overflow-y-auto flex-grow">
-        <div className="flex justify-between items-start">
-          <Typography variant="h5" component="h2" className="font-bold">
-            {poi.displayName}
-          </Typography>
-          <div className="flex items-center space-x-1">
-            <IconButton
-              aria-label="toggle favorite"
-              onClick={handleFavoriteToggle}
-              sx={{
-                color: isFavorite ? "error.main" : "action.active",
-              }}
+        <Grid2 container spacing={2} className="mb-2" alignItems={"start"}>
+          <Grid2
+            size={{
+              xs: 12,
+              sm: 8,
+              md: 9,
+              lg: 10,
+            }}
+            className=""
+          >
+            <Typography
+              variant="h5"
+              component="h2"
+              className="font-bold text-2xl"
             >
-              {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-            </IconButton>
-            {onAddToTrip && (
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddIcon />}
-                size="small"
-                onClick={() => onAddToTrip(poi)}
+              {poi.displayName}
+            </Typography>
+            {poi.editorialSummary && (
+              <Typography
+                variant="body2"
+                color="text.primary"
+                className="text-base mt-2"
               >
-                Add to Trip
-              </Button>
+                {poi.editorialSummary}
+              </Typography>
             )}
-          </div>
-        </div>
+          </Grid2>
+          {/* Description */}
 
+          <Grid2
+            size={{
+              xs: 12,
+              sm: 4,
+              md: 3,
+              lg: 2,
+            }}
+            className="flex items-center space-x-1"
+          >
+            <Tooltip
+              arrow
+              placement="top"
+              title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            >
+              <IconButton
+                aria-label="toggle favorite"
+                onClick={handleFavoriteToggle}
+                size="small"
+                sx={{
+                  color: isFavorite ? "success.main" : "action.active",
+                }}
+              >
+                {isFavorite ? <BookmarkAdded /> : <BookmarkAdd />}
+              </IconButton>
+            </Tooltip>
+            <Tooltip arrow placement="top" title="Add to trip">
+              <IconButton
+                size="small"
+                // onClick={() => onAddToTrip(poi)}
+              >
+                <LibraryAdd />
+                {/* <LibraryAddCheck/> */}
+              </IconButton>
+            </Tooltip>
+          </Grid2>
+        </Grid2>
         {/* Rating */}
         {poi.rating && (
-          <div className="flex items-center mt-1">
+          <div className="flex items-center my-4">
             <StarIcon
               sx={{
                 color: "#faaf00",
@@ -307,7 +300,6 @@ const POIDetails: React.FC<POIDetailsProps> = ({
                 (type) =>
                   type !== "point_of_interest" && type !== "establishment"
               )
-              .slice(0, 3)
               .map((type) => (
                 <Chip
                   key={type}
@@ -318,88 +310,92 @@ const POIDetails: React.FC<POIDetailsProps> = ({
                 />
               ))}
         </div>
+        <Grid2 container spacing={2} className="mt-4">
+          <Grid2
+            size={{
+              xs: 12,
+              sm: 6,
+              md: 6,
+            }}
+          >
+            {/* Address */}
+            {poi.formattedAddress && (
+              <div className="flex items-center my-2">
+                <PlaceIcon fontSize="small" className="text-neutral-600 mr-2" />
+                <Typography variant="body2">{poi.formattedAddress}</Typography>
+              </div>
+            )}
 
-        {/* Address */}
-        {poi.formattedAddress && (
-          <div className="flex items-start mt-3">
-            <PlaceIcon
-              fontSize="small"
-              sx={{ mr: 1, mt: 0.3, color: "text.secondary" }}
-            />
-            <Typography variant="body2">{poi.formattedAddress}</Typography>
-          </div>
-        )}
+            {/* Opening hours */}
+            {poi.regularOpeningHours && (
+              <div className="flex items-center my-2">
+                <TimeIcon fontSize="small" className="text-neutral-600 mr-2" />
+                <div>
+                  <Typography variant="body2">
+                    {formatOpeningHours()}
+                  </Typography>
+                </div>
+              </div>
+            )}
 
-        {/* Opening hours */}
-        {poi.regularOpeningHours && (
-          <div className="flex items-start mt-2">
-            <TimeIcon
-              fontSize="small"
-              sx={{ mr: 1, mt: 0.3, color: "text.secondary" }}
-            />
-            <div>
-              <Typography variant="body2">{formatOpeningHours()}</Typography>
-            </div>
-          </div>
-        )}
+            {/* Phone */}
+            {(poi.nationalPhoneNumber || poi.internationalPhoneNumber) && (
+              <div className="flex items-center">
+                <PhoneIcon fontSize="small" className="mr-2 text-neutral-600" />
+                <Link
+                  href={`tel:${poi.nationalPhoneNumber}`}
+                  underline="hover"
+                  variant="body2"
+                  color="primary"
+                >
+                  {poi.nationalPhoneNumber}
+                </Link>
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  className="border-neutral-900 ml-2"
+                />
+                <Link
+                  href={`tel:${poi.internationalPhoneNumber}`}
+                  underline="hover"
+                  variant="body2"
+                  color="primary"
+                  sx={{ ml: 1 }}
+                >
+                  {poi.internationalPhoneNumber}
+                </Link>
+              </div>
+            )}
 
-        {/* Phone */}
-        {poi.nationalPhoneNumber && (
-          <div className="flex items-center mt-2">
-            <PhoneIcon
-              fontSize="small"
-              sx={{ mr: 1, color: "text.secondary" }}
-            />
-            <Link
-              href={`tel:${
-                poi.internationalPhoneNumber || poi.nationalPhoneNumber
-              }`}
-              underline="hover"
-              variant="body2"
-              color="primary"
-            >
-              {poi.nationalPhoneNumber}
-            </Link>
-          </div>
-        )}
-
-        {/* Website */}
-        {poi.websiteURI && (
-          <div className="flex items-center mt-2">
-            <WebsiteIcon
-              fontSize="small"
-              sx={{ mr: 1, color: "text.secondary" }}
-            />
-            <Link
-              href={poi.websiteURI}
-              target="_blank"
-              rel="noopener noreferrer"
-              underline="hover"
-              variant="body2"
-              color="primary"
-              sx={{
-                maxWidth: "calc(100% - 32px)",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                display: "inline-block",
-              }}
-            >
-              {new URL(poi.websiteURI).hostname}
-            </Link>
-          </div>
-        )}
-
-        {/* Description */}
-        {poi.editorialSummary && (
-          <Box sx={{ mt: 3 }}>
-            <Divider sx={{ mb: 2 }} />
-            <Typography variant="body2" color="text.secondary">
-              {poi.editorialSummary}
-            </Typography>
-          </Box>
-        )}
-
+            {/* Website */}
+            {poi.websiteURI && (
+              <div className="flex items-center mt-2">
+                <WebsiteIcon
+                  fontSize="small"
+                  className="mr-2 text-neutral-600"
+                />
+                <Link
+                  href={poi.websiteURI}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  variant="body2"
+                  color="primary"
+                  sx={{
+                    maxWidth: "calc(100% - 32px)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    display: "inline-block",
+                  }}
+                >
+                  {new URL(poi.websiteURI).hostname}
+                </Link>
+              </div>
+            )}
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 6, md: 6 }}></Grid2>
+        </Grid2>
         {/* Amenities/Features */}
         {(poi.isGoodForChildren ||
           poi.hasOutdoorSeating ||
@@ -440,50 +436,61 @@ const POIDetails: React.FC<POIDetailsProps> = ({
 
         {/* Reviews section - can be expanded */}
         {poi.reviews && poi.reviews.length > 0 && (
-          <Box sx={{ mt: 3 }}>
+          <Box sx={{ mt: 2 }}>
             <Divider sx={{ mb: 2 }} />
-            <Typography variant="subtitle2" sx={{ mb: 2 }}>
-              Top review
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Top reviews
             </Typography>
-            <Box sx={{ ml: 1 }}>
-              <div className="flex items-center">
-                <Typography variant="body2" fontWeight="bold">
-                  {poi?.reviews[0]?.authorAttribution?.displayName ||
-                    "Anonymous"}
-                </Typography>
-                <div className="flex items-center ml-2">
-                  <StarIcon
-                    sx={{ color: "#faaf00", fontSize: "1rem", mr: 0.5 }}
+            {poi.reviews.slice(0, 2).map((review, index) => (
+              <Box key={index} sx={{ ml: 2, my: 2 }}>
+                <div className="flex items-center">
+                  <Avatar
+                    alt={review.authorAttribution?.displayName || "Anonymous"}
+                    src={review.authorAttribution?.photoURI + ""}
+                    className="w-8 h-8 mr-2"
                   />
-                  <Typography variant="body2">
-                    {poi.reviews[0].rating}
+                  <Typography variant="body2" fontWeight="bold">
+                    {review.authorAttribution?.displayName || "Anonymous"}
                   </Typography>
+                  <div className="flex items-center ml-2">
+                    <StarIcon
+                      sx={{ color: "#faaf00", fontSize: "1rem", mr: 0.5 }}
+                    />
+                    <Typography variant="body2">{review.rating}</Typography>
+                  </div>
                 </div>
-              </div>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mt: 0.5 }}
-              >
-                {poi.reviews[0].relativePublishTimeDescription}
-              </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                {poi.reviews[0].text}
-              </Typography>
-            </Box>
-            {poi.googleMapsURI && (
-              <Link
-                href={poi.googleMapsURI}
-                target="_blank"
-                rel="noopener noreferrer"
-                underline="hover"
-                variant="body2"
-                sx={{ display: "block", mt: 2, textAlign: "right" }}
-              >
-                See all reviews on Google Maps
-              </Link>
-            )}
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 0.5 }}
+                >
+                  {review.relativePublishTimeDescription}
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  {review.text}
+                </Typography>
+              </Box>
+            ))}
           </Box>
+        )}
+
+        {poi.googleMapsURI && (
+          <Button
+            href={poi.googleMapsURI}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border border-neutral-900 px-4 text-neutral-900 text-sm mt-3 rounded-full"
+            startIcon={
+              <img
+                src="/icons/icons8-google.svg"
+                alt="Google Maps"
+                width="20"
+                height="20"
+              />
+            }
+          >
+            Google
+          </Button>
         )}
       </div>
     </div>
