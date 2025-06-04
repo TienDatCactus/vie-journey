@@ -5,7 +5,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { doGetUser } from "../../api";
+import { doGetUser, doValidateAccessToken } from "../../api";
 
 const AuthContext = createContext({
   user: null as User | null,
@@ -32,18 +32,18 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load token from localStorage once when component mounts
   useEffect(() => {
     const loadToken = async () => {
       setIsLoading(true);
       const storedToken = localStorage.getItem("token");
-
       if (storedToken) {
         try {
           const parsedToken = JSON.parse(storedToken);
-          if (parsedToken.userId) {
-            console.log("Found stored token with userId:", parsedToken.userId);
-            setCredential({ userId: parsedToken.userId });
+          if (parsedToken.accessToken) {
+            const resp = await doValidateAccessToken(parsedToken.accessToken);
+            setCredential({
+              userId: resp?.userId || "",
+            });
           } else {
             console.log("Stored token missing userId");
             setIsLoading(false);

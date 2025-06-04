@@ -32,7 +32,7 @@ const HomeRecent: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-[1000px] py-10 w-full">
+    <div className="max-w-[1200px] py-10 w-full">
       <Stack
         direction={"row"}
         justifyContent={"space-between"}

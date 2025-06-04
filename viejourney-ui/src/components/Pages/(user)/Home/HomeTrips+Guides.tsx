@@ -34,7 +34,7 @@ const HomeTrips: React.FC = () => {
     },
   ];
   return (
-    <div className="w-full max-w-[1000px] pb-10">
+    <div className="w-full max-w-[1200px] pb-10">
       <Grid2 container spacing={2}>
         <Grid2 size={6}>
           {" "}

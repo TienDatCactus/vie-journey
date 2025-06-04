@@ -4,19 +4,22 @@ import {
   StyledEngineProvider,
   ThemeProvider,
 } from "@mui/material/styles";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { SnackbarProvider } from "notistack";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import "./index.css";
-import router from "./utils/router/routes";
-import { SnackbarProvider } from "notistack";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { AuthProvider } from "./services/contexts";
 import Fallback from "./utils/handlers/loading/Fallback";
+import router from "./utils/router/routes";
+import { PlaceSearchProvider } from "./services/contexts/PlaceSearchContext";
+import { APIProvider } from "@vis.gl/react-google-maps";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
-import "maplibre-gl/dist/maplibre-gl.css";
-import { AuthProvider } from "./services/contexts";
+const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
 const theme = createTheme({
   cssVariables: true,
@@ -41,7 +44,6 @@ const theme = createTheme({
     },
   },
 });
-
 root.render(
   <React.StrictMode>
     <StyledEngineProvider injectFirst>
@@ -53,7 +55,11 @@ root.render(
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <React.Suspense fallback={<Fallback />}>
                 <AuthProvider>
-                  <RouterProvider router={router} />
+                  <APIProvider apiKey={apiKey} libraries={["places", "marker"]}>
+                    <PlaceSearchProvider>
+                      <RouterProvider router={router} />
+                    </PlaceSearchProvider>
+                  </APIProvider>
                 </AuthProvider>
               </React.Suspense>
             </LocalizationProvider>

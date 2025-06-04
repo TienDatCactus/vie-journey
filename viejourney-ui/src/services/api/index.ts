@@ -97,32 +97,14 @@ export const doGetUser = async (data: GetUserReqDTO) => {
 
 export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
   try {
-    console.log(
-      "Attempting to refresh access token using HTTP-only refresh token cookie"
-    );
-
-    // Create a new axios instance without interceptors to avoid infinite loops
-    const axiosInstance = axios.create({
-      baseURL: import.meta.env.VITE_PRIVATE_URL,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true, // Critical: needed to send and receive cookies
-    });
-
-    const resp = await axiosInstance.post(AUTH?.REFRESH_TOKEN);
-
+    const resp = await http.post(AUTH?.REFRESH_TOKEN);
     const newTokenData = extractApiData<RefreshTokenRespDTO>(resp);
-
+    console.log(resp);
     if (newTokenData && newTokenData.accessToken) {
-      // Store the new access token data (refresh token remains as HTTP-only cookie)
       localStorage.setItem("token", JSON.stringify(newTokenData));
-      console.log("Token refreshed successfully");
       return newTokenData;
     } else {
-      console.error("Invalid token response format");
       clearToken();
-      // Trigger redirect to login in case of refresh failure
       window.dispatchEvent(new CustomEvent("auth:refresh-failed"));
       return null;
     }
@@ -134,7 +116,6 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
       axios.isAxiosError(error) &&
       (error.response?.status === 401 || error.response?.status === 403)
     ) {
-      // Notify the app that authentication failed
       window.dispatchEvent(new CustomEvent("auth:refresh-failed"));
     }
 

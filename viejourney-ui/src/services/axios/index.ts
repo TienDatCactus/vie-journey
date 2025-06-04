@@ -33,10 +33,8 @@ const onTokenRefreshed = (newToken: string) => {
   refreshSubscribers = [];
 };
 
-// Function to reject all queued requests after token refresh fails
 const onRefreshFailure = () => {
   refreshSubscribers = [];
-  // Redirect to login page will be handled separately
 };
 
 /**
@@ -46,22 +44,14 @@ const onRefreshFailure = () => {
  * @returns The snackbar key if shown, null if debounced
  */
 const showDebouncedSnackbar = (message: string, options: any = {}) => {
-  // Create a simple hash of the message + variant to identify similar messages
   const messageKey = `${message}-${options.variant || "default"}`;
-
   const now = Date.now();
   const recent = recentMessages.get(messageKey);
-
-  // If this message was shown recently, skip showing it again
   if (recent && now - recent.timestamp < MESSAGE_DEBOUNCE_TIME) {
     return null;
   }
-
-  // Show the message and store it in recent messages
   const key = enqueueSnackbar(message, options);
   recentMessages.set(messageKey, { key, timestamp: now });
-
-  // Clean up old messages from the tracking map
   setTimeout(() => {
     if (recentMessages.has(messageKey)) {
       recentMessages.delete(messageKey);
@@ -71,7 +61,6 @@ const showDebouncedSnackbar = (message: string, options: any = {}) => {
   return key;
 };
 
-// Create Axios instance
 const http = axios.create({
   headers: {
     "Content-Type": "application/json",
@@ -80,7 +69,6 @@ const http = axios.create({
   withCredentials: true,
 });
 
-// Track current operation groups to consolidate messages
 let currentOperationCount = 0;
 let pendingMessages = new Map<string, number>(); // message -> count
 
@@ -91,10 +79,6 @@ const trackOperationStart = () => {
   currentOperationCount++;
   return currentOperationCount;
 };
-
-/**
- * Tracks the completion of an operation and shows consolidated snackbars
- */
 const trackOperationEnd = () => {
   currentOperationCount--;
 
@@ -126,7 +110,6 @@ const trackOperationEnd = () => {
     pendingMessages.clear();
   }
 };
-
 const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
   const {
     redirectOnUnauthorized = true,
@@ -156,12 +139,10 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
 
   const errorHandler = async (err: any): Promise<never> => {
     logger("Error caught:", err);
-
-    // Extract error details from the NestJS ResponseInterceptor format
     const responseData = err?.response?.data;
     const status =
       err?.response?.statusCode || err?.response?.status || err?.status;
-
+    console.log(status);
     const errorMessage =
       responseData?.message || responseData?.error || err?.message;
 
@@ -190,15 +171,12 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       );
 
       if (isAuthErrorException) {
-        // For login failures, show the specific message without redirect
         showDebouncedSnackbar(errorMessage || "Invalid username or password", {
           variant: "error",
           autoHideDuration: 3000,
         });
       } else {
-        // For other auth errors (expired token, etc.), clear token and redirect
         localStorage.removeItem("token");
-
         if (redirectOnUnauthorized) {
           showDebouncedSnackbar(
             "Your session has expired. Please log in again.",
@@ -273,32 +251,25 @@ const handleError = createErrorHandler({
 http.interceptors.response.use(
   (response) => {
     const { data } = response;
-
-    // Handle success messages from NestJS ResponseInterceptor
     if (data && data.status === "success" && data.message) {
-      // If there are multiple ongoing operations, collect messages
       if (currentOperationCount > 1) {
         const message = data.message;
         pendingMessages.set(message, (pendingMessages.get(message) || 0) + 1);
       } else {
-        // For single operations, show message immediately
         showDebouncedSnackbar(data.message, {
           variant: "success",
           autoHideDuration: 3000,
         });
       }
     }
-
     trackOperationEnd();
     return response;
   },
   async (error) => {
     trackOperationEnd();
 
-    // Handle token refresh for 401 errors
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Skip token refresh for auth endpoints to prevent infinite loops
       const isAuthEndpoint = [
         "/auth/login",
         "/auth/register",
@@ -318,7 +289,6 @@ http.interceptors.response.use(
         method: originalRequest.method,
       });
 
-      // Mark request as retried to prevent infinite loops
       originalRequest._retry = true;
 
       try {
@@ -333,8 +303,6 @@ http.interceptors.response.use(
         }
 
         isRefreshing = true;
-
-        // Attempt token refresh
         const refreshResult = await refreshToken();
         if (refreshResult && refreshResult.accessToken) {
           // Update Authorization header

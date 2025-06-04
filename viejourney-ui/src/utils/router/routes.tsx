@@ -174,7 +174,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/trip",
-    element: <ProtectedRoute requireAuth={true} />,
+    // element: <ProtectedRoute requireAuth={false} />,
     errorElement: <ErrorBoundary />,
     children: [
       {

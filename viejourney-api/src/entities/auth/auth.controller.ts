@@ -89,7 +89,7 @@ export class AuthController {
   async googleAuth(@Req() req: Request, @Res() res: Response) {
     return this.authService.googleAuth(req.user, res);
   }
-  @Post('validate-token')
+  @Post('/validate-token')
   async validateToken(
     @Body() body: { token: string },
     @Res({ passthrough: true }) res: Response,

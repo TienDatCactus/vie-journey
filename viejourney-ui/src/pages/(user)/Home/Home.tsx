@@ -2,6 +2,7 @@ import React from "react";
 
 import { MainLayout } from "../../../layouts";
 import {
+  HomeBanner,
   HomeExplore,
   HomeFastSearch,
   HomeMap,
@@ -12,6 +13,7 @@ import {
 const Home: React.FC = () => {
   return (
     <MainLayout>
+      <HomeBanner />
       <HomeRecent />
       <HomeFastSearch />
       <HomeMap />
