@@ -23,12 +23,14 @@ const Admin = lazy(() => import("../../pages/(admin)/Dashboard/index"));
 const Guides = lazy(() => import("../../pages/(user)/Guides/Guides"));
 const Hotels = lazy(() => import("../../pages/(user)/Hotels/Hotels"));
 const CreateTrip = lazy(() => import("../../pages/(user)/Trip/CreateTrip"));
+
 const CreateTripDetails = lazy(
   () => import("../../pages/(user)/Trip/CreateTripDetails/CreateTripDetails")
 );
 const OauthSuccess = lazy(
   () => import("./../../pages/(anonymous)/Auth/OauthSuccess")
 );
+const Banner = lazy(() => import("../../pages/(admin)/Banner"));
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
@@ -169,6 +171,20 @@ const router = createBrowserRouter([
             <SuspenseWrapper component={Accounts} />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "media",
+        errorElement: <ErrorBoundary />,
+        children: [
+          {
+            path: "banner",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={Banner} />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       },
     ],
   },
