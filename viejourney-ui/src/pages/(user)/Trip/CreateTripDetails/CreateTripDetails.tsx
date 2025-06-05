@@ -6,6 +6,7 @@ import {
   AvatarGroup,
   Badge,
   Button,
+  ButtonGroup,
   Card,
   CardActions,
   CardContent,
@@ -24,6 +25,7 @@ import {
   Menu,
   MenuItem,
   MenuList,
+  Rating,
   Select,
   Stack,
   TextField,
@@ -36,20 +38,26 @@ import "swiper/css/pagination";
 import { TripLayout } from "../../../../layouts";
 
 import {
+  AccessTime,
   Add,
   ArrowForward,
   AttachFile,
+  AttachMoney,
   Circle,
   Cloud,
   CurrencyExchange,
   Delete,
+  Directions,
   Edit,
   EmojiTransportation,
   Explore,
   Hotel,
   MoreHoriz,
+  OpenInNew,
   RestaurantMenu,
   Settings,
+  Star,
+  TaskAlt,
   TransferWithinAStation,
 } from "@mui/icons-material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -111,11 +119,28 @@ const CreateTripDetails: React.FC = () => {
               <div>
                 <DateRangePicker
                   slotProps={{
-                    field: {
-                      className: "text-neutral-800 text-sm border-none",
+                    textField: {
+                      variant: "standard",
+                      InputProps: {
+                        disableUnderline: true, // Remove the underline for standard variant
+                        sx: {
+                          borderRadius: "12px",
+                          fontSize: "0.875rem",
+                          padding: "8px",
+                          backgroundColor: "transparent",
+                          "& .MuiInputBase-input": {
+                            padding: "4px 8px",
+                          },
+                          boxShadow: "none",
+                          border: "none",
+
+                          "&:hover": {
+                            backgroundColor: "rgba(0, 0, 0, 0.04)",
+                          },
+                        },
+                      },
                     },
                   }}
-                  className="*:text-neutral-800 *:text-sm "
                   defaultValue={[dayjs("2023-01-01"), dayjs("2023-01-31")]}
                 />
               </div>
@@ -719,6 +744,178 @@ const CreateTripDetails: React.FC = () => {
             className="font-semibold"
           />
         </Divider>
+        <div>
+          <Accordion
+            elevation={0}
+            className="bg-white py-4"
+            slotProps={{ transition: { unmountOnExit: true } }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1bh-content"
+              className="group"
+              id="panel1bh-header"
+            >
+              <Badge badgeContent={4} color="success">
+                <h1 className="text-3xl font-bold text-neutral-900 group-hover:underline">
+                  Places
+                </h1>
+              </Badge>
+            </AccordionSummary>
+            <AccordionDetails>
+              <div className="flex flex-col gap-4">
+                {/* Places to Visit Section */}
+                <Card
+                  elevation={0}
+                  className="w-full grid lg:grid-cols-3 rounded-xl lg:min-h-64 flex-col p-2 px-4"
+                >
+                  <CardMedia
+                    component="img"
+                    src="/images/ocean-beach-mountains-ud.jpg"
+                    className="object-cover col-span-1 w-full h-full rounded-s-lg"
+                  />
+                  <CardContent className="p-0 px-4 lg:py-1 gap-4 flex flex-col col-span-2">
+                    <Stack
+                      direction={"row"}
+                      alignItems={"center"}
+                      gap={2}
+                      justifyContent={"space-between"}
+                    >
+                      <Stack direction={"row"} alignItems={"center"} gap={1}>
+                        <h1 className="text-2xl font-semibold">Title</h1>
+                        <Chip
+                          label="Category"
+                          size="small"
+                          className="bg-white border border-neutral-500 font-medium"
+                        />
+                      </Stack>
+                      <IconButton className="p-1">
+                        <MoreHoriz />
+                      </IconButton>
+                    </Stack>
+                    <Stack direction={"row"} alignItems={"center"} gap={1}>
+                      <Stack direction={"row"} alignItems={"baseline"}>
+                        <Star className="text-yellow-500 text-base " />
+                        <span className="text-base text-gray-600 font-semibold ml-1">
+                          4.5
+                        </span>
+                        <span className="text-xs text-gray-600 ">
+                          (1247 reviews)
+                        </span>
+                      </Stack>
+                      <Stack direction={"row"} alignItems={"center"}>
+                        <AccessTime className="text-gray-600 text-base mr-0.5" />
+                        <span className="text-sm text-gray-600">
+                          10:00 AM - 6:00 PM
+                        </span>
+                      </Stack>
+                      <Stack direction={"row"} alignItems={"center"}>
+                        <AttachMoney className="text-green-600 text-base" />
+                        <span className="text-sm text-gray-600 font-semibold">
+                          Free
+                        </span>
+                      </Stack>
+                    </Stack>
+                    {/* <p className="text-base text-neutral-800 text-ellipsis line-clamp-3">
+                      Moderate hiking trail leading to a secluded black sand
+                      beach with dramatic coastal views.
+                    </p> */}
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={2}
+                      placeholder="Add a description..."
+                      variant="standard"
+                      size="small"
+                      slotProps={{
+                        input: {
+                          className:
+                            "text-neutral-800 text-sm border-none no-underline",
+                        },
+                      }}
+                    />
+                    <Stack
+                      direction={"row"}
+                      alignItems={"center"}
+                      gap={1}
+                      flexWrap={"wrap"}
+                    >
+                      <Chip label="Category" size="small" className="text-xs" />
+                      <Chip label="Category" size="small" className="text-xs" />
+                      <Chip label="Category" size="small" className="text-xs" />
+                    </Stack>
+                    <Divider className="" />
+                    <Stack
+                      direction={"row"}
+                      alignItems={"center"}
+                      justifyContent={"space-between"}
+                    >
+                      <Stack direction={"row"} alignItems={"center"} gap={1}>
+                        <TaskAlt className="text-lg" />
+                        <Chip
+                          className="bg-green-200  text-green-800 font-medium"
+                          label="Visited"
+                          size="small"
+                        />
+                      </Stack>
+                      <ButtonGroup>
+                        <Button
+                          variant="outlined"
+                          className="text-gray-600 border-gray-300"
+                          startIcon={<Directions />}
+                        >
+                          Directions
+                        </Button>
+                        <Button
+                          variant="contained"
+                          className="bg-gray-800 text-white"
+                          startIcon={<OpenInNew />}
+                        >
+                          Details
+                        </Button>
+                      </ButtonGroup>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </div>
+            </AccordionDetails>
+          </Accordion>
+        </div>
+      </div>
+      <div className="pt-10">
+        <div className="bg-white lg:p-10 lg:px-12">
+          <Stack
+            direction={"row"}
+            alignItems={"center"}
+            justifyContent={"space-between"}
+          >
+            <h1 className="text-3xl font-bold">Itinerary</h1>
+            <DateRangePicker
+              slotProps={{
+                textField: {
+                  variant: "standard",
+                  InputProps: {
+                    disableUnderline: true, // Remove the underline for standard variant
+                    sx: {
+                      borderRadius: "12px",
+                      fontSize: "0.875rem",
+                      padding: "8px",
+                      backgroundColor: "transparent",
+                      "& .MuiInputBase-input": {
+                        padding: "4px 8px",
+                      },
+                      boxShadow: "none",
+                      border: "none",
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.04)",
+                      },
+                    },
+                  },
+                },
+              }}
+            />
+          </Stack>
+        </div>
       </div>
     </TripLayout>
   );
