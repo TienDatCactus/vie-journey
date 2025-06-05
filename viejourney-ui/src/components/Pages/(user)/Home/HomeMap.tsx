@@ -26,6 +26,7 @@ const HomeMap = () => {
 
   return (
     <div className="w-full max-w-[1200px] pb-10">
+      <h1 className="text-[1.875rem] font-bold">Map</h1>
       <div className="w-full h-[300px] mb-4 rounded-lg relative">
         <Map
           containerStyle={{
@@ -38,7 +39,6 @@ const HomeMap = () => {
           showMapTypeControl={false}
           disableDefaultUI={true}
           onPOIClick={handlePOIClick}
-          // Hide the built-in search control since we use the one in HomeFastSearch
           streetViewControl={false}
           fullscreenControl={false}
           zoomControl={true}

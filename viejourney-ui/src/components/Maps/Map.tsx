@@ -1,19 +1,18 @@
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import {
   AdvancedMarker,
   Map as GoogleMap,
-  MapProps as GoogleMapProps,
   Pin,
   useMap,
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
-import React, { ReactNode, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
 import { usePlaces } from "../../utils/hooks/use-places";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
 import POIDetails from "./controls/POIDetails";
 import SearchPlacesControl from "./controls/SearchPlacesControl";
-import { POIData } from "./types";
+import { MapProps, POIData } from "./types";
 
 // Map configuration component with POI click disabling
 const MapConfiguration: React.FC<{
@@ -160,7 +159,6 @@ const MapConfiguration: React.FC<{
               console.error("Error fetching place details:", error);
             });
         } else if (onClick) {
-          // Regular map click (not on a POI)
           onClick(event);
         }
       }
@@ -182,17 +180,6 @@ const MapConfiguration: React.FC<{
 };
 
 // Props for our custom Map component
-export interface MapProps extends Omit<GoogleMapProps, "style"> {
-  apiKey?: string;
-  containerStyle?: React.CSSProperties;
-  showMapTypeControl?: boolean;
-  onMapClick?: (event: google.maps.MapMouseEvent) => void;
-  onPOIClick?: (poiData: POIData) => void;
-  onLoad?: () => void;
-  onError?: (error: Error) => void;
-  children?: ReactNode;
-  showDetailsControl?: boolean;
-}
 
 // Main Map component
 const Map: React.FC<MapProps> = ({
@@ -272,13 +259,16 @@ const Map: React.FC<MapProps> = ({
               position={selectedPOI.location}
               title={selectedPOI.displayName}
               zIndex={1000}
+              className="group transition-transform duration-200 transform hover:scale-110"
             >
-              <Pin
-                scale={1.5}
-                background="#1976d2"
-                glyphColor="#ffffff"
-                borderColor="#0d47a1"
-              />
+              <div className="p-1 rounded-full bg-white shadow-md">
+                <Pin
+                  scale={1.4}
+                  background="#1976d2"
+                  glyphColor="#ffffff"
+                  borderColor="#ffffff"
+                />
+              </div>
             </AdvancedMarker>
           )}
 

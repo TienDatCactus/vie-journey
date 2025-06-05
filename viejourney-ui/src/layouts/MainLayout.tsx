@@ -5,7 +5,7 @@ import { Divider, Fab } from "@mui/material";
 import { animate } from "motion/react";
 import { MainAuthHeader, MainUnAuthHeader } from "../components/Layout";
 import Footer from "../components/Layout/Main/Footer";
-import useAuth from "../services/hooks/useAuth";
+import { useAuth } from "../services/contexts/AuthContext";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();

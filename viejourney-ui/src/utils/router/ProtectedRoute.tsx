@@ -2,7 +2,7 @@ import { enqueueSnackbar } from "notistack";
 import React, { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Fallback from "../handlers/loading/Fallback";
-import useAuth from "../../services/hooks/useAuth";
+import { useAuth } from "../../services/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;

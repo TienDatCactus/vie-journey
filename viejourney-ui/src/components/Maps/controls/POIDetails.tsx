@@ -1,5 +1,4 @@
 import {
-  Add as AddIcon,
   BookmarkAdd,
   BookmarkAdded,
   Close as CloseIcon,
@@ -27,6 +26,7 @@ import React, { useState } from "react";
 import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { POIData } from "../types";
+import { motion } from "motion/react";
 
 interface POIDetailsProps {
   poi: POIData;
@@ -42,7 +42,6 @@ const POIDetails: React.FC<POIDetailsProps> = ({
   onToggleFavorite,
 }) => {
   const [isFavorite, setIsFavorite] = useState(false);
-  console.log(JSON.stringify(poi, null, 2));
   const handleFavoriteToggle = () => {
     const newState = !isFavorite;
     setIsFavorite(newState);
@@ -127,12 +126,16 @@ const POIDetails: React.FC<POIDetailsProps> = ({
 
     return null;
   };
-
   // Determine if the place is currently open
   const openNow = isOpen();
-
   return (
-    <div className="w-full h-full flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, height: 0, y: -20 }}
+      animate={{ opacity: 1, height: "auto", y: 0 }}
+      exit={{ opacity: 0, height: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="w-full h-full flex flex-col bg-white rounded-lg shadow-lg overflow-hidden"
+    >
       {/* Header with image */}
       <div className="relative lg:h-48">
         <Swiper className="mySwiper lg:h-48 rounded-t-lg z-0 w-full">
@@ -141,6 +144,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
               <SwiperSlide key={index}>
                 <img
                   src={photo.getURI()}
+                  loading="lazy"
                   onError={(e) => {
                     e.currentTarget.src = `https://placehold.co/600x400?text=Image+not+available`;
                   }}
@@ -493,7 +497,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
           </Button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
