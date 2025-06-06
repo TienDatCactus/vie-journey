@@ -175,16 +175,11 @@ const router = createBrowserRouter([
       {
         path: "media",
         errorElement: <ErrorBoundary />,
-        children: [
-          {
-            path: "banner",
-            element: (
-              <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={Banner} />
-              </ProtectedRoute>
-            ),
-          },
-        ],
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Banner} />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
