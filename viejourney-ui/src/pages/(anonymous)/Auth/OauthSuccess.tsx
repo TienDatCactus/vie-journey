@@ -1,4 +1,5 @@
 import {
+  CalendarMonth,
   ContactPhoneOutlined,
   DoneAll,
   EmailOutlined,
@@ -7,12 +8,11 @@ import {
   TaskAlt,
 } from "@mui/icons-material";
 import { Button, ButtonGroup, Chip } from "@mui/material";
-import { CalendarIcon } from "@mui/x-date-pickers";
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { doValidateAccessToken } from "../../../services/api";
 import { setToken } from "../../../services/api/token";
-import { useAuth } from "../../../services/contexts";
+import { useAuth } from "../../../services/contexts/AuthContext";
 const OauthSuccess: React.FC = () => {
   const params = useSearchParams();
   const { setCredential } = useAuth();
@@ -86,7 +86,7 @@ const OauthSuccess: React.FC = () => {
           </div>
           <div className="flex items-center justify-between border-b pb-4 mb-4 border-neutral-500">
             <dt className="text-sm text-neutral-600">
-              <CalendarIcon className="mb-1" />
+              <CalendarMonth className="mb-1" />
               <span className="mx-2">Member Since</span>
             </dt>
             <dd className="text-sm font-semibold">December 2024</dd>

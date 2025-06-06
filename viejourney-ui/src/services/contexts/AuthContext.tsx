@@ -5,7 +5,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { doGetUser, doValidateAccessToken } from "../../api";
+import { doGetUser, doValidateAccessToken } from "../api";
 
 const AuthContext = createContext({
   user: null as User | null,

@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { doLogout } from "../../../../services/api";
-import { useAuth } from "../../../../services/contexts";
+import { useAuth } from "../../../../services/contexts/AuthContext";
 interface Props {
   window?: () => Window;
   children?: React.ReactElement<unknown>;

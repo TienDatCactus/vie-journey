@@ -50,7 +50,7 @@ const Guides: React.FC = () => {
   const destRef = useRef<HTMLDivElement | null>(null);
   return (
     <MainLayout>
-      <div className="w-full max-w-[1000px] py-6">
+      <div className="w-full max-w-[1200px] py-6">
         <Stack
           direction={"column"}
           justifyContent={"center"}
@@ -98,7 +98,7 @@ const Guides: React.FC = () => {
       {/* guides cards */}
       <AllGuides />
       <motion.div
-        className="w-full max-w-[1000px] pb-10"
+        className="w-full max-w-[1200px] pb-10"
         ref={destRef}
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}

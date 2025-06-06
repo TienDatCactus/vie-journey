@@ -1,140 +1,106 @@
 import {
   Clear,
-  NavigateBefore,
+  NavigateNext,
   Place as PlaceIcon,
   Search as SearchIcon,
 } from "@mui/icons-material";
 import {
   Autocomplete,
   Box,
+  Checkbox,
   CircularProgress,
+  FormControl,
   IconButton,
   InputAdornment,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  Select,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
+import { useMap } from "@vis.gl/react-google-maps";
 import { motion } from "motion/react";
-import React, { useEffect, useState } from "react";
-import { useAutocompleteSuggestions } from "../hooks/use-autocomplete-suggestions";
-
-interface SearchPlacesControlProps {
-  onPlaceSelected?: (place: google.maps.places.Place) => void;
-  placeholder?: string;
-  width?: string | number;
-}
-
-// Interface for the option items shown in the Autocomplete dropdown
-interface AutocompleteOption {
-  placeId: string;
-  primaryText: string;
-  secondaryText?: string;
-}
+import React, { useState } from "react";
+import { SearchPlacesControlProps } from "../types";
+import { usePlaceSearch } from "../../../services/contexts/PlaceSearchContext";
 
 const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
   onPlaceSelected,
   placeholder = "Search for places...",
 }) => {
   const mapInstance = useMap();
-  const placesLib = useMapsLibrary("places");
-  const [searchInput, setSearchInput] = useState("");
-  const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<AutocompleteOption[]>([]);
-  const [selectedOption, setSelectedOption] =
-    useState<AutocompleteOption | null>(null);
   const [isClicked, setIsClicked] = useState(false);
-  const { suggestions, isLoading, resetSession } = useAutocompleteSuggestions(
+
+  // Use the global place search context
+  const {
     searchInput,
-    {
-      //   includedPrimaryTypes: ["restaurant", "tourist_attraction", "lodging"],
-    }
-  );
+    options,
+    isLoading,
+    open,
+    setOpen,
+    selectedOption,
+    handleInputChange,
+    resetSearch,
+    handlePlaceSelect,
+    setPrimaryTypes,
+    primaryTypes,
+  } = usePlaceSearch();
 
-  useEffect(() => {
-    if (!suggestions?.length) return;
-
-    const newOptions: AutocompleteOption[] = suggestions
-      .filter(
-        ({ placePrediction }) =>
-          placePrediction?.placeId && placePrediction?.text?.text
-      )
-      .map(({ placePrediction }) => ({
-        placeId: placePrediction?.placeId!, // Non-null assertion because of the filter
-        primaryText: placePrediction?.text?.text!, // Non-null assertion because of the filter
-        secondaryText: placePrediction?.secondaryText?.text || "",
-      }));
-
-    setOptions(newOptions);
-  }, [suggestions]);
-  const handlePlaceSelect = async (option: AutocompleteOption | null) => {
-    if (!option || !placesLib || !mapInstance) return;
+  // Custom handler for this component to also handle map panning
+  const handlePlaceSelectWithMap = async (option: any) => {
+    if (!option || !mapInstance) return;
 
     try {
-      const { Place } = placesLib;
+      const place = await handlePlaceSelect(option);
 
-      const placeInstance = new Place({
-        id: option.placeId,
-      });
-
-      // Fetch detailed place information
-      const result = await placeInstance.fetchFields({
-        fields: [
-          "location",
-          "displayName",
-          "formattedAddress",
-          "types",
-          "photos",
-          "rating",
-          "userRatingCount",
-          "priceLevel",
-        ],
-      });
-      const place = result.place; // Pan to the place location
-      if (place.location) {
+      // Pan to the place location if map is available
+      if (place?.location) {
         mapInstance.panTo(place.location);
         mapInstance.setZoom(16);
       }
 
       // Call the callback if provided
-      if (onPlaceSelected) {
+      if (onPlaceSelected && place) {
         onPlaceSelected(place);
       }
-
-      // Reset the autocomplete session
-      resetSession();
-
-      // Set the display value to the selected place name
-      setSearchInput(option.primaryText);
-      setSelectedOption(option);
     } catch (error) {
-      console.error("Error fetching place details:", error);
+      console.error("Error in handlePlaceSelectWithMap:", error);
     }
   };
-
-  // Handle input change
-  const handleInputChange = (_event: React.SyntheticEvent, value: string) => {
-    setSearchInput(value);
-    // Clear selected option when input changes
-    if (selectedOption && value !== selectedOption.primaryText) {
-      setSelectedOption(null);
-    }
-  };
-
+  const placeTypes = [
+    "parking",
+    "shopping_mall",
+    "restaurant",
+    "cafe",
+    "bar",
+    "museum",
+    "tourist_attraction",
+    "gym",
+  ];
   return (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
+        justifyContent: "end",
         gap: 1,
         position: "absolute",
         top: 6,
-        transform: "translateX(-50%)",
-        left: "50%",
+        right: 10,
         zIndex: 5,
         width: 300,
       }}
     >
+      {isClicked && (
+        <IconButton
+          className="shadow-md bg-neutral-100 "
+          onClick={() => setIsClicked(false)}
+        >
+          <NavigateNext />
+        </IconButton>
+      )}
       {isClicked ? (
         <motion.div
           initial={{ width: 0, scale: 0.95 }}
@@ -155,7 +121,7 @@ const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
             }
             noOptionsText={searchInput ? "No places found" : "Type to search"}
             filterOptions={(x) => x}
-            onChange={(_event, value) => handlePlaceSelect(value)}
+            onChange={(_event, value) => handlePlaceSelectWithMap(value)}
             onInputChange={handleInputChange}
             inputValue={searchInput}
             value={selectedOption}
@@ -182,11 +148,7 @@ const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
                       )}
                       <IconButton size="small">
                         <Clear
-                          onClick={() => {
-                            setSearchInput("");
-                            setSelectedOption(null);
-                            resetSession();
-                          }}
+                          onClick={() => resetSearch()}
                           sx={{
                             visibility: searchInput ? "visible" : "hidden",
                           }}
@@ -239,6 +201,61 @@ const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
               </li>
             )}
           />
+          <FormControl fullWidth className="mt-2">
+            <InputLabel id="types-label">Types</InputLabel>
+            <Select
+              labelId="types-label"
+              id="types-select"
+              multiple
+              className="bg-neutral-50"
+              value={primaryTypes}
+              onChange={(e) => setPrimaryTypes(e.target.value as string[])}
+              renderValue={(selected) =>
+                selected && selected.length > 0
+                  ? selected.includes("_")
+                    ? selected.join(", ")
+                    : selected
+                        .map((type) =>
+                          type
+                            .split("_")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ")
+                        )
+                        .join(", ")
+                  : "Select types"
+              }
+              sx={{
+                bgcolor: "white",
+                borderRadius: 1,
+                boxShadow: 2,
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderRadius: 1,
+                },
+              }}
+            >
+              {placeTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  <Checkbox checked={primaryTypes?.includes(type)} />
+                  <ListItemText
+                    primary={
+                      (type.includes("_") &&
+                        type
+                          .split("_")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                          )
+                          .join(" ")) ||
+                      type.charAt(0).toUpperCase() + type.slice(1)
+                    }
+                  />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </motion.div>
       ) : (
         <Tooltip
@@ -254,14 +271,6 @@ const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
             <SearchIcon />
           </IconButton>
         </Tooltip>
-      )}
-      {isClicked && (
-        <IconButton
-          className="shadow-md bg-neutral-100 "
-          onClick={() => setIsClicked(false)}
-        >
-          <NavigateBefore />
-        </IconButton>
       )}
     </Box>
   );

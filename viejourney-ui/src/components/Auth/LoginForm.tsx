@@ -26,7 +26,7 @@ import {
   doSendForgotPasswordEmail,
 } from "../../services/api";
 import { LoginRespDTO } from "../../services/api/dto";
-import { useAuth } from "../../services/contexts";
+import { useAuth } from "../../services/contexts/AuthContext";
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -170,7 +170,7 @@ const LoginForm: React.FC = () => {
         <Stack direction={"row"} spacing={2} justifyContent={"center"}>
           <Button
             variant="outlined"
-            className="w-full hover:shadow-lg py-2 border-neutral-300 text-center *:text-base"
+            className="w-full shadow-sm py-2 border-neutral-400 text-center *:text-base"
             onClick={handleGoogleLogin}
           >
             <img

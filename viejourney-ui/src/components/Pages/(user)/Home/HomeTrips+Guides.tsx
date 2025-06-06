@@ -34,11 +34,10 @@ const HomeTrips: React.FC = () => {
     },
   ];
   return (
-    <div className="w-full max-w-[1000px] pb-10">
+    <div className="w-full max-w-[1200px] pb-10">
       <Grid2 container spacing={2}>
         <Grid2 size={6}>
-          {" "}
-          <Paper className="flex flex-col justify-between bg-neutral-200 p-4 h-[21.25rem] max-h-[25rem]">
+          <Paper className="flex flex-col justify-between bg-white p-4 h-[21.25rem] max-h-[25rem]">
             <Stack
               direction={"row"}
               justifyContent={"space-between"}
@@ -48,7 +47,7 @@ const HomeTrips: React.FC = () => {
               <div>
                 <Button
                   variant="outlined"
-                  className="bg-accent-button border-[--color-accent-button] text-[--color-dark-700] hover:bg-[--color-accent-button-hover] hover:border-[--color-accent-button-hover] hover:text-[--color-dark-950] rounded-4xl"
+                  className="rounded-sm"
                   startIcon={<Add />}
                 >
                   Plan new trip
@@ -91,8 +90,7 @@ const HomeTrips: React.FC = () => {
               <div>
                 <Button
                   variant="outlined"
-                  className="
-                bg-[--color-accent-button] border-[--color-accent-button] text-[--color-dark-700] hover:bg-[--color-accent-button-hover] hover:border-[--color-accent-button-hover] hover:text-[--color-dark-950] rounded-4xl"
+                  className="rounded-sm"
                   startIcon={<Add />}
                 >
                   Create new guide
