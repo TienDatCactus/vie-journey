@@ -7,6 +7,7 @@ import Accounts from "../../pages/(admin)/Accounts";
 import Guides from "../../pages/(user)/Guides/Guides";
 import Hotels from "../../pages/(user)/Hotels/Hotels";
 import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
+import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -168,11 +169,24 @@ const router = createBrowserRouter([
       },
       {
         path: "accounts",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={Accounts} />
-          </ProtectedRoute>
-        ),
+        children: [
+          {
+            path: "",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={Accounts} />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "detail",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={AccountDetail} />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       },
       {
         path: "media",
