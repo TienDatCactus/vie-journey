@@ -76,82 +76,81 @@ export class AccountService {
     }
     return deletedAccount;
   }
+  async editInfos(
+    file: Express.Multer.File,
+    editProfile: EditProfileDto,
+    userId: string,
+  ) {
+    try {
+      const existingInfo = await this.userInfosModel
+        .findOne({ userId: userId })
+        .populate('avatar');
 
-// async editInfos(file: Express.Multer.File, editProfile: EditProfileDto, userId: string) {
-//   // Tìm userInfo hiện tại (nếu có), và populate avatar
-//   const existingInfo = await this.userInfosModel
-//     .findOne({ userId: userId })
-//     .populate('avatar');
+      let uploadResult = null;
+      let assetId = null;
 
-//   if (file) {
-//     // Nếu đã có avatar cũ thì xóa trên Cloudinary trước
-//     if (existingInfo && existingInfo.avatar && existingInfo.avatar.publicId) {
-//       await this.cloudinaryService.deleteImage(existingInfo.avatar.publicId);
-//     }
+      // Handle file upload if present
+      if (file) {
+        if (existingInfo?.avatar?.publicId) {
+          await this.cloudinaryService.deleteImage(
+            existingInfo.avatar.publicId,
+          );
+        }
 
-//     // Upload ảnh mới lên Cloudinary
-//     const uploadResult = await this.cloudinaryService.uploadImage(file, {
-//       public_id: `users/${userId}/AVATAR/${file.filename}`,
-//     });
+        uploadResult = await this.cloudinaryService.uploadImage(file, {
+          public_id: `users/${userId}/AVATAR/${file.filename}`,
+        });
 
-//     if (!existingInfo) {
-//       // Nếu chưa có userInfo thì tạo mới asset và userInfo
-//       const asset = await this.assetModel.create({
-//         userId: new Types.ObjectId(userId),
-//         type: 'AVATAR',
-//         url: uploadResult.secure_url,
-//         publicId: uploadResult.public_id,
-//       });
+        // Create or update asset
+        const assetData = {
+          userId: new Types.ObjectId(userId),
+          type: 'AVATAR',
+          url: uploadResult.secure_url,
+          publicId: uploadResult.public_id,
+        };
 
-//       const userInfo = await this.userInfosModel.create({
-//         ...editProfile,
-//         userId: new Types.ObjectId(userId),
-//         avatar: asset._id,
-//       });
+        if (existingInfo?.avatar?._id) {
+          await this.assetModel.updateOne(
+            { _id: existingInfo.avatar._id },
+            { $set: assetData },
+          );
+          assetId = existingInfo.avatar._id;
+        } else {
+          const asset = await this.assetModel.create(assetData);
+          assetId = asset._id;
+        }
+      }
 
-//       return userInfo;
-//     }
+      // Create or update user info
+      if (!existingInfo) {
+        // Create new user info
+        const userInfoData = {
+          ...editProfile,
+          userId: new Types.ObjectId(userId),
+          ...(assetId && { avatar: assetId }),
+        };
 
-//     // Nếu đã có userInfo → update trường trong editProfile
-//     await this.userInfosModel.updateOne(
-//       { userId: userId },
-//       { $set: editProfile }
-//     );
+        const userInfo = await this.userInfosModel.create(userInfoData);
+        return userInfo;
+      } else {
+        // Update existing user info
+        const updateData = {
+          ...editProfile,
+          ...(assetId && { avatar: assetId }),
+        };
 
-//     // Nếu có avatar liên kết thì cập nhật url & publicId của asset
-//     if (existingInfo.avatar ) {
-//       await this.assetModel.updateOne(
-//         { _id: existingInfo.avatar },
-//         {
-//           $set: {
-//             url: uploadResult.secure_url,
-//             publicId: uploadResult.public_id,
-//             type: "AVATAR"
-//           },
-//         }
-//       );
-//     }
-//   } else {
-//     // Nếu không có file avatar mới
-//     if (!existingInfo) {
-//       // Nếu chưa có userInfo thì tạo mới userInfo (không có avatar)
-//       const userInfo = await this.userInfosModel.create({
-//         ...editProfile,
-//         userId: new Types.ObjectId(userId),
-//       });
-//       return userInfo;
-//     }
+        await this.userInfosModel.updateOne(
+          { userId: new Types.ObjectId(userId) },
+          { $set: updateData },
+        );
 
-//     // Nếu đã có userInfo → chỉ update các trường trong editProfile
-//     await this.userInfosModel.updateOne(
-//       { userId: new Types.ObjectId(userId) },
-//       { $set: editProfile }
-//     );
-//   }
-
-//   // Trả về bản ghi sau khi cập nhật
-//   return this.userInfosModel
-//     .findOne({ userId: userId })
-//     .populate('avatar');
-// }
+        return this.userInfosModel
+          .findOne({ userId: userId })
+          .populate('avatar');
+      }
+    } catch (error) {
+      console.error('Error updating user info:', error);
+      throw new Error(`Failed to update user info: ${error.message}`);
+    }
+  }
 }
