@@ -7,9 +7,15 @@ import {
 import {
   Autocomplete,
   Box,
+  Checkbox,
   CircularProgress,
+  FormControl,
   IconButton,
   InputAdornment,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  Select,
   TextField,
   Tooltip,
   Typography,
@@ -38,6 +44,8 @@ const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
     handleInputChange,
     resetSearch,
     handlePlaceSelect,
+    setPrimaryTypes,
+    primaryTypes,
   } = usePlaceSearch();
 
   // Custom handler for this component to also handle map panning
@@ -61,7 +69,16 @@ const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
       console.error("Error in handlePlaceSelectWithMap:", error);
     }
   };
-
+  const placeTypes = [
+    "parking",
+    "shopping_mall",
+    "restaurant",
+    "cafe",
+    "bar",
+    "museum",
+    "tourist_attraction",
+    "gym",
+  ];
   return (
     <Box
       sx={{
@@ -184,6 +201,61 @@ const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
               </li>
             )}
           />
+          <FormControl fullWidth className="mt-2">
+            <InputLabel id="types-label">Types</InputLabel>
+            <Select
+              labelId="types-label"
+              id="types-select"
+              multiple
+              className="bg-neutral-50"
+              value={primaryTypes}
+              onChange={(e) => setPrimaryTypes(e.target.value as string[])}
+              renderValue={(selected) =>
+                selected && selected.length > 0
+                  ? selected.includes("_")
+                    ? selected.join(", ")
+                    : selected
+                        .map((type) =>
+                          type
+                            .split("_")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ")
+                        )
+                        .join(", ")
+                  : "Select types"
+              }
+              sx={{
+                bgcolor: "white",
+                borderRadius: 1,
+                boxShadow: 2,
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderRadius: 1,
+                },
+              }}
+            >
+              {placeTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  <Checkbox checked={primaryTypes?.includes(type)} />
+                  <ListItemText
+                    primary={
+                      (type.includes("_") &&
+                        type
+                          .split("_")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                          )
+                          .join(" ")) ||
+                      type.charAt(0).toUpperCase() + type.slice(1)
+                    }
+                  />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </motion.div>
       ) : (
         <Tooltip

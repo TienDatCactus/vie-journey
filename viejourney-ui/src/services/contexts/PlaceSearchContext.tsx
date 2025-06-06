@@ -24,6 +24,8 @@ interface PlaceSearchContextType {
   handleInputChange: (event: React.SyntheticEvent, value: string) => void;
   resetSearch: () => void;
   selectedPlace: google.maps.places.Place | null;
+  setPrimaryTypes: (types: string[] | null) => void;
+  primaryTypes: string[] | null;
 }
 
 export const PlaceSearchContext = createContext<
@@ -45,12 +47,13 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
     useState<AutocompleteOption | null>(null);
   const [selectedPlace, setSelectedPlace] =
     useState<google.maps.places.Place | null>(null);
-
+  const [primaryTypes, setPrimaryTypes] = useState<string[] | null>([]);
   const { suggestions, isLoading, resetSession } = useAutocompleteSuggestions(
     searchInput,
     {
       // You can add filters here if needed
-      // includedPrimaryTypes: ["restaurant", "tourist_attraction", "lodging"],
+      language: "en",
+      includedPrimaryTypes: [...(primaryTypes || [])],
     }
   );
 
@@ -112,22 +115,6 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
             "editorialSummary",
             "parkingOptions",
             "paymentOptions",
-            "isReservable",
-            "hasOutdoorSeating",
-            "servesBreakfast",
-            "servesLunch",
-            "servesDinner",
-            "servesCoffee",
-            "servesBeer",
-            "servesWine",
-            "hasTakeout",
-            "hasDelivery",
-            "hasCurbsidePickup",
-            "hasDineIn",
-            "isGoodForChildren",
-            "isGoodForGroups",
-            "allowsDogs",
-            "hasLiveMusic",
             "accessibilityOptions",
             "googleMapsURI",
           ],
@@ -184,6 +171,8 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
         handleInputChange,
         resetSearch,
         selectedPlace,
+        setPrimaryTypes,
+        primaryTypes,
       }}
     >
       {children}

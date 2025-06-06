@@ -34,12 +34,17 @@ export class AccountService {
   async findAll(): Promise<Account[]> {
     return this.accountModel.find().exec();
   }
-  async findOne(id: string): Promise<Account> {
+  async findOne(id: string) {
     const account = await this.accountModel.findById(id);
     if (!account) {
       throw new NotFoundException(`Account with id ${id} not found`);
     }
-    return account;
+    return {
+      _id: account._id,
+      email: account.email,
+      active: account.active,
+      role: account.role,
+    };
   }
   async findByEmail(email: string): Promise<Account> {
     const account = await this.accountModel.findOne({ email });
