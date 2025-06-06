@@ -1,6 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 
+class Coordinate {
+    @Prop({ required: true })
+    latitude: number;
+
+    @Prop({ required: true })
+    longitude: number;
+}
+
 @Schema({
     versionKey: false,
 })
@@ -17,11 +25,8 @@ export class Hotel extends Document {
     @Prop({ required: true })
     address: string;
 
-    @Prop({ required: true })
-    latitude: number;
-
-    @Prop({ required: true })
-    longitude: number;
+    @Prop({ type: Coordinate, required: true })
+    coordinate: Coordinate;
 
     @Prop({ required: true, type: [String] })
     image: string[];

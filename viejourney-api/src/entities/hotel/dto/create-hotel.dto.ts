@@ -1,9 +1,13 @@
+class CoordinateDto {
+    latitude: number;
+    longitude: number;
+}
+
 export class CreateHotelDto {
     name: string;
     description: string;
     rating: number;
     address: string;
-    latitude: number;
-    longitude: number;
+    coordinate: CoordinateDto;
     images: string[];
 }
