@@ -1,4 +1,10 @@
-import { Button, Grid2, Stack } from "@mui/material";
+import {
+  Button,
+  Grid2,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import React from "react";
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
 import Menu from "@mui/material/Menu";
@@ -37,48 +43,21 @@ const HomeRecent: React.FC = () => {
         direction={"row"}
         justifyContent={"space-between"}
         alignItems={"center"}
+        className="mb-4"
       >
         <h1 className="text-[1.875rem] font-bold">
           Recently viewed and upcoming
         </h1>
         <div>
-          <Button
-            startIcon={<PlaylistAddIcon />}
-            variant="contained"
-            className="bg-[#2e2e2e]"
-          >
-            Plan new trip
-          </Button>
+          <ToggleButtonGroup exclusive>
+            <ToggleButton value="left">Recently viewed</ToggleButton>
+            <ToggleButton value="center">Upcoming</ToggleButton>
+          </ToggleButtonGroup>
         </div>
       </Stack>
-      <div className="my-2">
-        <Button
-          id="basic-button"
-          aria-controls={open ? "basic-menu" : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
-          className="p-0 text-[#181818] hover:underline underline-offset-4"
-          variant="text"
-          onClick={handleClick}
-          endIcon={<ArrowDropDownIcon />}
-        >
-          Recently viewed
-        </Button>
-        <Menu
-          id="basic-menu"
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          MenuListProps={{
-            "aria-labelledby": "basic-button",
-          }}
-        >
-          <MenuItem onClick={handleClose}>Recently viewed</MenuItem>
-          <MenuItem onClick={handleClose}>Upcoming</MenuItem>
-        </Menu>
-      </div>
+
       <Grid2 container spacing={2}>
-        {!!fakeData.length &&
+        {!!fakeData.slice(0, 1).length &&
           fakeData?.map((item, index) => (
             <Grid2 size={4} key={index}>
               <RecentCard
@@ -91,6 +70,9 @@ const HomeRecent: React.FC = () => {
               />
             </Grid2>
           ))}
+        <Grid2 size={4}>
+          <RecentCard blank={true} />
+        </Grid2>
       </Grid2>
     </div>
   );

@@ -1,8 +1,13 @@
 import { Add } from "@mui/icons-material";
 import { Button, Stack, TextField } from "@mui/material";
-import { DateTimePicker } from "@mui/x-date-pickers";
 import React from "react";
 import PublicIcon from "@mui/icons-material/Public";
+import {
+  DateRangePicker,
+  DateTimePicker,
+  MultiInputDateRangeField,
+} from "@mui/x-date-pickers-pro";
+import { Form } from "react-hook-form";
 export const CreateTripForm: React.FC = () => {
   return (
     <Stack className="w-full gap-4">
@@ -24,18 +29,20 @@ export const CreateTripForm: React.FC = () => {
         variant="outlined"
       />
       <div>
-        <label className="text-base ">
+        <p className="text-base my-2">
           Dates <span>(optionals)</span>
-        </label>
-        <Stack
-          direction={"row"}
-          justifyContent={"space-between"}
-          className="w-full"
-          gap={2}
-        >
-          <DateTimePicker label="Start date" className="w-1/2" />
-          <DateTimePicker label="End date" className="w-1/2" />
-        </Stack>
+        </p>
+        <DateRangePicker
+          defaultValue={[null, null]}
+          slots={{
+            field: MultiInputDateRangeField,
+          }}
+          slotProps={{
+            field: {
+              className: "w-full",
+            },
+          }}
+        />
       </div>
       <Stack direction={"row"} gap={2} justifyContent={"space-between"}>
         <a className="flex items-center justify-center gap-1 cursor-pointer *:text-neutral-700 hover:underline">
@@ -47,10 +54,10 @@ export const CreateTripForm: React.FC = () => {
           <span>Public</span>
         </a>
       </Stack>
-      <div className="mx-auto mt-10">
+      <div className="mx-auto ">
         <Button
           variant="contained"
-          className="p-4 rounded-4xl text-xl font-medium"
+          className="p-4 rounded-md text-lg font-medium bg-dark-900 "
         >
           Start planning
         </Button>

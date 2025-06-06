@@ -7,7 +7,6 @@ const TripMap: React.FC = () => {
   const [selectedPOI, setSelectedPOI] = useState<POIData | null>(null);
 
   const handlePOIClick = (poi: POIData) => {
-    console.log("POI clicked in TripMap:", poi);
     setSelectedPOI(poi);
   };
 

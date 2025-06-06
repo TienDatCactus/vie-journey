@@ -1,21 +1,7 @@
+import { ReactNode } from "react";
+import { MapProps as GoogleMapProps } from "@vis.gl/react-google-maps";
 // Use Place as the base type for POI data
-export type POIData = google.maps.places.Place & {
-  servesFood?: {
-    vegetarian?: boolean;
-    breakfast?: boolean;
-    brunch?: boolean;
-    lunch?: boolean;
-    dinner?: boolean;
-    dessert?: boolean;
-  };
-  servesDrinks?: {
-    beer?: boolean;
-    wine?: boolean;
-    cocktails?: boolean;
-    coffee?: boolean;
-  };
-};
-
+export type POIData = google.maps.places.Place;
 export interface SearchPlacesControlProps {
   onPlaceSelected?: (place: google.maps.places.Place) => void;
   placeholder?: string;
@@ -27,4 +13,16 @@ export interface AutocompleteOption {
   placeId: string;
   primaryText: string;
   secondaryText?: string;
+}
+
+export interface MapProps extends Omit<GoogleMapProps, "style"> {
+  apiKey?: string;
+  containerStyle?: React.CSSProperties;
+  showMapTypeControl?: boolean;
+  onMapClick?: (event: google.maps.MapMouseEvent) => void;
+  onPOIClick?: (poiData: POIData) => void;
+  onLoad?: () => void;
+  onError?: (error: Error) => void;
+  children?: ReactNode;
+  showDetailsControl?: boolean;
 }

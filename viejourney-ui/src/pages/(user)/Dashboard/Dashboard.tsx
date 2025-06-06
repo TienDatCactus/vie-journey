@@ -1,37 +1,18 @@
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
 import { Button, Tab, Tabs } from "@mui/material";
-import maplibregl from "maplibre-gl";
 import React, { useEffect, useRef } from "react";
 import {
   DashboardGuides,
   DashboardPlans,
 } from "../../../components/Pages/(user)";
 import { DashboardLayout, MainLayout } from "../../../layouts";
+import Map from "../../../components/Maps/Map";
+import { usePlaceSearch } from "../../../services/contexts/PlaceSearchContext";
+import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 
 const Dashboard: React.FC = () => {
   const mapContainerRef = useRef(null);
-
-  useEffect(() => {
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current as unknown as HTMLElement,
-      style: `https://api.maptiler.com/maps/streets/style.json?key=${
-        import.meta.env.VITE_MAPTILER_KEY
-      }`,
-      center: [105.8342, 21.0278],
-      zoom: 10,
-    });
-    map.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
-        },
-        trackUserLocation: true,
-      })
-    );
-    map.addControl(new maplibregl.NavigationControl(), "top-right");
-
-    return () => map.remove();
-  }, []);
+  const { selectedPlace } = usePlaceSearch();
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -40,10 +21,39 @@ const Dashboard: React.FC = () => {
   return (
     <MainLayout>
       <DashboardLayout>
-        <div
-          ref={mapContainerRef}
-          className="w-full h-[200px] rounded-lg relative"
-        >
+        <div className="w-full h-[200px] rounded-lg relative">
+          <Map
+            containerStyle={{
+              width: "100%",
+              height: "100%",
+              borderRadius: "8px",
+            }}
+            defaultCenter={{ lat: 21.0278, lng: 105.8342 }}
+            defaultZoom={10}
+            showMapTypeControl={false}
+            disableDefaultUI={true}
+            streetViewControl={false}
+            fullscreenControl={false}
+            zoomControl={true}
+            mapTypeControl={false}
+            showDetailsControl={false}
+          >
+            {/* Show marker for selected place */}
+            {selectedPlace?.location && (
+              <AdvancedMarker
+                position={selectedPlace.location}
+                title={selectedPlace.displayName}
+                zIndex={1000}
+              >
+                <Pin
+                  scale={1.3}
+                  background="#1976d2"
+                  glyphColor="#ffffff"
+                  borderColor="#0d47a1"
+                />
+              </AdvancedMarker>
+            )}
+          </Map>
           <div className="z-10 absolute top-[2px] left-[2px] p-2 flex items-center gap-2 bg-gray-400/10 rounded-md bg-clip-padding  backdrop-blur-sm border border-gray-100">
             <div className="text-center">
               <p className="text-[16px] my-0">1</p>
