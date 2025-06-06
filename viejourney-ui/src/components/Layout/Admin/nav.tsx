@@ -1,27 +1,20 @@
-import {
-  ChevronLeft,
-  Dashboard,
-  Menu as MenuIcon,
-  ExpandLess,
-  ExpandMore,
-} from "@mui/icons-material";
+import { ChevronLeft, Dashboard, Menu as MenuIcon } from "@mui/icons-material";
 import PermMediaIcon from "@mui/icons-material/PermMedia";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { IconButton, Tooltip } from "@mui/material";
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const menuItems = [
+interface MenuItem {
+  icon: React.ReactNode;
+  label: string;
+  path: string;
+}
+
+const menuItems: MenuItem[] = [
   { icon: <Dashboard />, label: "Dashboard", path: "/admin/dashboard" },
   { icon: <AccountCircleIcon />, label: "Account", path: "/admin/accounts" },
-  {
-    icon: <PermMediaIcon />,
-    label: "Media",
-    children: [
-      { label: "Banner", path: "/admin/media/banner" },
-      { label: "Settings", path: "/admin/accounts/settings" },
-    ],
-  },
+  { icon: <PermMediaIcon />, label: "Media", path: "/admin/media" },
 ];
 
 interface NavAdminProps {
@@ -29,13 +22,11 @@ interface NavAdminProps {
   setCollapsed: (collapsed: boolean) => void;
 }
 
-export const NavAdmin: React.FC<NavAdminProps> = ({ collapsed, setCollapsed }) => {
-  const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
+export const NavAdmin: React.FC<NavAdminProps> = ({
+  collapsed,
+  setCollapsed,
+}) => {
   const navigate = useNavigate();
-
-  const toggleMenu = (label: string) => {
-    setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
-  };
 
   return (
     <div
@@ -55,53 +46,21 @@ export const NavAdmin: React.FC<NavAdminProps> = ({ collapsed, setCollapsed }) =
 
       <div className="flex flex-col space-y-2 mt-4 overflow-y-auto flex-1">
         {menuItems.map((item, index) => (
-          <div key={index}>
-            <Tooltip title={collapsed ? item.label : ""} placement="right">
-              <div
-                onClick={() => {
-                  if (item.children) {
-                    toggleMenu(item.label);
-                  } else {
-                    navigate(item.path!);
-                  }
-                }}
-                className={`flex items-center px-4 py-2 hover:bg-gray-700 cursor-pointer transition-all ${
-                  collapsed ? "justify-center" : ""
-                }`}
-              >
-                {item.icon}
-                {!collapsed && (
-                  <>
-                    <span className="ml-4">{item.label}</span>
-                    {item.children && (
-                      <span className="ml-auto">
-                        {openMenus[item.label] ? (
-                          <ExpandLess />
-                        ) : (
-                          <ExpandMore />
-                        )}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-            </Tooltip>
-
-            {/* Submenu */}
-            {!collapsed && item.children && openMenus[item.label] && (
-              <div className="ml-12 mt-1 space-y-1">
-                {item.children.map((child, childIdx) => (
-                  <div
-                    key={childIdx}
-                    onClick={() => navigate(child.path)}
-                    className="flex items-center px-2 py-1 hover:bg-gray-600 cursor-pointer text-sm rounded"
-                  >
-                    {child.label}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <Tooltip
+            key={index}
+            title={collapsed ? item.label : ""}
+            placement="right"
+          >
+            <div
+              onClick={() => navigate(item.path)}
+              className={`flex items-center px-4 py-2 hover:bg-gray-700 cursor-pointer transition-all ${
+                collapsed ? "justify-center" : ""
+              }`}
+            >
+              {item.icon}
+              {!collapsed && <span className="ml-4">{item.label}</span>}
+            </div>
+          </Tooltip>
         ))}
       </div>
     </div>
