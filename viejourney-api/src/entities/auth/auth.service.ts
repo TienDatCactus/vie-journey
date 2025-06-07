@@ -451,7 +451,6 @@ export class AuthService {
         );
       }
       let user = await this.accountModel.findOne({ email: email }).exec();
-      console.log(user);
       if (!user) {
         user = new this.accountModel({
           email: email,

@@ -5,10 +5,10 @@ import {
   OutlinedInput,
   Select,
 } from "@mui/material";
-import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import React from "react";
 import hotelHeroBg from "/images/pexels-quark-studio-1159039-2507010.jpg";
+import { DateTimePicker } from "@mui/x-date-pickers-pro";
 const HotelHero: React.FC = () => {
   return (
     <div className="relative w-full overflow-visible bg-cover bg-[50%] bg-no-repeat">

@@ -2,7 +2,6 @@ export { default as DashboardGuides } from "./Dashboard/DashboardGuides";
 export { default as DashboardPlans } from "./Dashboard/DashboardPlans";
 export { default as AllGuides } from "./Guides/AllGuides";
 export { default as HomeExplore } from "./Home/HomeExplore";
-export { default as HomeFastSearch } from "./Home/HomeFastSearch";
 export { default as HomeMap } from "./Home/HomeMap";
 export { default as HomeBanner } from "./Home/HomeBanner";
 export { default as HomeRecent } from "./Home/HomeRecent";

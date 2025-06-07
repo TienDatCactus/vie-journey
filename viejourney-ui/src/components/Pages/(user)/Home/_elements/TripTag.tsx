@@ -1,11 +1,13 @@
-import { Circle, MoreHoriz } from "@mui/icons-material";
-import { Avatar, Grid2, IconButton, Stack } from "@mui/material";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
+import {
+  ArrowForward,
+  CalendarMonth,
+  Circle,
+  MoreHoriz,
+  NavigateNext,
+} from "@mui/icons-material";
+import { Avatar, Chip, Grid2, IconButton, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import dayjs from "dayjs";
-import * as React from "react";
 
 interface TripTagProps {
   places: number;
@@ -41,7 +43,7 @@ const TripTag = ({ title, places, to, from, img }: TripTagProps) => {
               }
             />
           </Grid2>
-          <Grid2 size={8} className="p-0 flex-grow">
+          <Grid2 size={6} className="p-0 flex-grow">
             <Typography
               gutterBottom
               variant="h5"
@@ -51,29 +53,30 @@ const TripTag = ({ title, places, to, from, img }: TripTagProps) => {
               {title}
             </Typography>
             <Stack direction={"row"} alignItems={"center"} spacing={1}>
-              <Avatar sx={{ width: 20, height: 20, fontSize: 12 }}>D</Avatar>
-              <Circle className="text-[6px] text-[#ccc]" />
+              <CalendarMonth className="text-base text-neutral-700" />
               <Typography
                 variant="body2"
                 color="text.secondary"
-                className="text-[10px]"
+                className="text-sm"
               >
                 {dayjs(from).format("MMM DD, YYYY")} -{" "}
                 {dayjs(to).format("MMM DD, YYYY")}
               </Typography>
-              <Circle className="text-[6px] text-[#ccc]" />
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                className="text-[10px]"
-              >
-                {places} places
-              </Typography>
             </Stack>
           </Grid2>
-          <Grid2 size={1}>
+          <Grid2
+            size={3}
+            gap={2}
+            direction={"row"}
+            alignItems={"center"}
+            justifyContent={"space-between"}
+          >
+            <Chip
+              label={`${places} places`}
+              className="border border-dark-700 bg-white"
+            />
             <IconButton>
-              <MoreHoriz className="text-[16px]" />
+              <NavigateNext className="text-base" />
             </IconButton>
           </Grid2>
         </Grid2>

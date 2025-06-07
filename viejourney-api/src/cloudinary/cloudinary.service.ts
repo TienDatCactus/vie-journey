@@ -12,7 +12,7 @@ export class CloudinaryService {
     });
   }
 
-  async uploadImage(file: any): Promise<UploadApiResponse> {
+  async uploadImage(file: any, options?: any ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
@@ -23,6 +23,7 @@ export class CloudinaryService {
               { width: 1200, height: 800, crop: 'limit' }, 
               { quality: 'auto' }, 
             ],
+            ...options, // ghi đè nếu có public_id truyền vào
           },
           (error, result) => {
             if (error) {

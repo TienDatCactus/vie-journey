@@ -177,15 +177,9 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
         }}
       >
         <TripHeader />
-        <Box
-          sx={{
-            flexGrow: 1,
-            overflowY: "auto",
-            p: 2,
-          }}
-        >
+        <main className="flex-1 overflow-y-auto bg-neutral-100 h-screen">
           {children}
-        </Box>
+        </main>
       </Box>
 
       <Box

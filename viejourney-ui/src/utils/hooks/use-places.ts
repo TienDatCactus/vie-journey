@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { POIData } from "../types";
+import { POIData } from "../../components/Maps/types";
 
 /**
  * Custom hook to handle all places-related functionality including POI clicks,
@@ -17,7 +17,6 @@ export const usePlaces = (options?: {
    * Handle POI click from any source (search or map click)
    */
   const handlePOIClick = (poiData: POIData) => {
-    console.log("POI clicked:", poiData);
     setSelectedPOI(poiData);
     setHighlightedPOI(poiData.id);
     setIsDrawerOpen(true);
@@ -31,7 +30,6 @@ export const usePlaces = (options?: {
    * Handle a place selected from search
    */
   const handlePlaceSelected = (place: google.maps.places.Place) => {
-    console.log("Selected place from search:", place);
     handlePOIClick(place);
   };
 
