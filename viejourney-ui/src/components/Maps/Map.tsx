@@ -8,11 +8,11 @@ import {
 } from "@vis.gl/react-google-maps";
 import React, { useEffect } from "react";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
-import { usePlaces } from "../../utils/hooks/use-places";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
 import POIDetails from "./controls/POIDetails";
 import SearchPlacesControl from "./controls/SearchPlacesControl";
 import { MapProps, POIData } from "./types";
+import usePlaces from "../../utils/hooks/usePlaces";
 
 // Map configuration component with POI click disabling
 const MapConfiguration: React.FC<{
@@ -198,18 +198,13 @@ const Map: React.FC<MapProps> = ({
     selectedPOI,
     highlightedPOI,
     isDrawerOpen,
-    handlePlaceSelected,
-    handleGooglePOIClick,
+    handlePlaceSelect,
+    handlePOIClick,
     toggleDrawer,
   } = usePlaces({ onPOIClick });
 
-  const {
-    locationError,
-    loading,
-    error,
-    handleLocationFound,
-    handleLocationError,
-  } = useMapLoader({ onLoad, onError });
+  const { locationError, error, handleLocationFound, handleLocationError } =
+    useMapLoader({ onLoad, onError });
 
   // Since APIProvider is now in the app root, we don't need to wrap again
   return (
@@ -239,7 +234,14 @@ const Map: React.FC<MapProps> = ({
         >
           {showDetailsControl && (
             <SearchPlacesControl
-              onPlaceSelected={handlePlaceSelected}
+              onPlaceSelected={(place) => {
+                if (place) {
+                  handlePlaceSelect({
+                    placeId: place.id || "",
+                    primaryText: place.displayName || "",
+                  });
+                }
+              }}
               width={350}
             />
           )}
@@ -250,7 +252,7 @@ const Map: React.FC<MapProps> = ({
           <MapConfiguration
             showMapTypeControl={showMapTypeControl}
             onClick={onMapClick}
-            onPOIClick={handleGooglePOIClick}
+            onPOIClick={handlePOIClick}
           />
 
           {/* If we have a highlighted POI, show a custom marker */}

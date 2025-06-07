@@ -1,3 +1,5 @@
+import { Account } from "../../utils/interfaces";
+
 export interface LoginReqDTO {
   email: string;
   password: string;
@@ -29,12 +31,7 @@ export interface LogoutReqDTO {
   userId: string;
 }
 
-export interface GetUserRespDTO {
-  userId: string;
-  email: string;
-  role: string;
-  active: boolean;
-}
+export interface GetUserRespDTO extends Account {}
 
 export interface RefreshTokenRespDTO {
   userId: string;

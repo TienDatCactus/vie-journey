@@ -27,17 +27,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [requireAuth, isAuthenticated, isVerified]);
 
-  // All rendering logic should come after hooks
   if (isLoading) {
     return <Fallback />;
   }
 
   if (requireAuth && !isAuthenticated) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
-  }
-
-  if (!requireAuth && isAuthenticated) {
-    return <Navigate to="/" replace />;
   }
 
   if (requireAuth && isAuthenticated && !isVerified) {
