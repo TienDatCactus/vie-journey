@@ -14,8 +14,7 @@ import ListItemText from "@mui/material/ListItemText";
 import { CSSObject, styled, Theme } from "@mui/material/styles";
 import * as React from "react";
 import { TripHeader } from "../components/Layout";
-import { TripMap } from "../components/Pages/(user)";
-import { APIProvider } from "@vis.gl/react-google-maps";
+import { TripMap } from "../components/Pages/(user)/Trips";
 
 const drawerWidth = 200;
 

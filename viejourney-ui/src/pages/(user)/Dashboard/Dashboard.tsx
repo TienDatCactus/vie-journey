@@ -1,17 +1,16 @@
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
 import { Button, Tab, Tabs } from "@mui/material";
-import React, { useEffect, useRef } from "react";
-import {
-  DashboardGuides,
-  DashboardPlans,
-} from "../../../components/Pages/(user)";
-import { DashboardLayout, MainLayout } from "../../../layouts";
-import Map from "../../../components/Maps/Map";
-import { usePlaceSearch } from "../../../services/contexts/PlaceSearchContext";
 import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
+import React from "react";
+import Map from "../../../components/Maps/Map";
+import {
+  Guides as DashboardGuides,
+  Plans as DashboardPlans,
+} from "../../../components/Pages/(user)/Dashboard";
+import { DashboardLayout, MainLayout } from "../../../layouts";
+import { usePlaceSearch } from "../../../services/contexts/PlaceSearchContext";
 
 const Dashboard: React.FC = () => {
-  const mapContainerRef = useRef(null);
   const { selectedPlace } = usePlaceSearch();
   const [value, setValue] = React.useState(0);
 
