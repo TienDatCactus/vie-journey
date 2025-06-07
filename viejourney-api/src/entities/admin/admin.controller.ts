@@ -7,7 +7,11 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards
+  UseGuards,
+  Req,
+  UseInterceptors,
+  BadRequestException,
+  UploadedFile,
 } from '@nestjs/common';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/entities/role.enum';
@@ -15,12 +19,44 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AdminService } from './admin.service';
 import { CreateAccountDto } from './dto/create-account.dto';
+import { TypeDto } from '../account/dto/Type.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 // @Roles(Role.Admin)
 // @UseGuards(RolesGuard, JwtAuthGuard)
 @Controller('admin')
 export class AdminController {
   constructor(
     private readonly adminService: AdminService) { }
+
+  @Get('assets')
+  async getAssetsByType(@Query('type') type: string) {
+    return this.adminService.getAssetsByType(type);
+  }
+  @Delete('assets/delete')
+  async deleteAssetById(@Query('publicId') publicId: string) {
+    return this.adminService.deleteAssetById(publicId);
+  }
+
+  @Post('update-asset')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+          return cb(new BadRequestException('Chỉ chấp nhận file ảnh!'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  updateAsset(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('publicId') publicId: string,
+  ) {
+    return this.adminService.updateAssetByPublicId(publicId, file);
+  }
 
   @Get('accounts')
   async getAllAccounts() {
@@ -39,7 +75,10 @@ export class AdminController {
     return this.adminService.deleteAccount(id);
   }
   @Patch('accounts/updateActive/:id')
-  async updateActiveStatus(@Param('id') id: string, @Body('active') active: boolean) {
+  async updateActiveStatus(
+    @Param('id') id: string,
+    @Body('active') active: boolean,
+  ) {
     return this.adminService.updateActiveStatus(id, active);
   }
 
@@ -57,12 +96,12 @@ export class AdminController {
     return this.adminService.getCommentsReport();
   }
 
-  @Get('user')
+  @Get('userInfo')
   async getAllUsers() {
     return this.adminService.getAllUser();
   }
 
-  @Get('user/:id')
+  @Get('userInfo/:id')
   async getUser(@Param('id') id: string) {
     return this.adminService.getUserByID(id);
   }

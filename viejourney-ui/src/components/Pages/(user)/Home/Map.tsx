@@ -1,9 +1,9 @@
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
+import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 import { useEffect, useRef } from "react";
-import { AdvancedMarker, Pin, useMap } from "@vis.gl/react-google-maps";
+import { usePlaceSearch } from "../../../../services/contexts/PlaceSearchContext";
 import Map from "../../../Maps/Map";
 import { POIData } from "../../../Maps/types";
-import { usePlaceSearch } from "../../../../services/contexts/PlaceSearchContext";
 
 const HomeMap = () => {
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -26,6 +26,7 @@ const HomeMap = () => {
 
   return (
     <div className="w-full max-w-[1200px] pb-10">
+      <h1 className="text-[1.875rem] font-bold">Map</h1>
       <div className="w-full h-[300px] mb-4 rounded-lg relative">
         <Map
           containerStyle={{
@@ -38,7 +39,6 @@ const HomeMap = () => {
           showMapTypeControl={false}
           disableDefaultUI={true}
           onPOIClick={handlePOIClick}
-          // Hide the built-in search control since we use the one in HomeFastSearch
           streetViewControl={false}
           fullscreenControl={false}
           zoomControl={true}

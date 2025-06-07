@@ -2,20 +2,18 @@ import React from "react";
 
 import { MainLayout } from "../../../layouts";
 import {
-  HomeBanner,
-  HomeExplore,
-  HomeFastSearch,
-  HomeMap,
-  HomeRecent,
-  HomeTrips,
-} from "../../../components/Pages/(user)";
+  Banner as HomeBanner,
+  Explore as HomeExplore,
+  Map as HomeMap,
+  Recent as HomeRecent,
+  Trips as HomeTrips,
+} from "../../../components/Pages/(user)/Home";
 
 const Home: React.FC = () => {
   return (
     <MainLayout>
       <HomeBanner />
       <HomeRecent />
-      <HomeFastSearch />
       <HomeMap />
       <HomeTrips />
       <HomeExplore />

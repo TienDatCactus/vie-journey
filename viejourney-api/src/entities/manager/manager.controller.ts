@@ -22,44 +22,44 @@ import { UpdateHotelDto } from '../hotel/dto/update-hotel.dto';
 import * as XLSX from 'xlsx';
 
 @Controller('manager')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.Manager)
+// @UseGuards(JwtAuthGuard, RolesGuard)
+// @Roles(Role.Manager)
 export class ManagerController {
     constructor(private readonly hotelService: HotelService) {}
 
-    @Get('hotels')
+    @Get('hotel')
     async getHotelList() {
-        return this.hotelService.findAll();
+        return this.hotelService.getHotelList();
     }
 
-    @Post('hotels')
+    @Post('hotel/add')
     async createHotel(@Body() createHotelDto: CreateHotelDto) {
-        return await this.hotelService.create(createHotelDto);
+        return await this.hotelService.addHotel(createHotelDto);
     }
 
-    @Get('hotels/:id')
+    @Get('hotel/:id')
     async getHotelDetail(@Param('id') id: string) {
-        const hotel = await this.hotelService.findOne(id);
+        const hotel = await this.hotelService.getHotelDetail(id);
         if (!hotel) {
             throw new NotFoundException(`Hotel with ID ${id} not found`);
         }
         return hotel;
     }
 
-    @Delete('hotels/:id')
+    @Delete('hotel/:id')
     async deleteHotel(@Param('id') id: string) {
-        return this.hotelService.delete(id);
+        return this.hotelService.deleteHotel(id);
     }
 
-    @Patch('hotels/:id')
+    @Patch('hotel/:id')
     async updateHotel(
         @Param('id') id: string,
         @Body() updateHotelDto: UpdateHotelDto
     ) {
-        return this.hotelService.update(id, updateHotelDto);
+        return this.hotelService.updateHotel(id, updateHotelDto);
     }
 
-    @Post('hotels/import')
+    @Post('hotel/import')
     @UseInterceptors(FileInterceptor('file'))
     async importHotels(@UploadedFile() file: Express.Multer.File) {
         const workbook = XLSX.read(file.buffer, { type: 'buffer' });
@@ -67,7 +67,7 @@ export class ManagerController {
         const sheet = workbook.Sheets[sheetName];
         const hotels: any[] = XLSX.utils.sheet_to_json(sheet);
         
-        await this.hotelService.importHotels(hotels);
+        await this.hotelService.addListOfHotels(hotels);
         return { message: 'Import successfully', count: hotels.length };
     }
 }

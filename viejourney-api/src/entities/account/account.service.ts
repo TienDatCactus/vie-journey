@@ -4,11 +4,19 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account } from './entities/account.entity';
+import { UserInfos } from './entities/userInfos.entity';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { EditProfileDto } from './dto/editProfile.dto';
+import { Asset } from './entities/asset.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AccountService {
   constructor(
     @InjectModel('Account') private readonly accountModel: Model<Account>,
+    @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
+    @InjectModel('Asset') private readonly assetModel: Model<Asset>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
   async activateUser(userId: Types.ObjectId): Promise<void> {
     const user = await this.accountModel.findByIdAndUpdate(
@@ -26,12 +34,17 @@ export class AccountService {
   async findAll(): Promise<Account[]> {
     return this.accountModel.find().exec();
   }
-  async findOne(id: string): Promise<Account> {
+  async findOne(id: string) {
     const account = await this.accountModel.findById(id);
     if (!account) {
       throw new NotFoundException(`Account with id ${id} not found`);
     }
-    return account;
+    return {
+      _id: account._id,
+      email: account.email,
+      active: account.active,
+      role: account.role,
+    };
   }
   async findByEmail(email: string): Promise<Account> {
     const account = await this.accountModel.findOne({ email });

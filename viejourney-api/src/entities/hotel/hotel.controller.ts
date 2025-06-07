@@ -32,16 +32,34 @@ export class HotelController {
 
     @Get()
     async getHotelList() {
-        return this.hotelService.findAll();
+        return this.hotelService.getHotelList();
     }
 
     @Get(':id')
     async getHotelDetail(@Param('id') id: string) {
-        const hotel = await this.hotelService.findOne(id);
+        const hotel = await this.hotelService.getHotelDetail(id);
         if (!hotel) {
             throw new NotFoundException(`Hotel with ID ${id} not found`);
         }
         return hotel;
     }
+
+    @Delete(':id')
+    async deleteHotel(@Param('id') id: string) {
+        return this.hotelService.deleteHotel(id);
+    }
+
+    @Patch(':id')
+    async updateHotel(
+        @Param('id') id: string,
+        @Body() updateHotelDto: UpdateHotelDto
+    ) {
+        const hotel = await this.hotelService.updateHotel(id, updateHotelDto);
+        if (!hotel) {
+            throw new NotFoundException(`Hotel with ID ${id} not found`);
+        }
+        return hotel;
+    }
+
 
 }

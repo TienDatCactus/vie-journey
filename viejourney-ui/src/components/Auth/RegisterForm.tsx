@@ -10,7 +10,7 @@ import {
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { doRegister } from "../../services/api";
+import { useAuth } from "../../services/contexts/AuthContext";
 
 const RegisterForm: React.FC = () => {
   const {
@@ -23,7 +23,7 @@ const RegisterForm: React.FC = () => {
     rePassword: string;
   }>();
   const [loading, setLoading] = useState<boolean>(false);
-
+  const { handleRegister, handleGoogleLogin } = useAuth();
   const onSubmit: SubmitHandler<{
     email: string;
     password: string;
@@ -31,7 +31,7 @@ const RegisterForm: React.FC = () => {
   }> = async (data) => {
     try {
       setLoading(true);
-      await doRegister(data);
+      await handleRegister(data.email, data.password, data.rePassword);
     } catch (error) {
       enqueueSnackbar(String(error), { variant: "error" });
     } finally {
@@ -116,7 +116,8 @@ const RegisterForm: React.FC = () => {
       <Stack direction={"row"} spacing={2} justifyContent={"center"}>
         <Button
           variant="outlined"
-          className="w-full hover:shadow-lg py-2 border-neutral-300 text-center *:text-base"
+          className="w-full shadow-sm py-2 border-neutral-400 text-center *:text-base"
+          onClick={handleGoogleLogin}
         >
           <img
             src="/icons/icons8-google.svg"

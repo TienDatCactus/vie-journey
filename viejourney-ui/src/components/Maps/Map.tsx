@@ -1,19 +1,18 @@
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import {
   AdvancedMarker,
   Map as GoogleMap,
-  MapProps as GoogleMapProps,
   Pin,
   useMap,
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
-import React, { ReactNode, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
-import { usePlaces } from "../../utils/hooks/use-places";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
 import POIDetails from "./controls/POIDetails";
 import SearchPlacesControl from "./controls/SearchPlacesControl";
-import { POIData } from "./types";
+import { MapProps, POIData } from "./types";
+import usePlaces from "../../utils/hooks/usePlaces";
 
 // Map configuration component with POI click disabling
 const MapConfiguration: React.FC<{
@@ -160,7 +159,6 @@ const MapConfiguration: React.FC<{
               console.error("Error fetching place details:", error);
             });
         } else if (onClick) {
-          // Regular map click (not on a POI)
           onClick(event);
         }
       }
@@ -182,17 +180,6 @@ const MapConfiguration: React.FC<{
 };
 
 // Props for our custom Map component
-export interface MapProps extends Omit<GoogleMapProps, "style"> {
-  apiKey?: string;
-  containerStyle?: React.CSSProperties;
-  showMapTypeControl?: boolean;
-  onMapClick?: (event: google.maps.MapMouseEvent) => void;
-  onPOIClick?: (poiData: POIData) => void;
-  onLoad?: () => void;
-  onError?: (error: Error) => void;
-  children?: ReactNode;
-  showDetailsControl?: boolean;
-}
 
 // Main Map component
 const Map: React.FC<MapProps> = ({
@@ -211,18 +198,13 @@ const Map: React.FC<MapProps> = ({
     selectedPOI,
     highlightedPOI,
     isDrawerOpen,
-    handlePlaceSelected,
-    handleGooglePOIClick,
+    handlePlaceSelect,
+    handlePOIClick,
     toggleDrawer,
   } = usePlaces({ onPOIClick });
 
-  const {
-    locationError,
-    loading,
-    error,
-    handleLocationFound,
-    handleLocationError,
-  } = useMapLoader({ onLoad, onError });
+  const { locationError, error, handleLocationFound, handleLocationError } =
+    useMapLoader({ onLoad, onError });
 
   // Since APIProvider is now in the app root, we don't need to wrap again
   return (
@@ -252,7 +234,14 @@ const Map: React.FC<MapProps> = ({
         >
           {showDetailsControl && (
             <SearchPlacesControl
-              onPlaceSelected={handlePlaceSelected}
+              onPlaceSelected={(place) => {
+                if (place) {
+                  handlePlaceSelect({
+                    placeId: place.id || "",
+                    primaryText: place.displayName || "",
+                  });
+                }
+              }}
               width={350}
             />
           )}
@@ -263,7 +252,7 @@ const Map: React.FC<MapProps> = ({
           <MapConfiguration
             showMapTypeControl={showMapTypeControl}
             onClick={onMapClick}
-            onPOIClick={handleGooglePOIClick}
+            onPOIClick={handlePOIClick}
           />
 
           {/* If we have a highlighted POI, show a custom marker */}
@@ -272,13 +261,16 @@ const Map: React.FC<MapProps> = ({
               position={selectedPOI.location}
               title={selectedPOI.displayName}
               zIndex={1000}
+              className="group transition-transform duration-200 transform hover:scale-110"
             >
-              <Pin
-                scale={1.5}
-                background="#1976d2"
-                glyphColor="#ffffff"
-                borderColor="#0d47a1"
-              />
+              <div className="p-1 rounded-full bg-white shadow-md">
+                <Pin
+                  scale={1.4}
+                  background="#1976d2"
+                  glyphColor="#ffffff"
+                  borderColor="#ffffff"
+                />
+              </div>
             </AdvancedMarker>
           )}
 

@@ -1,6 +1,7 @@
 import {
   Button,
   Checkbox,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -20,16 +21,14 @@ import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import {
-  doLogin,
-  doLoginWithGoogle,
-  doSendForgotPasswordEmail,
-} from "../../services/api";
-import { LoginRespDTO } from "../../services/api/dto";
-import { useAuth } from "../../services/contexts";
+import { useAuth } from "../../services/contexts/AuthContext";
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
+  const { handleLogin, handleGoogleLogin, handleSendForgotPasswordEmail } =
+    useAuth();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
   const {
     register,
     handleSubmit,
@@ -38,9 +37,29 @@ const LoginForm: React.FC = () => {
     email: string;
     password: string;
   }>();
-  const { setCredential } = useAuth();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [open, setOpen] = useState(false);
+
+  // Create a proper onSubmit handler using react-hook-form
+  const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
+    data
+  ) => {
+    try {
+      setLoading(true);
+      const response = await handleLogin(data.email, data.password);
+
+      if (response.success) {
+        navigate("/");
+      } else {
+        enqueueSnackbar(response.message || "Login failed", {
+          variant: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      enqueueSnackbar("An error occurred during login", { variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -49,44 +68,46 @@ const LoginForm: React.FC = () => {
   const handleClose = () => {
     setOpen(false);
   };
-  const handlefpFormSubmit = async (
+
+  // Handle forgot password form submission
+  const handleForgotPasswordSubmit = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
+    event.preventDefault();
+
+    // Get form data
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email") as string;
+
+    if (!email) {
+      enqueueSnackbar("Please enter your email address", { variant: "error" });
+      return;
+    }
+
     try {
       setLoading(true);
-      event.preventDefault();
-      const formData = new FormData(event.currentTarget);
-      const formJson = Object.fromEntries((formData as any).entries());
-      const email = formJson.email;
-      const resp = await doSendForgotPasswordEmail(email);
-      if (resp == true) {
+      const response = await handleSendForgotPasswordEmail(email);
+
+      if (response.success) {
+        enqueueSnackbar("Password reset email sent. Please check your inbox.", {
+          variant: "success",
+        });
         handleClose();
+      } else {
+        enqueueSnackbar(response.message || "Failed to send reset email", {
+          variant: "error",
+        });
       }
     } catch (error) {
-      console.error(error);
+      console.error("Forgot password error:", error);
+      enqueueSnackbar("An error occurred while processing your request", {
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
-  const handleGoogleLogin = async () => {
-    doLoginWithGoogle();
-  };
-  const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
-    data
-  ) => {
-    try {
-      setLoading(true);
-      const loginResp = (await doLogin(data)) as LoginRespDTO | undefined;
-      if (loginResp && loginResp?.accessToken) {
-        setCredential({ userId: loginResp?.userId || "" });
-        navigate("/");
-      }
-    } catch (error) {
-      enqueueSnackbar(String(error), { variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  };
+
   return (
     <>
       <form
@@ -163,14 +184,14 @@ const LoginForm: React.FC = () => {
             variant="contained"
             disabled={loading}
           >
-            Login
+            {loading ? <CircularProgress size={24} /> : "Login"}
           </Button>
         </div>
         <Divider className="text-sm theme-light">Or continue with</Divider>
         <Stack direction={"row"} spacing={2} justifyContent={"center"}>
           <Button
             variant="outlined"
-            className="w-full hover:shadow-lg py-2 border-neutral-300 text-center *:text-base"
+            className="w-full shadow-sm py-2 border-neutral-400 text-center *:text-base"
             onClick={handleGoogleLogin}
           >
             <img
@@ -187,7 +208,7 @@ const LoginForm: React.FC = () => {
         slotProps={{
           paper: {
             component: "form",
-            onSubmit: handlefpFormSubmit,
+            onSubmit: handleForgotPasswordSubmit,
           },
         }}
       >
@@ -210,8 +231,12 @@ const LoginForm: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button type="submit">Reset Password</Button>
+          <Button onClick={handleClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? <CircularProgress size={20} /> : "Reset Password"}
+          </Button>
         </DialogActions>
       </Dialog>
     </>

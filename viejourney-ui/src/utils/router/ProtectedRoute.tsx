@@ -1,8 +1,8 @@
 import { enqueueSnackbar } from "notistack";
 import React, { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "../../services/contexts/auth/AuthContext";
 import Fallback from "../handlers/loading/Fallback";
+import { useAuth } from "../../services/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -27,17 +27,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [requireAuth, isAuthenticated, isVerified]);
 
-  // All rendering logic should come after hooks
   if (isLoading) {
     return <Fallback />;
   }
 
   if (requireAuth && !isAuthenticated) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
-  }
-
-  if (!requireAuth && isAuthenticated) {
-    return <Navigate to="/" replace />;
   }
 
   if (requireAuth && isAuthenticated && !isVerified) {

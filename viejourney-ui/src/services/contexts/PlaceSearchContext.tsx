@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { AutocompleteOption } from "../../components/Maps/types";
-import { useAutocompleteSuggestions } from "../../utils/hooks/use-autocomplete-suggestions";
+import usePlaces from "../../utils/hooks/usePlaces";
 
 interface PlaceSearchContextType {
   searchInput: string;
@@ -24,6 +24,8 @@ interface PlaceSearchContextType {
   handleInputChange: (event: React.SyntheticEvent, value: string) => void;
   resetSearch: () => void;
   selectedPlace: google.maps.places.Place | null;
+  setPrimaryTypes: (types: string[] | null) => void;
+  primaryTypes: string[] | null;
 }
 
 export const PlaceSearchContext = createContext<
@@ -45,24 +47,24 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
     useState<AutocompleteOption | null>(null);
   const [selectedPlace, setSelectedPlace] =
     useState<google.maps.places.Place | null>(null);
-
-  const { suggestions, isLoading, resetSession } = useAutocompleteSuggestions(
-    searchInput,
-    {
-      // You can add filters here if needed
-      // includedPrimaryTypes: ["restaurant", "tourist_attraction", "lodging"],
-    }
-  );
+  const [primaryTypes, setPrimaryTypes] = useState<string[] | null>([]);
+  const { suggestions, isLoading, resetSearch } = usePlaces({
+    initialValue: searchInput,
+    filterOptions: {
+      language: "en",
+      includedPrimaryTypes: [...(primaryTypes || [])],
+    },
+  });
 
   React.useEffect(() => {
     if (!suggestions?.length) return;
 
     const newOptions: AutocompleteOption[] = suggestions
       .filter(
-        ({ placePrediction }) =>
+        ({ placePrediction }: any) =>
           placePrediction?.placeId && placePrediction?.text?.text
       )
-      .map(({ placePrediction }) => ({
+      .map(({ placePrediction }: any) => ({
         placeId: placePrediction?.placeId!,
         primaryText: placePrediction?.text?.text!,
         secondaryText: placePrediction?.secondaryText?.text || "",
@@ -112,22 +114,6 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
             "editorialSummary",
             "parkingOptions",
             "paymentOptions",
-            "isReservable",
-            "hasOutdoorSeating",
-            "servesBreakfast",
-            "servesLunch",
-            "servesDinner",
-            "servesCoffee",
-            "servesBeer",
-            "servesWine",
-            "hasTakeout",
-            "hasDelivery",
-            "hasCurbsidePickup",
-            "hasDineIn",
-            "isGoodForChildren",
-            "isGoodForGroups",
-            "allowsDogs",
-            "hasLiveMusic",
             "accessibilityOptions",
             "googleMapsURI",
           ],
@@ -141,7 +127,7 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
         setSelectedOption(option);
 
         // Reset the autocomplete session
-        resetSession();
+        resetSearch();
 
         return place;
       } catch (error) {
@@ -149,7 +135,7 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
         return null;
       }
     },
-    [placesLib, resetSession]
+    [placesLib, resetSearch]
   );
 
   const handleInputChange = useCallback(
@@ -161,13 +147,6 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
     },
     [selectedOption]
   );
-
-  const resetSearch = useCallback(() => {
-    setSearchInput("");
-    setSelectedOption(null);
-    setSelectedPlace(null);
-    resetSession();
-  }, [resetSession]);
 
   return (
     <PlaceSearchContext.Provider
@@ -184,6 +163,8 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
         handleInputChange,
         resetSearch,
         selectedPlace,
+        setPrimaryTypes,
+        primaryTypes,
       }}
     >
       {children}

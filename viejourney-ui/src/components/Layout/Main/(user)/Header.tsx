@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { doLogout } from "../../../../services/api";
-import { useAuth } from "../../../../services/contexts";
+import { useAuth } from "../../../../services/contexts/AuthContext";
 interface Props {
   window?: () => Window;
   children?: React.ReactElement<unknown>;
@@ -64,22 +64,9 @@ const Header = () => {
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const { setUser } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const { handleLogout, isLoading } = useAuth();
   const handleClose = () => {
     setAnchorEl(null);
-  };
-  const { credential } = useAuth();
-  const handleLogout = async () => {
-    try {
-      setLoading(true);
-      await doLogout({ userId: credential?.userId || "" });
-      setUser(null);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -124,12 +111,14 @@ const Header = () => {
               }}
               variant="outlined"
               placeholder="Enter place or user"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon className="text-[20px]" />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon className="text-[#727272]" />
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
             <NotificationsActiveOutlinedIcon className="cursor-pointer hover:text-[#727272]" />
@@ -202,8 +191,8 @@ const Header = () => {
                 </ListItemIcon>
                 Settings
               </MenuItem>
-              <MenuItem onClick={handleLogout} disabled={loading}>
-                {loading && (
+              <MenuItem onClick={handleLogout} disabled={isLoading}>
+                {isLoading && (
                   <CircularProgress size={20} className="animate-spin" />
                 )}
                 <ListItemIcon>
