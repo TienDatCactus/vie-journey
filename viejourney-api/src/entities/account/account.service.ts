@@ -16,7 +16,7 @@ export class AccountService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
-    private readonly cloudinaryService: CloudinaryService
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
   async activateUser(userId: Types.ObjectId): Promise<void> {
     const user = await this.accountModel.findByIdAndUpdate(
@@ -86,8 +86,8 @@ export class AccountService {
         .findOne({ userId: userId })
         .populate('avatar');
 
-      let uploadResult = null;
-      let assetId = null;
+      let uploadResult: import('cloudinary').UploadApiResponse | null = null;
+      let assetId: Types.ObjectId | undefined;
 
       // Handle file upload if present
       if (file) {
@@ -105,8 +105,8 @@ export class AccountService {
         const assetData = {
           userId: new Types.ObjectId(userId),
           type: 'AVATAR',
-          url: uploadResult.secure_url,
-          publicId: uploadResult.public_id,
+          url: uploadResult?.secure_url,
+          publicId: uploadResult?.public_id,
         };
 
         if (existingInfo?.avatar?._id) {
@@ -127,7 +127,7 @@ export class AccountService {
         const userInfoData = {
           ...editProfile,
           userId: new Types.ObjectId(userId),
-          ...(assetId && { avatar: assetId }),
+          ...(assetId ? { avatar: assetId } : {}),
         };
 
         const userInfo = await this.userInfosModel.create(userInfoData);
@@ -136,7 +136,7 @@ export class AccountService {
         // Update existing user info
         const updateData = {
           ...editProfile,
-          ...(assetId && { avatar: assetId }),
+          ...(assetId ? { avatar: assetId } : {}),
         };
 
         await this.userInfosModel.updateOne(
