@@ -10,7 +10,7 @@ import {
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { doLoginWithGoogle, doRegister } from "../../services/api";
+import { useAuth } from "../../services/contexts/AuthContext";
 
 const RegisterForm: React.FC = () => {
   const {
@@ -23,7 +23,7 @@ const RegisterForm: React.FC = () => {
     rePassword: string;
   }>();
   const [loading, setLoading] = useState<boolean>(false);
-
+  const { handleRegister, handleGoogleLogin } = useAuth();
   const onSubmit: SubmitHandler<{
     email: string;
     password: string;
@@ -31,16 +31,14 @@ const RegisterForm: React.FC = () => {
   }> = async (data) => {
     try {
       setLoading(true);
-      await doRegister(data);
+      await handleRegister(data.email, data.password, data.rePassword);
     } catch (error) {
       enqueueSnackbar(String(error), { variant: "error" });
     } finally {
       setLoading(false);
     }
   };
-  const handleGoogleLogin = async () => {
-    doLoginWithGoogle();
-  };
+
   return (
     <form
       noValidate
