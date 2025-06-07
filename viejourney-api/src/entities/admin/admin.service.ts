@@ -1,5 +1,5 @@
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from '../blog/entities/blog.entity';
 import { Comment } from '../blog/entities/comment.entity';
@@ -7,6 +7,7 @@ import { Account } from '../account/entities/account.entity';
 import { Model, Types } from 'mongoose';
 import { CreateAccountDto } from './dto/create-account.dto';
 import * as bcrypt from 'bcrypt';
+import { userInfos } from '../user/entities/user.entity';
 
 @Injectable()
 export class AdminService {
@@ -14,6 +15,7 @@ export class AdminService {
     @InjectModel('Blog') private readonly blogModel: Model<Blog>,
     @InjectModel('Comment') private readonly commentModel: Model<Comment>,
     @InjectModel('Account') private readonly accountModel: Model<Account>,
+    @InjectModel('userInfos') private readonly userModel: Model<userInfos>,
   ) { }
   // getBlogReport
   async getBlogsReport(minViews?: number) {
@@ -88,5 +90,17 @@ export class AdminService {
     }
     account.active = active;
     return account.save();
+  }
+
+  async getAllUser(): Promise<userInfos[]> {
+    return this.userModel.find().exec();
+  }
+
+  async getUserByID(id: string): Promise<userInfos> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
   }
 }

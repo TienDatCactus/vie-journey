@@ -1,6 +1,6 @@
 import { Document, Types } from 'mongoose';
 
-export class User extends Document {
+export class userInfos extends Document {
   declare _id: string;
   userId: Types.ObjectId;
   fullName: string;

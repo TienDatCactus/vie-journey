@@ -9,13 +9,16 @@ import { Blog } from '../blog/entities/blog.entity';
 import { Comment } from '../blog/entities/comment.entity';
 import { BlogSchema } from 'src/common/db/blog.schema';
 import { CommentSchema } from 'src/common/db/comment.schema';
+import { userInfos } from '../user/entities/user.entity';
+import { userInfoSchema } from 'src/common/db/userInfo.shema';
 
 @Module({
   imports: [
  MongooseModule.forFeature([
   { name: Account.name, schema: AccountSchema },
   { name: Blog.name, schema: BlogSchema },
-  { name: Comment.name, schema: CommentSchema}
+  { name: Comment.name, schema: CommentSchema},
+  { name: userInfos.name, schema: userInfoSchema},
 ]),
  forwardRef(() => AuthModule) // Use forwardRef to avoid circular dependency
   ],
