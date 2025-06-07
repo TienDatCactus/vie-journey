@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from '../blog/entities/blog.entity';
 import { Comment } from '../blog/entities/comment.entity';
@@ -169,5 +170,17 @@ export class AdminService {
     }
     account.active = active;
     return account.save();
+  }
+
+  async getAllUser(): Promise<UserInfos[]> {
+    return this.userInfosModel.find().exec();
+  }
+
+  async getUserByID(id: string): Promise<UserInfos> {
+    const user = await this.userInfosModel.findById(id).exec();
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
   }
 }

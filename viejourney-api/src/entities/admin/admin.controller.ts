@@ -1,11 +1,11 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
   UseGuards,
   Req,
@@ -13,12 +13,11 @@ import {
   BadRequestException,
   UploadedFile,
 } from '@nestjs/common';
-import { AdminService } from './admin.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/entities/role.enum';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Account } from '../account/entities/account.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { AdminService } from './admin.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { TypeDto } from '../account/dto/Type.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -26,7 +25,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 // @UseGuards(RolesGuard, JwtAuthGuard)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService) { }
 
   @Get('assets')
   async getAssetsByType(@Query('type') type: string) {
@@ -94,5 +94,15 @@ export class AdminController {
   @Roles(Role.Admin)
   async getCommentsReport() {
     return this.adminService.getCommentsReport();
+  }
+
+  @Get('userInfo')
+  async getAllUsers() {
+    return this.adminService.getAllUser();
+  }
+
+  @Get('userInfo/:id')
+  async getUser(@Param('id') id: string) {
+    return this.adminService.getUserByID(id);
   }
 }

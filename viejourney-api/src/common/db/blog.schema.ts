@@ -3,6 +3,7 @@ import mongoose, { Document } from 'mongoose';
 
 @Schema({
   versionKey: false,
+  timestamps: true
 })
 export class Blog extends Document {
   @Prop({ required: true })
@@ -25,12 +26,6 @@ export class Blog extends Document {
   
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Comment' })
   comments: Comment[];
-
-  @Prop({ default: Date.now })
-  createdAt: Date;
-
-  @Prop({ default: Date.now })
-  updatedAt: Date;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);
