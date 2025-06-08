@@ -179,7 +179,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: "detail",
+            path: "detail/:id",
             element: (
               <ProtectedRoute requireAuth={false}>
                 <SuspenseWrapper component={AccountDetail} />

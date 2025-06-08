@@ -1,5 +1,6 @@
 import React from "react";
 import { AdminLayout } from "../../../layouts";
+import axios from "axios";
 import {
   Box,
   Grid,
@@ -22,28 +23,10 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-
-const user = {
-  avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-  name: "Alexandra Della",
-  email: "alex.della@outlook.com",
-  followers: "28.65K",
-  following: "38.85K",
-  engagement: "43.67K",
-  address: "California, USA",
-  phone: "+01 (375) 2589 645",
-  details: {
-    fullName: "Alexandra Della",
-    surname: "Della",
-    company: "WRAPCODERS",
-    dob: "26 May, 2000",
-    mobile: "+01 (375) 5896 3214",
-    email: "alex.della@outlook.com",
-    location: "California, United States",
-    joiningDate: "20 Dec, 2023",
-    country: "United States",
-  },
-};
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { ACCOUNTS } from "../../../services/api/url";
+import { useState } from "react";
 
 const tabList = ["Overview", "Activity"];
 
@@ -164,8 +147,36 @@ const activities = [
   },
 ];
 
+// Helper to format date as dd/MM/yyyy
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString;
+  return date.toLocaleDateString("vi-VN");
+};
+
 const AccountDetail = () => {
   const [tab, setTab] = React.useState(0);
+  const [user, setUser] = useState<Record<string, any> | null>(null);
+  const { id } = useParams();
+
+  useEffect(() => {
+    const fetchAccountDetail = async () => {
+      try {
+        if (!id) return;
+        const endpoint = ACCOUNTS.GET_ACCOUNTS + id;
+        const res = await axios.get(
+          import.meta.env.VITE_PRIVATE_URL + endpoint,
+          { withCredentials: true }
+        );
+        const data = res.data?.data || res.data || null;
+        setUser(data);
+      } catch (err) {
+        console.log("ERROR: " + err);
+      }
+    };
+    fetchAccountDetail();
+  }, [id]);
 
   return (
     <AdminLayout>
@@ -177,16 +188,16 @@ const AccountDetail = () => {
               <Stack alignItems="center" spacing={1}>
                 <Box sx={{ position: "relative" }}>
                   <Avatar
-                    src={user.avatar}
-                    alt={user.name}
+                    src={user?.avatar || undefined}
+                    alt={user?.fullName || undefined}
                     sx={{ width: 100, height: 100, mb: 1 }}
                   />
                 </Box>
                 <Typography variant="h6" fontWeight={600}>
-                  {user.name}
+                  {user?.fullName}
                 </Typography>
                 <Typography color="text.secondary" fontSize={15}>
-                  {user.email}
+                  {user?.userId}
                 </Typography>
               </Stack>
               <Divider sx={{ my: 2 }} />
@@ -197,7 +208,7 @@ const AccountDetail = () => {
                     Address
                   </Typography>
                   <Box flex={1} />
-                  <Typography fontSize={15}>{user.address}</Typography>
+                  <Typography fontSize={15}>{user?.address}</Typography>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <PhoneIcon fontSize="small" color="action" />
@@ -205,7 +216,7 @@ const AccountDetail = () => {
                     Phone
                   </Typography>
                   <Box flex={1} />
-                  <Typography fontSize={15}>{user.phone}</Typography>
+                  <Typography fontSize={15}>{user?.phone}</Typography>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <EmailIcon fontSize="small" color="action" />
@@ -213,7 +224,7 @@ const AccountDetail = () => {
                     Email
                   </Typography>
                   <Box flex={1} />
-                  <Typography fontSize={15}>{user.email}</Typography>
+                  <Typography fontSize={15}>{user?.userId.email}</Typography>
                 </Stack>
               </Stack>
               <Stack direction="row" spacing={2} mt={4}>
@@ -262,12 +273,6 @@ const AccountDetail = () => {
                           Full Name:
                         </Typography>
                         <Typography color="text.secondary" fontWeight={600}>
-                          Surname:
-                        </Typography>
-                        <Typography color="text.secondary" fontWeight={600}>
-                          Company:
-                        </Typography>
-                        <Typography color="text.secondary" fontWeight={600}>
                           Date of Birth:
                         </Typography>
                         <Typography color="text.secondary" fontWeight={600}>
@@ -277,33 +282,30 @@ const AccountDetail = () => {
                           Email Address:
                         </Typography>
                         <Typography color="text.secondary" fontWeight={600}>
-                          Location:
+                          Address:
                         </Typography>
                         <Typography color="text.secondary" fontWeight={600}>
                           Joining Date:
-                        </Typography>
-                        <Typography color="text.secondary" fontWeight={600}>
-                          Country:
                         </Typography>
                       </Stack>
                     </Grid>
                     <Grid item xs={7} md={8}>
                       <Stack spacing={1}>
-                        <Typography>{user.details.fullName}</Typography>
-                        <Typography>{user.details.surname}</Typography>
-                        <Typography>{user.details.company}</Typography>
-                        <Typography>{user.details.dob}</Typography>
-                        <Typography>{user.details.mobile}</Typography>
-                        <Typography>{user.details.email}</Typography>
-                        <Typography>{user.details.location}</Typography>
-                        <Typography>{user.details.joiningDate}</Typography>
-                        <Typography>{user.details.country}</Typography>
+                        <Typography>{user?.fullName}</Typography>
+                        <Typography>{formatDate(user?.dob)}</Typography>
+                        <Typography>{user?.phone}</Typography>
+                        <Typography>{user?.userId.email}</Typography>
+                        <Typography>{user?.address}</Typography>
+                        <Typography>
+                          {user?.updatedAt
+                            ? new Date(user.updatedAt).toLocaleDateString()
+                            : ""}
+                        </Typography>
                       </Stack>
                     </Grid>
                   </Grid>
                 </Box>
               )}
-              {/* Các tab khác có thể thêm nội dung tương tự */}
               {tab === 1 && (
                 <Box>
                   <Stack

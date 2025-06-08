@@ -21,83 +21,10 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const users = [
-  {
-    id: 1,
-    name: "Alexandra Della",
-    email: "alex.della@outlook.com",
-    avatar: "https://randomuser.me/api/portraits/women/1.jpg",
-    phone: "+1 (375) 9632 548",
-    date: "2023-04-05, 00:05PM",
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Nancy Elliot",
-    email: "nancy.elliot@outlook.com",
-    avatar: null,
-    phone: "(375) 8523 456",
-    date: "2023-04-06, 02:52PM",
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Green Cute",
-    email: "green.cute@outlook.com",
-    avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-    phone: "(845) 9632 874",
-    date: "2023-04-08, 08:34PM",
-    status: "Active",
-  },
-  {
-    id: 4,
-    name: "Henry Leach",
-    email: "henry.leach@outlook.com",
-    avatar: null,
-    phone: "(258) 9514 657",
-    date: "2023-04-10, 05:25PM",
-    status: "Inactive",
-  },
-  {
-    id: 5,
-    name: "Marianne Audrey",
-    email: "marine.adrey@outlook.com",
-    avatar: "https://randomuser.me/api/portraits/men/3.jpg",
-    phone: "(456) 6547 524",
-    date: "2023-04-12, 12:02PM",
-    status: "Active",
-  },
-  {
-    id: 6,
-    name: "Nancy Elliot",
-    email: "nancy.elliot@outlook.com",
-    avatar: null,
-    phone: "(375) 8523 456",
-    date: "2023-04-15, 02:40PM",
-    status: "Active",
-  },
-  {
-    id: 7,
-    name: "Cute Green",
-    email: "cute.green@outlook.com",
-    avatar: "https://randomuser.me/api/portraits/women/4.jpg",
-    phone: "(632) 5486 662",
-    date: "2023-04-25, 03:42PM",
-    status: "Active",
-  },
-  {
-    id: 8,
-    name: "Leach Henry",
-    email: "leach.henry@outlook.com",
-    avatar: null,
-    phone: "(951) 5478 884",
-    date: "2023-04-14, 03:32PM",
-    status: "Active",
-  },
-];
+import axios from "axios";
+import { ACCOUNTS } from "../../../services/api/url";
 
 const statusOptions = [
   { value: "Active", color: "success" },
@@ -112,11 +39,26 @@ function stringAvatar(name: string) {
 }
 
 function Accounts() {
-  const [anchorEls, setAnchorEls] = useState<(null | HTMLElement)[]>(
-    users.map(() => null)
-  );
-  const [statusList, setStatusList] = useState(users.map((u) => u.status));
+  const [users, setUsers] = useState<unknown[]>([]);
+  const [anchorEls, setAnchorEls] = useState<(null | HTMLElement)[]>([]);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const res = await axios.get(
+          import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS,
+          { withCredentials: true }
+        );
+        const data = res.data?.data || res.data || [];
+        setUsers(data);
+        setAnchorEls(data.map(() => null));
+      } catch (err) {
+        console.log("ERROR: " + err);
+      }
+    };
+    fetchAccounts();
+  }, []);
 
   const handleMenuOpen = (
     index: number,
@@ -131,17 +73,16 @@ function Accounts() {
     newAnchors[index] = null;
     setAnchorEls(newAnchors);
   };
-  const handleStatusChange = (index: number, value: string) => {
-    const newStatus = [...statusList];
-    newStatus[index] = value;
-    setStatusList(newStatus);
-  };
 
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = users.filter((u) => {
+    if (typeof u !== "object" || u === null) return false;
+    const user = u as Record<string, any>;
+    return (
+      user.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+      user.phone?.toLowerCase().includes(search.toLowerCase()) ||
+      user.address?.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   return (
     <AdminLayout>
@@ -170,115 +111,141 @@ function Accounts() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredUsers.map((user, idx) => (
-                  <TableRow key={user.id} hover>
-                    <TableCell>
-                      <Link to={`detail`} className="hover:text-blue-400">
-                        <Stack direction="row" alignItems="center" spacing={2}>
-                          {user.avatar ? (
-                            <Avatar src={user.avatar} alt={user.name} />
-                          ) : (
-                            <Avatar>{stringAvatar(user.name)}</Avatar>
-                          )}
-                          <Typography>{user.name}</Typography>
-                        </Stack>
-                      </Link>
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <Typography fontWeight={500}>{user.phone}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography>{user.date}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <FormControl size="small" sx={{ minWidth: 130 }}>
-                        <Select
-                          value={statusList[idx]}
-                          onChange={(e) =>
-                            handleStatusChange(idx, e.target.value)
-                          }
-                          sx={{
-                            fontWeight: 500,
-                            "& .MuiSelect-select": {
-                              display: "flex",
-                              alignItems: "center",
-                            },
-                          }}
-                          renderValue={(selected) => (
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <FiberManualRecordIcon
-                                sx={{
-                                  fontSize: 14,
-                                  color:
-                                    selected === "Active"
-                                      ? "success.main"
-                                      : "error.main",
-                                  mr: 1,
-                                }}
-                              />
-                              {selected}
-                            </Box>
-                          )}
+                {filteredUsers.map((u, idx) => {
+                  const user = u as Record<string, any>;
+                  return (
+                    <TableRow key={user._id} hover>
+                      <TableCell>
+                        <Link
+                          to={`detail/${user._id}`}
+                          className="hover:text-blue-400"
                         >
-                          {statusOptions.map((opt) => (
-                            <MenuItem key={opt.value} value={opt.value}>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={2}
+                          >
+                            <Avatar>{stringAvatar(user.fullName)}</Avatar>
+                            <Typography>{user.fullName}</Typography>
+                          </Stack>
+                        </Link>
+                      </TableCell>
+                      <TableCell>{user.userId.email || "-"}</TableCell>
+                      <TableCell>
+                        <Typography fontWeight={500}>
+                          {user.phone || "-"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography>
+                          {user.createdAt
+                            ? new Date(user.createdAt).toLocaleDateString()
+                            : "-"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <FormControl size="small" sx={{ minWidth: 130 }}>
+                          <Select
+                            value={user.userId?.active ? "Active" : "Inactive"}
+                            onChange={(e) => {
+                              setUsers((prev) =>
+                                prev.map((u, i) =>
+                                  i === idx
+                                    ? {
+                                        ...u,
+                                        userId: {
+                                          ...((u as any).userId || {}),
+                                          active: e.target.value === "Active",
+                                        },
+                                      }
+                                    : u
+                                )
+                              );
+                            }}
+                            sx={{
+                              fontWeight: 500,
+                              "& .MuiSelect-select": {
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
+                            renderValue={(selected) => (
                               <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  minWidth: 90,
-                                }}
+                                sx={{ display: "flex", alignItems: "center" }}
                               >
                                 <FiberManualRecordIcon
                                   sx={{
                                     fontSize: 14,
                                     color:
-                                      opt.value === "Active"
+                                      selected === "Active"
                                         ? "success.main"
                                         : "error.main",
                                     mr: 1,
                                   }}
                                 />
-                                {opt.value}
+                                {selected}
                               </Box>
+                            )}
+                          >
+                            {statusOptions.map((opt) => (
+                              <MenuItem key={opt.value} value={opt.value}>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    minWidth: 90,
+                                  }}
+                                >
+                                  <FiberManualRecordIcon
+                                    sx={{
+                                      fontSize: 14,
+                                      color:
+                                        opt.value === "Active"
+                                          ? "success.main"
+                                          : "error.main",
+                                      mr: 1,
+                                    }}
+                                  />
+                                  {opt.value}
+                                </Box>
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1}>
+                          <IconButton color="primary">
+                            <Link to={`detail/${user._id}`}>
+                              <VisibilityIcon className="text-blue-400" />
+                            </Link>
+                          </IconButton>
+                          <IconButton onClick={(e) => handleMenuOpen(idx, e)}>
+                            <MoreVertIcon />
+                          </IconButton>
+                          <Menu
+                            anchorEl={anchorEls[idx]}
+                            open={Boolean(anchorEls[idx])}
+                            onClose={() => handleMenuClose(idx)}
+                          >
+                            <MenuItem
+                              onClick={() => handleMenuClose(idx)}
+                              className="hover:text-blue-400"
+                            >
+                              Edit
                             </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={1}>
-                        <IconButton color="primary">
-                          <Link to={`detail`}>
-                            <VisibilityIcon className="text-blue-400" />
-                          </Link>
-                        </IconButton>
-                        <IconButton onClick={(e) => handleMenuOpen(idx, e)}>
-                          <MoreVertIcon />
-                        </IconButton>
-                        <Menu
-                          anchorEl={anchorEls[idx]}
-                          open={Boolean(anchorEls[idx])}
-                          onClose={() => handleMenuClose(idx)}
-                        >
-                          <MenuItem
-                            onClick={() => handleMenuClose(idx)}
-                            className="hover:text-blue-400"
-                          >
-                            Edit
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => handleMenuClose(idx)}
-                            className="hover:text-blue-400"
-                          >
-                            Delete
-                          </MenuItem>
-                        </Menu>
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                            <MenuItem
+                              onClick={() => handleMenuClose(idx)}
+                              className="hover:text-blue-400"
+                            >
+                              Delete
+                            </MenuItem>
+                          </Menu>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
