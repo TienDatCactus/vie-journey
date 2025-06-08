@@ -171,16 +171,4 @@ export class AdminService {
     account.active = active;
     return account.save();
   }
-
-  async getAllUser(): Promise<UserInfos[]> {
-    return this.userInfosModel.find().exec();
-  }
-
-  async getUserByID(id: string): Promise<UserInfos> {
-    const user = await this.userInfosModel.findById(id).exec();
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-    return user;
-  }
 }

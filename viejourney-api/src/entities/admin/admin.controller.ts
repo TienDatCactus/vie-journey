@@ -18,6 +18,7 @@ import { Role } from '../auth/entities/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AdminService } from './admin.service';
+import { UserService } from '../user/user.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { TypeDto } from '../account/dto/Type.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -26,7 +27,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 @Controller('admin')
 export class AdminController {
   constructor(
-    private readonly adminService: AdminService) { }
+    private readonly adminService: AdminService,
+    private readonly userService: UserService,
+  ) { }
 
   @Get('assets')
   async getAssetsByType(@Query('type') type: string) {
@@ -98,11 +101,11 @@ export class AdminController {
 
   @Get('userInfo')
   async getAllUsers() {
-    return this.adminService.getAllUser();
+    return this.userService.getAllUser();
   }
 
   @Get('userInfo/:id')
   async getUser(@Param('id') id: string) {
-    return this.adminService.getUserByID(id);
+    return this.userService.getUserByID(id);
   }
 }
