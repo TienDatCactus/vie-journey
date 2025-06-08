@@ -22,6 +22,8 @@ import { UserService } from '../user/user.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { TypeDto } from '../account/dto/Type.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateUserInfoDto } from '../user/dto/update-userinfo.dto';
+import { PaginationDto } from '../user/dto/pagination-userlist.dto';
 // @Roles(Role.Admin)
 // @UseGuards(RolesGuard, JwtAuthGuard)
 @Controller('admin')
@@ -104,8 +106,26 @@ export class AdminController {
     return this.userService.getAllUser();
   }
 
+  @Post('userInfo/paginate')
+    async getPaginatedUsers(@Body() paginationDto: PaginationDto) {
+        return this.userService.getPaginatedUsers(paginationDto);
+  }
+
   @Get('userInfo/:id')
   async getUser(@Param('id') id: string) {
     return this.userService.getUserByID(id);
   }
+
+  @Patch('userInfo/:id')
+    async updateUserInfo(
+        @Param('id') id: string,
+        @Body() updateUserInfoDto: UpdateUserInfoDto
+    ) {
+        return this.userService.updateUserInfo(id, updateUserInfoDto);
+    }
+
+    @Delete('userInfo/:id')
+    async deleteUserInfo(@Param('id') id: string) {
+        return this.userService.deleteUserInfo(id);
+    }
 }
