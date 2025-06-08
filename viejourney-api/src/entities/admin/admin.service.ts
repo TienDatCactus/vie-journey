@@ -80,22 +80,22 @@ export class AdminService {
     }
   }
 
-  //updateAsset by publicId
-  async updateAssetByPublicId(publicId: string, file: Express.Multer.File) {
+  //updateAsset by id
+  async updateAssetById(id: string, file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('File upload is required');
     }
 
-    // Tìm asset theo publicId
-    const asset = await this.assetModel.findOne({ publicId: publicId }).exec();
+    // Tìm asset theo id
+    const asset = await this.assetModel
+      .findOne({ _id: new Types.ObjectId(id) })
+      .exec();
     if (!asset) {
-      throw new BadRequestException(
-        `Asset with publicId '${publicId}' not found`,
-      );
+      throw new BadRequestException(`Asset with id '${id}' not found`);
     }
 
     // 1. Xóa ảnh cũ trên Cloudinary
-    await this.cloudinaryService.deleteImage(publicId);
+    await this.cloudinaryService.deleteImage(asset.publicId);
 
     // 2. Upload ảnh mới
     const uploadResult = await this.cloudinaryService.uploadImage(file, {
@@ -135,6 +135,10 @@ export class AdminService {
       url: uploadResult.secure_url,
       publicId: uploadResult.public_id,
       type: 'BANNER',
+      location: uploadResult.public_id.split('/')[0],
+      format: uploadResult.format.toLocaleUpperCase(),
+      file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
+      dimensions: `${uploadResult.width} x ${uploadResult.height}`,
     });
 
     return newAsset.save();

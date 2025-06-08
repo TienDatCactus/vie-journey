@@ -111,6 +111,10 @@ export class AccountService {
           type: 'AVATAR',
           url: uploadResult.secure_url,
           publicId: uploadResult.public_id,
+          location: uploadResult.public_id.split('/')[0],
+          format: uploadResult.format.toLocaleUpperCase(),
+          file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
+          dimensions: `${uploadResult.width} x ${uploadResult.height}`,
         });
 
         const userInfo = await this.userInfosModel.create({
@@ -136,6 +140,10 @@ export class AccountService {
             $set: {
               url: uploadResult.secure_url,
               publicId: uploadResult.public_id,
+              location: uploadResult.public_id.split('/')[0],
+              format: uploadResult.format.toLocaleUpperCase(),
+              file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
+              dimensions: `${uploadResult.width} x ${uploadResult.height}`,
             },
           },
           { new: true },

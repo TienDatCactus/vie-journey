@@ -53,9 +53,9 @@ export class AdminController {
   )
   updateAsset(
     @UploadedFile() file: Express.Multer.File,
-    @Body('publicId') publicId: string,
+    @Body('id') id: string,
   ) {
-    return this.adminService.updateAssetByPublicId(publicId, file);
+    return this.adminService.updateAssetById(id, file);
   }
 
   // addAsset/banner
