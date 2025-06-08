@@ -85,14 +85,19 @@ function useHook() {
     });
   };
 
-  const deleteAsset = async (publicId: string) => {
+  const deleteAsset = async (
+    publicId: string,
+    type: "AVATAR" | "BANNER" | "CONTENT"
+  ) => {
     try {
       const res = await deleteAssetByPublicId(publicId);
       if (res) {
         enqueueSnackbar("Delete image successful", {
           variant: "success",
         });
-       
+        getListAsset({
+          type: type,
+        });
       }
     } catch (error) {
       const errorMessage =
@@ -116,7 +121,7 @@ function useHook() {
     avatarLength,
     bannerLength,
     updateAsset,
-    deleteAsset
+    deleteAsset,
   };
 }
 

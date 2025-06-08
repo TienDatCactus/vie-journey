@@ -21,6 +21,6 @@ export const USER = {
 export const ADMIN = {
   GET_ASSET: "/admin/assets",
   UPDATE_ASSET: "/admin/update-asset",
-  DELETE_ASSET: "/admin/delete", 
+  DELETE_ASSET: "/admin/assets/delete", 
 
 }

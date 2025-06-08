@@ -123,7 +123,7 @@ const Card = ({
                   e.stopPropagation();
                   setOpenModal(true);
                 }}
-                className="flex items-center justify-center w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+                className="flex items-center justify-center w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 cursor-pointer"
                 title="Update"
               >
                 <svg
@@ -146,7 +146,7 @@ const Card = ({
                   e.stopPropagation();
                   setOpenConfirm(true);
                 }}
-                className="flex items-center justify-center w-10 h-10 bg-red-500/90 hover:bg-red-500 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+                className="flex items-center justify-center w-10 h-10 bg-red-500/90 hover:bg-red-500 rounded-full shadow-lg transition-all duration-200 hover:scale-110 cursor-pointer"
                 title="Delete"
               >
                 <svg
@@ -198,7 +198,6 @@ const Card = ({
           <div className="flex justify-between">
             <p className="mt-[10px] text-[#a6acaf]">{size}</p>
             <p className="mt-[10px] text-[#a6acaf]">{dimensions}</p>
-
           </div>
         </div>
       </div>

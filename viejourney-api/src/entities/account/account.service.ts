@@ -102,8 +102,6 @@ export class AccountService {
         public_id: `users/${userId}/AVATAR/${file.filename}`,
       });
 
-      console.log('Upload result:', uploadResult); // ✅ Log ra để kiểm tra thực tế
-
       if (!existingInfo) {
         // Nếu chưa có userInfo thì tạo mới asset và userInfo
         const asset = await this.assetModel.create({
@@ -111,6 +109,10 @@ export class AccountService {
           type: 'AVATAR',
           url: uploadResult.secure_url,
           publicId: uploadResult.public_id,
+          location: uploadResult.public_id.split('/')[0],
+          format: uploadResult.format.toLocaleUpperCase(),
+          file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
+          dimensions: `${uploadResult.width} x ${uploadResult.height}`,
         });
 
         const userInfo = await this.userInfosModel.create({
@@ -136,6 +138,10 @@ export class AccountService {
             $set: {
               url: uploadResult.secure_url,
               publicId: uploadResult.public_id,
+              location: uploadResult.public_id.split('/')[0],
+              format: uploadResult.format.toLocaleUpperCase(),
+              file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
+              dimensions: `${uploadResult.width} x ${uploadResult.height}`,
             },
           },
           { new: true },

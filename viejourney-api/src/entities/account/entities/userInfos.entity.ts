@@ -1,13 +1,16 @@
-import mongoose from "mongoose";
-import { Asset } from "./asset.entity";
+import mongoose from 'mongoose';
+import { Asset } from './asset.entity';
 
 export class UserInfos {
-    _id: mongoose.Types.ObjectId;
-    userId: mongoose.Types.ObjectId;
-    fullName: string;
-    dob: Date;
-    phone: string;
-    address: string;
-    avatar: Asset;
-
-  }
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  fullName: string;
+  dob: Date;
+  phone: string;
+  address: string;
+  avatar: Asset;
+  location: string;
+  format: string;
+  file_size: string;
+  dimensions: string;
+}

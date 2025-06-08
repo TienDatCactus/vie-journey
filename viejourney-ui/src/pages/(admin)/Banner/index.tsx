@@ -2,30 +2,13 @@
 
 import type React from "react";
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  Close,
-  FilterList,
-  GridView,
-  Search,
-  Share,
-  ViewList,
-} from "@mui/icons-material";
-import {
-  Box,
-  Container,
-  Grid,
-  IconButton,
-  InputAdornment,
-  Modal,
-  TextField,
-} from "@mui/material";
+import { ChevronLeft, ChevronRight, Close } from "@mui/icons-material";
+import { Box, Container, Grid, IconButton, Modal } from "@mui/material";
 import { useEffect, useState } from "react";
 import { AdminLayout } from "../../../layouts";
+import { ASSET_TYPE } from "../../../utils/interfaces/admin";
 import Card from "./component/card";
 import useHook from "./container/hook";
-import { ASSET_TYPE } from "../../../utils/interfaces/admin";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -98,17 +81,17 @@ const Banner = () => {
     <AdminLayout>
       <div className="py-[10px] bg-[#f6f8f9] min-h-screen">
         <Container>
-          <Box sx={{ borderBottom: 1, borderColor: "divider", mt: 2 }}>
-            <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm border-neutral-100">
+          <Box sx={{ mt: 2 }}>
+            <div className="flex items-center justify-between ">
               <div className="flex items-center gap-6">
                 <button
                   onClick={() => {
                     handleTabChange(ASSET_TYPE.AVATAR);
                     setTabValue(0);
                   }}
-                  className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer ${
+                  className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer uppercase ${
                     tabValue === 0
-                      ? "text-black bg-gray-100"
+                      ? "text-green-100 bg-[#1bb99a]"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
@@ -119,9 +102,9 @@ const Banner = () => {
                     handleTabChange(ASSET_TYPE.BANNER);
                     setTabValue(1);
                   }}
-                  className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer  ${
+                  className={`text-sm font-medium px-3 py-1 rounded transition-colors uppercase cursor-pointer  ${
                     tabValue === 1
-                      ? "text-black bg-gray-100"
+                      ? "text-green-100 bg-[#1bb99a]"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
@@ -132,76 +115,14 @@ const Banner = () => {
                     handleTabChange(ASSET_TYPE.CONTENT);
                     setTabValue(2);
                   }}
-                  className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer ${
+                  className={`text-sm font-medium px-3 py-1 rounded transition-colors  uppercase cursor-pointer ${
                     tabValue === 2
-                      ? "text-black bg-gray-100"
+                      ? "text-green-100 bg-[#1bb99a]"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   Content ({contentLength})
                 </button>
-              </div>
-
-              <div className="flex-1 max-w-md mx-8">
-                <TextField
-                  placeholder="Search assets..."
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search className="text-gray-400" fontSize="small" />
-                      </InputAdornment>
-                    ),
-                    sx: {
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "#f8f9fa",
-                        "& fieldset": {
-                          borderColor: "#e9ecef",
-                        },
-                        "&:hover fieldset": {
-                          borderColor: "#dee2e6",
-                        },
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#1976d2",
-                        },
-                      },
-                    },
-                  }}
-                />
-              </div>
-
-              {/* Right side - Action buttons */}
-              <div className="flex items-center gap-2">
-                <IconButton
-                  size="small"
-                  className="text-gray-500 hover:text-gray-700"
-                  title="Filter"
-                >
-                  <FilterList fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  className="text-gray-500 hover:text-gray-700"
-                  title="Share"
-                >
-                  <Share fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  className="bg-gray-900 text-white hover:bg-gray-800"
-                  title="Grid View"
-                >
-                  <GridView fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  className="text-gray-500 hover:text-gray-700"
-                  title="List View"
-                >
-                  <ViewList fontSize="small" />
-                </IconButton>
               </div>
             </div>
           </Box>
@@ -220,7 +141,7 @@ const Banner = () => {
                     onUpdate={(file: File) =>
                       updateAsset(file, image.publicId, ASSET_TYPE.AVATAR)
                     }
-                    onDelete={() => deleteAsset(image.publicId)}
+                    onDelete={() => deleteAsset(image._id, ASSET_TYPE.AVATAR)}
                   />
                 </Grid>
               ))}
@@ -240,7 +161,7 @@ const Banner = () => {
                     onUpdate={(file: File) =>
                       updateAsset(file, image.publicId, ASSET_TYPE.BANNER)
                     }
-                    onDelete={() => deleteAsset(image.publicId)}
+                    onDelete={() => deleteAsset(image._id, ASSET_TYPE.AVATAR)}
                   />
                 </Grid>
               ))}
@@ -260,7 +181,7 @@ const Banner = () => {
                     onUpdate={(file: File) =>
                       updateAsset(file, image.publicId, ASSET_TYPE.CONTENT)
                     }
-                    onDelete={() => deleteAsset(image.publicId)}
+                    onDelete={() => deleteAsset(image._id, ASSET_TYPE.AVATAR)}
                   />
                 </Grid>
               ))}
