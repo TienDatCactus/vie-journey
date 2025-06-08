@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { AutocompleteOption } from "../../components/Maps/types";
-import { useAutocompleteSuggestions } from "../../utils/hooks/use-autocomplete-suggestions";
+import usePlaces from "../../utils/hooks/usePlaces";
 
 interface PlaceSearchContextType {
   searchInput: string;
@@ -48,24 +48,23 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
   const [selectedPlace, setSelectedPlace] =
     useState<google.maps.places.Place | null>(null);
   const [primaryTypes, setPrimaryTypes] = useState<string[] | null>([]);
-  const { suggestions, isLoading, resetSession } = useAutocompleteSuggestions(
-    searchInput,
-    {
-      // You can add filters here if needed
+  const { suggestions, isLoading, resetSearch } = usePlaces({
+    initialValue: searchInput,
+    filterOptions: {
       language: "en",
       includedPrimaryTypes: [...(primaryTypes || [])],
-    }
-  );
+    },
+  });
 
   React.useEffect(() => {
     if (!suggestions?.length) return;
 
     const newOptions: AutocompleteOption[] = suggestions
       .filter(
-        ({ placePrediction }) =>
+        ({ placePrediction }: any) =>
           placePrediction?.placeId && placePrediction?.text?.text
       )
-      .map(({ placePrediction }) => ({
+      .map(({ placePrediction }: any) => ({
         placeId: placePrediction?.placeId!,
         primaryText: placePrediction?.text?.text!,
         secondaryText: placePrediction?.secondaryText?.text || "",
@@ -128,7 +127,7 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
         setSelectedOption(option);
 
         // Reset the autocomplete session
-        resetSession();
+        resetSearch();
 
         return place;
       } catch (error) {
@@ -136,7 +135,7 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
         return null;
       }
     },
-    [placesLib, resetSession]
+    [placesLib, resetSearch]
   );
 
   const handleInputChange = useCallback(
@@ -148,13 +147,6 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
     },
     [selectedOption]
   );
-
-  const resetSearch = useCallback(() => {
-    setSearchInput("");
-    setSelectedOption(null);
-    setSelectedPlace(null);
-    resetSession();
-  }, [resetSession]);
 
   return (
     <PlaceSearchContext.Provider
