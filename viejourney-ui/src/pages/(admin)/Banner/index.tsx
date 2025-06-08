@@ -19,32 +19,13 @@ import {
   IconButton,
   InputAdornment,
   Modal,
-  TextField
+  TextField,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminLayout } from "../../../layouts";
-import Card from "./container/card";
-
-const galleryImages = Array.from({ length: 9 }).map((_, index) => ({
-  id: index,
-  src: "/images/banner.jpg",
-  title: `Gallery Image ${index + 1}`,
-  size: "141.1 KB",
-}));
-
-const galleryVideos = Array.from({ length: 6 }).map((_, index) => ({
-  id: index,
-  src: "/images/banner.jpg",
-  title: `Video ${index + 1}`,
-  size: "2.5 MB",
-}));
-
-const galleryDocuments = Array.from({ length: 4 }).map((_, index) => ({
-  id: index,
-  src: "/images/banner.jpg",
-  title: `Document ${index + 1}`,
-  size: "512 KB",
-}));
+import Card from "./component/card";
+import useHook from "./container/hook";
+import { ASSET_TYPE } from "../../../utils/interfaces/admin";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -54,7 +35,6 @@ interface TabPanelProps {
 
 const TabPanel = (props: TabPanelProps) => {
   const { children, value, index, ...other } = props;
-
   return (
     <div
       role="tabpanel"
@@ -69,37 +49,22 @@ const TabPanel = (props: TabPanelProps) => {
 };
 
 const Banner = () => {
+  const {
+    listImg,
+    contentLength,
+    avatarLength,
+    bannerLength,
+    handleTabChange,
+    updateAsset,
+  } = useHook();
+
   const [open, setOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [tabValue, setTabValue] = useState(0);
-  const [currentData, setCurrentData] = useState(galleryImages);
-
-  const handleUpdate = (index: number, type: string) => {
-    console.log(`Update ${type} at index:`, index);
-  };
+  const [currentData, setCurrentData] = useState(listImg || []);
 
   const handleDelete = (index: number, type: string) => {
     console.log(`Delete ${type} at index:`, index);
-  };
-
-  const handleTabChange = (
-    event: React.SyntheticEvent | null,
-    newValue: number
-  ) => {
-    setTabValue(newValue);
-    switch (newValue) {
-      case 0:
-        setCurrentData(galleryImages);
-        break;
-      case 1:
-        setCurrentData(galleryVideos);
-        break;
-      case 2:
-        setCurrentData(galleryDocuments);
-        break;
-      default:
-        setCurrentData(galleryImages);
-    }
   };
 
   const handleOpen = (index: number) => {
@@ -123,6 +88,15 @@ const Banner = () => {
 
   const currentImage = currentData[currentImageIndex];
 
+  useEffect(() => {
+    if (listImg) {
+      setCurrentData(listImg);
+    }
+  }, [listImg]);
+  if (!listImg) {
+    return <div></div>;
+  }
+
   return (
     <AdminLayout>
       <div className="py-[10px] bg-[#f6f8f9] min-h-screen">
@@ -131,38 +105,46 @@ const Banner = () => {
             <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm border-neutral-100">
               <div className="flex items-center gap-6">
                 <button
-                  onClick={() => handleTabChange(null, 0)}
-                  className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer  ${
+                  onClick={() => {
+                    handleTabChange(ASSET_TYPE.AVATAR);
+                    setTabValue(0);
+                  }}
+                  className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer ${
                     tabValue === 0
                       ? "text-black bg-gray-100"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  Banner ({galleryImages.length})
+                  Avatar ({avatarLength})
                 </button>
                 <button
-                  onClick={() => handleTabChange(null, 1)}
-                  className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer ${
+                  onClick={() => {
+                    handleTabChange(ASSET_TYPE.BANNER);
+                    setTabValue(1);
+                  }}
+                  className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer  ${
                     tabValue === 1
                       ? "text-black bg-gray-100"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  Avatar ({galleryVideos.length})
+                  Banner ({bannerLength})
                 </button>
                 <button
-                  onClick={() => handleTabChange(null, 2)}
+                  onClick={() => {
+                    handleTabChange(ASSET_TYPE.CONTENT);
+                    setTabValue(2);
+                  }}
                   className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer ${
                     tabValue === 2
                       ? "text-black bg-gray-100"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  Content ({galleryDocuments.length})
+                  Content ({contentLength})
                 </button>
               </div>
 
-              {/* Center - Search */}
               <div className="flex-1 max-w-md mx-8">
                 <TextField
                   placeholder="Search assets..."
@@ -230,14 +212,14 @@ const Banner = () => {
           {/* Tab Panels */}
           <TabPanel value={tabValue} index={0}>
             <Grid container spacing={2}>
-              {galleryImages.map((image, index) => (
-                <Grid item xs={12} sm={6} md={4} key={image.id}>
+              {currentData.map((image, index) => (
+                <Grid item xs={12} sm={6} md={4} key={image._id}>
                   <Card
-                    imageSrc={image.src}
-                    title={image.title}
-                    size={image.size}
+                    imageSrc={image.url}
+                    title={image.userId}
+                    size={"155 KB"}
                     onClick={() => handleOpen(index)}
-                    onUpdate={() => handleUpdate(index, "image")}
+                    onUpdate={(file: File) => updateAsset(file, image.publicId, ASSET_TYPE.AVATAR )}
                     onDelete={() => handleDelete(index, "image")}
                   />
                 </Grid>
@@ -247,15 +229,15 @@ const Banner = () => {
 
           <TabPanel value={tabValue} index={1}>
             <Grid container spacing={2}>
-              {galleryVideos.map((video, index) => (
-                <Grid item xs={12} sm={6} md={4} key={video.id}>
+              {currentData.map((image, index) => (
+                <Grid item xs={12} sm={6} md={4} key={image._id}>
                   <Card
-                    imageSrc={video.src}
-                    title={video.title}
-                    size={video.size}
+                    imageSrc={image.url}
+                    title={image.userId}
+                    size={"155 KB"}
                     onClick={() => handleOpen(index)}
-                    onUpdate={() => handleUpdate(index, "video")}
-                    onDelete={() => handleDelete(index, "video")}
+                    onUpdate={(file: File) => updateAsset(file, image.publicId, ASSET_TYPE.BANNER)}
+                    onDelete={() => handleDelete(index, "image")}
                   />
                 </Grid>
               ))}
@@ -264,15 +246,15 @@ const Banner = () => {
 
           <TabPanel value={tabValue} index={2}>
             <Grid container spacing={2}>
-              {galleryDocuments.map((document, index) => (
-                <Grid item xs={12} sm={6} md={4} key={document.id}>
+              {currentData.map((image, index) => (
+                <Grid item xs={12} sm={6} md={4} key={image._id}>
                   <Card
-                    imageSrc={document.src}
-                    title={document.title}
-                    size={document.size}
+                    imageSrc={image.url}
+                    title={image.userId}
+                    size={"155 KB"}
                     onClick={() => handleOpen(index)}
-                    onUpdate={() => handleUpdate(index, "document")}
-                    onDelete={() => handleDelete(index, "document")}
+                    onUpdate={(file: File) => updateAsset(file, image.publicId, ASSET_TYPE.CONTENT )}
+                    onDelete={() => handleDelete(index, "image")}
                   />
                 </Grid>
               ))}
@@ -316,8 +298,8 @@ const Banner = () => {
             </IconButton>
 
             <img
-              src={currentImage?.src || "/placeholder.svg"}
-              alt={currentImage?.title}
+              src={currentImage?.url || "/placeholder.svg"}
+              alt={currentImage?.publicId}
               className="max-w-[50%] max-h-full object-contain rounded-[8px]"
             />
           </Box>

@@ -1,19 +1,23 @@
 import { IsString, IsNotEmpty, IsDate } from 'class-validator';
+import mongoose from 'mongoose';
 
 export class EditProfileDto {
-    @IsString()
-    @IsNotEmpty()
-    fullName: string;
+  @IsNotEmpty()
+  userId: mongoose.Types.ObjectId;
 
-    @IsDate()
-    @IsNotEmpty()
-    dob: Date;
+  @IsString()
+  @IsNotEmpty()
+  fullName: string;
 
-    @IsString()
-    @IsNotEmpty()
-    phone: string;
+  @IsDate()
+  @IsNotEmpty()
+  dob: Date;
 
-    @IsString()
-    @IsNotEmpty()
-    address: string;
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
+
+  @IsString()
+  @IsNotEmpty()
+  address: string;
 }

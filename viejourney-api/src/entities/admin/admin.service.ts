@@ -42,18 +42,30 @@ export class AdminService {
 
   // Delete Asset by ID
   async deleteAssetById(publicId: string) {
-    const asset = await this.assetModel.find({ publicId: publicId }).exec();
+    const asset = await this.assetModel.findOne({ publicId: publicId }).exec();
+
     if (!asset) {
-      throw new BadRequestException(`Asset with ID ${publicId} not found`);
+      throw new BadRequestException(
+        `Asset with publicId ${publicId} not found`,
+      );
     }
+
+    // Xóa ảnh trên Cloudinary (nếu cần)
     await this.cloudinaryService.deleteImage(publicId);
-    const deletedAsset = await this.assetModel
-      .findOneAndDelete({ publicId: publicId })
-      .exec();
-    if (!deletedAsset) {
-      throw new BadRequestException(`Asset with ID ${publicId} not found`);
-    }
-    return deletedAsset;
+
+    // Cập nhật lại trường url và publicId về null
+    const updatedAsset = await this.assetModel.findOneAndUpdate(
+      { publicId: publicId },
+      {
+        $set: {
+          url: null,
+          publicId: null,
+        },
+      },
+      { new: true },
+    );
+
+    return updatedAsset;
   }
 
   //updateAsset by publicId
