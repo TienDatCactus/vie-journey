@@ -16,3 +16,11 @@ export const AUTH = {
 export const USER = {
   GET_PROFILE: "/account/profile",
 };
+
+
+export const ADMIN = {
+  GET_ASSET: "/admin/assets",
+  UPDATE_ASSET: "/admin/update-asset",
+  DELETE_ASSET: "/admin/assets/delete", 
+
+}

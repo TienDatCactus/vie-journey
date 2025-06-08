@@ -33,8 +33,8 @@ export class AdminController {
     return this.adminService.getAssetsByType(type);
   }
   @Delete('assets/delete')
-  async deleteAssetById(@Query('publicId') publicId: string) {
-    return this.adminService.deleteAssetById(publicId);
+  async deleteAssetById(@Query('id') id: string) {
+    return this.adminService.deleteAssetById(id);
   }
 
   @Post('update-asset')
@@ -55,7 +55,29 @@ export class AdminController {
     @UploadedFile() file: Express.Multer.File,
     @Body('publicId') publicId: string,
   ) {
-    return this.adminService.updateAssetByPublicId(publicId, file);
+    return this.adminService.updateAssetById(publicId, file);
+  }
+
+  // addAsset/banner
+  @Post('assets/addBanner')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+          return cb(new BadRequestException('Chỉ chấp nhận file ảnh!'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  addAssetBanner(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('userId') userId: string,
+  ) {
+    return this.adminService.addAssetBanner(file, userId);
   }
 
   @Get('accounts')
