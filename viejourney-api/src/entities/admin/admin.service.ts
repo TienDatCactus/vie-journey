@@ -10,6 +10,7 @@ import { UserInfos } from '../account/entities/userInfos.entity';
 import { Asset } from '../account/entities/asset.entity';
 import { TypeDto } from '../account/dto/Type.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AdminService {
@@ -127,11 +128,8 @@ export class AdminService {
 
     // 1. Upload ảnh mới
     const uploadResult = await this.cloudinaryService.uploadImage(file, {
-      public_id: `users/${userId}/BANNER/${file.filename}`,
+      public_id: `users/${userId}/BANNER/${uuidv4()}`,
     });
-    if (!uploadResult || !uploadResult.secure_url) {
-      throw new BadRequestException('Failed to upload image to Cloudinary');
-    }
 
     // 2. Tạo mới asset với ảnh đã upload
     const newAsset = new this.assetModel({
