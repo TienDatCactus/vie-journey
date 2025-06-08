@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { userInfoSchema } from 'src/common/db/userInfo.shema';
+import { UserInfosSchema } from 'src/common/db/userinfo.schema';
+import { UserInfos } from '../account/entities/userInfos.entity';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { userInfos } from './entities/user.entity';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'userInfo', schema: userInfoSchema }]),
+    MongooseModule.forFeature([{ name: UserInfos.name, schema: UserInfosSchema }]),
+    CloudinaryModule,
   ],
   controllers: [UserController],
   providers: [UserService],
