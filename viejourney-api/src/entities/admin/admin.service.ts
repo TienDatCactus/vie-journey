@@ -50,22 +50,34 @@ export class AdminService {
       );
     }
 
-    // Xóa ảnh trên Cloudinary (nếu cần)
-    await this.cloudinaryService.deleteImage(publicId);
+    if (asset.type === 'AVATAR') {
+      // Xóa ảnh trên Cloudinary (nếu cần)
+      await this.cloudinaryService.deleteImage(publicId);
 
-    // Cập nhật lại trường url và publicId về null
-    const updatedAsset = await this.assetModel.findOneAndUpdate(
-      { publicId: publicId },
-      {
-        $set: {
-          url: null,
-          publicId: null,
+      // Cập nhật lại trường url và publicId về null
+      const updatedAsset = await this.assetModel.findOneAndUpdate(
+        { publicId: publicId },
+        {
+          $set: {
+            url: null,
+            publicId: null,
+          },
         },
-      },
-      { new: true },
-    );
+        { new: true },
+      );
 
-    return updatedAsset;
+      return updatedAsset;
+    } else if (asset.type === 'BANNER') {
+      // Xóa ảnh trên Cloudinary (nếu cần)
+      await this.cloudinaryService.deleteImage(publicId);
+
+      // Xóa asset khỏi database
+      const deletedAsset = await this.assetModel.findOneAndDelete({
+        publicId: publicId,
+      });
+
+      return deletedAsset;
+    }
   }
 
   //updateAsset by publicId
@@ -101,6 +113,31 @@ export class AdminService {
     await asset.save(); // Lưu lại thay đổi vào database
 
     return asset;
+  }
+
+  // addAsset/banner
+  async addAssetBanner(file: Express.Multer.File, userId: string) {
+    if (!file) {
+      throw new BadRequestException('File upload is required');
+    }
+
+    // 1. Upload ảnh mới
+    const uploadResult = await this.cloudinaryService.uploadImage(file, {
+      public_id: `users/${userId}/BANNER/${file.filename}`,
+    });
+    if (!uploadResult || !uploadResult.secure_url) {
+      throw new BadRequestException('Failed to upload image to Cloudinary');
+    }
+
+    // 2. Tạo mới asset với ảnh đã upload
+    const newAsset = new this.assetModel({
+      userId: new Types.ObjectId(userId),
+      url: uploadResult.secure_url,
+      publicId: uploadResult.public_id,
+      type: 'BANNER',
+    });
+
+    return newAsset.save();
   }
 
   // getBlogReport

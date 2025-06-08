@@ -12,6 +12,10 @@ export interface IAsset {
   userId: string;
   type: IAssetType;
   url: string;
+  location: string;
+  format: string;
+  file_size: string;
+  dimensions: string;
   publicId: string;
   createdAt: string;
   updatedAt: string;

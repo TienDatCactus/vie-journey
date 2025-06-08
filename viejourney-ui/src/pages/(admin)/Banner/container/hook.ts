@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  deleteAssetByPublicId,
   getAssetByType,
   updateAssetByPublicId,
 } from "../../../../services/api/admin";
@@ -84,6 +85,22 @@ function useHook() {
     });
   };
 
+  const deleteAsset = async (publicId: string) => {
+    try {
+      const res = await deleteAssetByPublicId(publicId);
+      if (res) {
+        enqueueSnackbar("Delete image successful", {
+          variant: "success",
+        });
+       
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      enqueueSnackbar(errorMessage, { variant: "error" });
+    }
+  };
+
   useEffect(() => {
     const param = {
       type: ASSET_TYPE.AVATAR,
@@ -99,6 +116,7 @@ function useHook() {
     avatarLength,
     bannerLength,
     updateAsset,
+    deleteAsset
   };
 }
 

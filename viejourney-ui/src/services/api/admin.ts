@@ -20,3 +20,11 @@ export const updateAssetByPublicId = async (data: IQueryUpdate) => {
 
   return res.data;
 };
+
+export const deleteAssetByPublicId = async (publicId: string) => {
+  const res = await http.delete(ADMIN.DELETE_ASSET, {
+    params: { publicId },
+  });
+
+  return res.data;
+};

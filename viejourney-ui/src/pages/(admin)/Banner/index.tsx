@@ -56,16 +56,13 @@ const Banner = () => {
     bannerLength,
     handleTabChange,
     updateAsset,
+    deleteAsset,
   } = useHook();
 
   const [open, setOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [tabValue, setTabValue] = useState(0);
   const [currentData, setCurrentData] = useState(listImg || []);
-
-  const handleDelete = (index: number, type: string) => {
-    console.log(`Delete ${type} at index:`, index);
-  };
 
   const handleOpen = (index: number) => {
     setCurrentImageIndex(index);
@@ -217,10 +214,13 @@ const Banner = () => {
                   <Card
                     imageSrc={image.url}
                     title={image.userId}
-                    size={"155 KB"}
+                    size={image.file_size}
+                    dimensions={image.dimensions}
                     onClick={() => handleOpen(index)}
-                    onUpdate={(file: File) => updateAsset(file, image.publicId, ASSET_TYPE.AVATAR )}
-                    onDelete={() => handleDelete(index, "image")}
+                    onUpdate={(file: File) =>
+                      updateAsset(file, image.publicId, ASSET_TYPE.AVATAR)
+                    }
+                    onDelete={() => deleteAsset(image.publicId)}
                   />
                 </Grid>
               ))}
@@ -234,10 +234,13 @@ const Banner = () => {
                   <Card
                     imageSrc={image.url}
                     title={image.userId}
-                    size={"155 KB"}
+                    size={image.file_size}
+                    dimensions={image.dimensions}
                     onClick={() => handleOpen(index)}
-                    onUpdate={(file: File) => updateAsset(file, image.publicId, ASSET_TYPE.BANNER)}
-                    onDelete={() => handleDelete(index, "image")}
+                    onUpdate={(file: File) =>
+                      updateAsset(file, image.publicId, ASSET_TYPE.BANNER)
+                    }
+                    onDelete={() => deleteAsset(image.publicId)}
                   />
                 </Grid>
               ))}
@@ -251,10 +254,13 @@ const Banner = () => {
                   <Card
                     imageSrc={image.url}
                     title={image.userId}
-                    size={"155 KB"}
+                    size={image.file_size}
+                    dimensions={image.dimensions}
                     onClick={() => handleOpen(index)}
-                    onUpdate={(file: File) => updateAsset(file, image.publicId, ASSET_TYPE.CONTENT )}
-                    onDelete={() => handleDelete(index, "image")}
+                    onUpdate={(file: File) =>
+                      updateAsset(file, image.publicId, ASSET_TYPE.CONTENT)
+                    }
+                    onDelete={() => deleteAsset(image.publicId)}
                   />
                 </Grid>
               ))}

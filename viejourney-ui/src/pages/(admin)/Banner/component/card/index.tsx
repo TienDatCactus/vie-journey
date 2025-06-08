@@ -24,6 +24,7 @@ export interface SimpleCardProps {
   imageSrc: string;
   title: string;
   size: string;
+  dimensions: string;
   onClick: () => void;
   onUpdate?: (file: File) => void;
   onDelete?: () => void;
@@ -33,6 +34,7 @@ const Card = ({
   imageSrc,
   title,
   size,
+  dimensions,
   onClick,
   onUpdate,
   onDelete,
@@ -41,6 +43,7 @@ const Card = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [openConfirm, setOpenConfirm] = useState(false);
 
   const handleFileChange = (file: File) => {
     setSelectedFile(file);
@@ -141,7 +144,7 @@ const Card = ({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete?.();
+                  setOpenConfirm(true);
                 }}
                 className="flex items-center justify-center w-10 h-10 bg-red-500/90 hover:bg-red-500 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
                 title="Delete"
@@ -163,10 +166,40 @@ const Card = ({
             </div>
           </div>
         </div>
+        <Dialog
+          open={openConfirm}
+          onClose={() => setOpenConfirm(false)}
+          maxWidth="xs"
+          fullWidth
+        >
+          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogContent>
+            <Typography>Are you sure you want to delete this image?</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenConfirm(false)} color="inherit">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                onDelete?.();
+                setOpenConfirm(false);
+              }}
+              color="error"
+              variant="contained"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         <div>
           <h3 className="font-[700] text-[20px]">{title}</h3>
-          <p className="mt-[10px] text-[#a6acaf]">{size}</p>
+          <div className="flex justify-between">
+            <p className="mt-[10px] text-[#a6acaf]">{size}</p>
+            <p className="mt-[10px] text-[#a6acaf]">{dimensions}</p>
+
+          </div>
         </div>
       </div>
 
