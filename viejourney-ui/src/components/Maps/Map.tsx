@@ -10,7 +10,7 @@ import React, { useEffect } from "react";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
 import POIDetails from "./controls/POIDetails";
-import SearchPlacesControl from "./controls/SearchPlacesControl";
+import SearchPlacesControl from "./controls/MapPlaceSearch";
 import { MapProps, POIData } from "./types";
 import usePlaces from "../../utils/hooks/usePlaces";
 

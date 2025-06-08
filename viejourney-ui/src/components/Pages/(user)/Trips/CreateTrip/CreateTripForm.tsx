@@ -3,6 +3,7 @@ import {
   AttachMoney,
   AutoFixHigh,
   CalendarMonth,
+  DriveFileRenameOutline,
   Group,
   GroupAdd,
   PlaceOutlined,
@@ -231,9 +232,23 @@ export const CreateTripForm: React.FC = () => {
         Invite tripmates
       </Button>
       <div className="my-6">
-        <Button startIcon={<AutoFixHigh />}>Start planning your trip</Button>
-        <Divider className="uppercase text-neutral-700 text-sm">or</Divider>\
-        <Button startIcon={<AutoFixHigh />}>Start planning your trip</Button>
+        <Button
+          startIcon={<AutoFixHigh />}
+          variant="contained"
+          className="bg-dark-800 w-full"
+        >
+          Start planning your trip
+        </Button>
+        <Divider className="uppercase text-neutral-700 text-sm my-2">
+          or
+        </Divider>
+        <Button
+          startIcon={<DriveFileRenameOutline />}
+          className="w-full border-neutral-300 text-dark-800 py-2 "
+          variant="outlined"
+        >
+          Write a travel blog instead
+        </Button>
       </div>
     </Form>
   );

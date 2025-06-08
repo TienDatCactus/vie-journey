@@ -26,7 +26,7 @@ import React, { useState } from "react";
 import { SearchPlacesControlProps } from "../types";
 import { usePlaceSearch } from "../../../services/contexts/PlaceSearchContext";
 
-const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
+const MapPlaceSearch: React.FC<SearchPlacesControlProps> = ({
   onPlaceSelected,
   placeholder = "Search for places...",
 }) => {
@@ -276,4 +276,4 @@ const SearchPlacesControl: React.FC<SearchPlacesControlProps> = ({
   );
 };
 
-export default SearchPlacesControl;
+export default MapPlaceSearch;
