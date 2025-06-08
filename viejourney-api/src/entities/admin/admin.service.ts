@@ -41,26 +41,28 @@ export class AdminService {
   }
 
   // Delete Asset by ID
-  async deleteAssetById(publicId: string) {
-    const asset = await this.assetModel.findOne({ publicId: publicId }).exec();
+  async deleteAssetById(id: string) {
+    const asset = await this.assetModel.findById(id).exec();
 
     if (!asset) {
-      throw new BadRequestException(
-        `Asset with publicId ${publicId} not found`,
-      );
+      throw new BadRequestException(`Asset with id ${id} not found`);
     }
 
     if (asset.type === 'AVATAR') {
       // Xóa ảnh trên Cloudinary (nếu cần)
-      await this.cloudinaryService.deleteImage(publicId);
+      await this.cloudinaryService.deleteImage(asset.publicId);
 
       // Cập nhật lại trường url và publicId về null
       const updatedAsset = await this.assetModel.findOneAndUpdate(
-        { publicId: publicId },
+        { publicId: asset.publicId },
         {
           $set: {
             url: null,
             publicId: null,
+            location: null,
+            format: null,
+            file_size: null,
+            dimensions: null,
           },
         },
         { new: true },
@@ -69,11 +71,11 @@ export class AdminService {
       return updatedAsset;
     } else if (asset.type === 'BANNER') {
       // Xóa ảnh trên Cloudinary (nếu cần)
-      await this.cloudinaryService.deleteImage(publicId);
+      await this.cloudinaryService.deleteImage(asset.publicId);
 
       // Xóa asset khỏi database
       const deletedAsset = await this.assetModel.findOneAndDelete({
-        publicId: publicId,
+        publicId: asset.publicId,
       });
 
       return deletedAsset;
@@ -81,21 +83,19 @@ export class AdminService {
   }
 
   //updateAsset by id
-  async updateAssetById(id: string, file: Express.Multer.File) {
+  async updateAssetById(publicId: string, file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('File upload is required');
     }
 
     // Tìm asset theo id
-    const asset = await this.assetModel
-      .findOne({ _id: new Types.ObjectId(id) })
-      .exec();
+    const asset = await this.assetModel.findOne({ publicId: publicId }).exec();
     if (!asset) {
-      throw new BadRequestException(`Asset with id '${id}' not found`);
+      throw new BadRequestException(`Asset with id '${publicId}' not found`);
     }
 
     // 1. Xóa ảnh cũ trên Cloudinary
-    await this.cloudinaryService.deleteImage(asset.publicId);
+    await this.cloudinaryService.deleteImage(publicId);
 
     // 2. Upload ảnh mới
     const uploadResult = await this.cloudinaryService.uploadImage(file, {
@@ -108,6 +108,10 @@ export class AdminService {
     asset.set({
       url: uploadResult.secure_url,
       publicId: uploadResult.public_id,
+      location: uploadResult.public_id.split('/')[0],
+      format: uploadResult.format.toLocaleUpperCase(),
+      file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
+      dimensions: `${uploadResult.width} x ${uploadResult.height}`,
     });
 
     await asset.save(); // Lưu lại thay đổi vào database

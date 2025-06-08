@@ -102,8 +102,6 @@ export class AccountService {
         public_id: `users/${userId}/AVATAR/${file.filename}`,
       });
 
-      console.log('Upload result:', uploadResult); // ✅ Log ra để kiểm tra thực tế
-
       if (!existingInfo) {
         // Nếu chưa có userInfo thì tạo mới asset và userInfo
         const asset = await this.assetModel.create({

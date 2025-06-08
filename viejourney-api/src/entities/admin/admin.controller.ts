@@ -33,8 +33,8 @@ export class AdminController {
     return this.adminService.getAssetsByType(type);
   }
   @Delete('assets/delete')
-  async deleteAssetById(@Query('publicId') publicId: string) {
-    return this.adminService.deleteAssetById(publicId);
+  async deleteAssetById(@Query('id') id: string) {
+    return this.adminService.deleteAssetById(id);
   }
 
   @Post('update-asset')
@@ -53,9 +53,9 @@ export class AdminController {
   )
   updateAsset(
     @UploadedFile() file: Express.Multer.File,
-    @Body('id') id: string,
+    @Body('publicId') publicId: string,
   ) {
-    return this.adminService.updateAssetById(id, file);
+    return this.adminService.updateAssetById(publicId, file);
   }
 
   // addAsset/banner
