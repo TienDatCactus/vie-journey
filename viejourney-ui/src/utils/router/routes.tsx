@@ -1,10 +1,10 @@
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import Accounts from "../../pages/(admin)/Accounts";
+import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
-import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
-import Accounts from "../../pages/(admin)/Accounts";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));

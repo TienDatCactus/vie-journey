@@ -23,19 +23,20 @@ import {
 import { useMap } from "@vis.gl/react-google-maps";
 import { motion } from "motion/react";
 import React, { useState } from "react";
-import { SearchPlacesControlProps } from "../types";
-import { usePlaceSearch } from "../../../services/contexts/PlaceSearchContext";
+import { SearchPlacesControlProps, AutocompleteOption } from "../types";
+import useMapPlaces from "../../../utils/hooks/useMapPlaces";
 
-const MapPlaceSearch: React.FC<SearchPlacesControlProps> = ({
+const MapPlacesSearch: React.FC<SearchPlacesControlProps> = ({
   onPlaceSelected,
   placeholder = "Search for places...",
 }) => {
   const mapInstance = useMap();
   const [isClicked, setIsClicked] = useState(false);
 
-  // Use the global place search context
+  // Define state for place types
+  const [primaryTypes, setPrimaryTypes] = useState<string[]>([]);
+  // Use the map places hook with proper debouncing
   const {
-    searchInput,
     options,
     isLoading,
     open,
@@ -44,31 +45,73 @@ const MapPlaceSearch: React.FC<SearchPlacesControlProps> = ({
     handleInputChange,
     resetSearch,
     handlePlaceSelect,
-    setPrimaryTypes,
-    primaryTypes,
-  } = usePlaceSearch();
-
+    inputValue,
+    getSuggestions,
+  } = useMapPlaces({
+    filterOptions: {
+      types: ["(regions)"],
+      includedPrimaryTypes: primaryTypes.length > 0 ? primaryTypes : undefined,
+      language: "en",
+    },
+    fetchPlaceDetails: true,
+    debounceTimeout: 500, // Longer debounce timeout
+    autoFetch: false, // Disable auto-fetch for more control
+    onPlaceSelect: (placeDetails) => {
+      if (onPlaceSelected && placeDetails?.place) {
+        onPlaceSelected(placeDetails.place);
+      }
+    },
+  });
   // Custom handler for this component to also handle map panning
-  const handlePlaceSelectWithMap = async (option: any) => {
+  const handlePlaceSelectWithMap = async (
+    option: AutocompleteOption | null
+  ) => {
     if (!option || !mapInstance) return;
 
     try {
-      const place = await handlePlaceSelect(option);
+      const placeDetails = await handlePlaceSelect(option);
 
       // Pan to the place location if map is available
-      if (place?.location) {
-        mapInstance.panTo(place.location);
+      if (placeDetails?.place?.location) {
+        mapInstance.panTo(placeDetails.place.location);
         mapInstance.setZoom(16);
       }
 
       // Call the callback if provided
-      if (onPlaceSelected && place) {
-        onPlaceSelected(place);
+      if (onPlaceSelected && placeDetails?.place) {
+        onPlaceSelected(placeDetails.place);
       }
     } catch (error) {
       console.error("Error in handlePlaceSelectWithMap:", error);
     }
   };
+
+  // Custom input change handler with proper debouncing
+  const handleInputChangeCustom = (
+    event: React.SyntheticEvent,
+    value: string
+  ) => {
+    // Update UI with new input value
+    handleInputChange(event, value);
+
+    // Only fetch suggestions when there's enough input
+    if (value && value.length >= 2) {
+      // Use the current primary types filter
+      getSuggestions(value, {
+        types: ["(regions)"],
+        includedPrimaryTypes:
+          primaryTypes.length > 0 ? primaryTypes : undefined,
+        language: "en",
+      });
+
+      // Show dropdown when we have input
+      setOpen(true);
+    } else {
+      // Hide dropdown when input is too short
+      setOpen(false);
+    }
+  };
+
   const placeTypes = [
     "parking",
     "shopping_mall",
@@ -119,11 +162,11 @@ const MapPlaceSearch: React.FC<SearchPlacesControlProps> = ({
             isOptionEqualToValue={(option, value) =>
               option.placeId === value.placeId
             }
-            noOptionsText={searchInput ? "No places found" : "Type to search"}
+            noOptionsText={inputValue ? "No places found" : "Type to search"}
             filterOptions={(x) => x}
             onChange={(_event, value) => handlePlaceSelectWithMap(value)}
-            onInputChange={handleInputChange}
-            inputValue={searchInput}
+            onInputChange={handleInputChangeCustom}
+            inputValue={inputValue}
             value={selectedOption}
             clearOnBlur={false}
             popupIcon={null}
@@ -150,7 +193,7 @@ const MapPlaceSearch: React.FC<SearchPlacesControlProps> = ({
                         <Clear
                           onClick={() => resetSearch()}
                           sx={{
-                            visibility: searchInput ? "visible" : "hidden",
+                            visibility: inputValue ? "visible" : "hidden",
                           }}
                         />
                       </IconButton>
@@ -276,4 +319,4 @@ const MapPlaceSearch: React.FC<SearchPlacesControlProps> = ({
   );
 };
 
-export default MapPlaceSearch;
+export default MapPlacesSearch;

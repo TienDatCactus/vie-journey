@@ -26,6 +26,7 @@ const TripMap: React.FC = () => {
         defaultZoom={13}
         containerStyle={{ width: "100%", height: "100%" }}
         onPOIClick={handlePOIClick}
+        enableCategorySearch={true}
       />
     </Box>
   );

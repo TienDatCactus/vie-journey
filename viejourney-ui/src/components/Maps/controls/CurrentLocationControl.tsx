@@ -93,7 +93,7 @@ const CurrentLocationControl: React.FC<CurrentLocationControlProps> = ({
     <Box
       sx={{
         position: "absolute",
-        bottom: 200,
+        bottom: 80,
         right: 10,
         zIndex: 5,
       }}

@@ -143,7 +143,12 @@ const POIDetails: React.FC<POIDetailsProps> = ({
             poi.photos.map((photo, index) => (
               <SwiperSlide key={index}>
                 <img
-                  src={photo.getURI()}
+                  src={
+                    photo.getURI() ||
+                    `https://placehold.co/600x400?text=${encodeURIComponent(
+                      poi.displayName || "Place"
+                    )}`
+                  }
                   loading="lazy"
                   onError={(e) => {
                     e.currentTarget.src = `https://placehold.co/600x400?text=Image+not+available`;

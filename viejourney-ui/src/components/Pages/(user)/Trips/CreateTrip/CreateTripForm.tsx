@@ -26,8 +26,8 @@ import {
 } from "@mui/material";
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
 import React, { useState } from "react";
-import { Form, useForm } from "react-hook-form";
-import usePlaces from "../../../../../utils/hooks/usePlaces";
+import { useForm } from "react-hook-form";
+import useMapPlaces from "../../../../../utils/hooks/useMapPlaces";
 
 // Define a type for the place suggestion
 interface PlaceSuggestion {
@@ -42,34 +42,48 @@ export const CreateTripForm: React.FC = () => {
   const [selectedPlace, setSelectedPlace] = useState<PlaceSuggestion | null>(
     null
   );
-  const [open, setOpen] = useState(false);
-
-  const { suggestions, isLoading, getSuggestions } = usePlaces();
-
-  const filterOptions = {
-    types: ["(regions)"], // This filters for administrative areas
-  };
-
-  // Handle input change for destination
+  const [open, setOpen] = useState(false); // Use the hook with proper debouncing configuration
+  const { suggestions, isLoading, handleInputChange, getSuggestions } =
+    useMapPlaces({
+      filterOptions: {
+        types: ["(regions)"], // This filters for administrative areas
+      },
+      initialValue: destination,
+      debounceTimeout: 500, // Longer debounce timeout to reduce API calls
+      autoFetch: false, // Disable auto-fetch to have more control
+    });
+  // Handle input change for destination with proper debouncing
   const handleDestinationChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const value = event.target.value;
     setDestination(value);
 
+    // Update the hook's internal state
+    handleInputChange({} as React.SyntheticEvent, value);
+
+    // Only fetch suggestions when there's enough input
     if (value.length >= 2) {
-      getSuggestions(value, filterOptions);
+      // Use the debounced getSuggestions function to fetch places
+      getSuggestions(value, {
+        types: ["(regions)"], // Filter for administrative areas
+      });
+
+      // Open dropdown when appropriate
+      setOpen(true);
+    } else {
+      setOpen(false);
     }
   };
-
   const handlePlaceSelect = (place: PlaceSuggestion | null) => {
     setSelectedPlace(place);
     if (place) {
       setDestination(place.mainText);
+      setOpen(false);
     }
   };
 
-  const { control } = useForm({
+  const { handleSubmit } = useForm({
     defaultValues: {
       destination: "",
       startDate: null,
@@ -77,8 +91,8 @@ export const CreateTripForm: React.FC = () => {
     },
   });
   return (
-    <Form
-      control={control}
+    <form
+      onSubmit={handleSubmit((data) => console.log(data))}
       className="w-full lg:col-span-4 gap-4 shadow-sm border border-neutral-400 rounded-2xl bg-white p-4"
     >
       <Stack direction={"row"} gap={1} marginBottom={2} alignItems={"center"}>
@@ -88,7 +102,7 @@ export const CreateTripForm: React.FC = () => {
       <FormControl className="w-full">
         <FormLabel className="text-sm font-semibold mb-1">
           Trip Title <span>(required)</span>
-        </FormLabel>
+        </FormLabel>{" "}
         <Autocomplete
           id="destination-autocomplete"
           open={open}
@@ -103,7 +117,7 @@ export const CreateTripForm: React.FC = () => {
           options={suggestions}
           loading={isLoading}
           value={selectedPlace}
-          onChange={(event, newValue) => handlePlaceSelect(newValue)}
+          onChange={(_, newValue) => handlePlaceSelect(newValue)}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -250,7 +264,7 @@ export const CreateTripForm: React.FC = () => {
           Write a travel blog instead
         </Button>
       </div>
-    </Form>
+    </form>
   );
 };
 

@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { AutocompleteOption } from "../../components/Maps/types";
-import usePlaces from "../../utils/hooks/usePlaces";
+import useMapPlaces from "../../utils/hooks/useMapPlaces";
 
 interface PlaceSearchContextType {
   searchInput: string;
@@ -48,7 +48,7 @@ export const PlaceSearchProvider: React.FC<PlaceSearchProviderProps> = ({
   const [selectedPlace, setSelectedPlace] =
     useState<google.maps.places.Place | null>(null);
   const [primaryTypes, setPrimaryTypes] = useState<string[] | null>([]);
-  const { suggestions, isLoading, resetSearch } = usePlaces({
+  const { suggestions, isLoading, resetSearch } = useMapPlaces({
     initialValue: searchInput,
     filterOptions: {
       language: "en",

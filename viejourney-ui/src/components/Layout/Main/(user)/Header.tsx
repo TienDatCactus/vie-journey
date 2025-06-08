@@ -39,6 +39,10 @@ export const headerNav: Array<{ name: string; link: string }> = [
     link: "/hotels",
   },
   {
+    name: "Map Search",
+    link: "/maps/search",
+  },
+  {
     name: "Profile",
     link: "/profile",
   },

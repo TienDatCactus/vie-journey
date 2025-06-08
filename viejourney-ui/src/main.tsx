@@ -59,7 +59,7 @@ root.render(
                   <APIProvider
                     apiKey={apiKey}
                     language="en"
-                    libraries={["places", "marker"]}
+                    libraries={["places", "marker", "geometry"]}
                   >
                     <PlaceSearchProvider>
                       <RouterProvider router={router} />

@@ -55,7 +55,7 @@ import {
 import { DatePicker, TimePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
 import React from "react";
-import { Form, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 const Reservation: React.FC = () => {
   const reservationItems = [
@@ -74,7 +74,7 @@ const Reservation: React.FC = () => {
     setAnchorEl(null);
   };
   const {
-    control,
+    handleSubmit,
     formState: { errors, isValidating },
     register,
   } = useForm();
@@ -252,7 +252,7 @@ const Reservation: React.FC = () => {
                 className="w-full flex rounded-xl bg-gray-50 border border-gray-200 flex-col p-2 px-4"
               >
                 <CardContent className="p-0 lg:py-1 gap-4 flex flex-col justify-between">
-                  <Form control={control}>
+                  <form onSubmit={handleSubmit((data) => console.log(data))}>
                     <Grid2
                       container
                       spacing={2}
@@ -476,7 +476,7 @@ const Reservation: React.FC = () => {
                         </FormControl>
                       </Grid2>
                     </Grid2>
-                  </Form>
+                  </form>
                 </CardContent>
               </Card>
               {/* Repeat Card for more notes */}

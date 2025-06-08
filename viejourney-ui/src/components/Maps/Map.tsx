@@ -10,9 +10,11 @@ import React, { useEffect } from "react";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
 import POIDetails from "./controls/POIDetails";
-import SearchPlacesControl from "./controls/MapPlaceSearch";
+import CategoryFilter from "./controls/CategoryFilter";
+import PlaceMarker from "./controls/PlaceMarker";
+import PlaceResults from "./controls/PlaceResults";
 import { MapProps, POIData } from "./types";
-import usePlaces from "../../utils/hooks/usePlaces";
+import { useMapPlaces } from "../../utils/hooks/useMapPlaces";
 
 // Map configuration component with POI click disabling
 const MapConfiguration: React.FC<{
@@ -191,18 +193,41 @@ const Map: React.FC<MapProps> = ({
   onError,
   children,
   showDetailsControl = true,
+  enableCategorySearch = false,
+  initialCenter,
   ...mapProps
 }) => {
-  // Use custom hooks for places and map loading
+  // Use our unified map places hook with the onPOIClick callback
   const {
+    // POI state and actions
     selectedPOI,
     highlightedPOI,
     isDrawerOpen,
-    handlePlaceSelect,
-    handlePOIClick,
-    toggleDrawer,
-  } = usePlaces({ onPOIClick });
+    handlePOIClick: internalHandlePOIClick,
+    handleCloseDrawer,
 
+    // Category search state and actions
+    selectedCategories,
+    categoryResults,
+    isSearching,
+    showResultsPanel,
+    setShowResultsPanel,
+    handleCategoryToggle,
+  } = useMapPlaces({
+    onPOIClick: onPOIClick,
+    searchRadius: 5000,
+    maxResults: 30,
+  });
+
+  // Create a POI click handler that calls both our internal handler and the prop
+  const handlePOIClick = (poi: POIData) => {
+    internalHandlePOIClick(poi);
+    if (onPOIClick) {
+      onPOIClick(poi);
+    }
+  };
+
+  // Map loading hook
   const { locationError, error, handleLocationFound, handleLocationError } =
     useMapLoader({ onLoad, onError });
 
@@ -231,20 +256,8 @@ const Map: React.FC<MapProps> = ({
           {...mapProps}
           style={containerStyle}
           mapId={import.meta.env.VITE_GOOGLE_MAPS_ID}
+          center={initialCenter}
         >
-          {showDetailsControl && (
-            <SearchPlacesControl
-              onPlaceSelected={(place) => {
-                if (place) {
-                  handlePlaceSelect({
-                    placeId: place.id || "",
-                    primaryText: place.displayName || "",
-                  });
-                }
-              }}
-              width={350}
-            />
-          )}
           <CurrentLocationControl
             onLocationFound={handleLocationFound}
             onLocationError={handleLocationError}
@@ -254,9 +267,32 @@ const Map: React.FC<MapProps> = ({
             onClick={onMapClick}
             onPOIClick={handlePOIClick}
           />
+          {/* Add category search UI when enabled */}
+          {enableCategorySearch && (
+            <>
+              <CategoryFilter
+                selectedCategories={selectedCategories}
+                onCategoryToggle={handleCategoryToggle}
+                isSearching={isSearching}
+              />{" "}
+              {/* Display search results as markers */}
+              {categoryResults && categoryResults.length > 0 && (
+                <>
+                  {categoryResults.map((place) => (
+                    <PlaceMarker
+                      key={place.id}
+                      place={place}
+                      onClick={handlePOIClick}
+                      isSelected={selectedPOI?.id === place.id}
+                    />
+                  ))}
+                </>
+              )}
+            </>
+          )}
 
           {/* If we have a highlighted POI, show a custom marker */}
-          {highlightedPOI && selectedPOI?.location && (
+          {highlightedPOI && selectedPOI?.location && !enableCategorySearch && (
             <AdvancedMarker
               position={selectedPOI.location}
               title={selectedPOI.displayName}
@@ -320,14 +356,24 @@ const Map: React.FC<MapProps> = ({
             {error.message || "Please check your API key and try again."}
           </Typography>
         </Box>
-      )} */}
+      )} */}{" "}
       {/* POI Details Drawer */}
       {isDrawerOpen && (
         <div className="bg-neutral-50 absolute lg:bottom-2 w-[96%] translate-x-[-50%] left-1/2 rounded-xl h-2/3 z-50 shadow-lg">
           {selectedPOI && (
-            <POIDetails poi={selectedPOI} onClose={toggleDrawer(false)} />
+            <POIDetails poi={selectedPOI} onClose={handleCloseDrawer} />
           )}
         </div>
+      )}
+      {/* Category search results panel */}
+      {enableCategorySearch && (
+        <PlaceResults
+          places={categoryResults || []}
+          isLoading={isSearching}
+          onResultClick={handlePOIClick}
+          onClose={() => setShowResultsPanel(false)}
+          open={showResultsPanel && selectedCategories.length > 0}
+        />
       )}
     </Box>
   );

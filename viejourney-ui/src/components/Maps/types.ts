@@ -25,4 +25,7 @@ export interface MapProps extends Omit<GoogleMapProps, "style"> {
   onError?: (error: Error) => void;
   children?: ReactNode;
   showDetailsControl?: boolean;
+  enableCategorySearch?: boolean;
+  initialCenter?: google.maps.LatLngLiteral;
+  initialZoom?: number;
 }
