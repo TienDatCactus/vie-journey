@@ -23,10 +23,11 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { ACCOUNTS } from "../../../services/api/url";
-import { useState } from "react";
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
+import EditAccountDialog from "./EditAccountDialog";
 
 const tabList = ["Overview", "Activity"];
 
@@ -159,6 +160,11 @@ const AccountDetail = () => {
   const [tab, setTab] = React.useState(0);
   const [user, setUser] = useState<Record<string, any> | null>(null);
   const { id } = useParams();
+  const [openDelete, setOpenDelete] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [loadingEdit, setLoadingEdit] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAccountDetail = async () => {
@@ -177,6 +183,50 @@ const AccountDetail = () => {
     };
     fetchAccountDetail();
   }, [id]);
+
+  const handleDelete = async () => {
+    if (!id) return;
+    setLoadingDelete(true);
+    try {
+      await axios.delete(
+        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
+        { withCredentials: true }
+      );
+      setLoadingDelete(false);
+      setOpenDelete(false);
+      navigate("/admin/accounts");
+    } catch (err) {
+      setLoadingDelete(false);
+    }
+  };
+
+  const handleEdit = async (data: {
+    fullName: string;
+    dob: string;
+    phone: string;
+    address: string;
+  }) => {
+    if (!id) return;
+    setLoadingEdit(true);
+    try {
+      await axios.patch(
+        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
+        data,
+        { withCredentials: true }
+      );
+      setLoadingEdit(false);
+      setOpenEdit(false);
+      // Reload lại user
+      const res = await axios.get(
+        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
+        { withCredentials: true }
+      );
+      const updated = res.data?.data || res.data || null;
+      setUser(updated);
+    } catch (err) {
+      setLoadingEdit(false);
+    }
+  };
 
   return (
     <AdminLayout>
@@ -233,10 +283,15 @@ const AccountDetail = () => {
                   color="error"
                   startIcon={<DeleteIcon />}
                   fullWidth
+                  onClick={() => setOpenDelete(true)}
                 >
                   Delete
                 </Button>
-                <Button variant="contained" fullWidth>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => setOpenEdit(true)}
+                >
                   Edit Profile
                 </Button>
               </Stack>
@@ -412,6 +467,20 @@ const AccountDetail = () => {
             </Paper>
           </Grid>
         </Grid>
+        <ConfirmDeleteDialog
+          open={openDelete}
+          onClose={() => setOpenDelete(false)}
+          onConfirm={handleDelete}
+          loading={loadingDelete}
+          userName={user?.fullName}
+        />
+        <EditAccountDialog
+          open={openEdit}
+          onClose={() => setOpenEdit(false)}
+          onSave={handleEdit}
+          loading={loadingEdit}
+          user={user}
+        />
       </Box>
     </AdminLayout>
   );

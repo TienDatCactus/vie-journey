@@ -19,4 +19,5 @@ export const USER = {
 
 export const ACCOUNTS = {
   GET_ACCOUNTS: "/admin/userInfo/",
+  PAGINATE_ACCOUNTS: "/admin/userInfo/paginate",
 };
