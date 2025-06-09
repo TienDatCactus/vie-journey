@@ -25,64 +25,39 @@ import {
   TextField,
 } from "@mui/material";
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
-import useMapPlaces from "../../../../../utils/hooks/useMapPlaces";
-
-// Define a type for the place suggestion
-interface PlaceSuggestion {
-  placeId: string;
-  mainText: string;
-  secondaryText: string;
-  types: string[];
-}
+import { useAutocompleteSuggestions } from "../../../../../utils/hooks/use-autocomplete-suggestion";
 
 export const CreateTripForm: React.FC = () => {
   const [destination, setDestination] = useState<string>("");
-  const [selectedPlace, setSelectedPlace] = useState<PlaceSuggestion | null>(
-    null
-  );
+  const [selectedPlace, setSelectedPlace] = useState<{
+    placePrediction: google.maps.places.PlacePrediction;
+  } | null>(null);
   const [open, setOpen] = useState(false); // Use the hook with proper debouncing configuration
-  const { suggestions, isLoading, handleInputChange, getSuggestions } =
-    useMapPlaces({
-      filterOptions: {
-        types: ["(regions)"], // This filters for administrative areas
-      },
-      initialValue: destination,
-      debounceTimeout: 500, // Longer debounce timeout to reduce API calls
-      autoFetch: false, // Disable auto-fetch to have more control
-    });
+  const { suggestions, isLoading } = useAutocompleteSuggestions(destination, {
+    includedPrimaryTypes: ["(regions)"],
+  });
   // Handle input change for destination with proper debouncing
-  const handleDestinationChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+  const handleInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = event.target.value;
+      setDestination(value);
+    },
+    []
+  );
+  const handlePlaceSelect = (
+    suggestion: {
+      placePrediction: google.maps.places.PlacePrediction | null;
+    } | null
   ) => {
-    const value = event.target.value;
-    setDestination(value);
-
-    // Update the hook's internal state
-    handleInputChange({} as React.SyntheticEvent, value);
-
-    // Only fetch suggestions when there's enough input
-    if (value.length >= 2) {
-      // Use the debounced getSuggestions function to fetch places
-      getSuggestions(value, {
-        types: ["(regions)"], // Filter for administrative areas
-      });
-
-      // Open dropdown when appropriate
-      setOpen(true);
-    } else {
+    // Only set selected place if placePrediction is not null
+    if (suggestion?.placePrediction) {
+      setSelectedPlace({ placePrediction: suggestion.placePrediction });
+      setDestination(suggestion.placePrediction.mainText + "");
       setOpen(false);
     }
   };
-  const handlePlaceSelect = (place: PlaceSuggestion | null) => {
-    setSelectedPlace(place);
-    if (place) {
-      setDestination(place.mainText);
-      setOpen(false);
-    }
-  };
-
   const { handleSubmit } = useForm({
     defaultValues: {
       destination: "",
@@ -111,9 +86,9 @@ export const CreateTripForm: React.FC = () => {
           }}
           onClose={() => setOpen(false)}
           isOptionEqualToValue={(option, value) =>
-            option.placeId === value.placeId
+            option.placePrediction?.placeId === value.placePrediction?.placeId
           }
-          getOptionLabel={(option) => option.mainText}
+          getOptionLabel={(option) => option.placePrediction?.mainText + ""}
           options={suggestions}
           loading={isLoading}
           value={selectedPlace}
@@ -127,7 +102,7 @@ export const CreateTripForm: React.FC = () => {
               placeholder="e.g Ta xua, Sapa, Da Nang"
               variant="outlined"
               value={destination}
-              onChange={handleDestinationChange}
+              onChange={handleInputChange}
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (
@@ -147,11 +122,15 @@ export const CreateTripForm: React.FC = () => {
             />
           )}
           renderOption={(props, option) => (
-            <li {...props} key={option.placeId}>
+            <li {...props} key={option.placePrediction?.placeId}>
               <Stack>
-                <div className="font-medium">{option.mainText}</div>
+                <div className="font-medium">
+                  {option?.placePrediction?.mainText + ""}
+                </div>
                 <div className="text-sm text-gray-500">
-                  {option.secondaryText}
+                  {option.placePrediction?.secondaryText != null
+                    ? option.placePrediction?.secondaryText + ""
+                    : option.placePrediction?.text + ""}
                 </div>
               </Stack>
             </li>

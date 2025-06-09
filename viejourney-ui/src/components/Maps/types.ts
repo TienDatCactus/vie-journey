@@ -20,12 +20,12 @@ export interface MapProps extends Omit<GoogleMapProps, "style"> {
   containerStyle?: React.CSSProperties;
   showMapTypeControl?: boolean;
   onMapClick?: (event: google.maps.MapMouseEvent) => void;
-  onPOIClick?: (poiData: POIData) => void;
   onLoad?: () => void;
   onError?: (error: Error) => void;
   children?: ReactNode;
   showDetailsControl?: boolean;
-  enableCategorySearch?: boolean;
+  detailed?: boolean;
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
+  position: "relative" | "absolute" | "fixed" | "sticky" | "static";
 }

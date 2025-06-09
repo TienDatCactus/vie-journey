@@ -1,20 +1,21 @@
-import { Box, Typography } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import {
   AdvancedMarker,
   Map as GoogleMap,
   Pin,
+  useApiIsLoaded,
   useMap,
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
 import React, { useEffect } from "react";
+import useCategorySearch from "../../utils/hooks/use-category-search";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
+import usePOI from "../../utils/hooks/use-poi";
+import { PlaceMarker } from "./controls";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
+import GeneralFilter from "./controls/GeneralFilter";
 import POIDetails from "./controls/POIDetails";
-import CategoryFilter from "./controls/CategoryFilter";
-import PlaceMarker from "./controls/PlaceMarker";
-import PlaceResults from "./controls/PlaceResults";
 import { MapProps, POIData } from "./types";
-import { useMapPlaces } from "../../utils/hooks/useMapPlaces";
 
 // Map configuration component with POI click disabling
 const MapConfiguration: React.FC<{
@@ -109,51 +110,6 @@ const MapConfiguration: React.FC<{
             })
             .then((result) => {
               if (result && onPOIClick) {
-                // Transform the data to match your POIData interface
-                // const poiData: POIData = {
-                //   id: result.place.id,
-                //   displayName: result.place.displayName || "",
-                //   location: result.place.location,
-                //   formattedAddress: result.place.formattedAddress,
-                //   types: result.place.types || [],
-                //   photos: result.place.photos || [],
-                //   rating: result.place.rating,
-                //   userRatingCount: result.place.userRatingCount,
-                //   priceLevel: result.place.priceLevel,
-                //   websiteURI: result.place.websiteURI,
-                //   nationalPhoneNumber: result.place.nationalPhoneNumber || "",
-                //   internationalPhoneNumber:
-                //     result.place.internationalPhoneNumber || "",
-                //   businessStatus: result.place.businessStatus,
-                //   editorialSummary: result.place.editorialSummary,
-                //   googleMapsURI: result.place.googleMapsURI,
-                //   // Additional amenities
-                //   isReservable: result.place.isReservable,
-                //   hasOutdoorSeating: result.place.hasOutdoorSeating,
-                //   servesFood: {
-                //     vegetarian: result.place.servesVegetarianFood || false,
-                //     breakfast: result.place.servesBreakfast || false,
-                //     brunch: result.place.servesBrunch || false,
-                //     lunch: result.place.servesLunch || false,
-                //     dinner: result.place.servesDinner || false,
-                //     dessert: result.place.servesDessert || false,
-                //   },
-                //   servesDrinks: {
-                //     beer: result.place.servesBeer || false,
-                //     wine: result.place.servesWine || false,
-                //     cocktails: result.place.servesCocktails || false,
-                //     coffee: result.place.servesCoffee || false,
-                //   },
-                //   hasTakeout: result.place.hasTakeout || false,
-                //   hasDelivery: result.place.hasDelivery || false,
-                //   accessibilityOptions: result.place.accessibilityOptions,
-                //   reviews: result.place.reviews || [],
-                //   allowsDogs: result.place.allowsDogs || false,
-                //   hasWiFi: result.place.hasWiFi || false,
-                //   isGoodForChildren: result.place.isGoodForChildren || false,
-                //   isGoodForGroups: result.place.isGoodForGroups || false,
-
-                // };
                 onPOIClick(result.place as POIData);
               }
             })
@@ -188,52 +144,38 @@ const Map: React.FC<MapProps> = ({
   containerStyle = { width: "100vw", height: "100vh" },
   showMapTypeControl = true,
   onMapClick,
-  onPOIClick,
   onLoad,
   onError,
   children,
   showDetailsControl = true,
-  enableCategorySearch = false,
+  detailed = true,
   initialCenter,
+  position = "relative",
   ...mapProps
 }) => {
-  // Use our unified map places hook with the onPOIClick callback
+  const isApiLoaded = useApiIsLoaded();
   const {
-    // POI state and actions
-    selectedPOI,
-    highlightedPOI,
-    isDrawerOpen,
-    handlePOIClick: internalHandlePOIClick,
-    handleCloseDrawer,
-
-    // Category search state and actions
     selectedCategories,
     categoryResults,
     isSearching,
     showResultsPanel,
     setShowResultsPanel,
     handleCategoryToggle,
-  } = useMapPlaces({
-    onPOIClick: onPOIClick,
-    searchRadius: 5000,
-    maxResults: 30,
-  });
+  } = useCategorySearch({});
 
-  // Create a POI click handler that calls both our internal handler and the prop
-  const handlePOIClick = (poi: POIData) => {
-    internalHandlePOIClick(poi);
-    if (onPOIClick) {
-      onPOIClick(poi);
-    }
-  };
+  const {
+    selectedPOI,
+    highlightedPOI,
+    isDrawerOpen,
+    handleCloseDrawer,
+    handlePOIClick,
+  } = usePOI();
 
-  // Map loading hook
   const { locationError, error, handleLocationFound, handleLocationError } =
     useMapLoader({ onLoad, onError });
 
-  // Since APIProvider is now in the app root, we don't need to wrap again
   return (
-    <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
+    <Box sx={{ position: position, width: "100%", height: "100%" }}>
       {locationError && (
         <Box
           sx={{
@@ -251,7 +193,7 @@ const Map: React.FC<MapProps> = ({
           <Typography variant="body2">{locationError}</Typography>
         </Box>
       )}
-      {!error && (
+      {!error && isApiLoaded && (
         <GoogleMap
           {...mapProps}
           style={containerStyle}
@@ -268,14 +210,12 @@ const Map: React.FC<MapProps> = ({
             onPOIClick={handlePOIClick}
           />
           {/* Add category search UI when enabled */}
-          {enableCategorySearch && (
+          {detailed && (
             <>
-              <CategoryFilter
+              <GeneralFilter
                 selectedCategories={selectedCategories}
                 onCategoryToggle={handleCategoryToggle}
-                isSearching={isSearching}
-              />{" "}
-              {/* Display search results as markers */}
+              />
               {categoryResults && categoryResults.length > 0 && (
                 <>
                   {categoryResults.map((place) => (
@@ -292,7 +232,7 @@ const Map: React.FC<MapProps> = ({
           )}
 
           {/* If we have a highlighted POI, show a custom marker */}
-          {highlightedPOI && selectedPOI?.location && !enableCategorySearch && (
+          {highlightedPOI && selectedPOI?.location && (
             <AdvancedMarker
               position={selectedPOI.location}
               title={selectedPOI.displayName}
@@ -313,8 +253,7 @@ const Map: React.FC<MapProps> = ({
           {children}
         </GoogleMap>
       )}
-      {/* Loading indicator */}
-      {/* {loading && (
+      {!isApiLoaded && (
         <Box
           sx={{
             position: "absolute",
@@ -331,49 +270,15 @@ const Map: React.FC<MapProps> = ({
         >
           <CircularProgress />
         </Box>
-      )} */}
-      {/* Error display */}
-      {/* {error && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#f5f5f5",
-            padding: 3,
-          }}
-        >
-          <Typography variant="h6" color="error" gutterBottom>
-            Failed to load Google Maps
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {error.message || "Please check your API key and try again."}
-          </Typography>
-        </Box>
-      )} */}{" "}
+      )}
+
       {/* POI Details Drawer */}
-      {isDrawerOpen && (
+      {detailed && isDrawerOpen && (
         <div className="bg-neutral-50 absolute lg:bottom-2 w-[96%] translate-x-[-50%] left-1/2 rounded-xl h-2/3 z-50 shadow-lg">
           {selectedPOI && (
             <POIDetails poi={selectedPOI} onClose={handleCloseDrawer} />
           )}
         </div>
-      )}
-      {/* Category search results panel */}
-      {enableCategorySearch && (
-        <PlaceResults
-          places={categoryResults || []}
-          isLoading={isSearching}
-          onResultClick={handlePOIClick}
-          onClose={() => setShowResultsPanel(false)}
-          open={showResultsPanel && selectedCategories.length > 0}
-        />
       )}
     </Box>
   );

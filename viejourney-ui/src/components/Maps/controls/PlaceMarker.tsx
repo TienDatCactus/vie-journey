@@ -5,7 +5,7 @@ import {
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps";
 import { POIData } from "../types";
-import { PLACE_CATEGORIES, CategoryType } from "./CategoryFilter";
+import { PLACE_CATEGORIES, CategoryType } from "./GeneralFilter";
 
 interface PlaceMarkerProps {
   place: POIData;

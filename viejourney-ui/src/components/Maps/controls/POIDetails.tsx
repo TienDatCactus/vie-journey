@@ -25,8 +25,8 @@ import {
 import React, { useState } from "react";
 import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { POIData } from "../types";
 import { motion } from "motion/react";
+import { POIData } from "../../../utils/interfaces";
 
 interface POIDetailsProps {
   poi: POIData;

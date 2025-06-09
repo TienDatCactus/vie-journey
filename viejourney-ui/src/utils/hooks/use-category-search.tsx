@@ -1,21 +1,11 @@
-import { useState, useCallback, useRef, useEffect } from "react";
 import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
-import { POIData, AutocompleteOption } from "../../components/Maps/types";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CategoryType,
   PLACE_CATEGORIES,
-} from "../../components/Maps/controls/CategoryFilter";
-
-export interface PlaceSuggestion {
-  placeId: string;
-  mainText: string;
-  secondaryText: string;
-  types: string[];
-}
-
-export interface PlaceDetails extends AutocompleteOption {
-  place?: google.maps.places.Place;
-}
+} from "../../components/Maps/controls/GeneralFilter";
+import { POIData } from "../../components/Maps/types";
+import { PlaceDetails } from "./use-poi";
 
 export interface FilterOptions {
   types?: string[];
@@ -26,7 +16,7 @@ export interface FilterOptions {
   includedPrimaryTypes?: string[];
 }
 
-export interface UseMapPlacesOptions {
+export interface UseCategorySearchOptions {
   /** Optional callback when a POI is clicked */
   onPOIClick?: (poiData: POIData) => void;
 
@@ -50,65 +40,20 @@ export interface UseMapPlacesOptions {
 
   /** Maximum number of results */
   maxResults?: number;
-
-  /** Whether to automatically fetch suggestions when input changes */
-  autoFetch?: boolean;
-
-  /** Debounce timeout in milliseconds */
-  debounceTimeout?: number;
 }
 
 /**
  * A unified hook that combines places autocomplete, nearby search, and category-based search
  */
-export const useMapPlaces = ({
-  onPOIClick,
-  onPlaceSelect,
-  initialValue = "",
-  filterOptions = {
-    types: ["(regions)"],
-    language: "en",
-  },
-  fetchPlaceDetails = false,
-  placeFields = [
-    "id",
-    "displayName",
-    "location",
-    "viewport",
-    "formattedAddress",
-    "types",
-    "photos",
-    "rating",
-    "userRatingCount",
-    "priceLevel",
-  ],
-  searchRadius = 5000,
+export const useCategorySearch = ({
   maxResults = 20,
-  autoFetch = true,
-  debounceTimeout = 300,
-}: UseMapPlacesOptions = {}) => {
+  searchRadius = 5000, // Default radius for nearby search
+}: UseCategorySearchOptions = {}) => {
   // Map instance and libraries
   const mapInstance = useMap();
   const placesLib = useMapsLibrary("places");
 
   // ===== STATE =====
-
-  // Autocomplete state
-  const [inputValue, setInputValue] = useState<string>(initialValue);
-  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [open, setOpen] = useState<boolean>(false);
-  const [options, setOptions] = useState<AutocompleteOption[]>([]);
-  const [selectedOption, setSelectedOption] =
-    useState<AutocompleteOption | null>(null);
-  const [selectedPlaceDetails, setSelectedPlaceDetails] =
-    useState<PlaceDetails | null>(null);
-
-  // POI state
-  const [selectedPOI, setSelectedPOI] = useState<POIData | null>(null);
-  const [highlightedPOI, setHighlightedPOI] = useState<string | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
   // Category search state
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [categoryResults, setCategoryResults] = useState<POIData[]>([]);
@@ -131,7 +76,6 @@ export const useMapPlaces = ({
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
 
   // For debouncing
-  const debounceTimerRef = useRef<number | null>(null);
 
   // ===== INITIALIZATION =====
   // Initialize Places Service
@@ -185,214 +129,6 @@ export const useMapPlaces = ({
       );
     }
   }, [mapInstance, placesLib]);
-
-  // ===== AUTOCOMPLETE FUNCTIONS =====
-
-  // Function to fetch place suggestions with the Places API
-  const fetchSuggestions = useCallback(
-    async (input: string, options?: FilterOptions) => {
-      if (
-        !placesLib ||
-        !sessionTokenRef.current ||
-        !input ||
-        input.length < 2
-      ) {
-        return;
-      }
-
-      setIsLoading(true);
-
-      try {
-        const { AutocompleteSuggestion } = placesLib;
-
-        const request: google.maps.places.AutocompleteRequest = {
-          input,
-          sessionToken: sessionTokenRef.current,
-          ...(options || filterOptions),
-        };
-
-        const response =
-          await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-
-        if (response.suggestions?.length) {
-          // Process suggestions into options
-          const newOptions: AutocompleteOption[] = response.suggestions
-            .filter(
-              ({ placePrediction }: any) =>
-                placePrediction?.placeId && placePrediction?.text?.text
-            )
-            .map(({ placePrediction }: any) => ({
-              placeId: placePrediction?.placeId!,
-              primaryText: placePrediction?.text?.text!,
-              secondaryText: placePrediction?.secondaryText?.text || "",
-            }));
-
-          setOptions(newOptions);
-
-          // Also transform into our PlaceSuggestion format for consistency with previous implementation
-          const formattedSuggestions: PlaceSuggestion[] = newOptions.map(
-            (option) => ({
-              placeId: option.placeId,
-              mainText: option.primaryText,
-              secondaryText: option.secondaryText || "",
-              types: [], // Note: types may not be available in the same way from AutocompleteSuggestion
-            })
-          );
-
-          setSuggestions(formattedSuggestions);
-        } else {
-          setOptions([]);
-          setSuggestions([]);
-        }
-      } catch (error) {
-        console.error("Error fetching place suggestions:", error);
-        setOptions([]);
-        setSuggestions([]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [placesLib, filterOptions]
-  );
-
-  // Debounced version of fetchSuggestions that can be exported
-  const getSuggestions = useCallback(
-    (input: string, options?: FilterOptions) => {
-      if (debounceTimerRef.current !== null) {
-        window.clearTimeout(debounceTimerRef.current);
-      }
-
-      debounceTimerRef.current = window.setTimeout(() => {
-        fetchSuggestions(input, options);
-      }, debounceTimeout);
-    },
-    [fetchSuggestions, debounceTimeout]
-  );
-
-  // Auto-fetch suggestions when input changes (if enabled)
-  useEffect(() => {
-    // Skip if autoFetch is disabled
-    if (!autoFetch) return;
-
-    // Skip if input is too short
-    if (!inputValue || inputValue.length < 2) return;
-
-    // Use getSuggestions with debouncing
-    getSuggestions(inputValue);
-
-    // Cleanup function
-    return () => {
-      if (debounceTimerRef.current !== null) {
-        window.clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = null;
-      }
-    };
-  }, [inputValue, autoFetch, getSuggestions]);
-
-  // Reset suggestions and create a new session token
-  const resetSearch = useCallback(() => {
-    setSuggestions([]);
-    setOptions([]);
-    setSelectedOption(null);
-    setSelectedPlaceDetails(null);
-    setInputValue("");
-
-    // Reset the session token
-    if (placesLib) {
-      const { AutocompleteSessionToken } = placesLib;
-      sessionTokenRef.current = new AutocompleteSessionToken();
-    }
-
-    // Clear any pending debounce timer
-    if (debounceTimerRef.current !== null) {
-      window.clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
-  }, [placesLib]);
-  // Handle input change with debouncing
-  const handleInputChange = useCallback(
-    (_event: React.SyntheticEvent, value: string) => {
-      setInputValue(value);
-
-      if (selectedOption && value !== selectedOption.primaryText) {
-        setSelectedOption(null);
-        setSelectedPlaceDetails(null);
-      }
-
-      // Clear any existing debounce timer
-      if (debounceTimerRef.current !== null) {
-        window.clearTimeout(debounceTimerRef.current);
-      }
-
-      if (value.length >= 2) {
-        setOpen(true);
-        // No need to call anything here - the useEffect that depends on inputValue will handle it
-      } else {
-        setOpen(false);
-      }
-    },
-    [selectedOption]
-  );
-
-  // Handle place selection
-  const handlePlaceSelect = useCallback(
-    async (option: AutocompleteOption | null) => {
-      setSelectedOption(option);
-
-      let placeDetails: PlaceDetails | null = null;
-
-      if (!option) {
-        setSelectedPlaceDetails(null);
-        onPlaceSelect?.(null);
-        return null;
-      }
-
-      placeDetails = { ...option };
-      setInputValue(option.primaryText);
-
-      if (fetchPlaceDetails && option && placesLib) {
-        try {
-          const { Place } = placesLib;
-          const placeInstance = new Place({
-            id: option.placeId,
-          });
-
-          // Fetch detailed place information
-          const result = await placeInstance.fetchFields({
-            fields: placeFields,
-          });
-
-          placeDetails = {
-            ...option,
-            place: result.place,
-          };
-
-          setSelectedPlaceDetails(placeDetails);
-
-          // Also set as selected POI
-          setSelectedPOI(result.place);
-          setHighlightedPOI(result.place.id);
-
-          if (onPOIClick) {
-            onPOIClick(result.place);
-          }
-        } catch (error) {
-          console.error("Error fetching place details:", error);
-        }
-      } else {
-        setSelectedPlaceDetails(placeDetails);
-      }
-
-      onPlaceSelect?.(placeDetails); // Reset the session token after a selection is made
-      if (placesLib) {
-        const { AutocompleteSessionToken } = placesLib;
-        sessionTokenRef.current = new AutocompleteSessionToken();
-      }
-
-      return placeDetails;
-    },
-    [fetchPlaceDetails, placesLib, placeFields, onPlaceSelect, onPOIClick]
-  );
 
   // ===== CATEGORY SEARCH FUNCTIONS =====
 
@@ -623,66 +359,7 @@ export const useMapPlaces = ({
     setNearbyError(null);
   }, []);
 
-  // ===== POI INTERACTION FUNCTIONS =====
-
-  // Handle POI click from any source (search or map click)
-  const handlePOIClick = useCallback(
-    (poiData: POIData) => {
-      setSelectedPOI(poiData);
-      setHighlightedPOI(poiData.id);
-      setIsDrawerOpen(true);
-
-      if (onPOIClick) {
-        onPOIClick(poiData);
-      }
-    },
-    [onPOIClick]
-  );
-
-  // Close the POI drawer
-  const handleCloseDrawer = useCallback(() => {
-    setIsDrawerOpen(false);
-    setTimeout(() => {
-      setHighlightedPOI(null);
-      // Optionally clear selectedPOI after animation completes
-      // setSelectedPOI(null);
-    }, 300);
-  }, []);
-
-  // Toggle the drawer open state
-  const toggleDrawer = useCallback(
-    (newOpen: boolean) => () => {
-      setIsDrawerOpen(newOpen);
-      if (!newOpen) {
-        setTimeout(() => {
-          setHighlightedPOI(null);
-        }, 300);
-      }
-    },
-    []
-  );
-
   return {
-    // Map instance
-    mapInstance,
-
-    // Autocomplete state
-    inputValue,
-    setInputValue,
-    suggestions,
-    options,
-    selectedOption,
-    setSelectedOption,
-    isLoading,
-    open,
-    setOpen,
-    selectedPlaceDetails,
-
-    // POI state
-    selectedPOI,
-    highlightedPOI,
-    isDrawerOpen,
-
     // Category search state
     selectedCategories,
     categoryResults,
@@ -695,17 +372,6 @@ export const useMapPlaces = ({
     nearbyPlaces,
     nearbyError,
 
-    // Autocomplete actions
-    handleInputChange,
-    handlePlaceSelect,
-    resetSearch,
-    getSuggestions,
-
-    // POI actions
-    handlePOIClick,
-    handleCloseDrawer,
-    toggleDrawer,
-
     // Category search actions
     handleCategoryToggle,
     searchPlacesInBounds,
@@ -714,12 +380,8 @@ export const useMapPlaces = ({
     searchPlacesByType,
     clearResults,
 
-    // Direct setters for state management
-    setSelectedPOI,
-    setHighlightedPOI,
-    setIsDrawerOpen,
     setSelectedCategories,
   };
 };
 
-export default useMapPlaces;
+export default useCategorySearch;

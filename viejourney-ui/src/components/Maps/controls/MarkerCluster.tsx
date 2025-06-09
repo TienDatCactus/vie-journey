@@ -19,11 +19,7 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
 
   // Delay rendering markers slightly for better performance
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
+    setIsVisible(true);
   }, [places]);
 
   // If there are too many markers, only render the ones in the current view

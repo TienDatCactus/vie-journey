@@ -12,7 +12,6 @@ interface CurrentLocationControlProps {
 const CurrentLocationControl: React.FC<CurrentLocationControlProps> = ({
   zoomLevel = 15,
   onLocationFound,
-  onLocationError,
 }) => {
   const mapInstance = useMap(); // Direct map instance
   const [loading, setLoading] = useState(false);
@@ -77,9 +76,6 @@ const CurrentLocationControl: React.FC<CurrentLocationControlProps> = ({
         console.error("Error getting current location:", error);
         setError(`Unable to get your location: ${error.message}`);
         setLoading(false);
-        if (onLocationError) {
-          onLocationError(error);
-        }
       },
       {
         enableHighAccuracy: true,
