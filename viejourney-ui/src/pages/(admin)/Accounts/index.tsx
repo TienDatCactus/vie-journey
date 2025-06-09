@@ -66,6 +66,7 @@ function Accounts() {
       const payload = {
         page: params?.page || page,
         pageSize: params?.pageSize || pageSize,
+        search: params?.search || search,
       };
       const res = await axios.post(
         import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.PAGINATE_ACCOUNTS,
@@ -83,23 +84,9 @@ function Accounts() {
   };
 
   useEffect(() => {
-    fetchAccounts({ page: 1, pageSize });
-    // eslint-disable-next-line
-  }, [pageSize]);
-
-  useEffect(() => {
     fetchAccounts({ page, pageSize });
     // eslint-disable-next-line
-  }, [page]);
-
-  // Khi search thay đổi
-  useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      fetchAccounts({ page: 1, pageSize });
-    }, 400);
-    return () => clearTimeout(delayDebounce);
-    // eslint-disable-next-line
-  }, [pageSize]);
+  }, [page, pageSize]);
 
   const handleMenuOpen = (
     index: number,

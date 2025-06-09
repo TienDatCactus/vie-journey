@@ -34,7 +34,7 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={loading}>
-          Hủy
+          Cancel
         </Button>
         <Button
           onClick={onConfirm}
@@ -43,7 +43,7 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
           disabled={loading}
           startIcon={loading ? <CircularProgress size={18} /> : null}
         >
-          Xóa
+          Delete
         </Button>
       </DialogActions>
     </Dialog>
