@@ -5,20 +5,19 @@ import { AccountController } from './account.controller';
 import { AccountService } from './account.service';
 import { Account } from './entities/account.entity';
 import { AuthModule } from '../auth/auth.module';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 import { UserInfosSchema } from 'src/common/db/userinfo.schema';
 import { UserInfos } from './entities/userInfos.entity';
 import { Asset } from './entities/asset.entity';
 import { AssetSchema } from 'src/common/db/asset.schema';
 
-
 @Module({
   imports: [
-MongooseModule.forFeature([
-  { name: Account.name, schema: AccountSchema },
-  { name: UserInfos.name, schema: UserInfosSchema },
-  { name: Asset.name, schema: AssetSchema },
-]),
+    MongooseModule.forFeature([
+      { name: Account.name, schema: AccountSchema },
+      { name: UserInfos.name, schema: UserInfosSchema },
+      { name: Asset.name, schema: AssetSchema },
+    ]),
     forwardRef(() => AuthModule), // Use forwardRef to avoid circular dependency
     CloudinaryModule,
   ],

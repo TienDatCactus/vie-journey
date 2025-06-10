@@ -5,7 +5,7 @@ import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account } from './entities/account.entity';
 import { UserInfos } from './entities/userInfos.entity';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { EditProfileDto } from './dto/editProfile.dto';
 import { Asset } from './entities/asset.entity';
 import { v4 as uuidv4 } from 'uuid';

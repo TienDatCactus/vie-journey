@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { UserInfos } from '../account/entities/userInfos.entity';
 import { Asset } from '../account/entities/asset.entity';
 import { TypeDto } from '../account/dto/Type.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
