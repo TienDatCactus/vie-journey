@@ -1,11 +1,11 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
   UseGuards,
   Req,
@@ -13,20 +13,25 @@ import {
   BadRequestException,
   UploadedFile,
 } from '@nestjs/common';
-import { AdminService } from './admin.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/entities/role.enum';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Account } from '../account/entities/account.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { AdminService } from './admin.service';
+import { UserService } from '../user/user.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { TypeDto } from '../account/dto/Type.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateUserInfoDto } from '../user/dto/update-userinfo.dto';
+import { PaginationDto } from '../user/dto/pagination-userlist.dto';
 // @Roles(Role.Admin)
 // @UseGuards(RolesGuard, JwtAuthGuard)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly userService: UserService,
+  ) { }
 
   @Get('assets')
   async getAssetsByType(@Query('type') type: string) {
@@ -117,4 +122,32 @@ export class AdminController {
   async getCommentsReport() {
     return this.adminService.getCommentsReport();
   }
+
+  @Get('userInfo')
+  async getAllUsers() {
+    return this.userService.getAllUser();
+  }
+
+  @Post('userInfo/paginate')
+    async getPaginatedUsers(@Body() paginationDto: PaginationDto) {
+        return this.userService.getPaginatedUsers(paginationDto);
+  }
+
+  @Get('userInfo/:id')
+  async getUser(@Param('id') id: string) {
+    return this.userService.getUserByID(id);
+  }
+
+  @Patch('userInfo/:id')
+    async updateUserInfo(
+        @Param('id') id: string,
+        @Body() updateUserInfoDto: UpdateUserInfoDto
+    ) {
+        return this.userService.updateUserInfo(id, updateUserInfoDto);
+    }
+
+    @Delete('userInfo/:id')
+    async deleteUserInfo(@Param('id') id: string) {
+        return this.userService.deleteUserInfo(id);
+    }
 }
