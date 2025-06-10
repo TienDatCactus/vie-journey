@@ -26,7 +26,7 @@ import React, { useState } from "react";
 import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { motion } from "motion/react";
-import { POIData } from "../../../utils/interfaces";
+import { POIData } from "../types";
 
 interface POIDetailsProps {
   poi: POIData;
@@ -41,6 +41,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
   onAddToTrip,
   onToggleFavorite,
 }) => {
+  console.log(poi);
   const [isFavorite, setIsFavorite] = useState(false);
   const handleFavoriteToggle = () => {
     const newState = !isFavorite;

@@ -1,6 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
-import { POIData, AutocompleteOption } from "../../components/Maps/types";
+import { useCallback, useState } from "react";
+import { AutocompleteOption, POIData } from "../../components/Maps/types";
 
 export interface PlaceSuggestion {
   placeId: string;
@@ -24,7 +23,7 @@ export interface FilterOptions {
 
 export interface UsePOIOptions {
   /** Optional callback when a POI is clicked */
-  onPOIClick?: (poiData: POIData) => void;
+  onPOIClick?: (poiData?: POIData) => void;
 
   /** Optional callback when a place is selected from autocomplete */
   onPlaceSelect?: (placeDetails: PlaceDetails | null) => void;
@@ -53,81 +52,26 @@ export interface UsePOIOptions {
  */
 export const usePOI = ({ onPOIClick }: UsePOIOptions = {}) => {
   // Map instance and libraries
-  const mapInstance = useMap();
-  const placesLib = useMapsLibrary("places");
 
   // ===== STATE =====
   // POI state
   const [selectedPOI, setSelectedPOI] = useState<POIData | null>(null);
   const [highlightedPOI, setHighlightedPOI] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  // References for Places API services
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(
-    null
-  );
-  const sessionTokenRef =
-    useRef<google.maps.places.AutocompleteSessionToken | null>(null);
-
-  // ===== INITIALIZATION =====
-  // Initialize Places Service
-  useEffect(() => {
-    if (!window.google || !window.google.maps || !window.google.maps.places) {
-      console.warn(
-        "Google Maps JavaScript API is not loaded - using vis.gl only"
-      );
-      return;
-    }
-
-    // If map is available, initialize places service
-    if (mapInstance) {
-      placesServiceRef.current = new google.maps.places.PlacesService(
-        mapInstance
-      );
-    }
-
-    return () => {
-      placesServiceRef.current = null;
-    };
-  }, [mapInstance]);
-
-  // Initialize vis.gl Places session token
-  useEffect(() => {
-    if (!placesLib) return;
-
-    const { AutocompleteSessionToken } = placesLib;
-
-    if (!sessionTokenRef.current) {
-      sessionTokenRef.current = new AutocompleteSessionToken();
-    }
-
-    return () => {
-      sessionTokenRef.current = null;
-    };
-  }, [placesLib]);
-
-  // Initialize Places Service when map becomes available
-  useEffect(() => {
-    if (mapInstance && placesLib) {
-      placesServiceRef.current = new placesLib.PlacesService(mapInstance);
-    } else if (
-      mapInstance &&
-      window.google &&
-      window.google.maps &&
-      window.google.maps.places
-    ) {
-      placesServiceRef.current = new google.maps.places.PlacesService(
-        mapInstance
-      );
-    }
-  }, [mapInstance, placesLib]);
 
   // ===== POI INTERACTION FUNCTIONS =====
 
   // Handle POI click from any source (search or map click)
   const handlePOIClick = useCallback(
-    (poiData: POIData) => {
+    (poiData?: POIData) => {
+      if (!poiData) {
+        setSelectedPOI(null);
+        setHighlightedPOI(null);
+        setIsDrawerOpen(false);
+        return;
+      }
       setSelectedPOI(poiData);
-      setHighlightedPOI(poiData.id);
+      setHighlightedPOI(poiData?.id);
       setIsDrawerOpen(true);
 
       if (onPOIClick) {

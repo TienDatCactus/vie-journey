@@ -146,6 +146,7 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
       });
       console.log("placeInstance:", placeInstance);
       handlePOIClick(placeInstance);
+
       setHighlightedPOI(placeInstance.id);
       setDestination(suggestion.placePrediction.mainText + "");
       setOpen(false);

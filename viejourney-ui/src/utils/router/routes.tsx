@@ -1,15 +1,11 @@
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Accounts from "../../pages/(admin)/Accounts";
+import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
 import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
-import Accounts from "../../pages/(admin)/Accounts";
-import Guides from "../../pages/(user)/Guides/Guides";
-import Hotels from "../../pages/(user)/Hotels/Hotels";
-import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
-import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -208,7 +204,24 @@ const router = createBrowserRouter([
     children: [
       {
         path: "create",
-        // element: <SuspenseWrapper component={PlanningFormation} />,
+        children: [
+          {
+            path: "",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={CreateTrip} />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: ":id",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={CreateTripDetails} />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       },
     ],
   },

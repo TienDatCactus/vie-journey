@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useMap } from "@vis.gl/react-google-maps";
+import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { POIData } from "../types";
 import PlaceMarker from "./PlaceMarker";
 
 interface MarkerClusterProps {
   places: POIData[];
-  onPlaceClick: (place: POIData) => void;
+  onPlaceClick: (place?: POIData) => void;
   selectedPlace: POIData | null;
 }
 
@@ -15,21 +15,22 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
   selectedPlace,
 }) => {
   const mapInstance = useMap();
+  const placesLib = useMapsLibrary("places");
   const [isVisible, setIsVisible] = useState(false);
+  const [detailedPlaces, setDetailedPlaces] = useState<POIData[]>([]);
 
-  // Delay rendering markers slightly for better performance
+  // Delay for performance
   useEffect(() => {
-    setIsVisible(true);
+    const timeout = setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
+    return () => clearTimeout(timeout);
   }, [places]);
 
-  // If there are too many markers, only render the ones in the current view
+  // Filter only visible places
   const visiblePlaces = useMemo(() => {
     if (!mapInstance || !isVisible || places.length === 0) return [];
-
-    // If we're dealing with a small number of places, show them all
     if (places.length < 100) return places;
-
-    // Otherwise, filter to show only places in the current map bounds
     const bounds = mapInstance.getBounds();
     if (!bounds) return places;
 
@@ -40,11 +41,87 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
     });
   }, [mapInstance, places, isVisible]);
 
-  if (!isVisible) return null;
+  // Fetch additional details only for places missing data
+  useEffect(() => {
+    if (!placesLib || visiblePlaces.length === 0) return;
 
+    const fetchDetails = async () => {
+      const detailedList: POIData[] = await Promise.all(
+        visiblePlaces.map(async (place) => {
+          try {
+            const placeObj = new placesLib.Place({ id: place.id });
+            const result = await placeObj.fetchFields({
+              fields: [
+                // Basic Info
+                "id",
+                "displayName",
+                "photos",
+                "types",
+                "businessStatus",
+                // Location & Address
+                "location",
+                "viewport",
+                "formattedAddress",
+                "adrFormatAddress",
+                "addressComponents",
+                "plusCode",
+
+                // Contact & Operational
+                "internationalPhoneNumber",
+                "nationalPhoneNumber",
+                "websiteURI",
+                "regularOpeningHours",
+                "utcOffsetMinutes",
+
+                // Ratings & Pricing
+                "rating",
+                "userRatingCount",
+                "priceLevel",
+
+                // Qualitative & Amenities
+                "reviews",
+                "editorialSummary",
+                "parkingOptions",
+                "paymentOptions",
+                "isReservable",
+                "hasOutdoorSeating",
+                "servesBreakfast",
+                "servesLunch",
+                "servesDinner",
+                "servesCoffee",
+                "servesBeer",
+                "servesWine",
+                "hasTakeout",
+                "hasDelivery",
+                "hasCurbsidePickup",
+                "hasDineIn",
+                "isGoodForChildren",
+                "isGoodForGroups",
+                "allowsDogs",
+                "hasLiveMusic",
+                "accessibilityOptions",
+                "googleMapsURI",
+              ],
+            });
+
+            return result.place as POIData;
+          } catch (err) {
+            console.error("Failed to fetch place", err);
+            return place;
+          }
+        })
+      );
+
+      setDetailedPlaces(detailedList);
+    };
+
+    fetchDetails();
+  }, [placesLib, visiblePlaces]);
+
+  if (!isVisible) return null;
   return (
     <>
-      {visiblePlaces.map((place) => (
+      {detailedPlaces.map((place) => (
         <PlaceMarker
           key={place.id}
           place={place}

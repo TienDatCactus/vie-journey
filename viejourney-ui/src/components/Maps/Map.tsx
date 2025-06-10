@@ -11,7 +11,7 @@ import React, { useEffect } from "react";
 import useCategorySearch from "../../utils/hooks/use-category-search";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
 import usePOI from "../../utils/hooks/use-poi";
-import { PlaceMarker } from "./controls";
+import { MarkerCluster, PlaceMarker } from "./controls";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
 import GeneralFilter from "./controls/GeneralFilter";
 import POIDetails from "./controls/POIDetails";
@@ -216,18 +216,11 @@ const Map: React.FC<MapProps> = ({
                 selectedCategories={selectedCategories}
                 onCategoryToggle={handleCategoryToggle}
               />
-              {categoryResults && categoryResults.length > 0 && (
-                <>
-                  {categoryResults.map((place) => (
-                    <PlaceMarker
-                      key={place.id}
-                      place={place}
-                      onClick={handlePOIClick}
-                      isSelected={selectedPOI?.id === place.id}
-                    />
-                  ))}
-                </>
-              )}
+              <MarkerCluster
+                places={categoryResults}
+                onPlaceClick={handlePOIClick}
+                selectedPlace={selectedPOI}
+              />
             </>
           )}
 
