@@ -76,4 +76,81 @@ export class AccountService {
     }
     return deletedAccount;
   }
+  async editInfos(
+    file: Express.Multer.File,
+    editProfile: EditProfileDto,
+    userId: string,
+  ) {
+    try {
+      const existingInfo = await this.userInfosModel
+        .findOne({ userId: userId })
+        .populate('avatar');
+
+      let uploadResult: import('cloudinary').UploadApiResponse | null = null;
+      let assetId: Types.ObjectId | undefined;
+
+      // Handle file upload if present
+      if (file) {
+        if (existingInfo?.avatar?.publicId) {
+          await this.cloudinaryService.deleteImage(
+            existingInfo.avatar.publicId,
+          );
+        }
+
+        uploadResult = await this.cloudinaryService.uploadImage(file, {
+          public_id: `users/${userId}/AVATAR/${file.filename}`,
+        });
+
+        // Create or update asset
+        const assetData = {
+          userId: new Types.ObjectId(userId),
+          type: 'AVATAR',
+          url: uploadResult?.secure_url,
+          publicId: uploadResult?.public_id,
+        };
+
+        if (existingInfo?.avatar?._id) {
+          await this.assetModel.updateOne(
+            { _id: existingInfo.avatar._id },
+            { $set: assetData },
+          );
+          assetId = existingInfo.avatar._id;
+        } else {
+          const asset = await this.assetModel.create(assetData);
+          assetId = asset._id;
+        }
+      }
+
+      // Create or update user info
+      if (!existingInfo) {
+        // Create new user info
+        const userInfoData = {
+          ...editProfile,
+          userId: new Types.ObjectId(userId),
+          ...(assetId ? { avatar: assetId } : {}),
+        };
+
+        const userInfo = await this.userInfosModel.create(userInfoData);
+        return userInfo;
+      } else {
+        // Update existing user info
+        const updateData = {
+          ...editProfile,
+          ...(assetId ? { avatar: assetId } : {}),
+        };
+
+        await this.userInfosModel.updateOne(
+          { userId: new Types.ObjectId(userId) },
+          { $set: updateData },
+        );
+
+        return this.userInfosModel
+          .findOne({ userId: userId })
+          .populate('avatar');
+      }
+    } catch (error) {
+      console.error('Error updating user info:', error);
+      throw new Error(`Failed to update user info: ${error.message}`);
+    }
+  }
 }

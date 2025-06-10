@@ -1,6 +1,5 @@
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
 import { Button, Tab, Tabs } from "@mui/material";
-import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 import React from "react";
 import Map from "../../../components/Maps/Map";
 import {
@@ -8,10 +7,8 @@ import {
   Plans as DashboardPlans,
 } from "../../../components/Pages/(user)/Dashboard";
 import { DashboardLayout, MainLayout } from "../../../layouts";
-import { usePlaceSearch } from "../../../services/contexts/PlaceSearchContext";
 
 const Dashboard: React.FC = () => {
-  const { selectedPlace } = usePlaceSearch();
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -21,38 +18,7 @@ const Dashboard: React.FC = () => {
     <MainLayout>
       <DashboardLayout>
         <div className="w-full h-[200px] rounded-lg relative">
-          <Map
-            containerStyle={{
-              width: "100%",
-              height: "100%",
-              borderRadius: "8px",
-            }}
-            defaultCenter={{ lat: 21.0278, lng: 105.8342 }}
-            defaultZoom={10}
-            showMapTypeControl={false}
-            disableDefaultUI={true}
-            streetViewControl={false}
-            fullscreenControl={false}
-            zoomControl={true}
-            mapTypeControl={false}
-            showDetailsControl={false}
-          >
-            {/* Show marker for selected place */}
-            {selectedPlace?.location && (
-              <AdvancedMarker
-                position={selectedPlace.location}
-                title={selectedPlace.displayName}
-                zIndex={1000}
-              >
-                <Pin
-                  scale={1.3}
-                  background="#1976d2"
-                  glyphColor="#ffffff"
-                  borderColor="#0d47a1"
-                />
-              </AdvancedMarker>
-            )}
-          </Map>
+          <Map position="static" className="w-full h-full" detailed={false} />
           <div className="z-10 absolute top-[2px] left-[2px] p-2 flex items-center gap-2 bg-gray-400/10 rounded-md bg-clip-padding  backdrop-blur-sm border border-gray-100">
             <div className="text-center">
               <p className="text-[16px] my-0">1</p>

@@ -24,7 +24,12 @@ const Footer = () => {
       items: ["FAQs", "Contact Us", "Booking Policies", "Travel Insurance"],
     },
   ];
-  const footerNav = ["Home", "Travel guides", "Hotels", "Profile"];
+  const footerNav = [
+    { title: "Home", link: "/" },
+    { title: "Travel guides", link: "/travel-guides" },
+    { title: "Hotels", link: "/hotels" },
+    { title: "Profile", link: "/profile" },
+  ];
   return (
     <footer className="w-full lg:h-90  bg-dark-900 px-10 py-10 pb-20 ">
       <div className="flex gap-10">
@@ -63,17 +68,14 @@ const Footer = () => {
               <Button
                 key={index}
                 className={` font-medium text-base normal-case px-6 rounded-full ${
-                  path === `/${item.toLowerCase()}`
-                    ? "bg-neutral-50 text-dark-900"
-                    : ""
-                } ${
-                  item === "Home" && path === "/"
+                  path === `${item.link}` ||
+                  (item.title === "Home" && path === "/")
                     ? "bg-neutral-50 text-dark-900"
                     : "text-neutral-500"
                 } `}
-                href={`/${item.toLowerCase()}`}
+                href={`${item.link}`}
               >
-                {item}
+                {item.title}
               </Button>
             ))}
         </Stack>

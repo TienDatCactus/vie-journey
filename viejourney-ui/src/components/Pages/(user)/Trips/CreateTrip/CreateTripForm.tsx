@@ -3,6 +3,7 @@ import {
   AttachMoney,
   AutoFixHigh,
   CalendarMonth,
+  DriveFileRenameOutline,
   Group,
   GroupAdd,
   PlaceOutlined,
@@ -24,51 +25,40 @@ import {
   TextField,
 } from "@mui/material";
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
-import React, { useState } from "react";
-import { Form, useForm } from "react-hook-form";
-import usePlaces from "../../../../../utils/hooks/usePlaces";
-
-// Define a type for the place suggestion
-interface PlaceSuggestion {
-  placeId: string;
-  mainText: string;
-  secondaryText: string;
-  types: string[];
-}
+import React, { useCallback, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useAutocompleteSuggestions } from "../../../../../utils/hooks/use-autocomplete-suggestion";
 
 export const CreateTripForm: React.FC = () => {
   const [destination, setDestination] = useState<string>("");
-  const [selectedPlace, setSelectedPlace] = useState<PlaceSuggestion | null>(
-    null
+  const [selectedPlace, setSelectedPlace] = useState<{
+    placePrediction: google.maps.places.PlacePrediction;
+  } | null>(null);
+  const [open, setOpen] = useState(false); // Use the hook with proper debouncing configuration
+  const { suggestions, isLoading } = useAutocompleteSuggestions(destination, {
+    includedPrimaryTypes: ["(regions)"],
+  });
+  // Handle input change for destination with proper debouncing
+  const handleInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = event.target.value;
+      setDestination(value);
+    },
+    []
   );
-  const [open, setOpen] = useState(false);
-
-  const { suggestions, isLoading, getSuggestions } = usePlaces();
-
-  const filterOptions = {
-    types: ["(regions)"], // This filters for administrative areas
-  };
-
-  // Handle input change for destination
-  const handleDestinationChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+  const handlePlaceSelect = (
+    suggestion: {
+      placePrediction: google.maps.places.PlacePrediction | null;
+    } | null
   ) => {
-    const value = event.target.value;
-    setDestination(value);
-
-    if (value.length >= 2) {
-      getSuggestions(value, filterOptions);
+    // Only set selected place if placePrediction is not null
+    if (suggestion?.placePrediction) {
+      setSelectedPlace({ placePrediction: suggestion.placePrediction });
+      setDestination(suggestion.placePrediction.mainText + "");
+      setOpen(false);
     }
   };
-
-  const handlePlaceSelect = (place: PlaceSuggestion | null) => {
-    setSelectedPlace(place);
-    if (place) {
-      setDestination(place.mainText);
-    }
-  };
-
-  const { control } = useForm({
+  const { handleSubmit } = useForm({
     defaultValues: {
       destination: "",
       startDate: null,
@@ -76,8 +66,8 @@ export const CreateTripForm: React.FC = () => {
     },
   });
   return (
-    <Form
-      control={control}
+    <form
+      onSubmit={handleSubmit((data) => console.log(data))}
       className="w-full lg:col-span-4 gap-4 shadow-sm border border-neutral-400 rounded-2xl bg-white p-4"
     >
       <Stack direction={"row"} gap={1} marginBottom={2} alignItems={"center"}>
@@ -87,7 +77,7 @@ export const CreateTripForm: React.FC = () => {
       <FormControl className="w-full">
         <FormLabel className="text-sm font-semibold mb-1">
           Trip Title <span>(required)</span>
-        </FormLabel>
+        </FormLabel>{" "}
         <Autocomplete
           id="destination-autocomplete"
           open={open}
@@ -96,13 +86,13 @@ export const CreateTripForm: React.FC = () => {
           }}
           onClose={() => setOpen(false)}
           isOptionEqualToValue={(option, value) =>
-            option.placeId === value.placeId
+            option.placePrediction?.placeId === value.placePrediction?.placeId
           }
-          getOptionLabel={(option) => option.mainText}
+          getOptionLabel={(option) => option.placePrediction?.mainText + ""}
           options={suggestions}
           loading={isLoading}
           value={selectedPlace}
-          onChange={(event, newValue) => handlePlaceSelect(newValue)}
+          onChange={(_, newValue) => handlePlaceSelect(newValue)}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -112,7 +102,7 @@ export const CreateTripForm: React.FC = () => {
               placeholder="e.g Ta xua, Sapa, Da Nang"
               variant="outlined"
               value={destination}
-              onChange={handleDestinationChange}
+              onChange={handleInputChange}
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (
@@ -132,11 +122,15 @@ export const CreateTripForm: React.FC = () => {
             />
           )}
           renderOption={(props, option) => (
-            <li {...props} key={option.placeId}>
+            <li {...props} key={option.placePrediction?.placeId}>
               <Stack>
-                <div className="font-medium">{option.mainText}</div>
+                <div className="font-medium">
+                  {option?.placePrediction?.mainText + ""}
+                </div>
                 <div className="text-sm text-gray-500">
-                  {option.secondaryText}
+                  {option.placePrediction?.secondaryText != null
+                    ? option.placePrediction?.secondaryText + ""
+                    : option.placePrediction?.text + ""}
                 </div>
               </Stack>
             </li>
@@ -231,11 +225,25 @@ export const CreateTripForm: React.FC = () => {
         Invite tripmates
       </Button>
       <div className="my-6">
-        <Button startIcon={<AutoFixHigh />}>Start planning your trip</Button>
-        <Divider className="uppercase text-neutral-700 text-sm">or</Divider>\
-        <Button startIcon={<AutoFixHigh />}>Start planning your trip</Button>
+        <Button
+          startIcon={<AutoFixHigh />}
+          variant="contained"
+          className="bg-dark-800 w-full"
+        >
+          Start planning your trip
+        </Button>
+        <Divider className="uppercase text-neutral-700 text-sm my-2">
+          or
+        </Divider>
+        <Button
+          startIcon={<DriveFileRenameOutline />}
+          className="w-full border-neutral-300 text-dark-800 py-2 "
+          variant="outlined"
+        >
+          Write a travel blog instead
+        </Button>
       </div>
-    </Form>
+    </form>
   );
 };
 

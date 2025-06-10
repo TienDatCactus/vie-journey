@@ -1,10 +1,11 @@
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import Accounts from "../../pages/(admin)/Accounts";
+import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
+import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
-import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
-import Accounts from "../../pages/(admin)/Accounts";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -166,11 +167,24 @@ const router = createBrowserRouter([
       },
       {
         path: "accounts",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={Accounts} />
-          </ProtectedRoute>
-        ),
+        children: [
+          {
+            path: "",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={Accounts} />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "detail/:id",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={AccountDetail} />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       },
       {
         path: "media",
@@ -193,11 +207,19 @@ const router = createBrowserRouter([
         children: [
           {
             path: "",
-            element: <SuspenseWrapper component={CreateTrip} />,
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={CreateTrip} />
+              </ProtectedRoute>
+            ),
           },
           {
-            path: ":tripId",
-            element: <SuspenseWrapper component={CreateTripDetails} />,
+            path: ":id",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={CreateTripDetails} />
+              </ProtectedRoute>
+            ),
           },
         ],
       },

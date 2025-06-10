@@ -14,7 +14,6 @@ import * as ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import "./index.css";
 import AuthProvider from "./services/contexts/AuthContext";
-import { PlaceSearchProvider } from "./services/contexts/PlaceSearchContext";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
 const rootElement = document.getElementById("root");
@@ -45,6 +44,7 @@ const theme = createTheme({
     },
   },
 });
+
 root.render(
   <React.StrictMode>
     <StyledEngineProvider injectFirst>
@@ -59,11 +59,9 @@ root.render(
                   <APIProvider
                     apiKey={apiKey}
                     language="en"
-                    libraries={["places", "marker"]}
+                    libraries={["places", "marker", "geometry"]}
                   >
-                    <PlaceSearchProvider>
-                      <RouterProvider router={router} />
-                    </PlaceSearchProvider>
+                    <RouterProvider router={router} />
                   </APIProvider>
                 </AuthProvider>
               </React.Suspense>

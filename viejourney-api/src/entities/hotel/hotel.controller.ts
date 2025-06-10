@@ -32,17 +32,12 @@ export class HotelController {
 
     @Get()
     async getHotelList() {
-        return this.hotelService.findAll();
-    }
-
-    @Post('add')
-    async createHotel(@Body() createHotelDto: CreateHotelDto) {
-        return await this.hotelService.create(createHotelDto);
+        return this.hotelService.getHotelList();
     }
 
     @Get(':id')
     async getHotelDetail(@Param('id') id: string) {
-        const hotel = await this.hotelService.findOne(id);
+        const hotel = await this.hotelService.getHotelDetail(id);
         if (!hotel) {
             throw new NotFoundException(`Hotel with ID ${id} not found`);
         }
@@ -51,7 +46,7 @@ export class HotelController {
 
     @Delete(':id')
     async deleteHotel(@Param('id') id: string) {
-        return this.hotelService.delete(id);
+        return this.hotelService.deleteHotel(id);
     }
 
     @Patch(':id')
@@ -59,25 +54,12 @@ export class HotelController {
         @Param('id') id: string,
         @Body() updateHotelDto: UpdateHotelDto
     ) {
-        const hotel = await this.hotelService.update(id, updateHotelDto);
+        const hotel = await this.hotelService.updateHotel(id, updateHotelDto);
         if (!hotel) {
             throw new NotFoundException(`Hotel with ID ${id} not found`);
         }
         return hotel;
     }
 
-    @Post('import-excel')
-    @UseInterceptors(FileInterceptor('file'))
-    async importFromExcel(@UploadedFile() file: Express.Multer.File) {
-        const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-        const sheetName = workbook.SheetNames[0]; 
-        const sheet = workbook.Sheets[sheetName];
-
-        const hotels: any[] = XLSX.utils.sheet_to_json(sheet);
-
-        await this.hotelService.importHotels(hotels);
-
-        return { message: 'Import successfully', count: hotels.length };
-    }
 
 }

@@ -11,11 +11,11 @@ export class HotelService {
     @InjectModel('Hotel') private readonly hotelModel: Model<Hotel>
   ) {}
 
-  async findAll () {
+  async getHotelList() {
     return this.hotelModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Hotel> {
+  async getHotelDetail(id: string): Promise<Hotel> {
         const hotel = await this.hotelModel.findById(id).exec();
         if (!hotel) {
             throw new NotFoundException(`Hotel with ID ${id} not found`);
@@ -23,12 +23,12 @@ export class HotelService {
         return hotel;
     }
 
-  async create(createHotelDto: CreateHotelDto): Promise<Hotel> {
+  async addHotel(createHotelDto: CreateHotelDto): Promise<Hotel> {
         const createdHotel = new this.hotelModel(createHotelDto);
         return await createdHotel.save();
   }
 
-  async delete(id: string): Promise<Hotel> {
+  async deleteHotel(id: string): Promise<Hotel> {
     const deletedHotel = await this.hotelModel.findByIdAndDelete(id).exec();
     if (!deletedHotel) {
       throw new NotFoundException(`Hotel with ID ${id} not found`);
@@ -36,7 +36,7 @@ export class HotelService {
     return deletedHotel;
   }
 
-  async update(id: string, updateHotelDto: UpdateHotelDto): Promise<Hotel> {
+  async updateHotel(id: string, updateHotelDto: UpdateHotelDto): Promise<Hotel> {
         const existingHotel = await this.hotelModel
             .findByIdAndUpdate(id, updateHotelDto, { new: true })
             .exec();
@@ -48,7 +48,7 @@ export class HotelService {
         return existingHotel;
   }
 
-  async importHotels(hotels: Partial<Hotel>[]) {
+  async addListOfHotels(hotels: Partial<Hotel>[]) {
     await this.hotelModel.insertMany(hotels);
   }
   

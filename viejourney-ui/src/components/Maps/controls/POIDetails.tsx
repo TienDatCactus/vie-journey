@@ -25,8 +25,8 @@ import {
 import React, { useState } from "react";
 import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { POIData } from "../types";
 import { motion } from "motion/react";
+import { POIData } from "../types";
 
 interface POIDetailsProps {
   poi: POIData;
@@ -41,6 +41,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
   onAddToTrip,
   onToggleFavorite,
 }) => {
+  console.log(poi);
   const [isFavorite, setIsFavorite] = useState(false);
   const handleFavoriteToggle = () => {
     const newState = !isFavorite;
@@ -143,7 +144,12 @@ const POIDetails: React.FC<POIDetailsProps> = ({
             poi.photos.map((photo, index) => (
               <SwiperSlide key={index}>
                 <img
-                  src={photo.getURI()}
+                  src={
+                    photo.getURI() ||
+                    `https://placehold.co/600x400?text=${encodeURIComponent(
+                      poi.displayName || "Place"
+                    )}`
+                  }
                   loading="lazy"
                   onError={(e) => {
                     e.currentTarget.src = `https://placehold.co/600x400?text=Image+not+available`;

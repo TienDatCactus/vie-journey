@@ -30,7 +30,7 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
 
   return (
     <div
-      className={`fixed left-0 top-0 h-screen bg-gray-800 text-white flex flex-col transition-all duration-300 z-50 ${
+      className={`fixed left-0 top-0 h-screen text-gray-800 flex flex-col transition-all duration-300 z-50 ${
         collapsed ? "w-20" : "w-64"
       }`}
     >
@@ -38,7 +38,7 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
         {!collapsed && <h1 className="text-xl font-bold">My App</h1>}
         <IconButton
           onClick={() => setCollapsed(!collapsed)}
-          className="text-white"
+          className="text-gray-800"
         >
           {collapsed ? <MenuIcon /> : <ChevronLeft />}
         </IconButton>
@@ -53,7 +53,7 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
           >
             <div
               onClick={() => navigate(item.path)}
-              className={`flex items-center px-4 py-2 hover:bg-gray-700 cursor-pointer transition-all ${
+              className={`flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer transition-all ${
                 collapsed ? "justify-center" : ""
               }`}
             >
