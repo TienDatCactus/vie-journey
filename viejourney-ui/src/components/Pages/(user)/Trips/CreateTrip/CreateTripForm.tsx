@@ -7,8 +7,10 @@ import {
   Group,
   GroupAdd,
   PlaceOutlined,
+  TravelExplore,
 } from "@mui/icons-material";
 import PublicIcon from "@mui/icons-material/Public";
+import { NumericFormat } from "react-number-format";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Autocomplete,
@@ -16,6 +18,7 @@ import {
   CircularProgress,
   Divider,
   FormControl,
+  FormHelperText,
   FormLabel,
   InputAdornment,
   MenuItem,
@@ -26,8 +29,9 @@ import {
 } from "@mui/material";
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
 import React, { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useAutocompleteSuggestions } from "../../../../../utils/hooks/use-autocomplete-suggestion";
+import { Dayjs } from "dayjs";
 
 export const CreateTripForm: React.FC = () => {
   const [destination, setDestination] = useState<string>("");
@@ -58,25 +62,42 @@ export const CreateTripForm: React.FC = () => {
       setOpen(false);
     }
   };
-  const { handleSubmit } = useForm({
+  const {
+    handleSubmit,
+    register,
+    watch,
+    control,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       destination: "",
-      startDate: null,
-      endDate: null,
+      travelDates: [null, null] as [Dayjs | null, Dayjs | null],
+      travelers: 1,
+      budget: 1,
+      description: "",
+      visibility: true, // Default visibility to true
     },
   });
+
+  const onSubmit = (data: any) => {
+    console.log("Form submitted with data:", data);
+  };
   return (
     <form
-      onSubmit={handleSubmit((data) => console.log(data))}
+      onSubmit={handleSubmit(onSubmit)}
       className="w-full lg:col-span-4 gap-4 shadow-sm border border-neutral-400 rounded-2xl bg-white p-4"
     >
       <Stack direction={"row"} gap={1} marginBottom={2} alignItems={"center"}>
         <PlaceOutlined className="" />
         <h1 className="text-2xl font-bold">Create a new Trip</h1>
       </Stack>
-      <FormControl className="w-full">
+      <FormControl
+        className="w-full"
+        color={errors.destination ? "error" : "primary"}
+      >
         <FormLabel className="text-sm font-semibold mb-1">
-          Trip Title <span>(required)</span>
+          <TravelExplore className="mr-1" />
+          Trip Destination <span>(required)</span>
         </FormLabel>{" "}
         <Autocomplete
           id="destination-autocomplete"
@@ -96,18 +117,25 @@ export const CreateTripForm: React.FC = () => {
           renderInput={(params) => (
             <TextField
               {...params}
+              value={destination}
               className="rounded-lg"
               size="small"
               fullWidth
               placeholder="e.g Ta xua, Sapa, Da Nang"
               variant="outlined"
-              value={destination}
+              {...register("destination", {
+                required: "Destination is required",
+              })}
+              error={!!errors.destination}
+              helperText={errors.destination ? errors.destination.message : ""}
               onChange={handleInputChange}
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon color="action" />
+                    <SearchIcon
+                      color={errors.destination ? "error" : "action"}
+                    />
                   </InputAdornment>
                 ),
                 endAdornment: (
@@ -143,17 +171,33 @@ export const CreateTripForm: React.FC = () => {
             <CalendarMonth className="mr-1" />
             Travel dates
           </FormLabel>
-          <DateRangePicker
-            defaultValue={[null, null]}
-            slotProps={{
-              textField: {
-                variant: "outlined",
-                InputProps: {
-                  disableUnderline: true,
-                  className: "rounded-lg", // Remove the underline for standard variant
-                },
-              },
+          <Controller
+            name="travelDates"
+            control={control}
+            rules={{
+              required: "Travel dates are required",
+              validate: (value) =>
+                value?.[0] && value?.[1] ? true : "Please select a date range",
             }}
+            render={({ field }) => (
+              <DateRangePicker
+                value={field.value as [null, null]}
+                onChange={(newValue) => field.onChange(newValue)}
+                slotProps={{
+                  textField: {
+                    error: !!errors.travelDates,
+                    helperText: errors.travelDates
+                      ? errors.travelDates.message
+                      : "",
+                    variant: "outlined",
+                    InputProps: {
+                      disableUnderline: true,
+                      className: "rounded-lg",
+                    },
+                  },
+                }}
+              />
+            )}
           />
         </FormControl>
         <FormControl>
@@ -161,7 +205,12 @@ export const CreateTripForm: React.FC = () => {
             <Group className="mr-1" />
             Number of travelers
           </FormLabel>
-          <Select defaultValue={1} className="w-full rounded-lg">
+          <Select
+            defaultValue={1}
+            {...register("travelers")}
+            className="w-full rounded-lg"
+          >
+            <MenuItem value={0}>Solo traveler</MenuItem>
             <MenuItem value={1}>1 travelers</MenuItem>
             <MenuItem value={2}>2 travelers</MenuItem>
             <MenuItem value={3}>3 travelers</MenuItem>
@@ -173,13 +222,41 @@ export const CreateTripForm: React.FC = () => {
       <FormControl className="block  my-4">
         <FormLabel className="text-sm font-semibold mb-1">
           <AttachMoney className="mr-1 mb-1" />
-          Budget per person (optional)
+          Budget per person
         </FormLabel>
-        <Select defaultValue={1} className="w-full rounded-lg">
-          <MenuItem value={1}>Budget ($0 - $500)</MenuItem>
-          <MenuItem value={2}>Mid-range ($500 - $1500)</MenuItem>
-          <MenuItem value={3}>Luxury ($1500+)</MenuItem>
-        </Select>
+        <Controller
+          name="budget"
+          control={control}
+          rules={{
+            required: "Budget is required",
+            validate: (value) =>
+              value > 0 ? true : "Budget must be greater than 0",
+          }}
+          render={({ field }) => (
+            <NumericFormat
+              {...field}
+              className="w-full rounded-lg"
+              placeholder="Enter your budget"
+              variant="outlined"
+              value={field.value}
+              onValueChange={(values) => {
+                const { floatValue } = values;
+                field.onChange(floatValue);
+              }}
+              customInput={TextField}
+              error={!!errors.budget}
+              helperText={errors.budget ? errors.budget.message : ""}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">$</InputAdornment>
+                ),
+              }}
+            />
+          )}
+        />
+        <FormHelperText>
+          {watch("budget") > 100000 ? `Wow you are sooo rich !` : ""}
+        </FormHelperText>
       </FormControl>
 
       <FormControl className="block my-4">
@@ -190,6 +267,7 @@ export const CreateTripForm: React.FC = () => {
         <TextField
           multiline
           rows={3}
+          {...register("description")}
           placeholder="Describe your trip, activities, and preferences"
           variant="outlined"
           className="w-full rounded-lg"
@@ -214,7 +292,7 @@ export const CreateTripForm: React.FC = () => {
             </Stack>
             <p className="text-sm text-gray-500">Anyone can view this trip</p>
           </FormLabel>
-          <Switch />
+          <Switch {...register("visibility")} checked={watch("visibility")} />
         </Stack>
       </FormControl>
       <Button
@@ -229,6 +307,7 @@ export const CreateTripForm: React.FC = () => {
           startIcon={<AutoFixHigh />}
           variant="contained"
           className="bg-dark-800 w-full"
+          type="submit"
         >
           Start planning your trip
         </Button>
