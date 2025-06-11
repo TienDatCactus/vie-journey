@@ -47,6 +47,67 @@ import { useTripDetailStore } from "../../../../../../../services/stores/useTrip
 import { useAutocompleteSuggestions } from "../../../../../../../utils/hooks/use-autocomplete-suggestion";
 import { User } from "../../../../../../../utils/interfaces";
 import { useFetchPlaceDetails } from "../../../../../../../utils/hooks/use-fetch-place";
+// Add this helper function at the top of your file
+function getPlacePhotoUrl(photo: any): string {
+  // Default fallback image
+  const fallbackImage = "/images/placeholder-main.png";
+
+  // If no photo provided, return fallback
+  if (!photo) return fallbackImage;
+
+  try {
+    // Method 1: Try getUrl() with maxWidth parameter (standard Google Maps JS API v3 approach)
+    if (typeof photo.getUrl === "function") {
+      try {
+        return photo.getUrl({ maxWidth: 800 });
+      } catch (e) {
+        console.log("getUrl with params failed", e);
+      }
+    }
+
+    // Method 2: Try getUrl() without parameters (some API versions)
+    if (typeof photo.getUrl === "function") {
+      try {
+        return photo.getUrl();
+      } catch (e) {
+        console.log("getUrl without params failed", e);
+      }
+    }
+
+    // Method 3: Try getURI method (older or custom implementations)
+    if (typeof photo.getURI === "function") {
+      try {
+        return photo.getURI();
+      } catch (e) {
+        console.log("getURI failed", e);
+      }
+    }
+
+    // Method 4: Check if photo is a string URL directly
+    if (typeof photo === "string") {
+      return photo;
+    }
+
+    // Method 5: Check for common URL properties
+    if (photo.url) return photo.url;
+
+    // Method 6: Check if there's a photo reference we can use with Places Photo API
+    if (photo.name || photo.photoReference || photo.photo_reference) {
+      const photoRef =
+        photo.name || photo.photoReference || photo.photo_reference;
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+      if (photoRef && apiKey) {
+        return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoRef}&key=${apiKey}`;
+      }
+    }
+
+    // Return fallback if all methods fail
+    return fallbackImage;
+  } catch (error) {
+    console.error("Error getting photo URL:", error);
+    return fallbackImage;
+  }
+}
 interface PlaceDetails extends google.maps.places.PlacePrediction {}
 interface PlaceCardProps {
   placeNote: PlaceNote;
@@ -219,20 +280,6 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
     fetchDetails();
   }, [placeDetail, placeNote.placeId, onFetchDetails]);
 
-  useEffect(() => {
-    if (!placeDetail && !loading) {
-      setLoading(true);
-      onFetchDetails(placeNote.placeId).then(
-        (fetchedDetails: google.maps.places.Place | undefined) => {
-          setDetails(fetchedDetails);
-          setLoading(false);
-        }
-      );
-    } else if (placeDetail) {
-      setDetails(placeDetail);
-    }
-  }, [placeDetail, placeNote.placeId, onFetchDetails]);
-
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -248,7 +295,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
   return (
     <Card
       elevation={0}
-      className="w-full grid lg:grid-cols-3 rounded-xl lg:min-h-64 flex-col p-2 px-4"
+      className="w-full grid lg:grid-cols-3 rounded-xl lg:min-h-64 flex-col "
     >
       {loading ? (
         // Loading state rendering
@@ -262,11 +309,17 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
         // Regular content rendering
         <>
           <CardMedia
+            loading="lazy"
+            onError={(e) => {
+              console.log("Image failed to load, using fallback");
+              e.currentTarget.src = `https://placehold.co/300x500?text=Image+not+available`;
+            }}
             component="img"
-            // details?.photos && details.photos.length > 0
-            // ? details.photos[0]?.getURI()
-            // :
-            src={"/images/ocean-beach-mountains-ud.jpg"}
+            src={
+              details?.photos && details.photos.length > 0
+                ? getPlacePhotoUrl(details.photos[0]) // Use our helper function
+                : "/images/placeholder-main.png"
+            }
             className="object-cover col-span-1 w-full h-full rounded-s-lg"
           />
           <CardContent className="p-0 px-4 lg:py-1 gap-4 flex flex-col col-span-2">
@@ -349,9 +402,12 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
               </Stack>
             </Stack>
             {!placeNote.isEditing ? (
-              <p className="text-base text-neutral-800 text-ellipsis line-clamp-3">
-                {placeNote.note || "No description provided."}
-              </p>
+              <Stack direction={"row"} alignItems={"center"} gap={1}>
+                <h5 className="text-sm font-semibold">Notes* :</h5>
+                <p className="text-base text-neutral-800 text-ellipsis line-clamp-3">
+                  {placeNote.note || "No description provided."}
+                </p>
+              </Stack>
             ) : (
               <TextField
                 fullWidth
@@ -370,6 +426,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
                 }}
               />
             )}
+            <i className="text-sm text-gray-600">{details?.editorialSummary}</i>
             <Stack
               direction={"row"}
               alignItems={"center"}
@@ -403,7 +460,6 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
               <Stack direction={"row"} alignItems={"center"} gap={1}>
                 {!placeNote.isEditing ? (
                   <>
-                    {" "}
                     {placeNote?.visited ? (
                       <TaskAlt className="text-lg" />
                     ) : (
@@ -438,6 +494,11 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
                     variant="outlined"
                     className="text-gray-600 border-gray-300"
                     startIcon={<Directions />}
+                    onClick={() => {
+                      if (details?.googleMapsURI) {
+                        window.open(details.googleMapsURI, "_blank");
+                      }
+                    }}
                   >
                     Directions
                   </Button>
@@ -445,6 +506,11 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
                     variant="contained"
                     className="bg-gray-800 text-white"
                     startIcon={<OpenInNew />}
+                    onClick={() => {
+                      if (details?.websiteURI) {
+                        window.open(details.websiteURI, "_blank");
+                      }
+                    }}
                   >
                     Details
                   </Button>
@@ -546,7 +612,7 @@ const ReservationPlaces: React.FC = () => {
               <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                 <p className="text-gray-500 mb-2">No places added yet</p>
                 <p className="text-sm text-gray-400">
-                  Search for places using the search box above
+                  Search for places using the search box below
                 </p>
               </div>
             ) : (
