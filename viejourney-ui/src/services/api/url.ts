@@ -28,11 +28,10 @@ export const ADMIN = {
   DELETE_ASSET: "/admin/assets/delete",
 };
 export const TRIP = {
-  INVITE: "/trips/invite",
-  GET_TRIPS: "/trips",
-  GET_TRIP: "/trips/:id",
-  CREATE_TRIP: "/trips/create",
-  UPDATE_TRIP: "/trips/update/:id",
-  DELETE_TRIP: "/trips/delete/:id",
-  PAGINATE_TRIPS: "/trips/paginate",
+  INVITE: "/trip/invite",
+  GET_TRIPS: "/trip",
+  GET_TRIP: "/trip/:id",
+  CREATE_TRIP: "/trip",
+  UPDATE_TRIP: "/trip/update/:id",
+  DELETE_TRIP: "/trip/delete/:id",
 };

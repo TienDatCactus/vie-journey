@@ -1,4 +1,4 @@
-import { Account } from "../../utils/interfaces";
+import { Account, Trip } from "../../utils/interfaces";
 
 export interface LoginReqDTO {
   email: string;
@@ -41,3 +41,14 @@ export interface RefreshTokenRespDTO {
 export interface GetUserReqDTO {
   userId: string;
 }
+
+export interface CreateTripDto { 
+  destination: string;
+  dates: DateConstructor[];
+  travelers: 'Solo traveler'  | '2 travelers'| '3 travelers'| '4 travelers'|'5+ travelers';
+  budget?: 'Budget ($0 - $500)' | 'Mid-range ($500 - $1500)' | 'Luxury ($1500+)';
+  description?: string;
+  visibility: boolean ;
+  inviteEmails: string[];
+}
+export interface  CreateTripRespDto extends Trip {}

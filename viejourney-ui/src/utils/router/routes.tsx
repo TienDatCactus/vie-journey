@@ -213,15 +213,15 @@ const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           },
-          {
-            path: ":id",
-            element: (
-              <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={CreateTripDetails} />
-              </ProtectedRoute>
-            ),
-          },
         ],
+      },
+      {
+        path: ":id",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={CreateTripDetails} />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

@@ -19,3 +19,15 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface Trip {
+  _id: string;
+  title: string;
+  destination: string;
+  startDate: Date;
+  endDate: Date;
+  budgetRange: string;
+  tripmateRange: string;
+  description: string;
+  visibility: boolean;
+}
