@@ -22,10 +22,17 @@ export const ACCOUNTS = {
   PAGINATE_ACCOUNTS: "/admin/userInfo/paginate",
 };
 
-
 export const ADMIN = {
   GET_ASSET: "/admin/assets",
   UPDATE_ASSET: "/admin/update-asset",
-  DELETE_ASSET: "/admin/assets/delete", 
-
-}
+  DELETE_ASSET: "/admin/assets/delete",
+};
+export const TRIP = {
+  INVITE: "/trips/invite",
+  GET_TRIPS: "/trips",
+  GET_TRIP: "/trips/:id",
+  CREATE_TRIP: "/trips/create",
+  UPDATE_TRIP: "/trips/update/:id",
+  DELETE_TRIP: "/trips/delete/:id",
+  PAGINATE_TRIPS: "/trips/paginate",
+};
