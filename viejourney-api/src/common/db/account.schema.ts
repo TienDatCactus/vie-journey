@@ -3,6 +3,7 @@ import { Document } from 'mongoose';
 
 @Schema({
   versionKey: false, // Removes the __v field
+  timestamps: true,
 })
 class Account extends Document {
   @Prop({ required: true, unique: true })
@@ -10,11 +11,12 @@ class Account extends Document {
 
   @Prop({})
   password: string;
+
   @Prop({ default: 'USER', enum: ['USER', 'ADMIN', 'MANAGER'] })
   role: string;
 
-  @Prop({ default: false })
-  active: boolean;
+  @Prop({ default: 'INACTIVE', enum: ['ACTIVE', 'INACTIVE', 'BANNED', 'DELETED'] })
+  status: string;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);

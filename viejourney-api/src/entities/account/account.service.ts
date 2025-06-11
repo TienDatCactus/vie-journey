@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account } from './entities/account.entity';
-import { UserInfos } from './entities/userInfos.entity';
+import { UserInfos } from '../userinfo/entities/userInfos.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { EditProfileDto } from './dto/editProfile.dto';
 import { Asset } from './entities/asset.entity';
@@ -21,16 +21,22 @@ export class AccountService {
   async activateUser(userId: Types.ObjectId): Promise<void> {
     const user = await this.accountModel.findByIdAndUpdate(
       userId,
-      { active: true },
+      { status: 'ACTIVE' },
       { new: true },
     );
 
     if (!user) throw new NotFoundException('User not found');
   }
+
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
-    const createdAccount = new this.accountModel(createAccountDto);
+    const createdAccount = new this.accountModel({
+      ...createAccountDto,
+      status: 'INACTIVE', // Set default status
+      role: 'USER', // Set default role
+    });
     return createdAccount.save();
   }
+
   async findAll(): Promise<Account[]> {
     return this.accountModel.find().exec();
   }
@@ -42,7 +48,7 @@ export class AccountService {
     return {
       _id: account._id,
       email: account.email,
-      active: account.active,
+      status: account.status,
       role: account.role,
     };
   }
@@ -57,12 +63,25 @@ export class AccountService {
     id: string,
     updateAccountDto: UpdateAccountDto,
   ): Promise<Account> {
+    // Validate status if it's being updated
+    if (updateAccountDto.status && 
+        !['ACTIVE', 'INACTIVE', 'BANNED', 'DELETED'].includes(updateAccountDto.status)) {
+      throw new BadRequestException('Invalid status value');
+    }
+
+    // Validate role if it's being updated
+    if (updateAccountDto.role && 
+        !['USER', 'ADMIN', 'MANAGER'].includes(updateAccountDto.role)) {
+      throw new BadRequestException('Invalid role value');
+    }
+
     const updatedAccount = await this.accountModel
       .findByIdAndUpdate(id, updateAccountDto, {
         new: true,
         runValidators: true,
       })
       .exec();
+
     if (!updatedAccount) {
       throw new NotFoundException(`Account with id ${id} not found`);
     }
@@ -70,7 +89,11 @@ export class AccountService {
   }
 
   async remove(id: string): Promise<Account> {
-    const deletedAccount = await this.accountModel.findByIdAndDelete(id).exec();
+    // Using soft delete by updating status
+    const deletedAccount = await this.accountModel
+      .findByIdAndUpdate(id, { status: 'DELETED' }, { new: true })
+      .exec();
+      
     if (!deletedAccount) {
       throw new NotFoundException(`Account with id ${id} not found`);
     }

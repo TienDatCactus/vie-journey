@@ -5,5 +5,7 @@ export class Account {
   email: string;
   password: string;
   role: string; // Using Role enum string value
-  active: boolean;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -29,7 +29,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Email not found!');
     }
-    if (user.active) {
+    if (user.status === 'ACTIVE') {
       throw new ConflictException('User already verified');
     }
     this.sendRegistrationEmail(user);
@@ -54,8 +54,8 @@ export class AuthService {
         throw new NotFoundException('User not found');
       }
 
-      // Activate the user
-      user.active = true;
+      // Update user status
+      user.status = 'ACTIVE';
       await user.save();
 
       return {
@@ -143,18 +143,17 @@ export class AuthService {
     this.sendEMail(registrationToken, user.email);
   }
   async register(email: string, password: string) {
-    // Hash password
     const existingUser = await this.accountModel.findOne({ email });
     if (existingUser) {
       throw new ConflictException('User already exists');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     const user = new this.accountModel({
       email,
       password: hashedPassword,
-      active: false,
+      status: 'INACTIVE',
+      role: 'USER',
     });
     await user.save();
 
@@ -169,11 +168,12 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new HttpException('Invalid credentials', HttpStatus.I_AM_A_TEAPOT);
     }
-    if (!user.active) {
-      // Create a verification token and send it
-      const secret = process.env.JWT_SECRET || 'secret';
-      this.logger.log(`Using secret for signing: ${secret.substring(0, 5)}...`);
+    
+    if (user.status === 'BANNED') {
+      throw new UnauthorizedException('Your account has been banned');
+    }
 
+    if (user.status === 'INACTIVE') {
       const verificationToken = this.jwtService.sign(
         {
           sub: user._id,
@@ -182,7 +182,7 @@ export class AuthService {
         },
         {
           expiresIn: '24h',
-          secret: secret,
+          secret: process.env.JWT_SECRET || 'secret',
         },
       );
 
@@ -192,6 +192,7 @@ export class AuthService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
     const accessToken = this.createAccessToken(user._id, user.email);
     const refreshToken = this.createRefreshToken(user._id);
 
@@ -201,9 +202,6 @@ export class AuthService {
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
-    user.active = true;
-    await user.save();
 
     return {
       userId: user._id,
@@ -442,7 +440,6 @@ export class AuthService {
   }
   async googleAuth(profile: any, res: Response) {
     try {
-      console.log(profile);
       const { email } = profile;
       if (!email) {
         throw new HttpException(
@@ -450,15 +447,23 @@ export class AuthService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      let user = await this.accountModel.findOne({ email: email }).exec();
+
+      let user = await this.accountModel.findOne({ email }).exec();
       if (!user) {
         user = new this.accountModel({
-          email: email,
-          password: '', // Password is not used for Google auth
-          active: true, // Automatically activate user for Google auth
+          email,
+          password: '', // Password not used for Google auth
+          status: 'ACTIVE', // Auto-activate Google users
+          role: 'USER',
         });
         await user.save();
       }
+
+      // Check if user is banned
+      if (user.status === 'BANNED') {
+        throw new UnauthorizedException('Your account has been banned');
+      }
+
       const accessToken = this.createAccessToken(user._id, user.email);
       const refreshToken = this.createRefreshToken(user._id);
 
@@ -470,8 +475,7 @@ export class AuthService {
       });
 
       return res.redirect(
-        `${process.env.FE_URL}/auth/oauth-success?` +
-          `accessToken=${accessToken}`,
+        `${process.env.FE_URL}/auth/oauth-success?accessToken=${accessToken}`,
       );
     } catch (error) {
       this.logger.error('Google authentication error:', error);
@@ -498,10 +502,12 @@ export class AuthService {
         this.logger.warn(`User not found for ID: ${userId}`);
         return null;
       }
-      if (!user.active) {
+
+      if (user.status !== 'ACTIVE') {
         this.logger.warn(`User with ID ${userId} is not active`);
         return null;
       }
+
       return {
         userId: user._id,
       };

@@ -26,7 +26,7 @@ import { EditProfileDto } from './dto/editProfile.dto';
 // @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('account')
 export class AccountController {
-  constructor(private readonly accountService: AccountService) {}
+  constructor(private readonly accountService: AccountService) { }
 
   @Post('edit-profile')
   @UseInterceptors(
