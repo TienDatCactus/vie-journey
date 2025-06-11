@@ -4,6 +4,7 @@ import {
   AutoFixHigh,
   CalendarMonth,
   Clear,
+  Delete,
   DriveFileRenameOutline,
   Group,
   GroupAdd,
@@ -34,8 +35,8 @@ import { DateRangePicker } from "@mui/x-date-pickers-pro";
 import { Dayjs } from "dayjs";
 import React, { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { doCreateTrip } from "../../../../../services/api";
 import { useAutocompleteSuggestions } from "../../../../../utils/hooks/use-autocomplete-suggestion";
+import { doCreateTrip } from "../../../../../services/api";
 
 export const CreateTripForm: React.FC = () => {
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -116,11 +117,12 @@ export const CreateTripForm: React.FC = () => {
   };
   return (
     <>
-     {loading && (
-      <div className="fixed inset-0 flex items-center justify-center bg-gray-200/50 z-50">
-        <CircularProgress />
-      </div>
-     )}
+      {loading && (
+        <div className="fixed inset-0 flex flex-col gap-2 items-center justify-center bg-gray-200/50 z-50 text-center">
+          <CircularProgress />
+          <p>Creating trip ...</p>
+        </div>
+      )}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-full lg:col-span-4 gap-4 shadow-sm border border-neutral-400 rounded-2xl bg-white p-4"
@@ -333,9 +335,7 @@ export const CreateTripForm: React.FC = () => {
                   label={email}
                   deleteIcon={<Clear />}
                   onDelete={() =>
-                    setInviteEmails((prev) =>
-                      prev.filter((e) => e !== email)
-                    )
+                    setInviteEmails((prev) => prev.filter((e) => e !== email))
                   }
                 />
               ))

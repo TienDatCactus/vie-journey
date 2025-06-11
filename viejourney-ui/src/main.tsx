@@ -50,7 +50,6 @@ const theme = createTheme({
 });
 
 root.render(
-  <React.StrictMode>
     <StyledEngineProvider injectFirst>
       <ScopedCssBaseline>
         <ThemeProvider theme={theme}>
@@ -75,5 +74,4 @@ root.render(
         </ThemeProvider>
       </ScopedCssBaseline>
     </StyledEngineProvider>
-  </React.StrictMode>
 );

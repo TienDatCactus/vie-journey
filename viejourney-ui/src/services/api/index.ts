@@ -3,6 +3,8 @@ import { enqueueSnackbar } from "notistack";
 import http from "../axios";
 import { extractApiData } from "./apiHelpers";
 import {
+  CreateTripDto,
+  CreateTripRespDto,
   GetUserReqDTO,
   GetUserRespDTO,
   LoginReqDTO,
@@ -183,19 +185,14 @@ export const doValidateAccessToken = async (accessToken: string) => {
   }
 };
 
-export const doCreateTrip = async (data: {
-  destination: string;
-  startDate: string;
-  endDate: string;
-  description?: string;
-  budget?: number;
-  public: boolean;
-}) => {
+export const doCreateTrip = async (data: CreateTripDto) => {
   try {
     const resp = await http.post(TRIP?.CREATE_TRIP, data);
     if (resp) {
+      const trip = extractApiData<CreateTripRespDto>(resp);
       enqueueSnackbar("Trip created successfully", { variant: "success" });
-      return extractApiData(resp);
+      window.location.href = `/trip/${trip?._id}`;
+      return trip;
     }
   } catch (error) {
     console.error(error);

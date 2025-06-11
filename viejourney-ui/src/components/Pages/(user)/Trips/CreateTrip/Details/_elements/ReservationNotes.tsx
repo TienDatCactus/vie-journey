@@ -24,12 +24,10 @@ import {
   MenuList,
   Stack,
   TextField,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import React, { useState } from "react";
 import { User } from "../../../../../../../utils/interfaces";
-import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
 
 interface ReservationNotesProps {
   state: {
@@ -61,7 +59,6 @@ const NotesCard: React.FC<NotesCardProps> = ({
   onToggleEdit,
   onDelete,
 }) => {
- 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -151,31 +148,29 @@ const NotesCard: React.FC<NotesCardProps> = ({
           </Menu>
         </Stack>
 
-       <Tooltip title="Double click to edit">
-          {data.isEditing ? (
-            <TextField
-              className="border-none py-2"
-              variant="standard"
-              value={data.content}
-              onChange={handleContentChange}
-              onBlur={() => onToggleEdit(data.id)}
-              multiline
-              rows={2}
-            />
-          ) : (
-            <p
-              onDoubleClick={() => onToggleEdit(data.id)}
-              className="text-base pt-2 pb-4 text-neutral-600 font-medium text-ellipsis line-clamp-2"
-            >
-              {data.content || (
-                <i>
-                  This is a note about the trip. It can contain any information
-                  you want to remember.
-                </i>
-              )}
-            </p>
-          )}
-       </Tooltip>
+        {data.isEditing ? (
+          <TextField
+            className="border-none py-2"
+            variant="standard"
+            value={data.content}
+            onChange={handleContentChange}
+            onBlur={() => onToggleEdit(data.id)}
+            multiline
+            rows={2}
+          />
+        ) : (
+          <p
+            onDoubleClick={() => onToggleEdit(data.id)}
+            className="text-base pt-2 pb-4 text-neutral-600 font-medium text-ellipsis line-clamp-2"
+          >
+            {data.content || (
+              <i>
+                This is a note about the trip. It can contain any information
+                you want to remember.
+              </i>
+            )}
+          </p>
+        )}
 
         <Stack direction={"row"} alignItems={"center"} gap={1}>
           <span>by:</span>
@@ -190,15 +185,7 @@ const NotesCard: React.FC<NotesCardProps> = ({
 };
 
 const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
-  const {
-    notes,
-    addNote,
-    updateNote,
-    toggleEditNote,
-    deleteNote,
-  } = useTripDetailStore();
-
-  const userMock: User = {
+  let userMock: User = {
     id: "1",
     fullName: "John Doe",
     email: "john.doe@example.com",
@@ -213,15 +200,43 @@ const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
     role: "USER",
   };
 
-  const handleAddNote = () => {
-    addNote({
+  const [notes, setNotes] = useState<NoteData[]>([
+    {
       id: `note-${Date.now()}`,
-      content: "",
+      content: "Nhớ mang kem chống nắng và thuốc",
       by: userMock,
-      isEditing: true,
-    });
+    },
+  ]);
+
+  const handleAddNote = () => {
+    setNotes((prev) => [
+      ...prev,
+      {
+        id: `note-${Date.now()}`, // Tạo ID duy nhất
+        content: "",
+        by: userMock,
+        isEditing: true, // Chuyển sang chế độ chỉnh sửa ngay khi thêm mới
+      },
+    ]);
   };
 
+  const handleUpdateNote = (id: string, content: string) => {
+    setNotes((prev) =>
+      prev.map((note) => (note.id === id ? { ...note, content } : note))
+    );
+  };
+
+  const handleToggleEdit = (id: string) => {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id ? { ...note, isEditing: !note.isEditing } : note
+      )
+    );
+  };
+
+  const handleDeleteNote = (id: string) => {
+    setNotes((prev) => prev.filter((note) => note.id !== id));
+  };
 
   return (
     <div>
@@ -249,9 +264,9 @@ const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
                 key={note.id}
                 data={note}
                 index={index + 1}
-                onUpdate={updateNote}
-                onToggleEdit={toggleEditNote}
-                onDelete={deleteNote}
+                onUpdate={handleUpdateNote}
+                onToggleEdit={handleToggleEdit}
+                onDelete={handleDeleteNote}
               />
             ))}
             <Divider textAlign="left">
