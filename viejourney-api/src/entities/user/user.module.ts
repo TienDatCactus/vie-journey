@@ -4,7 +4,7 @@ import { UserInfosSchema } from 'src/common/db/userinfo.schema';
 import { UserInfos } from '../account/entities/userInfos.entity';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 import { Account } from '../account/entities/account.entity';
 import { AccountSchema } from 'src/common/db/account.schema';
 
@@ -12,7 +12,7 @@ import { AccountSchema } from 'src/common/db/account.schema';
   imports: [
     MongooseModule.forFeature([
       { name: UserInfos.name, schema: UserInfosSchema },
-      { name: Account.name, schema: AccountSchema }
+      { name: Account.name, schema: AccountSchema },
     ]),
     CloudinaryModule,
   ],

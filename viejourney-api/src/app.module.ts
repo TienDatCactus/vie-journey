@@ -7,12 +7,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './entities/auth/auth.module';
 import { AccountModule } from './entities/account/account.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { CloudinaryModule } from './entities/cloudinary/cloudinary.module';
 import { UploadModule } from './upload/upload.module';
 import { HotelModule } from './entities/hotel/hotel.module';
 import { UserModule } from './entities/user/user.module';
 import { ManagerModule } from './entities/manager/manager.module';
-
 
 @Module({
   imports: [

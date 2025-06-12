@@ -31,7 +31,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly userService: UserService,
-  ) { }
+  ) {}
 
   @Get('assets')
   async getAssetsByType(@Query('type') type: string) {
@@ -64,7 +64,7 @@ export class AdminController {
   }
 
   // addAsset/banner
-  @Post('assets/addBanner')
+  @Post('assets')
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -129,8 +129,8 @@ export class AdminController {
   }
 
   @Post('userInfo/paginate')
-    async getPaginatedUsers(@Body() paginationDto: PaginationDto) {
-        return this.userService.getPaginatedUsers(paginationDto);
+  async getPaginatedUsers(@Body() paginationDto: PaginationDto) {
+    return this.userService.getPaginatedUsers(paginationDto);
   }
 
   @Get('userInfo/:id')
@@ -139,15 +139,15 @@ export class AdminController {
   }
 
   @Patch('userInfo/:id')
-    async updateUserInfo(
-        @Param('id') id: string,
-        @Body() updateUserInfoDto: UpdateUserInfoDto
-    ) {
-        return this.userService.updateUserInfo(id, updateUserInfoDto);
-    }
+  async updateUserInfo(
+    @Param('id') id: string,
+    @Body() updateUserInfoDto: UpdateUserInfoDto,
+  ) {
+    return this.userService.updateUserInfo(id, updateUserInfoDto);
+  }
 
-    @Delete('userInfo/:id')
-    async deleteUserInfo(@Param('id') id: string) {
-        return this.userService.deleteUserInfo(id);
-    }
+  @Delete('userInfo/:id')
+  async deleteUserInfo(@Param('id') id: string) {
+    return this.userService.deleteUserInfo(id);
+  }
 }
