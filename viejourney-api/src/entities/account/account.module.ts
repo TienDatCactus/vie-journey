@@ -7,7 +7,7 @@ import { Account } from './entities/account.entity';
 import { AuthModule } from '../auth/auth.module';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { UserInfosSchema } from 'src/common/db/userinfo.schema';
-import { UserInfos } from './entities/userInfos.entity';
+import { UserInfos } from '../userinfo/entities/userInfos.entity';
 import { Asset } from './entities/asset.entity';
 import { AssetSchema } from 'src/common/db/asset.schema';
 

@@ -18,12 +18,13 @@ import { Role } from '../auth/entities/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AdminService } from './admin.service';
-import { UserService } from '../user/user.service';
+import { UserService } from '../userinfo/user.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { TypeDto } from '../account/dto/Type.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UpdateUserInfoDto } from '../user/dto/update-userinfo.dto';
-import { PaginationDto } from '../user/dto/pagination-userlist.dto';
+import { UpdateUserInfoDto } from '../userinfo/dto/update-userinfo.dto';
+import { PaginationDto } from '../userinfo/dto/pagination-userlist.dto';
+import { UpdateRoleDto } from './dto/update-userRole.dto';
 // @Roles(Role.Admin)
 // @UseGuards(RolesGuard, JwtAuthGuard)
 @Controller('admin')
@@ -129,8 +130,8 @@ export class AdminController {
   }
 
   @Post('userInfo/paginate')
-    async getPaginatedUsers(@Body() paginationDto: PaginationDto) {
-        return this.userService.getPaginatedUsers(paginationDto);
+  async getPaginatedUsers(@Body() paginationDto: PaginationDto) {
+    return this.userService.getPaginatedUsers(paginationDto);
   }
 
   @Get('userInfo/:id')
@@ -139,15 +140,41 @@ export class AdminController {
   }
 
   @Patch('userInfo/:id')
-    async updateUserInfo(
-        @Param('id') id: string,
-        @Body() updateUserInfoDto: UpdateUserInfoDto
-    ) {
-        return this.userService.updateUserInfo(id, updateUserInfoDto);
-    }
+  async updateUserInfo(
+    @Param('id') id: string,
+    @Body() updateUserInfoDto: UpdateUserInfoDto
+  ) {
+    return this.userService.updateUserInfo(id, updateUserInfoDto);
+  }
 
-    @Delete('userInfo/:id')
-    async deleteUserInfo(@Param('id') id: string) {
-        return this.userService.deleteUserInfo(id);
-    }
+  @Delete('userInfo/:id')
+  async deleteUserInfo(@Param('id') id: string) {
+    return this.userService.deleteUserInfo(id);
+  }
+
+  @Patch('users/:id/ban')
+  async banUser(
+    @Param('id') id: string,
+    @Body('reason') reason: string
+  ) {
+    return this.adminService.banUser(id, reason);
+  }
+
+  @Patch('users/:id/unban')
+  async unbanUser(@Param('id') id: string) {
+    return this.adminService.unbanUser(id);
+  }
+
+  @Patch('users/:id/role')
+  async updateUserRole(
+    @Param('id') id: string,
+    @Body() updateRoleDto: UpdateRoleDto
+  ) {
+    return this.adminService.updateUserRole(id, updateRoleDto.role);
+  }
+
+  @Delete('users/:id')
+  async deleteUser(@Param('id') id: string) {
+    return this.adminService.deleteUser(id);
+  }
 }

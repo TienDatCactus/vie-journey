@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserInfos } from '../account/entities/userInfos.entity';
+import { UserInfos } from './entities/userInfos.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Account } from '../account/entities/account.entity';
 import { PaginationDto, PaginationResponseDto } from './dto/pagination-userlist.dto';
@@ -26,7 +26,12 @@ export class UserService {
         return user;
     }
 
-    async updateUserInfo(id: string, updateUserInfoDto: any): Promise<UserInfos> {
+    async updateUserInfo(id: string, updateUserInfoDto: any): Promise<{
+        status: string;
+        message: string;
+        data: UserInfos;
+    }
+    > {
         const updatedUser = await this.userInfosModel
             .findByIdAndUpdate(id, updateUserInfoDto, { new: true })
             .exec();
@@ -35,7 +40,11 @@ export class UserService {
             throw new NotFoundException(`User info with ID ${id} not found`);
         }
 
-        return updatedUser;
+        return {
+            status: "success",
+            message: "User updating completed",
+            data: updatedUser
+        };
     }
 
     async deleteUserInfo(id: string): Promise<{ message: string }> {
@@ -45,37 +54,37 @@ export class UserService {
         }
 
         await this.accountModel.findByIdAndDelete(userInfo.userId).exec();
-        
+
         await this.userInfosModel.findByIdAndDelete(id).exec();
 
         return { message: 'User and related account deleted successfully' };
     }
 
     async getPaginatedUsers(paginationDto: PaginationDto): Promise<PaginationResponseDto<UserInfos>> {
-    if (!paginationDto.page || !paginationDto.pageSize) {
-        throw new BadRequestException('Page and pageSize are required');
+        if (!paginationDto.page || !paginationDto.pageSize) {
+            throw new BadRequestException('Page and pageSize are required');
+        }
+
+        const skip = (paginationDto.page - 1) * paginationDto.pageSize;
+
+        const [users, totalItems] = await Promise.all([
+            this.userInfosModel
+                .find()
+                .populate('userId')
+                .skip(skip)
+                .limit(paginationDto.pageSize)
+                .exec(),
+            this.userInfosModel.countDocuments()
+        ]);
+
+        const totalPages = Math.ceil(totalItems / paginationDto.pageSize);
+
+        return {
+            data: users,
+            totalPages,
+            currentPage: paginationDto.page,
+            pageSize: paginationDto.pageSize,
+            totalItems
+        };
     }
-
-    const skip = (paginationDto.page - 1) * paginationDto.pageSize;
-
-    const [users, totalItems] = await Promise.all([
-        this.userInfosModel
-            .find()
-            .populate('userId')
-            .skip(skip)
-            .limit(paginationDto.pageSize)
-            .exec(),
-        this.userInfosModel.countDocuments()
-    ]);
-
-    const totalPages = Math.ceil(totalItems / paginationDto.pageSize);
-
-    return {
-        data: users,
-        totalPages,
-        currentPage: paginationDto.page,
-        pageSize: paginationDto.pageSize,
-        totalItems
-    };
-}
 }

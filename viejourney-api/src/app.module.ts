@@ -10,7 +10,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { UploadModule } from './upload/upload.module';
 import { HotelModule } from './entities/hotel/hotel.module';
-import { UserModule } from './entities/user/user.module';
+import { UserModule } from './entities/userinfo/user.module';
 import { ManagerModule } from './entities/manager/manager.module';
 import { TripModule } from './entities/trip/trip.module';
 
