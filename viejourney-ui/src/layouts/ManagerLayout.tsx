@@ -1,12 +1,12 @@
 import { ReactNode, useState } from "react";
-import { NavAdmin } from "../components/Layout/Admin/nav";
+import { NavManager } from "../components/Layout/Manager/nav";
 
-const AdminLayout = ({ children }: { children: ReactNode }) => {
+const ManagerLayout = ({ children }: { children: ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <>
-      <NavAdmin collapsed={collapsed} setCollapsed={setCollapsed} />
+      <NavManager collapsed={collapsed} setCollapsed={setCollapsed} />
       <div
         className={`p-4 transition-all duration-300 ${
           collapsed ? "ml-20" : "ml-64"
@@ -18,4 +18,4 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export default AdminLayout;
+export default ManagerLayout;
