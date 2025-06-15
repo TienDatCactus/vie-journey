@@ -3,6 +3,8 @@ import { enqueueSnackbar } from "notistack";
 import http from "../axios";
 import { extractApiData } from "./apiHelpers";
 import {
+  CreateTripDto,
+  CreateTripRespDto,
   GetUserReqDTO,
   GetUserRespDTO,
   LoginReqDTO,
@@ -14,7 +16,7 @@ import {
   VerifyReqDTO,
 } from "./dto";
 import { clearToken, setToken } from "./token";
-import { AUTH, USER } from "./url";
+import { AUTH, TRIP, USER } from "./url";
 
 export const doLogin = async (data: LoginReqDTO) => {
   try {
@@ -177,6 +179,34 @@ export const doValidateAccessToken = async (accessToken: string) => {
       return extractApiData<{
         userId: string;
       }>(resp);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const doCreateTrip = async (data: CreateTripDto) => {
+  try {
+    const resp = await http.post(TRIP?.CREATE_TRIP, data);
+    if (resp) {
+      const trip = extractApiData<CreateTripRespDto>(resp);
+      enqueueSnackbar("Trip created successfully", { variant: "success" });
+      window.location.href = `/trip/${trip?._id}`;
+      return trip;
+    }
+  } catch (error) {
+    console.error(error);
+    enqueueSnackbar("Failed to create trip", { variant: "error" });
+  }
+  return null;
+};
+
+export const doInvite = async (tripId: string, email: string) => {
+  try {
+    const resp = await http.post(TRIP?.INVITE, { tripId, email });
+    if (resp) {
+      enqueueSnackbar("Invitation sent successfully", { variant: "success" });
+      return extractApiData(resp);
     }
   } catch (error) {
     console.error(error);

@@ -16,10 +16,14 @@ import "./index.css";
 import AuthProvider from "./services/contexts/AuthContext";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
+import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
+
+dayjs.extend(advancedFormat);
 
 const theme = createTheme({
   cssVariables: true,
@@ -46,7 +50,6 @@ const theme = createTheme({
 });
 
 root.render(
-  <React.StrictMode>
     <StyledEngineProvider injectFirst>
       <ScopedCssBaseline>
         <ThemeProvider theme={theme}>
@@ -71,5 +74,4 @@ root.render(
         </ThemeProvider>
       </ScopedCssBaseline>
     </StyledEngineProvider>
-  </React.StrictMode>
 );

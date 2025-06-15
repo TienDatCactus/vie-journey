@@ -145,7 +145,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
               <SwiperSlide key={index}>
                 <img
                   src={
-                    photo.getURI() ||
+                    photo?.getURI() ||
                     `https://placehold.co/600x400?text=${encodeURIComponent(
                       poi.displayName || "Place"
                     )}`

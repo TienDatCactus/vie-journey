@@ -12,6 +12,7 @@ import { UploadModule } from './upload/upload.module';
 import { HotelModule } from './entities/hotel/hotel.module';
 import { UserModule } from './entities/user/user.module';
 import { ManagerModule } from './entities/manager/manager.module';
+import { TripModule } from './entities/trip/trip.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ManagerModule } from './entities/manager/manager.module';
     HotelModule,
     UserModule,
     AccountModule,
+    TripModule,
     CloudinaryModule,
     UploadModule,
     MailerModule.forRoot({

@@ -51,57 +51,7 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
           try {
             const placeObj = new placesLib.Place({ id: place.id });
             const result = await placeObj.fetchFields({
-              fields: [
-                // Basic Info
-                "id",
-                "displayName",
-                "photos",
-                "types",
-                "businessStatus",
-                // Location & Address
-                "location",
-                "viewport",
-                "formattedAddress",
-                "adrFormatAddress",
-                "addressComponents",
-                "plusCode",
-
-                // Contact & Operational
-                "internationalPhoneNumber",
-                "nationalPhoneNumber",
-                "websiteURI",
-                "regularOpeningHours",
-                "utcOffsetMinutes",
-
-                // Ratings & Pricing
-                "rating",
-                "userRatingCount",
-                "priceLevel",
-
-                // Qualitative & Amenities
-                "reviews",
-                "editorialSummary",
-                "parkingOptions",
-                "paymentOptions",
-                "isReservable",
-                "hasOutdoorSeating",
-                "servesBreakfast",
-                "servesLunch",
-                "servesDinner",
-                "servesCoffee",
-                "servesBeer",
-                "servesWine",
-                "hasTakeout",
-                "hasDelivery",
-                "hasCurbsidePickup",
-                "hasDineIn",
-                "isGoodForChildren",
-                "isGoodForGroups",
-                "allowsDogs",
-                "hasLiveMusic",
-                "accessibilityOptions",
-                "googleMapsURI",
-              ],
+              fields: [...import.meta.env.VITE_MAP_FIELDS.split(",")],
             });
 
             return result.place as POIData;

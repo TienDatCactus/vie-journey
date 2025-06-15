@@ -144,7 +144,6 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
       const placeInstance = new placesLib.Place({
         id: suggestion.placePrediction.placeId,
       });
-      console.log("placeInstance:", placeInstance);
       handlePOIClick(placeInstance);
 
       setHighlightedPOI(placeInstance.id);
