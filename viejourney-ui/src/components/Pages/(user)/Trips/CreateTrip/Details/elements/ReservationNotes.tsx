@@ -26,10 +26,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
-import { User } from "../../../../../../../utils/interfaces";
-import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
+import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
+import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
+import { User } from "../../../../../../../utils/interfaces";
 
 interface ReservationNotesProps {
   state: {
@@ -40,10 +40,10 @@ interface ReservationNotesProps {
 }
 
 interface NoteData {
-  id: string; // Thêm id để xác định note
+  id: string;
   content: string;
   by: User;
-  isEditing?: boolean; // Thêm trạng thái chỉnh sửa
+  isEditing?: boolean;
 }
 
 interface NotesCardProps {
@@ -62,7 +62,21 @@ const NotesCard: React.FC<NotesCardProps> = ({
   onDelete,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [localContent, setLocalContent] = useState(data.content);
   const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    setLocalContent(data.content);
+  }, [data.content]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalContent(e.target.value);
+  };
+
+  const handleBlur = () => {
+    onUpdate(data.id, localContent); // sync lên cha khi blur
+    onToggleEdit(data.id); // giữ nguyên
+  };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -70,10 +84,6 @@ const NotesCard: React.FC<NotesCardProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onUpdate(data.id, e.target.value);
   };
 
   return (
@@ -154,9 +164,11 @@ const NotesCard: React.FC<NotesCardProps> = ({
           <TextField
             className="border-none py-2"
             variant="standard"
-            value={data.content}
-            onChange={handleContentChange}
-            onBlur={() => onToggleEdit(data.id)}
+            defaultValue={localContent}
+            onChange={handleChange}
+            onBlur={() => {
+              handleBlur();
+            }}
             multiline
             rows={2}
           />
@@ -188,34 +200,28 @@ const NotesCard: React.FC<NotesCardProps> = ({
 
 const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
   const notes = useTripDetailStore((state) => state.notes);
-  const {
-    addPlaceNote,
-    updatePlaceNote,
-    toggleEditPlaceNotes,
-    deletePlaceNote,
-  } = useTripDetailStore();
+  const { addNote, updateNote, toggleEditNote, deleteNote } =
+    useTripDetailStore();
   const { user } = useAuthStore();
   const handleAddNote = () => {
-    addPlaceNote({
+    addNote({
       id: `note-${Date.now()}`,
-      note: "",
-      placeId: "",
-      visited: false,
-      addedBy: user as User,
+      content: "",
+      by: user as User,
       isEditing: true,
     });
   };
 
   const handleUpdateNote = (id: string, content: string) => {
-    updatePlaceNote(id, content);
+    updateNote(id, content);
   };
 
   const handleToggleEdit = (id: string) => {
-    toggleEditPlaceNotes(id);
+    toggleEditNote(id);
   };
 
   const handleDeleteNote = (id: string) => {
-    deletePlaceNote(id);
+    deleteNote(id);
     props.state.handleClose?.();
   };
 

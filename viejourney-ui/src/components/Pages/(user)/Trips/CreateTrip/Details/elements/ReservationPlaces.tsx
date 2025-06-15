@@ -253,7 +253,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   const [details, setDetails] = useState<google.maps.places.Place | undefined>(
     placeDetail
   );
-
+  const [localContent, setLocalContent] = useState(placeNote.note);
   const open = Boolean(anchorEl);
   useEffect(() => {
     const fetchDetails = async () => {
@@ -275,6 +275,10 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     fetchDetails();
   }, [placeDetail, placeNote.placeId, onFetchDetails]);
 
+  useEffect(() => {
+    setLocalContent(placeNote.note);
+  }, [placeNote.note, placeNote.isEditing]);
+
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -283,8 +287,13 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     setAnchorEl(null);
   };
 
-  const handleNoteChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onUpdateNote(placeNote.id, event.target.value);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalContent(e.target.value);
+  };
+
+  const handleBlur = () => {
+    onUpdateNote(placeNote.id, localContent); // sync lên cha khi blur
+    onToggleEdit(placeNote.id); // giữ nguyên
   };
 
   return (
@@ -409,8 +418,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 placeholder="Add a description..."
                 variant="standard"
                 size="small"
-                value={placeNote.note}
-                onChange={handleNoteChange}
+                value={localContent}
+                onChange={handleChange}
+                onBlur={handleBlur}
                 slotProps={{
                   input: {
                     className:

@@ -100,18 +100,10 @@ export class TripService {
     return `This action returns all trip`;
   }
 
-  findOne(id: string, req: Request) {
+  findOne(id: string) {
     try {
       return this.tripModel.findOne({
         _id: id,
-        $or: [
-          {
-            createdBy: req.user?.['userId'] as string,
-          },
-          {
-            tripmates: { $in: [req.user?.['email'] as string] },
-          },
-        ],
       });
     } catch (error) {
       console.error(error);

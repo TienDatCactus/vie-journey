@@ -6,7 +6,6 @@ import { animate } from "motion/react";
 import { MainAuthHeader, MainUnAuthHeader } from "../components/Layout";
 import Footer from "../components/Layout/Main/Footer";
 import { useAuthStore } from "../services/stores/useAuthStore";
-
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuthStore();
   const isAuthenticated = useAuthStore(

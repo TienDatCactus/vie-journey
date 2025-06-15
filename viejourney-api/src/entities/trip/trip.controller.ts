@@ -39,8 +39,8 @@ export class TripController {
     return this.tripService.findByUser(req.userId);
   }
   @Get(':id')
-  findOne(@Req() req: Request, @Param('id') id: string) {
-    return this.tripService.findOne(id, req);
+  findOne(@Param('id') id: string) {
+    return this.tripService.findOne(id);
   }
 
   @Patch(':id')
