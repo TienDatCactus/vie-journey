@@ -18,6 +18,6 @@ import { AssetsModule } from '../assets/assets.module';
   ],
   controllers: [UserController],
   providers: [UserService],
-  exports: [UserService],
+  exports: [UserService, UserModule],
 })
 export class UserModule {}
