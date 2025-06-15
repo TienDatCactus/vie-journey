@@ -28,11 +28,11 @@ const ExploreCard = ({
     return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   };
   return (
-    <Card sx={{ maxWidth: 345 }}>
+    <Card className="lg:w-full ">
       <CardActionArea>
         <CardMedia
           component="img"
-          height="140"
+          className="lg:h-40 object-cover"
           image={
             img ||
             `https://placehold.co/600x400/1a1a1a/ffffff?text=${title

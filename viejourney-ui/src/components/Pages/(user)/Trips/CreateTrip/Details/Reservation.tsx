@@ -1,42 +1,20 @@
 import {
-  AccessTime,
   AttachFile,
-  AttachMoney,
-  Directions,
   EmojiTransportation,
-  ExpandMore,
   Explore,
   Hotel,
   MoreHoriz,
-  OpenInNew,
   RestaurantMenu,
-  Star,
-  TaskAlt,
   TransferWithinAStation,
 } from "@mui/icons-material";
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Badge,
-  Button,
-  ButtonGroup,
-  Card,
-  CardContent,
-  CardMedia,
-  Chip,
-  Divider,
-  IconButton,
-  Stack,
-  TextField,
-} from "@mui/material";
+import { Chip, Divider, IconButton } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
 import {
   ReservationNotes,
   ReservationPlaces,
   ReservationTransits,
-} from "./_elements";
+} from "./elements";
 const Reservation: React.FC = () => {
   const reservationItems = [
     { icon: <TransferWithinAStation />, label: "Transit" },
@@ -46,7 +24,6 @@ const Reservation: React.FC = () => {
     { icon: <MoreHoriz />, label: "Others", disabled: true },
   ];
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -74,7 +51,7 @@ const Reservation: React.FC = () => {
           <h1 className="text-base font-semibold text-dark-900">Budgeting</h1>
           <data>0,00 US$</data>
           <Link
-            to={"/trips/create/details/budgeting"}
+            to={"/trip/create/details/"}
             className="no-underline font-semibold text-dark-700 text-sm cursor-pointer hover:text-dark-500"
           >
             View details

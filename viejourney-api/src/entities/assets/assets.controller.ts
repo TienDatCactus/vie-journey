@@ -8,11 +8,11 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { CloudinaryService } from '../entities/cloudinary/cloudinary.service';
+import { AssetsService } from './assets.service';
 
-@Controller('upload')
-export class UploadController {
-  constructor(private readonly cloudinaryService: CloudinaryService) {}
+@Controller('assets')
+export class AssetsController {
+  constructor(private readonly assetsService: AssetsService) {}
 
   @Post('image')
   @UseInterceptors(
@@ -34,7 +34,7 @@ export class UploadController {
     }
 
     try {
-      const result = await this.cloudinaryService.uploadImage(file);
+      const result = await this.assetsService.uploadImage(file);
 
       return {
         statusCode: HttpStatus.OK,
@@ -49,7 +49,7 @@ export class UploadController {
         },
       };
     } catch (error) {
-      throw new BadRequestException('Lỗi khi upload ảnh: ' + error.message);
+      throw new BadRequestException('Error uploading asset ' + error.message);
     }
   }
 
@@ -74,7 +74,7 @@ export class UploadController {
 
     try {
       const uploadPromises = files.map((file) =>
-        this.cloudinaryService.uploadImage(file),
+        this.assetsService.uploadImage(file),
       );
 
       const results = await Promise.all(uploadPromises);

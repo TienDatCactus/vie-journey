@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { LoginForm, RegisterForm } from "../../../components/Auth";
+import { useAuthStore } from "../../../services/stores/useAuthStore";
 
 const Access: React.FC = () => {
+  const { user } = useAuthStore();
   const location = useLocation();
   const [path] = useState<string>(location?.pathname);
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
   const checkPath = () => {
     switch (path) {
       case "/auth/login":

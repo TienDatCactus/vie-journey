@@ -47,12 +47,9 @@ import { useTripDetailStore } from "../../../../../../../services/stores/useTrip
 import { useAutocompleteSuggestions } from "../../../../../../../utils/hooks/use-autocomplete-suggestion";
 import { User } from "../../../../../../../utils/interfaces";
 import { useFetchPlaceDetails } from "../../../../../../../utils/hooks/use-fetch-place";
-// Add this helper function at the top of your file
+import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
 function getPlacePhotoUrl(photo: any): string {
-  // Default fallback image
   const fallbackImage = "/images/placeholder-main.png";
-
-  // If no photo provided, return fallback
   if (!photo) return fallbackImage;
 
   try {
@@ -108,7 +105,6 @@ function getPlacePhotoUrl(photo: any): string {
     return fallbackImage;
   }
 }
-interface PlaceDetails extends google.maps.places.PlacePrediction {}
 interface PlaceCardProps {
   placeNote: PlaceNote;
   placeDetail?: google.maps.places.Place;
@@ -119,7 +115,6 @@ interface PlaceCardProps {
   onFetchDetails: (
     placeId: string
   ) => Promise<google.maps.places.Place | undefined>;
-  currentUser: User;
   isLoading?: boolean;
 }
 
@@ -134,7 +129,9 @@ const PlacesFinder = ({
     placePrediction: google.maps.places.PlacePrediction;
   } | null>(null);
   const [open, setOpen] = useState(false);
-  const { suggestions, isLoading } = useAutocompleteSuggestions(destination);
+  const { suggestions, isLoading } = useAutocompleteSuggestions(destination, {
+    includedPrimaryTypes: ["point_of_interest"],
+  });
 
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -159,7 +156,6 @@ const PlacesFinder = ({
         onAddPlace(placeId, name);
       }
 
-      // Reset the form
       setDestination("");
       setSelectedPlace(null);
       setOpen(false);
@@ -242,7 +238,7 @@ const PlacesFinder = ({
     />
   );
 };
-export const PlaceCard: React.FC<PlaceCardProps> = ({
+const PlaceCard: React.FC<PlaceCardProps> = ({
   placeNote,
   placeDetail,
   onUpdateNote,
@@ -250,15 +246,14 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
   onDelete,
   onToggleVisited,
   onFetchDetails,
-  currentUser,
-  isLoading = false,
+  isLoading,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [loading, setLoading] = useState<boolean>(isLoading);
+  const [loading, setLoading] = useState<boolean>(isLoading || false);
   const [details, setDetails] = useState<google.maps.places.Place | undefined>(
     placeDetail
   );
-
+  const [localContent, setLocalContent] = useState(placeNote.note);
   const open = Boolean(anchorEl);
   useEffect(() => {
     const fetchDetails = async () => {
@@ -280,6 +275,10 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
     fetchDetails();
   }, [placeDetail, placeNote.placeId, onFetchDetails]);
 
+  useEffect(() => {
+    setLocalContent(placeNote.note);
+  }, [placeNote.note, placeNote.isEditing]);
+
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -288,8 +287,13 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
     setAnchorEl(null);
   };
 
-  const handleNoteChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onUpdateNote(placeNote.id, event.target.value);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalContent(e.target.value);
+  };
+
+  const handleBlur = () => {
+    onUpdateNote(placeNote.id, localContent); // sync lên cha khi blur
+    onToggleEdit(placeNote.id); // giữ nguyên
   };
 
   return (
@@ -306,12 +310,10 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
           </Typography>
         </CardContent>
       ) : (
-        // Regular content rendering
         <>
           <CardMedia
             loading="lazy"
             onError={(e) => {
-              console.log("Image failed to load, using fallback");
               e.currentTarget.src = `https://placehold.co/300x500?text=Image+not+available`;
             }}
             component="img"
@@ -322,7 +324,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
             }
             className="object-cover col-span-1 w-full h-full rounded-s-lg"
           />
-          <CardContent className="p-0 px-4 lg:py-1 gap-4 flex flex-col col-span-2">
+          <CardContent className="p-0 px-4 lg:py-1 gap-4 flex flex-col col-span-2 justify-between">
             <Stack
               direction={"row"}
               alignItems={"center"}
@@ -416,8 +418,9 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
                 placeholder="Add a description..."
                 variant="standard"
                 size="small"
-                value={placeNote.note}
-                onChange={handleNoteChange}
+                value={localContent}
+                onChange={handleChange}
+                onBlur={handleBlur}
                 slotProps={{
                   input: {
                     className:
@@ -544,22 +547,9 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
 };
 
 const ReservationPlaces: React.FC = () => {
-  const CURRENT_USER: User = {
-    id: "user-1",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    avatarUrl: "https://via.placeholder.com/150",
-    status: "active",
-    lastLoginAt: new Date(),
-    flaggedCount: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    role: "USER",
-  };
+  const placeNotes = useTripDetailStore((state) => state.placeNotes);
   const {
-    placeNotes,
     placeDetails,
-
     addPlaceNote,
     updatePlaceNote,
     toggleEditPlaceNotes,
@@ -567,21 +557,27 @@ const ReservationPlaces: React.FC = () => {
     togglePlaceVisited,
   } = useTripDetailStore();
   const { fetchPlaceDetail } = useFetchPlaceDetails();
+  const { user } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const handleAddPlace = (placeId: string) => {
+    try {
+      setLoading(true);
+      const newPlaceNote: PlaceNote = {
+        id: `place-note-${Date.now()}`,
+        placeId: placeId,
+        note: "",
+        visited: false,
+        addedBy: user as User,
+        isEditing: true,
+      };
 
-  const handleAddPlace = (placeId: string, name: string) => {
-    // Create a new place note
-    const newPlaceNote: PlaceNote = {
-      id: `place-note-${Date.now()}`,
-      placeId: placeId,
-      note: "",
-      visited: false,
-      addedBy: CURRENT_USER,
-      isEditing: true, // Start in editing mode
-    };
-
-    addPlaceNote(newPlaceNote);
-    // Start fetching the place details
-    fetchPlaceDetail(placeId);
+      addPlaceNote(newPlaceNote);
+      fetchPlaceDetail(placeId);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -618,6 +614,7 @@ const ReservationPlaces: React.FC = () => {
             ) : (
               placeNotes.map((placeNote) => (
                 <PlaceCard
+                  isLoading={loading}
                   key={placeNote.id}
                   placeNote={placeNote}
                   placeDetail={placeDetails[placeNote.placeId]}
@@ -626,7 +623,6 @@ const ReservationPlaces: React.FC = () => {
                   onDelete={deletePlaceNote}
                   onToggleVisited={togglePlaceVisited}
                   onFetchDetails={fetchPlaceDetail}
-                  currentUser={CURRENT_USER}
                 />
               ))
             )}

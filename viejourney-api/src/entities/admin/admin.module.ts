@@ -14,7 +14,7 @@ import { UserInfosSchema } from 'src/common/db/userinfo.schema';
 import { AssetSchema } from 'src/common/db/asset.schema';
 import { Asset } from '../account/entities/asset.entity';
 import { UserModule } from '../user/user.module';
-import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { AssetsModule } from '../assets/assets.module';
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
       { name: Asset.name, schema: AssetSchema },
     ]),
     forwardRef(() => AuthModule),
-    CloudinaryModule, // Use forwardRef to avoid circular dependency
+    AssetsModule, // Use forwardRef to avoid circular dependency
     UserModule,
   ],
 

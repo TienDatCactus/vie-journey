@@ -2,7 +2,8 @@ import { enqueueSnackbar } from "notistack";
 import React, { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Fallback from "../handlers/loading/Fallback";
-import { useAuth } from "../../services/contexts/AuthContext";
+import { useAuthStore } from "../../services/stores/useAuthStore";
+import { PageTitle } from "./PageTitle";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -13,13 +14,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAuth = true,
 }) => {
-  const { isAuthenticated, isVerified, isLoading } = useAuth();
   const location = useLocation();
 
-  // Make sure all hooks are called unconditionally at the top level
+  const { isLoading, credential, user } = useAuthStore();
+  const isAuthenticated = !!credential?.userId;
+  const isVerified = !!user?.active;
+
   useEffect(() => {
-    // Handle notification for unverified users
-    if (requireAuth && isAuthenticated && !isVerified) {
+    if (!requireAuth) return;
+
+    if (user && !isAuthenticated) {
+      enqueueSnackbar("You need to be logged in to access this page.", {
+        variant: "warning",
+      });
+    } else if (user && !isVerified) {
       enqueueSnackbar(
         "Please verify your email to access this page. Login again to resend the verification email.",
         { variant: "error" }
@@ -31,15 +39,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Fallback />;
   }
 
-  if (requireAuth && !isAuthenticated) {
+  if (requireAuth && user && !isAuthenticated) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  if (requireAuth && isAuthenticated && !isVerified) {
+  if (requireAuth && user && isAuthenticated && !isVerified) {
     return <Navigate to="/auth/login" replace />;
   }
 
-  return <>{children || <Outlet />}</>;
+  return (
+    <>
+      <PageTitle />
+      {children || <Outlet />}
+    </>
+  );
 };
 
 export default ProtectedRoute;

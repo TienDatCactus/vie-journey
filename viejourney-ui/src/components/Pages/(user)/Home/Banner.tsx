@@ -1,9 +1,10 @@
 import { Add } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import React from "react";
-import { useAuth } from "../../../../services/contexts/AuthContext";
+import { useAuthStore } from "../../../../services/stores/useAuthStore";
+import { Link } from "react-router-dom";
 const HomeBanner: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   return (
     <div className="max-w-[75rem] py-10 relative flex flex-col items-center justify-center w-full ">
       <img
@@ -17,12 +18,14 @@ const HomeBanner: React.FC = () => {
           Continue exploring your dream destinations or plan your next
           adventure.
         </p>
-        <Button
-          endIcon={<Add />}
-          className="bg-neutral-50 text-black px-4 py-2"
-        >
-          Plan new Trip
-        </Button>
+        <Link to="/trip/create">
+          <Button
+            endIcon={<Add />}
+            className="bg-neutral-50 text-black px-4 py-2"
+          >
+            Plan new Trip
+          </Button>
+        </Link>
       </div>
     </div>
   );

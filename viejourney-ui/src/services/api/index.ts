@@ -5,6 +5,7 @@ import { extractApiData } from "./apiHelpers";
 import {
   CreateTripDto,
   CreateTripRespDto,
+  GetTripRespDto,
   GetUserReqDTO,
   GetUserRespDTO,
   LoginReqDTO,
@@ -201,14 +202,14 @@ export const doCreateTrip = async (data: CreateTripDto) => {
   return null;
 };
 
-export const doInvite = async (tripId: string, email: string) => {
+export const doGetTrip = async (tripId: string) => {
   try {
-    const resp = await http.post(TRIP?.INVITE, { tripId, email });
+    const resp = await http.get(`${TRIP?.GET_TRIP}/${tripId}`);
     if (resp) {
-      enqueueSnackbar("Invitation sent successfully", { variant: "success" });
-      return extractApiData(resp);
+      return extractApiData<GetTripRespDto>(resp);
     }
   } catch (error) {
-    console.error(error);
+    console.error("Failed to get trip:", error);
   }
+  return null;
 };

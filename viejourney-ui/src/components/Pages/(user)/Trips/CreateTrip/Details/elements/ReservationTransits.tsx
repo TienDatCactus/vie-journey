@@ -1,8 +1,8 @@
 import {
   Add,
   ArrowForward,
+  AttachMoney,
   Circle,
-  CurrencyExchange,
   Delete,
   Edit,
   ExpandMore,
@@ -21,8 +21,7 @@ import {
   FormHelperText,
   FormLabel,
   Grid2,
-  IconButton,
-  InputBase,
+  InputAdornment,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -32,22 +31,13 @@ import {
   Stack,
   TextField,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
-import React, { useState } from "react";
+import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
 import { NumericFormat } from "react-number-format";
-
-interface ReservationTransitsProps {
-  state?: {
-    handleClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-    handleClose?: () => void;
-    anchorEl?: HTMLElement | null;
-  };
-}
+import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
 
 interface TransitData {
   id: string;
@@ -90,8 +80,6 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
     control,
     formState: { errors },
     register,
-    setValue,
-    watch,
   } = useForm({
     defaultValues: {
       mode: props.data.mode,
@@ -105,7 +93,44 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
       note: props.data.note,
     },
   });
+  // const placesLib = useMapsLibrary("places");
+  // const [destination, setDestination] = useState<string>("");
+  // const [selectedPlace, setSelectedPlace] = useState<{
+  //   placePrediction: google.maps.places.PlacePrediction;
+  // } | null>(null);
+  // const [open, setOpen] = useState(false);
+  // const { suggestions, isLoading } = useAutocompleteSuggestions(destination, {
+  //   includedPrimaryTypes: ["point_of_interest"],
+  // });
 
+  // const handleInputChange = useCallback(
+  //   (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  //     const value = event.target.value;
+  //     setDestination(value);
+  //   },
+  //   []
+  // );
+
+  // const handlePlaceSelect = (
+  //   suggestion: {
+  //     placePrediction: google.maps.places.PlacePrediction | null;
+  //   } | null
+  // ) => {
+  //   if (suggestion?.placePrediction && placesLib) {
+  //     setSelectedPlace({ placePrediction: suggestion.placePrediction });
+  //     console.log("Selected Place:", suggestion.placePrediction.placeId);
+
+  //     const placeId = suggestion.placePrediction.placeId || "";
+  //     const name = String(suggestion.placePrediction.mainText || "");
+  //     if (placeId) {
+  //       onAddPlace(placeId, name);
+  //     }
+
+  //     setDestination("");
+  //     setSelectedPlace(null);
+  //     setOpen(false);
+  //   }
+  // };
   const onFormSubmit = (data: any) => {
     const updated: TransitData = {
       ...props.data,
@@ -225,15 +250,7 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                       name="departureLocation"
                       control={control}
                       rules={{ required: "Location required" }}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          error={!!errors.departureLocation}
-                          variant="standard"
-                          placeholder="Location"
-                          fullWidth
-                        />
-                      )}
+                      render={({ field }) => <TextField fullWidth />}
                     />
                   </Grid2>
                 </Grid2>
@@ -319,7 +336,15 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                           required: "Cost is required",
                           valueAsNumber: true,
                         })}
-                        prefix="$ "
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <AttachMoney />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
                         {...field}
                         className="text-neutral-800 text-base border-none w-full h-full"
                         customInput={TextField}
@@ -347,8 +372,8 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                         {...field}
                         multiline
                         fullWidth
-                        rows={6}
-                        maxRows={7}
+                        rows={8}
+                        maxRows={8}
                         slotProps={{
                           input: {
                             className:
@@ -533,7 +558,7 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
   );
 };
 
-const ReservationTransits: React.FC<ReservationTransitsProps> = (props) => {
+const ReservationTransits: React.FC = () => {
   const {
     transits,
     addTransit,

@@ -10,7 +10,7 @@ import {
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useAuth } from "../../services/contexts/AuthContext";
+import { useAuthStore } from "../../services/stores/useAuthStore";
 
 const RegisterForm: React.FC = () => {
   const {
@@ -23,7 +23,7 @@ const RegisterForm: React.FC = () => {
     rePassword: string;
   }>();
   const [loading, setLoading] = useState<boolean>(false);
-  const { handleRegister, handleGoogleLogin } = useAuth();
+  const { handleRegister, handleGoogleLogin } = useAuthStore();
   const onSubmit: SubmitHandler<{
     email: string;
     password: string;

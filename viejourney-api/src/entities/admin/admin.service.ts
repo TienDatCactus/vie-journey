@@ -1,5 +1,8 @@
-
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from '../blog/entities/blog.entity';
 import { Comment } from '../blog/entities/comment.entity';
@@ -10,8 +13,8 @@ import * as bcrypt from 'bcrypt';
 import { UserInfos } from '../account/entities/userInfos.entity';
 import { Asset } from '../account/entities/asset.entity';
 import { TypeDto } from '../account/dto/Type.dto';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { v4 as uuidv4 } from 'uuid';
+import { AssetsService } from '../assets/assets.service';
 
 @Injectable()
 export class AdminService {
@@ -21,7 +24,7 @@ export class AdminService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
-    private readonly cloudinaryService: CloudinaryService,
+    private readonly assetsService: AssetsService,
   ) {}
 
   // getAssetsByType
@@ -51,10 +54,8 @@ export class AdminService {
     }
 
     if (asset.type === 'AVATAR') {
-      // Xóa ảnh trên Cloudinary (nếu cần)
-      await this.cloudinaryService.deleteImage(asset.publicId);
+      await this.assetsService.deleteImage(asset.publicId);
 
-      // Cập nhật lại trường url và publicId về null
       const updatedAsset = await this.assetModel.findOneAndUpdate(
         { publicId: asset.publicId },
         {
@@ -73,7 +74,7 @@ export class AdminService {
       return updatedAsset;
     } else if (asset.type === 'BANNER') {
       // Xóa ảnh trên Cloudinary (nếu cần)
-      await this.cloudinaryService.deleteImage(asset.publicId);
+      await this.assetsService.deleteImage(asset.publicId);
 
       // Xóa asset khỏi database
       const deletedAsset = await this.assetModel.findOneAndDelete({
@@ -97,10 +98,10 @@ export class AdminService {
     }
 
     // 1. Xóa ảnh cũ trên Cloudinary
-    await this.cloudinaryService.deleteImage(publicId);
+    await this.assetsService.deleteImage(publicId);
 
     // 2. Upload ảnh mới
-    const uploadResult = await this.cloudinaryService.uploadImage(file, {
+    const uploadResult = await this.assetsService.uploadImage(file, {
       public_id: `users/${asset.userId}/AVATAR/${file.filename}`,
     });
     if (!uploadResult || !uploadResult.secure_url) {
@@ -128,7 +129,7 @@ export class AdminService {
     }
 
     // 1. Upload ảnh mới
-    const uploadResult = await this.cloudinaryService.uploadImage(file, {
+    const uploadResult = await this.assetsService.uploadImage(file, {
       public_id: `users/${userId}/BANNER/${uuidv4()}`,
     });
 

@@ -26,7 +26,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
+import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
 import { User } from "../../../../../../../utils/interfaces";
 
 interface ReservationNotesProps {
@@ -38,10 +40,10 @@ interface ReservationNotesProps {
 }
 
 interface NoteData {
-  id: string; // Thêm id để xác định note
+  id: string;
   content: string;
   by: User;
-  isEditing?: boolean; // Thêm trạng thái chỉnh sửa
+  isEditing?: boolean;
 }
 
 interface NotesCardProps {
@@ -60,7 +62,21 @@ const NotesCard: React.FC<NotesCardProps> = ({
   onDelete,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [localContent, setLocalContent] = useState(data.content);
   const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    setLocalContent(data.content);
+  }, [data.content]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalContent(e.target.value);
+  };
+
+  const handleBlur = () => {
+    onUpdate(data.id, localContent); // sync lên cha khi blur
+    onToggleEdit(data.id); // giữ nguyên
+  };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -68,10 +84,6 @@ const NotesCard: React.FC<NotesCardProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onUpdate(data.id, e.target.value);
   };
 
   return (
@@ -152,9 +164,11 @@ const NotesCard: React.FC<NotesCardProps> = ({
           <TextField
             className="border-none py-2"
             variant="standard"
-            value={data.content}
-            onChange={handleContentChange}
-            onBlur={() => onToggleEdit(data.id)}
+            defaultValue={localContent}
+            onChange={handleChange}
+            onBlur={() => {
+              handleBlur();
+            }}
             multiline
             rows={2}
           />
@@ -185,57 +199,30 @@ const NotesCard: React.FC<NotesCardProps> = ({
 };
 
 const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
-  let userMock: User = {
-    id: "1",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    avatarUrl: "https://via.placeholder.com/150",
-    status: "active",
-    lastLoginAt: new Date(),
-    flaggedCount: 0,
-    banReason: undefined,
-    bannedAt: undefined,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    role: "USER",
-  };
-
-  const [notes, setNotes] = useState<NoteData[]>([
-    {
-      id: `note-${Date.now()}`,
-      content: "Nhớ mang kem chống nắng và thuốc",
-      by: userMock,
-    },
-  ]);
-
+  const notes = useTripDetailStore((state) => state.notes);
+  const { addNote, updateNote, toggleEditNote, deleteNote } =
+    useTripDetailStore();
+  const { user } = useAuthStore();
   const handleAddNote = () => {
-    setNotes((prev) => [
-      ...prev,
-      {
-        id: `note-${Date.now()}`, // Tạo ID duy nhất
-        content: "",
-        by: userMock,
-        isEditing: true, // Chuyển sang chế độ chỉnh sửa ngay khi thêm mới
-      },
-    ]);
+    addNote({
+      id: `note-${Date.now()}`,
+      content: "",
+      by: user as User,
+      isEditing: true,
+    });
   };
 
   const handleUpdateNote = (id: string, content: string) => {
-    setNotes((prev) =>
-      prev.map((note) => (note.id === id ? { ...note, content } : note))
-    );
+    updateNote(id, content);
   };
 
   const handleToggleEdit = (id: string) => {
-    setNotes((prev) =>
-      prev.map((note) =>
-        note.id === id ? { ...note, isEditing: !note.isEditing } : note
-      )
-    );
+    toggleEditNote(id);
   };
 
   const handleDeleteNote = (id: string) => {
-    setNotes((prev) => prev.filter((note) => note.id !== id));
+    deleteNote(id);
+    props.state.handleClose?.();
   };
 
   return (

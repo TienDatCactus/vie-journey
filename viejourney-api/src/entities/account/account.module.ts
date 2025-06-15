@@ -5,11 +5,11 @@ import { AccountController } from './account.controller';
 import { AccountService } from './account.service';
 import { Account } from './entities/account.entity';
 import { AuthModule } from '../auth/auth.module';
-import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 import { UserInfosSchema } from 'src/common/db/userinfo.schema';
 import { UserInfos } from './entities/userInfos.entity';
 import { Asset } from './entities/asset.entity';
 import { AssetSchema } from 'src/common/db/asset.schema';
+import { AssetsModule } from '../assets/assets.module';
 
 @Module({
   imports: [
@@ -19,7 +19,7 @@ import { AssetSchema } from 'src/common/db/asset.schema';
       { name: Asset.name, schema: AssetSchema },
     ]),
     forwardRef(() => AuthModule), // Use forwardRef to avoid circular dependency
-    CloudinaryModule,
+    AssetsModule,
   ],
   controllers: [AccountController],
   providers: [AccountService],

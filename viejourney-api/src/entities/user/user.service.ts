@@ -5,20 +5,20 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserInfos } from '../account/entities/userInfos.entity';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { Account } from '../account/entities/account.entity';
 import {
   PaginationDto,
   PaginationResponseDto,
 } from './dto/pagination-userlist.dto';
+import { AssetsService } from '../assets/assets.service';
+import { Account } from '../account/entities/account.entity';
+import { UserInfos } from '../account/entities/userInfos.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     @InjectModel('Account') private readonly accountModel: Model<Account>,
-    private readonly cloudinaryService: CloudinaryService,
+    private readonly assetsService: AssetsService,
   ) {}
 
   async getAllUser(): Promise<UserInfos[]> {
