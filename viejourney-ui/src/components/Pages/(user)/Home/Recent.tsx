@@ -10,7 +10,7 @@ import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { RecentCard } from "./_elements";
+import { RecentCard } from "./elements";
 const HomeRecent: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);

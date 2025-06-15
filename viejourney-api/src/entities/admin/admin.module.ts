@@ -13,8 +13,8 @@ import { UserInfos } from '../account/entities/userInfos.entity';
 import { UserInfosSchema } from 'src/common/db/userinfo.schema';
 import { AssetSchema } from 'src/common/db/asset.schema';
 import { Asset } from '../account/entities/asset.entity';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { UserModule } from '../user/user.module';
+import { AssetsModule } from '../assets/assets.module';
 
 @Module({
   imports: [
@@ -26,8 +26,8 @@ import { UserModule } from '../user/user.module';
       { name: Asset.name, schema: AssetSchema },
     ]),
     forwardRef(() => AuthModule),
-    CloudinaryModule, // Use forwardRef to avoid circular dependency
-    UserModule, 
+    AssetsModule, // Use forwardRef to avoid circular dependency
+    UserModule,
   ],
 
   controllers: [AdminController],

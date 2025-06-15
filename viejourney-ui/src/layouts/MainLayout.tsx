@@ -5,10 +5,13 @@ import { Divider, Fab } from "@mui/material";
 import { animate } from "motion/react";
 import { MainAuthHeader, MainUnAuthHeader } from "../components/Layout";
 import Footer from "../components/Layout/Main/Footer";
-import { useAuth } from "../services/contexts/AuthContext";
+import { useAuthStore } from "../services/stores/useAuthStore";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuthStore();
+  const isAuthenticated = useAuthStore(
+    (state) => state.credential?.userId != null
+  );
   const smoothScrollTo = (targetY: number) => {
     const currentY = window.scrollY;
 

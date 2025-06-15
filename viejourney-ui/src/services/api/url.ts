@@ -30,8 +30,8 @@ export const ADMIN = {
 export const TRIP = {
   INVITE: "/trip/invite",
   GET_TRIPS: "/trip",
-  GET_TRIP: "/trip/:id",
+  GET_TRIP: "/trip",
   CREATE_TRIP: "/trip",
-  UPDATE_TRIP: "/trip/update/:id",
-  DELETE_TRIP: "/trip/delete/:id",
+  UPDATE_TRIP: "/trip/update",
+  DELETE_TRIP: "/trip/delete",
 };

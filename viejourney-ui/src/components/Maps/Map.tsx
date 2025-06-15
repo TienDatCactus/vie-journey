@@ -11,7 +11,7 @@ import React, { useEffect } from "react";
 import useCategorySearch from "../../utils/hooks/use-category-search";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
 import usePOI from "../../utils/hooks/use-poi";
-import { MarkerCluster, PlaceMarker } from "./controls";
+import { MarkerCluster } from "./controls";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
 import GeneralFilter from "./controls/GeneralFilter";
 import POIDetails from "./controls/POIDetails";
@@ -28,7 +28,13 @@ const MapConfiguration: React.FC<{
   const placesLib = useMapsLibrary("places");
 
   useEffect(() => {
-    if (!mapInstance || !coreLib || !placesLib) return;
+    if (!mapInstance || !coreLib || !placesLib) return; // Disable Google Maps analytics collection to prevent CSP errors
+    if (window.google && window.google.maps) {
+      // Apply settings that disable analytics and tracking that cause CSP issues
+      (window.google.maps as any).disablePostfixUnitsRequests = true;
+      (window.google.maps as any).disableCommunitiesLogging = true;
+      (window.google.maps as any).disableAttributionPrefixRequests = true;
+    }
 
     mapInstance.setOptions({
       gestureHandling: "greedy",
@@ -53,7 +59,6 @@ const MapConfiguration: React.FC<{
             id: eventWithPlace.placeId,
           });
 
-          // Use the new fetchFields method instead of getDetails
           place
             .fetchFields({
               fields: [...import.meta.env.VITE_MAP_FIELDS.split(",")],
@@ -104,14 +109,8 @@ const Map: React.FC<MapProps> = ({
   ...mapProps
 }) => {
   const isApiLoaded = useApiIsLoaded();
-  const {
-    selectedCategories,
-    categoryResults,
-    isSearching,
-    showResultsPanel,
-    setShowResultsPanel,
-    handleCategoryToggle,
-  } = useCategorySearch({});
+  const { selectedCategories, categoryResults, handleCategoryToggle } =
+    useCategorySearch({});
 
   const {
     selectedPOI,

@@ -1,7 +1,8 @@
 import { Add } from "@mui/icons-material";
 import { Button, Divider, Grid2, Paper, Stack } from "@mui/material";
 import React from "react";
-import { GuideTag, TripTag } from "./_elements";
+import { GuideTag, TripTag } from "./elements";
+import { Link } from "react-router-dom";
 const HomeTrips: React.FC = () => {
   const fakeData1 = [
     {
@@ -44,7 +45,7 @@ const HomeTrips: React.FC = () => {
               alignItems={"center"}
             >
               <h1 className="my-0 text-[1.5rem] font-bold">Your trips</h1>
-              <div>
+              <Link to="/trip/create">
                 <Button
                   variant="outlined"
                   className="rounded-sm"
@@ -52,7 +53,7 @@ const HomeTrips: React.FC = () => {
                 >
                   Plan new trip
                 </Button>
-              </div>
+              </Link>
             </Stack>
             <Stack className="my-2 mt-4">
               {!!fakeData1.length &&

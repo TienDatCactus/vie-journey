@@ -28,6 +28,8 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { User } from "../../../../../../../utils/interfaces";
+import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
+import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
 
 interface ReservationNotesProps {
   state: {
@@ -185,57 +187,36 @@ const NotesCard: React.FC<NotesCardProps> = ({
 };
 
 const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
-  let userMock: User = {
-    id: "1",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    avatarUrl: "https://via.placeholder.com/150",
-    status: "active",
-    lastLoginAt: new Date(),
-    flaggedCount: 0,
-    banReason: undefined,
-    bannedAt: undefined,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    role: "USER",
-  };
-
-  const [notes, setNotes] = useState<NoteData[]>([
-    {
-      id: `note-${Date.now()}`,
-      content: "Nhớ mang kem chống nắng và thuốc",
-      by: userMock,
-    },
-  ]);
-
+  const notes = useTripDetailStore((state) => state.notes);
+  const {
+    addPlaceNote,
+    updatePlaceNote,
+    toggleEditPlaceNotes,
+    deletePlaceNote,
+  } = useTripDetailStore();
+  const { user } = useAuthStore();
   const handleAddNote = () => {
-    setNotes((prev) => [
-      ...prev,
-      {
-        id: `note-${Date.now()}`, // Tạo ID duy nhất
-        content: "",
-        by: userMock,
-        isEditing: true, // Chuyển sang chế độ chỉnh sửa ngay khi thêm mới
-      },
-    ]);
+    addPlaceNote({
+      id: `note-${Date.now()}`,
+      note: "",
+      placeId: "",
+      visited: false,
+      addedBy: user as User,
+      isEditing: true,
+    });
   };
 
   const handleUpdateNote = (id: string, content: string) => {
-    setNotes((prev) =>
-      prev.map((note) => (note.id === id ? { ...note, content } : note))
-    );
+    updatePlaceNote(id, content);
   };
 
   const handleToggleEdit = (id: string) => {
-    setNotes((prev) =>
-      prev.map((note) =>
-        note.id === id ? { ...note, isEditing: !note.isEditing } : note
-      )
-    );
+    toggleEditPlaceNotes(id);
   };
 
   const handleDeleteNote = (id: string) => {
-    setNotes((prev) => prev.filter((note) => note.id !== id));
+    deletePlaceNote(id);
+    props.state.handleClose?.();
   };
 
   return (
