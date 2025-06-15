@@ -1,50 +1,47 @@
-import { ChevronLeft, Dashboard, Logout, Menu as MenuIcon, Settings } from "@mui/icons-material";
-import PermMediaIcon from "@mui/icons-material/PermMedia";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { Avatar, IconButton, Tooltip } from "@mui/material";
-import React from "react";
-import { useNavigate } from "react-router-dom";
+"use client"
+
+import { ChevronLeft, Menu as MenuIcon, Logout, Settings } from "@mui/icons-material"
+import ArticleIcon from "@mui/icons-material/Article"
+import { IconButton, Tooltip, Avatar } from "@mui/material"
+import type React from "react"
+import { useNavigate } from "react-router-dom"
 
 interface MenuItem {
-  icon: React.ReactNode;
-  label: string;
-  path: string;
+  icon: React.ReactNode
+  label: string
+  path: string
 }
 
-const menuItems: MenuItem[] = [
-  { icon: <Dashboard />, label: "Dashboard", path: "/admin/dashboard" },
-  { icon: <AccountCircleIcon />, label: "Account", path: "/admin/accounts" },
-  { icon: <PermMediaIcon />, label: "Media", path: "/admin/media" },
-];
+const menuItems: MenuItem[] = [{ icon: <ArticleIcon />, label: "Blog", path: "/manager/blog" }]
 
 interface NavAdminProps {
-  collapsed: boolean;
-  setCollapsed: (collapsed: boolean) => void;
+  collapsed: boolean
+  setCollapsed: (collapsed: boolean) => void
 }
 
-export const NavAdmin: React.FC<NavAdminProps> = ({
-  collapsed,
-  setCollapsed,
-}) => {
-  const navigate = useNavigate();
+export const NavManager: React.FC<NavAdminProps> = ({ collapsed, setCollapsed }) => {
+  const navigate = useNavigate()
+
+  // Mock user data - replace with actual user data from your auth system
   const user = {
     name: "John Doe",
     email: "john.doe@viejourney.com",
     avatar: "/placeholder.svg?height=40&width=40",
-    role: "Admin",
-  };
+    role: "Manager",
+  }
 
   const handleLogout = () => {
     // Add your logout logic here
-    console.log("Logging out...");
+    console.log("Logging out...")
     // navigate("/login")
-  };
+  }
 
   const handleProfile = () => {
     // Add your profile navigation logic here
-    console.log("Opening profile...");
+    console.log("Opening profile...")
     // navigate("/profile")
-  };
+  }
+
   return (
     <div
       className={`fixed left-0 top-0 h-screen text-gray-800 flex flex-col transition-all duration-300 z-50 bg-white border-r border-gray-200 shadow-sm ${
@@ -63,11 +60,7 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
             </h1>
           </div>
         )}
-        <IconButton
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-gray-600 hover:bg-gray-100"
-          size="small"
-        >
+        <IconButton onClick={() => setCollapsed(!collapsed)} className="text-gray-600 hover:bg-gray-100" size="small">
           {collapsed ? <MenuIcon /> : <ChevronLeft />}
         </IconButton>
       </div>
@@ -75,24 +68,16 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
       {/* Navigation Menu */}
       <div className="flex flex-col space-y-1 mt-4 px-3 flex-1">
         {menuItems.map((item, index) => (
-          <Tooltip
-            key={index}
-            title={collapsed ? item.label : ""}
-            placement="right"
-          >
+          <Tooltip key={index} title={collapsed ? item.label : ""} placement="right">
             <div
               onClick={() => navigate(item.path)}
               className={`flex items-center px-3 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition-all group ${
                 collapsed ? "justify-center" : ""
               }`}
             >
-              <div className="text-gray-600 group-hover:text-blue-600">
-                {item.icon}
-              </div>
+              <div className="text-gray-600 group-hover:text-blue-600">{item.icon}</div>
               {!collapsed && (
-                <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">
-                  {item.label}
-                </span>
+                <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">{item.label}</span>
               )}
             </div>
           </Tooltip>
@@ -113,9 +98,7 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
                 {user.name.charAt(0)}
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {user.name}
-                </p>
+                <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
                 <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 <p className="text-xs text-blue-600 font-medium">{user.role}</p>
               </div>
@@ -182,5 +165,5 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
