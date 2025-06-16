@@ -16,7 +16,8 @@ import { doValidateAccessToken } from "../../../services/api";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 import { setToken } from "../../../services/api/token";
 const OauthSuccess: React.FC = () => {
-  const { loadUserFromToken, setCredential, user } = useAuthStore();
+  const { loadUserFromToken, setCredential, user, loadUserInfo, info } =
+    useAuthStore();
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = React.useState<number>(5);
   const params = useSearchParams();
@@ -38,7 +39,9 @@ const OauthSuccess: React.FC = () => {
               userId: tokenData.userId,
             });
             setCredential({ userId: tokenData.userId, token });
-            await loadUserFromToken();
+            await loadUserFromToken().then(async () => {
+              await loadUserInfo();
+            });
           }
         } catch (error) {
           console.error("Error processing OAuth callback:", error);
@@ -62,8 +65,7 @@ const OauthSuccess: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [timer, navigate, user]);
-
+  }, [timer, loading]);
   return (
     <div className="relative flex flex-col items-center justify-center w-full bg-[#f8fafc] h-svh">
       <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#0000001a_1px,transparent_1px),linear-gradient(to_bottom,#0000001a_1px,transparent_1px)] bg-[size:40px_40px] "></div>
@@ -77,18 +79,20 @@ const OauthSuccess: React.FC = () => {
         </div>
         <div className="my-4 bg-neutral-100 shadow-sm rounded-md grid grid-cols-12 gap-4 items-center p-2 ">
           <img
-            className="col-span-3 w-full p-1"
-            src="/images/placeholders/icons8-avatar-50.png"
+            className="col-span-3 w-full p-1 rounded-full object-center object-contain"
+            alt="User Avatar"
+            onError={(e) => {
+              e.currentTarget.src = "/images/placeholders/icons8-avatar-50.png";
+            }}
+            src={info?.avatar}
           />
           <div className="col-span-9 flex flex-col justify-center gap-1">
             {loading ? (
               <CircularProgress size={20} className="self-start" />
             ) : (
               <>
-                <h1 className="text-lg font-semibold">
-                  {user?.fullName || "Unknown User"}
-                </h1>
-                <p className="text-sm text-neutral-700">{user?.email}</p>
+                <h1 className="text-lg font-semibold">{user?.email}</h1>
+                <p className="text-sm text-neutral-600">{info?.fullName}</p>
               </>
             )}
             <Button
@@ -145,7 +149,7 @@ const OauthSuccess: React.FC = () => {
         </dl>
         <p className=" text-center text-base text-neutral-600 pb-2">
           Redirecting you to your dashboard in{" "}
-          {loading ? timer : <CircularProgress size={10} />} seconds...
+          {loading ? <CircularProgress size={10} /> : timer} seconds...
         </p>
         <div>
           <Button

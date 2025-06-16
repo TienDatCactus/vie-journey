@@ -15,6 +15,7 @@ export const AUTH = {
 
 export const USER = {
   GET_PROFILE: "/account/profile",
+  GET_USER_INFO: "/user",
 };
 
 export const ACCOUNTS = {

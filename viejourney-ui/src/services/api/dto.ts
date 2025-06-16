@@ -1,4 +1,4 @@
-import { Trip, User } from "../../utils/interfaces";
+import { Account, Trip, UserInfo } from "../../utils/interfaces";
 
 export interface LoginReqDTO {
   email: string;
@@ -31,8 +31,8 @@ export interface LogoutReqDTO {
   userId: string;
 }
 
-export interface GetUserRespDTO extends User {}
-
+export interface GetUserRespDTO extends Account {}
+export interface GetUserInfoRespDTO extends UserInfo {}
 export interface RefreshTokenRespDTO {
   userId: string;
   accessToken: string;

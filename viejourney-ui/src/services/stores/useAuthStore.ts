@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { Account, User } from "../../utils/interfaces";
+import { Account, UserInfo } from "../../utils/interfaces";
 import {
   doForgotPassword,
   doGetUser,
+  doGetUserInfo,
   doLogin,
   doLoginWithGoogle,
   doLogout,
@@ -13,6 +14,7 @@ import {
   doValidateAccessToken,
 } from "../api";
 import { LoginRespDTO } from "../api/dto";
+import { enqueueSnackbar } from "notistack";
 
 interface AuthResponse {
   success: boolean;
@@ -26,15 +28,16 @@ interface AuthCredential {
 }
 
 interface AuthState {
-  user: User | null;
+  user: Account | null;
+  info: UserInfo | null;
   credential: AuthCredential | null;
   isLoading: boolean;
 
   // Actions
-  setUser: (user: User | null) => void;
+  setUser: (user: Account | null) => void;
   setCredential: (credential: AuthCredential | null) => void;
   setLoading: (isLoading: boolean) => void;
-
+  setInfo: (info: UserInfo | null) => void;
   // Auth handlers
   handleLogin: (email: string, password: string) => Promise<AuthResponse>;
   handleRegister: (
@@ -53,6 +56,7 @@ interface AuthState {
 
   // Initialization
   loadUserFromToken: () => Promise<void>;
+  loadUserInfo: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -60,10 +64,12 @@ export const useAuthStore = create<AuthState>()(
     persist(
       (set, get) => ({
         user: null,
+        info: null,
         credential: null,
         isLoading: false,
 
         setUser: (user) => set({ user }),
+        setInfo: (info) => set({ info }),
         setCredential: (credential) => set({ credential }),
         setLoading: (isLoading) => set({ isLoading }),
 
@@ -261,6 +267,24 @@ export const useAuthStore = create<AuthState>()(
           } catch (error) {
             console.error("Token validation failed:", error);
             set({ credential: null });
+          } finally {
+            set({ isLoading: false });
+          }
+        },
+        loadUserInfo: async () => {
+          const cred = get().credential;
+          if (!cred?.userId) return;
+
+          try {
+            set({ isLoading: true });
+            const info = await doGetUserInfo(cred.userId);
+            if (!info) {
+              enqueueSnackbar("User Info not found", { variant: "error" });
+              return;
+            }
+            set({ info });
+          } catch (error) {
+            console.error("Fetch user info error:", error);
           } finally {
             set({ isLoading: false });
           }

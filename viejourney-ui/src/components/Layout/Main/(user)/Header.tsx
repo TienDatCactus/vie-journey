@@ -25,7 +25,7 @@ interface Props {
   window?: () => Window;
   children?: React.ReactElement<unknown>;
 }
-export const headerNav: Array<{ name: string; link: string }> = [
+const headerNav: Array<{ name: string; link: string }> = [
   {
     name: "Home",
     link: "/home",
@@ -58,7 +58,7 @@ export function HideOnScroll(props: Props) {
 }
 
 const Header = () => {
-  const user = useAuthStore((state) => state.user);
+  const info = useAuthStore((state) => state.info);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
@@ -138,9 +138,10 @@ const Header = () => {
               <Avatar
                 sx={{ bgcolor: "#1d41c15d", width: 30, height: 30 }}
                 className="transition-all duration-200 ease-in-out shadow-md cursor-pointer hover:scale-110"
-              >
-                N
-              </Avatar>
+                src={
+                  info?.avatar || "/images/placeholders/icons8-avatar-50.png"
+                }
+              />
             </IconButton>
             <Menu
               anchorEl={anchorEl}
