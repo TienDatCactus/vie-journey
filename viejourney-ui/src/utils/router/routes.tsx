@@ -6,6 +6,7 @@ import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import RoleManagement from "../../pages/(admin)/RoleManagement";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -187,6 +188,14 @@ const router = createBrowserRouter([
             ),
           },
         ],
+      },
+      {
+        path: "role-management",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={RoleManagement} />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "media",

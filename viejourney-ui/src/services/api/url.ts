@@ -26,6 +26,7 @@ export const ADMIN = {
   GET_ASSET: "/admin/assets",
   UPDATE_ASSET: "/admin/update-asset",
   DELETE_ASSET: "/admin/assets/delete",
+  CHAGE_ROLE: "/admin/:id/role",
 };
 export const TRIP = {
   INVITE: "/trip/invite",

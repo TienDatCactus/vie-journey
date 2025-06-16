@@ -1,4 +1,11 @@
-import { ChevronLeft, Dashboard, Logout, Menu as MenuIcon, Settings } from "@mui/icons-material";
+import {
+  ChevronLeft,
+  Dashboard,
+  Logout,
+  Menu as MenuIcon,
+  Settings,
+  AdminPanelSettings,
+} from "@mui/icons-material";
 import PermMediaIcon from "@mui/icons-material/PermMedia";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Avatar, IconButton, Tooltip } from "@mui/material";
@@ -15,6 +22,11 @@ const menuItems: MenuItem[] = [
   { icon: <Dashboard />, label: "Dashboard", path: "/admin/dashboard" },
   { icon: <AccountCircleIcon />, label: "Account", path: "/admin/accounts" },
   { icon: <PermMediaIcon />, label: "Media", path: "/admin/media" },
+  {
+    icon: <AdminPanelSettings />,
+    label: "Role Management",
+    path: "/admin/role-management",
+  },
 ];
 
 interface NavAdminProps {

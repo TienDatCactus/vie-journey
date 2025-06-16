@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Asset } from './asset.entity';
+import { Asset } from '../../account/entities/asset.entity';
 
 export class UserInfos {
   _id: mongoose.Types.ObjectId;
@@ -9,6 +9,12 @@ export class UserInfos {
   phone: string;
   address: string;
   avatar: Asset;
+  lastLoginAt: Date;
+  flaggedCount: number;
+  banReason: string | null;
+  bannedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
   location: string;
   format: string;
   file_size: string;

@@ -8,7 +8,7 @@ import { AuthModule } from './entities/auth/auth.module';
 import { AccountModule } from './entities/account/account.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HotelModule } from './entities/hotel/hotel.module';
-import { UserModule } from './entities/user/user.module';
+import { UserModule } from './entities/userinfo/user.module';
 import { ManagerModule } from './entities/manager/manager.module';
 import { TripModule } from './entities/trip/trip.module';
 import { AssetsModule } from './entities/assets/assets.module';

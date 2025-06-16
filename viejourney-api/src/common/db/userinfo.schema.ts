@@ -26,6 +26,18 @@ export class UserInfos extends Document {
 
   @Prop({ type: mongoose.Types.ObjectId, ref: 'Asset' })
   avatar: Asset;
+
+  @Prop({ type: Date, default: null})
+  lastLoginAt: Date;
+
+  @Prop({ default: 0})
+  flaggedCount: number;
+
+  @Prop({ default: null})
+  banReason: string;
+
+  @Prop({ type: Date, default: null })
+  bannedAt: Date;
 }
 
 export const UserInfosSchema = SchemaFactory.createForClass(UserInfos);
