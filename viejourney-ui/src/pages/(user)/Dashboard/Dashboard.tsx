@@ -22,14 +22,16 @@ import { MainLayout } from "../../../layouts";
 import TripPlans from "./component/TripPlan";
 import ProfileSettings from "./component/Setting";
 import TravelGuides from "./component/TravelGuides";
+import { useAuthStore } from "../../../services/stores/useAuthStore";
 
 const Dashboard: React.FC = () => {
   const [value, setValue] = React.useState(0);
+  const { user } = useAuthStore();
 
+  console.log(user)
   return (
     <MainLayout>
       <div className="min-h-[900px] bg-gray-50 mt-[80px] ">
-
         <div className="bg-white border-b border-gray-200">
           <div className="">
             <div className="flex w-full bg-[#f4f4f4] p-2">
@@ -257,13 +259,9 @@ const Dashboard: React.FC = () => {
 
           {value === 1 && <TripPlans />}
 
-          {value === 2 && (
-           <TravelGuides />
-          )}
+          {value === 2 && <TravelGuides />}
 
-          {value === 3 && (
-           <ProfileSettings />
-          )}
+          {value === 3 && <ProfileSettings />}
         </div>
       </div>
     </MainLayout>
