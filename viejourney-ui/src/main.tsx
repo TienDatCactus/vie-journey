@@ -19,6 +19,9 @@ import "./index.css";
 import { AuthLayout } from "./layouts";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
+import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
+import TypebotChat from "./components/TypeBotChat";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
@@ -77,4 +80,5 @@ root.render(
       </ThemeProvider>
     </ScopedCssBaseline>
   </StyledEngineProvider>
+              <TypebotChat />
 );
