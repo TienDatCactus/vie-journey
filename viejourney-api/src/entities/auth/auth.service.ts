@@ -32,7 +32,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Email not found!');
     }
-    if (user.active) {
+    if (user.status === 'ACTIVE') {
       throw new ConflictException('User already verified');
     }
     this.sendRegistrationEmail(user);
@@ -58,7 +58,7 @@ export class AuthService {
       }
 
       // Activate the user
-      user.active = true;
+      user.status = 'ACTIVE';
       await user.save();
 
       return {
@@ -172,7 +172,7 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new HttpException('Invalid credentials', HttpStatus.I_AM_A_TEAPOT);
     }
-    if (!user.active) {
+    if (user.status !== 'ACTIVE') {
       // Create a verification token and send it
       const secret = process.env.JWT_SECRET || 'secret';
       this.logger.log(`Using secret for signing: ${secret.substring(0, 5)}...`);
@@ -205,7 +205,7 @@ export class AuthService {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    user.active = true;
+    user.status = 'ACTIVE';
     await user.save();
 
     return {
@@ -458,7 +458,7 @@ export class AuthService {
         user = await this.accountModel.create({
           email,
           password: '',
-          active: true,
+          status: 'ACTIVE',
         });
 
         const avatar =
@@ -510,12 +510,11 @@ export class AuthService {
       const userId = payload.sub;
       const user = await this.accountModel.findById(userId).exec();
       if (!user) {
-        this.logger.warn(`User not found for ID: ${userId}`);
-        return null;
+        throw new NotFoundException('User not found');
       }
-      if (!user.active) {
+      if (user.status !== 'ACTIVE') {
         this.logger.warn(`User with ID ${userId} is not active`);
-        return null;
+        throw new UnauthorizedException('User is not active');
       }
       return {
         userId: user._id,

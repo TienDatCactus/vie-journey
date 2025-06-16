@@ -246,13 +246,17 @@ export const useAuthStore = create<AuthState>()(
 
           try {
             set({ isLoading: true });
-
-            const resp = await doValidateAccessToken(cred.token);
-            if (resp?.userId) {
-              const user = await doGetUser({ userId: resp.userId });
+            if (cred.userId) {
+              const user = await doGetUser({ userId: cred.userId });
               set({ user });
             } else {
-              set({ credential: null });
+              const resp = await doValidateAccessToken(cred.token);
+              if (resp?.userId) {
+                const user = await doGetUser({ userId: resp.userId });
+                set({ user });
+              } else {
+                set({ credential: null });
+              }
             }
           } catch (error) {
             console.error("Token validation failed:", error);

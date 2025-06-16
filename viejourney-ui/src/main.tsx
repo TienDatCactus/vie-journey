@@ -19,8 +19,6 @@ import "./index.css";
 import { AuthLayout } from "./layouts";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
-import dayjs from "dayjs";
-import advancedFormat from "dayjs/plugin/advancedFormat";
 import TypebotChat from "./components/TypeBotChat";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
@@ -73,6 +71,7 @@ root.render(
                   </HelmetProvider>
                 </AuthLayout>
               </APIProvider>
+              <TypebotChat />
             </LocalizationProvider>
           </React.Suspense>
           {/* </ScrollProvider> */}
@@ -80,5 +79,4 @@ root.render(
       </ThemeProvider>
     </ScopedCssBaseline>
   </StyledEngineProvider>
-              <TypebotChat />
 );

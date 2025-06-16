@@ -9,12 +9,12 @@ import { Blog } from '../blog/entities/blog.entity';
 import { Comment } from '../blog/entities/comment.entity';
 import { BlogSchema } from 'src/common/db/blog.schema';
 import { CommentSchema } from 'src/common/db/comment.schema';
-import { UserInfos } from '../account/entities/userInfos.entity';
 import { UserInfosSchema } from 'src/common/db/userinfo.schema';
 import { AssetSchema } from 'src/common/db/asset.schema';
 import { Asset } from '../account/entities/asset.entity';
-import { UserModule } from '../user/user.module';
 import { AssetsModule } from '../assets/assets.module';
+import { UserInfos } from '../userinfo/entities/userInfos.entity';
+import { UserModule } from '../userinfo/user.module';
 
 @Module({
   imports: [

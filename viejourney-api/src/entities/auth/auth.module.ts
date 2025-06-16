@@ -11,8 +11,7 @@ import { AuthService } from './auth.service';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserInfos, UserInfosSchema } from 'src/common/db/userinfo.schema';
-import { UserModule } from '../user/user.module';
-
+import { UserModule } from '../userinfo/user.module';
 @Module({
   imports: [
     ConfigModule,

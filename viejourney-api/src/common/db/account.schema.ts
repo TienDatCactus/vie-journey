@@ -15,7 +15,7 @@ class Account extends Document {
   @Prop({ default: 'USER', enum: ['USER', 'ADMIN', 'MANAGER'] })
   role: string;
 
-  @Prop({ default: 'INACTIVE', enum: ['ACTIVE', 'INACTIVE', 'BANNED', 'DELETED'] })
+  @Prop({ default: 'INACTIVE', enum: ['ACTIVE', 'INACTIVE', 'BANNED'] })
   status: string;
 }
 

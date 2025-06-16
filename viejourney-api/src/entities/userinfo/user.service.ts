@@ -11,7 +11,7 @@ import {
 } from './dto/pagination-userlist.dto';
 import { AssetsService } from '../assets/assets.service';
 import { Account } from '../account/entities/account.entity';
-import { UserInfos } from '../account/entities/userInfos.entity';
+import { UserInfos } from './entities/userInfos.entity';
 
 @Injectable()
 export class UserService {

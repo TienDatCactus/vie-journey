@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useAuthStore } from "../../../../services/stores/useAuthStore";
+import { useNavigate } from "react-router-dom";
 interface Props {
   window?: () => Window;
   children?: React.ReactElement<unknown>;
@@ -55,10 +56,12 @@ export function HideOnScroll(props: Props) {
     </Slide>
   );
 }
+
 const Header = () => {
   const user = useAuthStore((state) => state.user);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const navigate = useNavigate();
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -67,6 +70,10 @@ const Header = () => {
     setAnchorEl(null);
   };
 
+  const onLogout = async () => {
+    await handleLogout();
+    navigate("/");
+  };
   return (
     <HideOnScroll>
       <AppBar position="sticky" color="default" elevation={4}>
@@ -189,7 +196,7 @@ const Header = () => {
                 </ListItemIcon>
                 Settings
               </MenuItem>
-              <MenuItem onClick={handleLogout} disabled={isLoading}>
+              <MenuItem onClick={onLogout} disabled={isLoading}>
                 {isLoading && (
                   <CircularProgress size={20} className="animate-spin" />
                 )}

@@ -32,7 +32,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly userService: UserService,
-  ) { }
+  ) {}
 
   @Get('assets')
   async getAssetsByType(@Query('type') type: string) {
@@ -124,17 +124,17 @@ export class AdminController {
     return this.adminService.getCommentsReport();
   }
 
-  @Get('userInfo')
+  @Get('users')
   async getAllUsers() {
     return this.userService.getAllUser();
   }
 
-  @Post('userInfo/paginate')
+  @Post('users/paginate')
   async getPaginatedUsers(@Body() paginationDto: PaginationDto) {
     return this.userService.getPaginatedUsers(paginationDto);
   }
 
-  @Get('userInfo/:id')
+  @Get('users/:id')
   async getUser(@Param('id') id: string) {
     return this.userService.getUserByID(id);
   }
@@ -142,7 +142,7 @@ export class AdminController {
   @Patch('userInfo/:id')
   async updateUserInfo(
     @Param('id') id: string,
-    @Body() updateUserInfoDto: UpdateUserInfoDto
+    @Body() updateUserInfoDto: UpdateUserInfoDto,
   ) {
     return this.userService.updateUserInfo(id, updateUserInfoDto);
   }
@@ -150,31 +150,5 @@ export class AdminController {
   @Delete('userInfo/:id')
   async deleteUserInfo(@Param('id') id: string) {
     return this.userService.deleteUserInfo(id);
-  }
-
-  @Patch('users/:id/ban')
-  async banUser(
-    @Param('id') id: string,
-    @Body('reason') reason: string
-  ) {
-    return this.adminService.banUser(id, reason);
-  }
-
-  @Patch('users/:id/unban')
-  async unbanUser(@Param('id') id: string) {
-    return this.adminService.unbanUser(id);
-  }
-
-  @Patch('users/:id/role')
-  async updateUserRole(
-    @Param('id') id: string,
-    @Body() updateRoleDto: UpdateRoleDto
-  ) {
-    return this.adminService.updateUserRole(id, updateRoleDto.role);
-  }
-
-  @Delete('users/:id')
-  async deleteUser(@Param('id') id: string) {
-    return this.adminService.deleteUser(id);
   }
 }

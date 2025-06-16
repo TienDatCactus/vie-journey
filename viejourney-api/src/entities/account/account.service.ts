@@ -4,10 +4,10 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account } from './entities/account.entity';
-import { UserInfos } from './entities/userInfos.entity';
 import { EditProfileDto } from './dto/editProfile.dto';
 import { Asset } from './entities/asset.entity';
 import { AssetsService } from '../assets/assets.service';
+import { UserInfos } from '../userinfo/entities/userInfos.entity';
 
 @Injectable()
 export class AccountService {
@@ -41,7 +41,7 @@ export class AccountService {
     return {
       _id: account._id,
       email: account.email,
-      active: account.active,
+      status: account.status === 'ACTIVE',
       role: account.role,
     };
   }

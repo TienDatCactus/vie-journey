@@ -18,10 +18,10 @@ const TypebotChat = () => {
           Typebot.initBubble({
             typebot: "customer-support-s6c2nk8",
             theme: {
-              button: { backgroundColor: "#6bd69b" },
+              button: { backgroundColor: "#0042DA" },
               chatWindow: {
-                backgroundColor:
-                  "https://s3.typebot.io/public/workspaces/cmbp8851g002hl404bpmnzy65/typebots/vwx5n9ofwtducb8wes6c2nk8/background?v=1749486923237",
+               backgroundColor:
+          "https://s3.typebot.io/public/workspaces/cmbp8851g002hl404bpmnzy65/typebots/vwx5n9ofwtducb8wes6c2nk8/background?v=1750044701994",
               },
             },
           });

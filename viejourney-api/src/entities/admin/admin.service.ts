@@ -10,11 +10,11 @@ import { Account } from '../account/entities/account.entity';
 import { Model, Types } from 'mongoose';
 import { CreateAccountDto } from './dto/create-account.dto';
 import * as bcrypt from 'bcrypt';
-import { UserInfos } from '../account/entities/userInfos.entity';
 import { Asset } from '../account/entities/asset.entity';
 import { TypeDto } from '../account/dto/Type.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { AssetsService } from '../assets/assets.service';
+import { UserInfos } from '../userinfo/entities/userInfos.entity';
 
 @Injectable()
 export class AdminService {
@@ -224,7 +224,7 @@ export class AdminService {
     if (!account) {
       throw new Error(`Account with ID ${id} not found`);
     }
-    account.active = active;
+    account.status = active ? 'ACTIVE' : 'INACTIVE';
     return account.save();
   }
 }
