@@ -27,7 +27,8 @@ const HomeHero: React.FC = () => {
         </div>
         <Button
           variant="contained"
-          className="bg-white text-black lg:text-sm px-6 lg:px-8 lg:py-4 font-semibold shadow-lg  hover:bg-gray-200 transition-colors"
+          className="bg-white text-black lg:text-lg px-4 lg:px-6 lg:py-4 font-semibold shadow-lg  hover:bg-gray-200 transition-colors"
+          href="/trip/create"
           endIcon={<DoubleArrow />}
         >
           Plan Now

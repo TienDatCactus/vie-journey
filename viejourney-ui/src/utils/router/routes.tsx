@@ -33,6 +33,8 @@ const OauthSuccess = lazy(
   () => import("./../../pages/(anonymous)/Auth/OauthSuccess")
 );
 const Banner = lazy(() => import("../../pages/(admin)/Banner"));
+const Blog = lazy(() => import("../../pages/(manager)/Blog"));
+const BlogContent = lazy(() => import("../../pages/(user)/Blog"));
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
@@ -229,6 +231,35 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute requireAuth={false}>
             <SuspenseWrapper component={CreateTripDetails} />
+          </ProtectedRoute>
+        ),
+      },
+    ],
+  },
+
+  {
+    path: "/manager",
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: "blog",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={Blog} />
+          </ProtectedRoute>
+        ),
+      },
+    ],
+  },
+  {
+    path: "/blog",
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: ":id",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={BlogContent} />
           </ProtectedRoute>
         ),
       },

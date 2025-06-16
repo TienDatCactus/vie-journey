@@ -1,14 +1,13 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account } from './entities/account.entity';
-import { UserInfos } from '../userinfo/entities/userInfos.entity';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { UserInfos } from './entities/userInfos.entity';
 import { EditProfileDto } from './dto/editProfile.dto';
 import { Asset } from './entities/asset.entity';
-import { v4 as uuidv4 } from 'uuid';
+import { AssetsService } from '../assets/assets.service';
 
 @Injectable()
 export class AccountService {
@@ -16,27 +15,21 @@ export class AccountService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
-    private readonly cloudinaryService: CloudinaryService,
+    private readonly assetsService: AssetsService,
   ) {}
   async activateUser(userId: Types.ObjectId): Promise<void> {
     const user = await this.accountModel.findByIdAndUpdate(
       userId,
-      { status: 'ACTIVE' },
+      { active: true },
       { new: true },
     );
 
     if (!user) throw new NotFoundException('User not found');
   }
-
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
-    const createdAccount = new this.accountModel({
-      ...createAccountDto,
-      status: 'INACTIVE', // Set default status
-      role: 'USER', // Set default role
-    });
+    const createdAccount = new this.accountModel(createAccountDto);
     return createdAccount.save();
   }
-
   async findAll(): Promise<Account[]> {
     return this.accountModel.find().exec();
   }
@@ -48,7 +41,7 @@ export class AccountService {
     return {
       _id: account._id,
       email: account.email,
-      status: account.status,
+      active: account.active,
       role: account.role,
     };
   }
@@ -63,25 +56,12 @@ export class AccountService {
     id: string,
     updateAccountDto: UpdateAccountDto,
   ): Promise<Account> {
-    // Validate status if it's being updated
-    if (updateAccountDto.status && 
-        !['ACTIVE', 'INACTIVE', 'BANNED', 'DELETED'].includes(updateAccountDto.status)) {
-      throw new BadRequestException('Invalid status value');
-    }
-
-    // Validate role if it's being updated
-    if (updateAccountDto.role && 
-        !['USER', 'ADMIN', 'MANAGER'].includes(updateAccountDto.role)) {
-      throw new BadRequestException('Invalid role value');
-    }
-
     const updatedAccount = await this.accountModel
       .findByIdAndUpdate(id, updateAccountDto, {
         new: true,
         runValidators: true,
       })
       .exec();
-
     if (!updatedAccount) {
       throw new NotFoundException(`Account with id ${id} not found`);
     }
@@ -89,11 +69,7 @@ export class AccountService {
   }
 
   async remove(id: string): Promise<Account> {
-    // Using soft delete by updating status
-    const deletedAccount = await this.accountModel
-      .findByIdAndUpdate(id, { status: 'DELETED' }, { new: true })
-      .exec();
-      
+    const deletedAccount = await this.accountModel.findByIdAndDelete(id).exec();
     if (!deletedAccount) {
       throw new NotFoundException(`Account with id ${id} not found`);
     }
@@ -115,12 +91,10 @@ export class AccountService {
       // Handle file upload if present
       if (file) {
         if (existingInfo?.avatar?.publicId) {
-          await this.cloudinaryService.deleteImage(
-            existingInfo.avatar.publicId,
-          );
+          await this.assetsService.deleteImage(existingInfo.avatar.publicId);
         }
 
-        uploadResult = await this.cloudinaryService.uploadImage(file, {
+        uploadResult = await this.assetsService.uploadImage(file, {
           public_id: `users/${userId}/AVATAR/${file.filename}`,
         });
 

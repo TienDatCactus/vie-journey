@@ -15,6 +15,7 @@ import { CSSObject, styled, Theme } from "@mui/material/styles";
 import * as React from "react";
 import { TripHeader } from "../components/Layout";
 import { TripMap } from "../components/Pages/(user)/Trips";
+import { useTripDetailStore } from "../services/stores/useTripDetailStore";
 
 const drawerWidth = 200;
 
@@ -57,7 +58,7 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 const TripLayout = ({ children }: { children: React.ReactNode }) => {
-  // Share the drawer open state between components
+  const trip = useTripDetailStore((state) => state.trip);
   const [open, setOpen] = React.useState(false);
 
   const handleDrawerOpen = () => {

@@ -9,7 +9,7 @@ import {
   Group,
   GroupAdd,
   PlaceOutlined,
-  TravelExplore
+  TravelExplore,
 } from "@mui/icons-material";
 import PublicIcon from "@mui/icons-material/Public";
 import SearchIcon from "@mui/icons-material/Search";

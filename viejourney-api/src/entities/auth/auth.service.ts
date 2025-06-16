@@ -1,3 +1,4 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   ConflictException,
   HttpException,
@@ -9,19 +10,21 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
+import { Model } from 'mongoose';
+import { UserInfos } from 'src/common/db/userinfo.schema';
 import { AccountService } from 'src/entities/account/account.service';
 import { Account } from '../account/entities/account.entity';
-import { Request, Response } from 'express';
-import { MailerService } from '@nestjs-modules/mailer';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly accountService: AccountService,
+
     private readonly jwtService: JwtService,
     @InjectModel(Account.name) private readonly accountModel: Model<Account>,
+    @InjectModel(UserInfos.name) private readonly userModel: Model<UserInfos>,
     private readonly mailService: MailerService,
   ) {}
   async resendVerificationEmail(email: string, res: Response) {
@@ -29,7 +32,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Email not found!');
     }
-    if (user.status === 'ACTIVE') {
+    if (user.active) {
       throw new ConflictException('User already verified');
     }
     this.sendRegistrationEmail(user);
@@ -54,8 +57,8 @@ export class AuthService {
         throw new NotFoundException('User not found');
       }
 
-      // Update user status
-      user.status = 'ACTIVE';
+      // Activate the user
+      user.active = true;
       await user.save();
 
       return {
@@ -143,17 +146,18 @@ export class AuthService {
     this.sendEMail(registrationToken, user.email);
   }
   async register(email: string, password: string) {
+    // Hash password
     const existingUser = await this.accountModel.findOne({ email });
     if (existingUser) {
       throw new ConflictException('User already exists');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create user
     const user = new this.accountModel({
       email,
       password: hashedPassword,
-      status: 'INACTIVE',
-      role: 'USER',
+      active: false,
     });
     await user.save();
 
@@ -168,12 +172,11 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new HttpException('Invalid credentials', HttpStatus.I_AM_A_TEAPOT);
     }
-    
-    if (user.status === 'BANNED') {
-      throw new UnauthorizedException('Your account has been banned');
-    }
+    if (!user.active) {
+      // Create a verification token and send it
+      const secret = process.env.JWT_SECRET || 'secret';
+      this.logger.log(`Using secret for signing: ${secret.substring(0, 5)}...`);
 
-    if (user.status === 'INACTIVE') {
       const verificationToken = this.jwtService.sign(
         {
           sub: user._id,
@@ -182,7 +185,7 @@ export class AuthService {
         },
         {
           expiresIn: '24h',
-          secret: process.env.JWT_SECRET || 'secret',
+          secret: secret,
         },
       );
 
@@ -192,7 +195,6 @@ export class AuthService {
         HttpStatus.BAD_REQUEST,
       );
     }
-
     const accessToken = this.createAccessToken(user._id, user.email);
     const refreshToken = this.createRefreshToken(user._id);
 
@@ -202,6 +204,9 @@ export class AuthService {
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
+    user.active = true;
+    await user.save();
 
     return {
       userId: user._id,
@@ -440,7 +445,7 @@ export class AuthService {
   }
   async googleAuth(profile: any, res: Response) {
     try {
-      const { email } = profile;
+      const { email, displayName, photos, picture } = profile;
       if (!email) {
         throw new HttpException(
           'No email found in Google profile',
@@ -450,18 +455,23 @@ export class AuthService {
 
       let user = await this.accountModel.findOne({ email }).exec();
       if (!user) {
-        user = new this.accountModel({
+        user = await this.accountModel.create({
           email,
-          password: '', // Password not used for Google auth
-          status: 'ACTIVE', // Auto-activate Google users
-          role: 'USER',
+          password: '',
+          active: true,
         });
-        await user.save();
-      }
 
-      // Check if user is banned
-      if (user.status === 'BANNED') {
-        throw new UnauthorizedException('Your account has been banned');
+        const avatar =
+          picture || (Array.isArray(photos) ? photos[0]?.value : '') || '';
+
+        await this.userModel.create({
+          userId: user._id,
+          fullName: displayName || '',
+          dob: '',
+          avatar,
+          phone: '',
+          address: '',
+        });
       }
 
       const accessToken = this.createAccessToken(user._id, user.email);
@@ -474,6 +484,7 @@ export class AuthService {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
+      // You may want to postMessage or set token in FE securely
       return res.redirect(
         `${process.env.FE_URL}/auth/oauth-success?accessToken=${accessToken}`,
       );
@@ -485,9 +496,9 @@ export class AuthService {
       );
     }
   }
+
   async validateAccessToken(accessToken: string) {
     try {
-      this.logger.log('Validating access token:', accessToken);
       const secret = process.env.JWT_SECRET ? process.env.JWT_SECRET : 'secret';
       const payload = this.jwtService.verify(accessToken, {
         secret: secret,
@@ -502,12 +513,10 @@ export class AuthService {
         this.logger.warn(`User not found for ID: ${userId}`);
         return null;
       }
-
-      if (user.status !== 'ACTIVE') {
+      if (!user.active) {
         this.logger.warn(`User with ID ${userId} is not active`);
         return null;
       }
-
       return {
         userId: user._id,
       };

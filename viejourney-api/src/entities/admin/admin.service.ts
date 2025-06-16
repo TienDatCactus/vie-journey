@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from '../blog/entities/blog.entity';
 import { Comment } from '../blog/entities/comment.entity';
@@ -6,12 +10,11 @@ import { Account } from '../account/entities/account.entity';
 import { Model, Types } from 'mongoose';
 import { CreateAccountDto } from './dto/create-account.dto';
 import * as bcrypt from 'bcrypt';
-import { UserInfos } from '../userinfo/entities/userInfos.entity';
+import { UserInfos } from '../account/entities/userInfos.entity';
 import { Asset } from '../account/entities/asset.entity';
 import { TypeDto } from '../account/dto/Type.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { v4 as uuidv4 } from 'uuid';
-import { UserRole } from './dto/update-userRole.dto';
+import { AssetsService } from '../assets/assets.service';
 
 @Injectable()
 export class AdminService {
@@ -21,8 +24,8 @@ export class AdminService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
-    private readonly cloudinaryService: CloudinaryService,
-  ) { }
+    private readonly assetsService: AssetsService,
+  ) {}
 
   // getAssetsByType
   async getAssetsByType(type) {
@@ -51,10 +54,8 @@ export class AdminService {
     }
 
     if (asset.type === 'AVATAR') {
-      // Xóa ảnh trên Cloudinary (nếu cần)
-      await this.cloudinaryService.deleteImage(asset.publicId);
+      await this.assetsService.deleteImage(asset.publicId);
 
-      // Cập nhật lại trường url và publicId về null
       const updatedAsset = await this.assetModel.findOneAndUpdate(
         { publicId: asset.publicId },
         {
@@ -73,7 +74,7 @@ export class AdminService {
       return updatedAsset;
     } else if (asset.type === 'BANNER') {
       // Xóa ảnh trên Cloudinary (nếu cần)
-      await this.cloudinaryService.deleteImage(asset.publicId);
+      await this.assetsService.deleteImage(asset.publicId);
 
       // Xóa asset khỏi database
       const deletedAsset = await this.assetModel.findOneAndDelete({
@@ -97,10 +98,10 @@ export class AdminService {
     }
 
     // 1. Xóa ảnh cũ trên Cloudinary
-    await this.cloudinaryService.deleteImage(publicId);
+    await this.assetsService.deleteImage(publicId);
 
     // 2. Upload ảnh mới
-    const uploadResult = await this.cloudinaryService.uploadImage(file, {
+    const uploadResult = await this.assetsService.uploadImage(file, {
       public_id: `users/${asset.userId}/AVATAR/${file.filename}`,
     });
     if (!uploadResult || !uploadResult.secure_url) {
@@ -128,7 +129,7 @@ export class AdminService {
     }
 
     // 1. Upload ảnh mới
-    const uploadResult = await this.cloudinaryService.uploadImage(file, {
+    const uploadResult = await this.assetsService.uploadImage(file, {
       public_id: `users/${userId}/BANNER/${uuidv4()}`,
     });
 
@@ -215,240 +216,15 @@ export class AdminService {
   }
 
   // update Active Status
-  async updateActiveStatus(id: string, active: boolean): Promise<Account> {
-    const account = await this.accountModel.findById(id);
+  async updateActiveStatus(
+    id: string,
+    active: boolean,
+  ): Promise<Account | undefined> {
+    const account = await this.accountModel.findById(id).exec();
     if (!account) {
-      throw new NotFoundException(`Account with ID ${id} not found`);
+      throw new Error(`Account with ID ${id} not found`);
     }
-
-    account.status = active ? 'ACTIVE' : 'INACTIVE';
+    account.active = active;
     return account.save();
   }
-
-  //ban useruser
-  async banUser(userId: string, reason: string): Promise<{
-    userId: string;
-    accountId: string;
-    role: string;
-    email: string;
-    userName: string;
-    status: string;
-    banReason: string;
-    flaggedCount: number;
-    bannedAt: Date;
-  }> {
-    const userInfo = await this.userInfosModel.findById(userId);
-    if (!userInfo) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
-    }
-
-    const account = await this.accountModel.findById(userInfo.userId);
-    if (!account) {
-      throw new NotFoundException(`Account not found for user ${userId}`);
-    }
-
-    if (account.status === 'BANNED') {
-      throw new BadRequestException(`Account is already banned. Ban reason: ${userInfo.banReason}, Banned at: ${userInfo.bannedAt}`);
-    }
-
-    try {
-      const session = await this.accountModel.startSession();
-      let result;
-
-      await session.withTransaction(async () => {
-        account.status = 'BANNED';
-        await account.save({ session });
-
-        userInfo.banReason = reason;
-        userInfo.bannedAt = new Date();
-        userInfo.flaggedCount += 1;
-        await userInfo.save({ session });
-
-        result = {
-          status: "success",
-          message: `Banned user '${userInfo.fullName}' successfully`,
-          data: {
-            userId: userInfo._id.toString(),
-            accountId: account._id.toString(),
-            userName: userInfo.fullName,
-            email: account.email,
-            role: account.role,
-            status: account.status,
-            banReason: userInfo.banReason,
-            bannedAt: userInfo.bannedAt,
-            flaggedCount: userInfo.flaggedCount
-          }
-        };
-      });
-
-      await session.endSession();
-      return result;
-    } catch (error) {
-      throw new BadRequestException('Failed to ban user: ' + error.message);
-    }
-  }
-
-  //unban user
-  async unbanUser(userId: string): Promise<{
-    userId: string;
-    accountId: string;
-    role: string;
-    email: string;
-    userName: string;
-    status: string;
-    banReason: string | null;
-    flaggedCount: number;
-    bannedAt: Date | null;
-  }> {
-    const userInfo = await this.userInfosModel.findById(userId);
-    if (!userInfo) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
-    }
-
-    const account = await this.accountModel.findById(userInfo.userId);
-    if (!account) {
-      throw new NotFoundException(`Account not found for user ${userId}`);
-    }
-
-    if (account.status !== 'BANNED') {
-      throw new BadRequestException(`Account is not banned`);
-    }
-
-    try {
-      const session = await this.accountModel.startSession();
-      let result;
-
-      await session.withTransaction(async () => {
-        // Update account status
-        account.status = 'ACTIVE';
-        await account.save({ session });
-
-        // Clear ban information
-        userInfo.banReason = null;
-        userInfo.bannedAt = null;
-        await userInfo.save({ session });
-
-        result = {
-          status: "Success",
-          message: `Unban user '${userInfo.fullName}' successfully`,
-          data: {
-            userId: userInfo._id.toString(),
-            accountId: account._id.toString(),
-            userName: userInfo.fullName,
-            email: account.email,
-            role: account.role,
-            status: account.status,
-            banReason: userInfo.banReason,
-            bannedAt: userInfo.bannedAt,
-            flaggedCount: userInfo.flaggedCount
-          }
-        };
-      });
-
-      await session.endSession();
-      return result;
-    } catch (error) {
-      throw new BadRequestException('Failed to unban user: ' + error.message);
-    }
-  }
-
-  // update user role
-  async updateUserRole(userInfoId: string, role: UserRole): Promise<{
-    userId: string;
-    accountId: string;
-    email: string;
-    userName: string;
-    role: string;
-    status: string;
-  }> {
-
-    const userInfo = await this.userInfosModel.findById(userInfoId);
-    if (!userInfo) {
-      throw new NotFoundException(`User with ID ${userInfoId} not found`);
-    }
-
-    const account = await this.accountModel.findById(userInfo.userId);
-    if (!account) {
-      throw new NotFoundException(`Account not found for user ${userInfoId}`);
-    }
-
-    try {
-      const session = await this.accountModel.startSession();
-      let result;
-
-      await session.withTransaction(async () => {
-        account.role = role;
-        await account.save({ session });
-
-        result = {
-          status: "Success",
-          messsage: "Update user's role succesful",
-          data: {
-            userId: userInfo._id.toString(),
-            accountId: account._id.toString(),
-            email: account.email,
-            userName: userInfo.fullName,
-            role: account.role,
-            status: account.status
-          }
-        };
-      });
-
-      await session.endSession();
-      return result;
-    } catch (error) {
-      throw new BadRequestException(`Failed to update user role: ${error.message}`);
-    }
-  }
-
-  // delete user
-  async deleteUser(userInfoId: string): Promise<{
-    status: string;
-    message: string;
-    data: {
-        userId: string;
-        accountId: string;
-        email: string;
-        userName: string;
-    }
-}> {
-
-    const userInfo = await this.userInfosModel.findById(userInfoId);
-    if (!userInfo) {
-        throw new NotFoundException(`User with ID ${userInfoId} not found`);
-    }
-
-    const account = await this.accountModel.findById(userInfo.userId);
-    if (!account) {
-        throw new NotFoundException(`Account not found for user ${userInfoId}`);
-    }
-
-    try {
-        const session = await this.accountModel.startSession();
-        let result;
-
-        await session.withTransaction(async () => {
-            await this.accountModel.findByIdAndDelete(account._id).session(session);
-
-            await this.userInfosModel.findByIdAndDelete(userInfoId).session(session);
-
-            result = {
-                status: "Success",
-                message: `Successfully deleted user '${userInfo.fullName}' and associated account`,
-                data: {
-                    userId: userInfo._id.toString(),
-                    accountId: account._id.toString(),
-                    email: account.email,
-                    userName: userInfo.fullName
-                }
-            };
-        });
-
-        await session.endSession();
-        return result;
-
-    } catch (error) {
-        throw new BadRequestException(`Failed to delete user: ${error.message}`);
-    }
-}
 }

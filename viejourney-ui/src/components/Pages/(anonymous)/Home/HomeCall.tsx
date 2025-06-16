@@ -1,6 +1,7 @@
 import { DoubleArrow } from "@mui/icons-material";
 import { Button, Stack } from "@mui/material";
 import React from "react";
+import { Link } from "react-router-dom";
 const HomeCall: React.FC = () => {
   return (
     <div className="w-full lg:h-100 grid lg:grid-cols-2 lg:items-start sm:grid-cols-1 bg-dark-900 px-10 py-20 ">
@@ -22,12 +23,14 @@ const HomeCall: React.FC = () => {
         </Stack>
       </div>
       <div className="flex justify-end items-start">
-        <Button
-          className="bg-neutral-100 px-6 py-4 text-dark-700 font-semibold text-base"
-          endIcon={<DoubleArrow />}
-        >
-          Book a Vacation
-        </Button>
+        <Link to="/trip/create">
+          <Button
+            className="bg-neutral-100 px-6 py-4 text-dark-700 font-semibold text-base"
+            endIcon={<DoubleArrow />}
+          >
+            Start your journey
+          </Button>
+        </Link>
       </div>
     </div>
   );
