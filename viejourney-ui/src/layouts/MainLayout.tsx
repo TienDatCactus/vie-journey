@@ -30,7 +30,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <Fab
         size="large"
         aria-label="add"
-        className="fixed bottom-10 right-10 bg-neutral-50"
+        className="fixed bottom-20 right-5 bg-neutral-50"
         onClick={() => smoothScrollTo(0)}
       >
         <VerticalAlignTop />

@@ -18,6 +18,7 @@ import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
+import TypebotChat from "./components/TypeBotChat";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
@@ -50,28 +51,30 @@ const theme = createTheme({
 });
 
 root.render(
-    <StyledEngineProvider injectFirst>
-      <ScopedCssBaseline>
-        <ThemeProvider theme={theme}>
-          <SnackbarProvider>
-            <CssBaseline />
-            {/* <ScrollProvider> */}
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <React.Suspense fallback={<Fallback />}>
-                <AuthProvider>
-                  <APIProvider
-                    apiKey={apiKey}
-                    language="en"
-                    libraries={["places", "marker", "geometry"]}
-                  >
-                    <RouterProvider router={router} />
-                  </APIProvider>
-                </AuthProvider>
-              </React.Suspense>
-            </LocalizationProvider>
-            {/* </ScrollProvider> */}
-          </SnackbarProvider>
-        </ThemeProvider>
-      </ScopedCssBaseline>
-    </StyledEngineProvider>
+  <StyledEngineProvider injectFirst>
+    <ScopedCssBaseline>
+      <ThemeProvider theme={theme}>
+        <SnackbarProvider>
+          <CssBaseline />
+          {/* <ScrollProvider> */}
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <React.Suspense fallback={<Fallback />}>
+              <AuthProvider>
+                <APIProvider
+                  apiKey={apiKey}
+                  language="en"
+                  libraries={["places", "marker", "geometry"]}
+                >
+                  <RouterProvider router={router} />
+                </APIProvider>
+              </AuthProvider>
+
+              <TypebotChat />
+            </React.Suspense>
+          </LocalizationProvider>
+          {/* </ScrollProvider> */}
+        </SnackbarProvider>
+      </ThemeProvider>
+    </ScopedCssBaseline>
+  </StyledEngineProvider>
 );

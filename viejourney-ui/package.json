@@ -18,6 +18,7 @@
     "@mui/x-date-pickers-pro": "^8.5.0",
     "@mui/x-license": "^8.5.0",
     "@tailwindcss/vite": "^4.0.15",
+    "@typebot.io/react": "^0.8.5",
     "@vis.gl/react-google-maps": "^1.5.2",
     "axios": "^1.8.4",
     "currency.js": "^2.0.4",
