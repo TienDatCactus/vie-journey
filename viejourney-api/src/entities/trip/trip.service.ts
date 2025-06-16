@@ -29,7 +29,7 @@ export class TripService {
       startDate: startDate,
       endDate: endDate,
       createdBy: req.user?.['userId'] as string,
-      budgetRange: createTripDto.budget,
+      budgetRange: createTripDto?.budget,
       tripmateRange: createTripDto.travelers,
       description: createTripDto.description,
       visibility: createTripDto.visibility,
@@ -80,12 +80,34 @@ export class TripService {
     }
   }
 
+  async findByUser(userId: string) {
+    try {
+      const trips = await this.tripModel.find().where({
+        userId: userId,
+      });
+      if (!trips || trips.length === 0) {
+        throw new HttpException(
+          'No trips found for this user',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      return trips;
+    } catch (error) {
+      console.error(error);
+    }
+  }
   findAll() {
     return `This action returns all trip`;
   }
 
   findOne(id: string) {
-    return this.tripModel.findOne({ _id: id });
+    try {
+      return this.tripModel.findOne({
+        _id: id,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   update(id: number, updateTripDto: UpdateTripDto) {

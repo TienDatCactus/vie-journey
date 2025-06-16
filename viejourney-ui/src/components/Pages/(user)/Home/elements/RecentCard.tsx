@@ -2,7 +2,6 @@ import { Add, Place } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ShareIcon from "@mui/icons-material/Share";
 import {
-  Avatar,
   Button,
   Card,
   CardActionArea,
@@ -19,7 +18,7 @@ import {
 import { CalendarIcon } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
 import React from "react";
-import { useAuth } from "../../../../../services/contexts/AuthContext";
+import { useAuthStore } from "../../../../../services/stores/useAuthStore";
 interface RecentCardProps {
   places?: number;
   title?: string;
@@ -45,7 +44,10 @@ const RecentCard = ({
   if (blank) {
     return (
       <Card className="h-full flex items-center border-2 border-dashed border-neutral-500 justify-center">
-        <CardActionArea className="flex flex-col gap-2 items-center justify-center w-full h-full">
+        <CardActionArea
+          href="/trip/create"
+          className="flex flex-col gap-2 items-center justify-center w-full h-full"
+        >
           <div className="w-fit p-2 rounded-full bg-dark-200">
             <Add className="text-dark-600" />
           </div>
@@ -53,13 +55,9 @@ const RecentCard = ({
           <p className="text-center text-dark-700">
             Create a new journey to your dream destination
           </p>
-          <Button
-            disabled
-            variant="contained"
-            className="bg-white text-dark-900 mt-2 border-2 "
-          >
+          <a className="bg-white text-dark-900 mt-2 px-2 py-1 rounded-sm border-2 ">
             Get started
-          </Button>
+          </a>
         </CardActionArea>
       </Card>
     );
@@ -68,21 +66,7 @@ const RecentCard = ({
     setContextMenu(null);
   };
 
-  const { user } = useAuth();
-  const handleContextMenu = (event: React.MouseEvent) => {
-    event.preventDefault();
-    setContextMenu(
-      contextMenu === null
-        ? {
-            mouseX: event.clientX + 2,
-            mouseY: event.clientY - 6,
-          }
-        : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
-          // Other native context menus might behave different.
-          // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
-          null
-    );
-  };
+  const { user } = useAuthStore();
 
   return (
     <Card>
@@ -135,30 +119,29 @@ const RecentCard = ({
         <div className="mask-b-from-20% mask-b-to-80%" />
       </div>
       <CardContent className="p-2">
-        <Stack direction={"column"} gap={1} justifyContent={"space-evenly"}>
-          <Stack direction={"row"} alignItems={"center"} spacing={1}>
-            <CalendarIcon className="text-neutral-600" />
-            <Typography variant="body2" color="text.secondary">
-              {dayjs(from).format("MMM, YYYY")} -{" "}
-              {dayjs(to).format("MMMM, YYYY")}
-            </Typography>
+        <Stack
+          direction={"row"}
+          alignItems={"center"}
+          justifyContent={"space-between"}
+        >
+          <Stack direction={"column"} gap={1} justifyContent={"space-evenly"}>
+            <Stack direction={"row"} alignItems={"center"} spacing={1}>
+              <CalendarIcon className="text-neutral-600" />
+              <Typography variant="body2" color="text.secondary">
+                {dayjs(from).format("MMM, YYYY")} -{" "}
+                {dayjs(to).format("MMMM, YYYY")}
+              </Typography>
+            </Stack>
+            <Stack direction={"row"} alignItems={"center"} spacing={1}>
+              <Place className="text-neutral-600" />
+              <Typography variant="body2" color="text.secondary">
+                {places} places
+              </Typography>
+            </Stack>
           </Stack>
-          <Stack direction={"row"} alignItems={"center"} spacing={1}>
-            <Place className="text-neutral-600" />
-            <Typography variant="body2" color="text.secondary">
-              {places} places
-            </Typography>
-          </Stack>
-          <Stack
-            direction={"row"}
-            justifyContent={"space-between"}
-            alignItems={"center"}
-          >
-            <Avatar className="text-sm w-8 h-8">
-              {user?.email?.slice(0, 1)}
-            </Avatar>
-            <Button className="text-dark-900">View details</Button>
-          </Stack>
+          <Button className="text-dark-900 bg-neutral-50" variant="contained">
+            View details
+          </Button>
         </Stack>
       </CardContent>
     </Card>

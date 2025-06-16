@@ -10,11 +10,14 @@ import {
   CTDReservation,
 } from "../../../../components/Pages/(user)/Trips";
 import { useParams } from "react-router-dom";
-import { useAuth } from "../../../../services/contexts/AuthContext";
+import { useAuthStore } from "../../../../services/stores/useAuthStore";
+import { doGetTrip } from "../../../../services/api";
+import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 
 const CreateTripDetails: React.FC = () => {
-  const { id } = useParams();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
+  const { setTrip } = useTripDetailStore();
+  const { id } = useParams<{ id: string }>();
   useEffect(() => {
     const socket = io("http://localhost:5000/trip", {
       transports: ["websocket"],
@@ -42,20 +45,18 @@ const CreateTripDetails: React.FC = () => {
       socket.disconnect();
     };
   }, [id, user?.email]);
-  // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  // const open = Boolean(anchorEl);
-  // const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-  //   setAnchorEl(event.currentTarget);
-  // };
-  // const handleClose = () => {
-  //   setAnchorEl(null);
-  // };
-  // const {
-  //   control,
-  //   formState: { errors, isValidating },
-  //   register,
-  // } = useForm();
-
+  useEffect(() => {
+    const fetchTripDetails = async () => {
+      if (!id) {
+        return;
+      }
+      const resp = await doGetTrip(id);
+      if (resp) {
+        setTrip(resp);
+      }
+    };
+    fetchTripDetails();
+  }, [id]);
   return (
     <TripLayout>
       <CTDHeader />

@@ -5,8 +5,9 @@ export interface Trip {
   destination: string;
   startDate: Date;
   endDate: Date;
-  budgetRange: string;
-  tripmateRange: string;
+  budgetRange?: string;
+  tripmateRange?: string;
+  tripmates: string[];
   description: string;
   visibility: boolean;
 }

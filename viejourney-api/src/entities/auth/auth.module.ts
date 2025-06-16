@@ -10,6 +10,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { UserInfos, UserInfosSchema } from 'src/common/db/userinfo.schema';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
@@ -19,7 +21,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       secret: process.env.JWT_SECRET || 'secret',
       signOptions: { expiresIn: '60m' },
     }),
-    MongooseModule.forFeature([{ name: Account.name, schema: AccountSchema }]),
+    MongooseModule.forFeature([
+      { name: Account.name, schema: AccountSchema },
+      { name: UserInfos.name, schema: UserInfosSchema },
+    ]),
+    UserModule,
     AccountModule,
   ],
   controllers: [AuthController],

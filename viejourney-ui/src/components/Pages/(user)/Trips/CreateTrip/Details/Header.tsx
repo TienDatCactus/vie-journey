@@ -17,7 +17,9 @@ import {
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
 import React from "react";
+import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
 const Header: React.FC = () => {
+  const trip = useTripDetailStore((state) => state.trip);
   return (
     <section>
       <div className="z-10 relative w-full lg:h-[17.5rem]">
@@ -35,7 +37,7 @@ const Header: React.FC = () => {
         <div className="absolute bottom-0 left-0 w-full h-[10rem] bg-gradient-to-t from-neutral-900 to-transparent"></div>
         <div className="absolute -bottom-10 left-1/2 -translate-x-1/2  lg:w-3/4 lg:h-[12rem] rounded-2xl shadow-md bg-white *:text-neutral-800 p-4 flex flex-col justify-between itemce">
           <div className="hover:bg-neutral-300 w-fit p-2 rounded-md transition-all duration-200">
-            <h1 className="text-4xl font-bold">Trip Title</h1>
+            <h1 className="text-4xl font-bold">{trip?.title}</h1>
           </div>
           <Stack
             direction={"row"}
@@ -67,7 +69,7 @@ const Header: React.FC = () => {
                     },
                   },
                 }}
-                defaultValue={[dayjs("2023-01-01"), dayjs("2023-01-31")]}
+                defaultValue={[dayjs(trip?.startDate), dayjs(trip?.endDate)]}
               />
             </div>
             <AvatarGroup
@@ -78,16 +80,16 @@ const Header: React.FC = () => {
                   fontSize: "0.875rem",
                 },
               }}
-              max={4}
+              max={trip?.tripmates?.length || 1}
             >
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-              <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-              <Avatar alt="Cindy Baker" src="/static/images/avatar/3.jpg" />
-              <Avatar alt="Agnes Walker" src="/static/images/avatar/4.jpg" />
-              <Avatar
-                alt="Trevor Henderson"
-                src="/static/images/avatar/5.jpg"
-              />
+              {trip?.tripmates?.map((mate, index) => (
+                <Avatar
+                  key={index}
+                  alt={mate}
+                  content={mate}
+                  src={"/static/images/avatar/1.jpg"}
+                />
+              ))}
             </AvatarGroup>
           </Stack>
         </div>

@@ -12,8 +12,8 @@ import {
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
-import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Request } from 'express';
 
 @Controller('trip')
 @UseGuards(JwtAuthGuard)
@@ -34,7 +34,10 @@ export class TripController {
   findAll() {
     return this.tripService.findAll();
   }
-
+  @Post('/:userId')
+  findByUser(@Body() req: { userId: string }) {
+    return this.tripService.findByUser(req.userId);
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tripService.findOne(id);

@@ -35,7 +35,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       return result;
     } catch (error) {
       console.error('Error in JWT validation:', error);
-      throw error;
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }

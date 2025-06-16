@@ -1,11 +1,5 @@
-import {
-  ArrowForward,
-  CalendarMonth,
-  Circle,
-  MoreHoriz,
-  NavigateNext,
-} from "@mui/icons-material";
-import { Avatar, Chip, Grid2, IconButton, Stack } from "@mui/material";
+import { CalendarMonth, NavigateNext } from "@mui/icons-material";
+import { Chip, Grid2, IconButton, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import dayjs from "dayjs";
 

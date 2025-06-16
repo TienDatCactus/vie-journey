@@ -1,6 +1,6 @@
 import { Grid2 } from "@mui/material";
 import React from "react";
-import { ExploreCard } from "./_elements";
+import { ExploreCard } from "./elements";
 
 const HomeExplore: React.FC = () => {
   const fakeData = [
