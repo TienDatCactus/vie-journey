@@ -19,8 +19,6 @@ import "./index.css";
 import { AuthLayout } from "./layouts";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
-import dayjs from "dayjs";
-import advancedFormat from "dayjs/plugin/advancedFormat";
 import TypebotChat from "./components/TypeBotChat";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
@@ -60,21 +58,22 @@ root.render(
         <SnackbarProvider>
           <CssBaseline />
           {/* <ScrollProvider> */}
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <React.Suspense fallback={<Fallback />}>
-              <AuthProvider>
-                <APIProvider
-                  apiKey={apiKey}
-                  language="en"
-                  libraries={["places", "marker", "geometry"]}
-                >
-                  <RouterProvider router={router} />
-                </APIProvider>
-              </AuthProvider>
-
-              <TypebotChat />
-            </React.Suspense>
-          </LocalizationProvider>
+          <React.Suspense fallback={<Fallback />}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <APIProvider
+                apiKey={apiKey}
+                language="en"
+                libraries={["places", "marker", "geometry"]}
+              >
+                <AuthLayout>
+                  <HelmetProvider>
+                    <RouterProvider router={router} />
+                  </HelmetProvider>
+                </AuthLayout>
+              </APIProvider>
+            </LocalizationProvider>
+            <TypebotChat />
+          </React.Suspense>
           {/* </ScrollProvider> */}
         </SnackbarProvider>
       </ThemeProvider>
