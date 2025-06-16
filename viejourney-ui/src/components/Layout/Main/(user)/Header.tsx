@@ -138,10 +138,10 @@ const Header = () => {
               <Avatar
                 sx={{ bgcolor: "#1d41c15d", width: 30, height: 30 }}
                 className="transition-all duration-200 ease-in-out shadow-md cursor-pointer hover:scale-110"
-                src={
-                  info?.avatar || "/images/placeholders/icons8-avatar-50.png"
-                }
-              />
+                src={info?.avatar}
+              >
+                {info?.fullName?.charAt(0).toUpperCase() || "U"}
+              </Avatar>
             </IconButton>
             <Menu
               anchorEl={anchorEl}
