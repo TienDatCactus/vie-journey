@@ -6,6 +6,8 @@ import GuideDetail from "../../pages/(user)/Guides/GuideDetail";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import RoleManagement from "../../pages/(admin)/RoleManagement";
+import HotelManagement from "../../pages/(admin)/Hotel";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -116,7 +118,7 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: (
-      <ProtectedRoute requireAuth={true}>
+      <ProtectedRoute requireAuth={false}>
         <SuspenseWrapper component={Dashboard} />
       </ProtectedRoute>
     ),
@@ -187,6 +189,22 @@ const router = createBrowserRouter([
             ),
           },
         ],
+      },
+      {
+        path: "hotels",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={HotelManagement} />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "role-management",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={RoleManagement} />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "media",
