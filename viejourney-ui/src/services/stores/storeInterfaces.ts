@@ -1,10 +1,13 @@
-import { User } from "../../utils/interfaces";
+import { UserInfo } from "../../utils/interfaces";
+import { create } from "zustand";
 
 export interface NoteData {
   id: string;
   content: string;
-  by: User;
+  by: UserInfo | null;
   isEditing?: boolean;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
 }
 
 export interface TransitData {
@@ -31,6 +34,8 @@ export interface TransitData {
     location: string;
   };
   isEditing?: boolean;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
 }
 
 export interface PlaceData extends google.maps.places.Place {
@@ -39,6 +44,8 @@ export interface PlaceData extends google.maps.places.Place {
   content: string;
   visited: boolean;
   isEditing?: boolean;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
 }
 
 export interface PlaceNote {
@@ -46,8 +53,8 @@ export interface PlaceNote {
   placeId: string;
   note: string;
   visited: boolean;
-  addedBy: User;
+  addedBy: UserInfo;
   isEditing?: boolean;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
 }
-
-export interface PlaceNotesStore {}

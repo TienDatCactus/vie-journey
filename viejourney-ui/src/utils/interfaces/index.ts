@@ -1,20 +1,8 @@
-export interface User extends Account {
-  status: string;
-  fullName: string;
-  avatarUrl: string;
-  lastLoginAt?: Date;
-  flaggedCount: number;
-  banReason?: string;
-  bannedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export interface Account {
   userId: string;
   email: string;
   role: "USER" | "ADMIN" | "MANAGER";
-  active: boolean;
+  status: "ACTIVE" | "INACTIVE" | "BANNED";
 }
 
 export interface Trip {
@@ -28,4 +16,18 @@ export interface Trip {
   tripmates: string[];
   description: string;
   visibility: boolean;
+}
+
+export interface UserInfo {
+  fullName: string;
+  dob: Date | null;
+  phone: string;
+  address: string;
+  avatar: string;
+  lastLoginAt: Date | null;
+  flaggedCount: number;
+  banReason: string | null;
+  bannedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }

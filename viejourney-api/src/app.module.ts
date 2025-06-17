@@ -1,19 +1,18 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AdminModule } from './entities/admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuthModule } from './entities/auth/auth.module';
-import { AccountModule } from './entities/account/account.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HotelModule } from './entities/hotel/hotel.module';
-import { UserModule } from './entities/user/user.module';
-import { ManagerModule } from './entities/manager/manager.module';
-import { TripModule } from './entities/trip/trip.module';
-import { AssetsModule } from './entities/assets/assets.module';
-import { BlogModule } from './entities/blog/blog.module';
-
+import { AdminModule } from './modules/admin/admin.module';
+import { ManagerModule } from './modules/manager/manager.module';
+import { HotelModule } from './modules/hotel/hotel.module';
+import { UserModule } from './modules/userinfo/user.module';
+import { AccountModule } from './modules/account/account.module';
+import { AssetsModule } from './modules/assets/assets.module';
+import { TripModule } from './modules/trip/trip.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { BlogModule } from './modules/blog/blog.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
