@@ -8,7 +8,25 @@ import {
   TextField,
 } from "@mui/material";
 import React from "react";
-import { headerNav } from "../(user)/Header";
+const headerNav: Array<{ name: string; link: string }> = [
+  {
+    name: "Home",
+    link: "/home",
+  },
+  {
+    name: "Travel guides",
+    link: "/guides",
+  },
+  {
+    name: "Hotels",
+    link: "/hotels",
+  },
+
+  {
+    name: "Profile",
+    link: "/profile",
+  },
+];
 const Header = () => {
   const headerCheck = () => {
     return window.scrollY === 0;

@@ -73,7 +73,14 @@ const EditAccountDialog: React.FC<EditAccountDialogProps> = ({
             label="Date of Birth"
             value={dob}
             onChange={setDob}
-            slotProps={{ textField: { fullWidth: true } }}
+            slotProps={{
+              textField: { fullWidth: true },
+              popper: {
+                sx: {
+                  zIndex: 1400, // Higher than Dialog's default z-index (1300)
+                },
+              },
+            }}
           />
           <TextField
             label="Phone"

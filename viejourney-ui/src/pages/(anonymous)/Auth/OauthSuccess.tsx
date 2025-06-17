@@ -1,5 +1,6 @@
 import {
   CalendarMonth,
+  Cancel,
   ContactPhoneOutlined,
   DoneAll,
   EmailOutlined,
@@ -7,15 +8,17 @@ import {
   PermIdentity,
   TaskAlt,
 } from "@mui/icons-material";
-import { Button, ButtonGroup, Chip } from "@mui/material";
+import { Button, ButtonGroup, Chip, CircularProgress } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { doValidateAccessToken } from "../../../services/api";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 import { setToken } from "../../../services/api/token";
 const OauthSuccess: React.FC = () => {
-  const { loadUserFromToken, setUser, setCredential, user } = useAuthStore();
+  const { loadUserFromToken, setCredential, user, loadUserInfo, info } =
+    useAuthStore();
+  const [loading, setLoading] = useState(false);
   const [timer, setTimer] = React.useState<number>(5);
   const params = useSearchParams();
   const navigate = useNavigate();
@@ -24,14 +27,21 @@ const OauthSuccess: React.FC = () => {
       const token = params[0].get("accessToken");
       if (token) {
         try {
+          setLoading(true);
           const tokenData = await doValidateAccessToken(token);
           if (tokenData?.userId) {
+            setLoading(false);
+            enqueueSnackbar("Authentication successful!", {
+              variant: "success",
+            });
             setToken({
               accessToken: token,
               userId: tokenData.userId,
             });
             setCredential({ userId: tokenData.userId, token });
-            loadUserFromToken();
+            await loadUserFromToken().then(async () => {
+              await loadUserInfo();
+            });
           }
         } catch (error) {
           console.error("Error processing OAuth callback:", error);
@@ -42,22 +52,20 @@ const OauthSuccess: React.FC = () => {
         });
       }
     };
-
     handleCallback();
-  }, [location, navigate, setCredential, setUser]);
+  }, []);
   useEffect(() => {
+    if (loading) return;
     if (timer <= 0) {
-      navigate(user?.role === "ADMIN" ? "/admin/dashboard" : "/profile");
+      navigate(user?.role === "ADMIN" ? "/admin/dashboard" : "/");
       return;
     }
-
     const timerId = setInterval(() => {
       setTimer((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [timer, navigate, user]);
-
+  }, [timer, loading]);
   return (
     <div className="relative flex flex-col items-center justify-center w-full bg-[#f8fafc] h-svh">
       <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#0000001a_1px,transparent_1px),linear-gradient(to_bottom,#0000001a_1px,transparent_1px)] bg-[size:40px_40px] "></div>
@@ -71,12 +79,22 @@ const OauthSuccess: React.FC = () => {
         </div>
         <div className="my-4 bg-neutral-100 shadow-sm rounded-md grid grid-cols-12 gap-4 items-center p-2 ">
           <img
-            className="col-span-3 w-full p-1"
-            src="/images/placeholders/icons8-avatar-50.png"
+            className="col-span-3 w-full p-1 rounded-full object-center object-contain"
+            alt="User Avatar"
+            onError={(e) => {
+              e.currentTarget.src = "/images/placeholders/icons8-avatar-50.png";
+            }}
+            src={info?.avatar}
           />
           <div className="col-span-9 flex flex-col justify-center gap-1">
-            <h1 className="text-lg">{user?.email}</h1>
-            <p className="text-sm text-neutral-700">{user?.email}</p>
+            {loading ? (
+              <CircularProgress size={20} className="self-start" />
+            ) : (
+              <>
+                <h1 className="text-lg font-semibold">{user?.email}</h1>
+                <p className="text-sm text-neutral-600">{info?.fullName}</p>
+              </>
+            )}
             <Button
               variant="contained"
               className="gap-2 bg-white mt-1 rounded-lg text-dark-900 px-4 w-fit"
@@ -94,10 +112,14 @@ const OauthSuccess: React.FC = () => {
               <span className="mx-2">Account Status</span>
             </dt>
             <dd className="text-sm font-semibold">
-              <Chip
-                label={user?.active ? "Verified" : "Unverified"}
-                className="bg-green-100 text-green-800"
-              />
+              {loading ? (
+                <CircularProgress size={20} />
+              ) : (
+                <Chip
+                  label={user?.status == "ACTIVE" ? "Verified" : "Unverified"}
+                  className="bg-green-100 text-green-800"
+                />
+              )}
             </dd>
           </div>
           <div className="flex items-center justify-between border-b pb-2 mb-4 border-neutral-500">
@@ -105,19 +127,29 @@ const OauthSuccess: React.FC = () => {
               <EmailOutlined className="mb-1" />
               <span className="mx-2">Email Verified</span>
             </dt>
-            <dd className="text-sm font-semibold"></dd>
-            <TaskAlt className="text-green-600" />
+            <dd className="text-sm font-semibold">
+              {loading ? (
+                <CircularProgress size={20} />
+              ) : user?.status == "ACTIVE" ? (
+                <TaskAlt className="text-green-600" />
+              ) : (
+                <Cancel className="text-red-600" />
+              )}
+            </dd>
           </div>
           <div className="flex items-center justify-between border-b pb-2 mb-4 border-neutral-500">
             <dt className="text-sm text-neutral-600">
               <CalendarMonth className="mb-1" />
               <span className="mx-2">Member Since</span>
             </dt>
-            <dd className="text-sm font-semibold">December 2024</dd>
+            <dd className="text-sm font-semibold">
+              {loading ? <CircularProgress size={20} /> : "December 2024"}
+            </dd>
           </div>
         </dl>
         <p className=" text-center text-base text-neutral-600 pb-2">
-          Redirecting you to your dashboard in {timer} seconds...
+          Redirecting you to your dashboard in{" "}
+          {loading ? <CircularProgress size={10} /> : timer} seconds...
         </p>
         <div>
           <Button

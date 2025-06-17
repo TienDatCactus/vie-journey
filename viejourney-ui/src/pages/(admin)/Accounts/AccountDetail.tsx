@@ -25,7 +25,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ACCOUNTS } from "../../../services/api/url";
+import { ACCOUNTS, ADMIN } from "../../../services/api/url";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditAccountDialog from "./EditAccountDialog";
 
@@ -197,6 +197,28 @@ const AccountDetail = () => {
       navigate("/admin/accounts");
     } catch (err) {
       setLoadingDelete(false);
+    }
+  };
+
+  const handleChangeActive = async (active: boolean) => {
+    if (!id) return;
+    setLoadingEdit(true);
+    try {
+      await axios.patch(
+        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
+        { active },
+        { withCredentials: true }
+      );
+      setLoadingEdit(false);
+      // Reload lại user
+      const res = await axios.get(
+        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
+        { withCredentials: true }
+      );
+      const updated = res.data?.data || res.data || null;
+      setUser(updated);
+    } catch (err) {
+      setLoadingEdit(false);
     }
   };
 

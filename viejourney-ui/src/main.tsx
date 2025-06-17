@@ -71,6 +71,7 @@ root.render(
                   </HelmetProvider>
                 </AuthLayout>
               </APIProvider>
+              <TypebotChat />
             </LocalizationProvider>
             <TypebotChat />
           </React.Suspense>

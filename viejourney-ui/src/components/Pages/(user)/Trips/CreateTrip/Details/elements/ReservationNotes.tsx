@@ -29,7 +29,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
-import { User } from "../../../../../../../utils/interfaces";
+import { UserInfo } from "../../../../../../../utils/interfaces";
 
 interface ReservationNotesProps {
   state: {
@@ -42,7 +42,7 @@ interface ReservationNotesProps {
 interface NoteData {
   id: string;
   content: string;
-  by: User;
+  by: UserInfo | null;
   isEditing?: boolean;
 }
 
@@ -202,12 +202,12 @@ const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
   const notes = useTripDetailStore((state) => state.notes);
   const { addNote, updateNote, toggleEditNote, deleteNote } =
     useTripDetailStore();
-  const { user } = useAuthStore();
+  const { info } = useAuthStore();
   const handleAddNote = () => {
     addNote({
       id: `note-${Date.now()}`,
       content: "",
-      by: user as User,
+      by: info,
       isEditing: true,
     });
   };

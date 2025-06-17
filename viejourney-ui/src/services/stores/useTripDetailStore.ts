@@ -1,6 +1,6 @@
 // store/useTripDetailStore.ts
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { devtools } from "zustand/middleware";
 import { NoteData, PlaceNote, TransitData } from "./storeInterfaces";
 import { Trip } from "./storeTypes";
 

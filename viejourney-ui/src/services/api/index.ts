@@ -6,6 +6,7 @@ import {
   CreateTripDto,
   CreateTripRespDto,
   GetTripRespDto,
+  GetUserInfoRespDTO,
   GetUserReqDTO,
   GetUserRespDTO,
   LoginReqDTO,
@@ -210,6 +211,19 @@ export const doGetTrip = async (tripId: string) => {
     }
   } catch (error) {
     console.error("Failed to get trip:", error);
+  }
+  return null;
+};
+
+export const doGetUserInfo = async (userId: string) => {
+  try {
+    const resp = await http.get(`${USER?.GET_USER_INFO}/${userId}`);
+    if (resp) {
+      console.log(resp);
+      return extractApiData<GetUserInfoRespDTO>(resp);
+    }
+  } catch (error) {
+    console.error("Failed to get user info:", error);
   }
   return null;
 };
