@@ -12,6 +12,7 @@ import { UserModule } from './entities/user/user.module';
 import { ManagerModule } from './entities/manager/manager.module';
 import { TripModule } from './entities/trip/trip.module';
 import { AssetsModule } from './entities/assets/assets.module';
+import { BlogModule } from './entities/blog/blog.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AssetsModule } from './entities/assets/assets.module';
     }),
     MongooseModule.forRoot(process.env.MONGODB_URI || ''),
     AdminModule,
+    BlogModule,
     ManagerModule,
     HotelModule,
     UserModule,
