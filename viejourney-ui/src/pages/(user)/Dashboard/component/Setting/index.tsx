@@ -1,88 +1,117 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { TextField, Switch, Button, Typography, Paper, Grid, Divider, Box } from "@mui/material"
-import { Edit as EditIcon, Lock as LockIcon, Notifications as NotificationsIcon } from "@mui/icons-material"
-
-interface ProfileData {
-  firstName: string
-  lastName: string
-  username: string
-  email: string
-  bio: string
-  location: string
-}
+import {
+  Edit as EditIcon,
+  Lock as LockIcon,
+  Notifications as NotificationsIcon,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Divider,
+  Paper,
+  Switch,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers-pro";
+import dayjs from "dayjs";
+import { enqueueSnackbar } from "notistack";
+import type React from "react";
+import { useState } from "react";
+import { updateUserInfo } from "../../../../../services/api/user";
+import { IUserInfoUpdate, UserInfo } from "../../../../../utils/interfaces";
+import { useAuthStore } from "../../../../../services/stores/useAuthStore";
 
 interface PrivacySettings {
-  profileVisibility: boolean
-  showTravelHistory: boolean
-  allowMessages: boolean
+  profileVisibility: boolean;
+  showTravelHistory: boolean;
+  allowMessages: boolean;
 }
 
 interface NotificationSettings {
-  emailNotifications: boolean
-  tripReminders: boolean
-  socialUpdates: boolean
+  emailNotifications: boolean;
+  tripReminders: boolean;
+  socialUpdates: boolean;
 }
 
-export default function ProfileSettings() {
-  const [profileData, setProfileData] = useState<ProfileData>({
-    firstName: "Tien",
-    lastName: "Dat",
-    username: "tien65",
-    email: "tien@example.com",
-    bio: "",
-    location: "",
-  })
+export default function ProfileSettings({ userInfo }: { userInfo: UserInfo }) {
+  const { loadUserInfo } = useAuthStore();
+
+  const [profileData, setProfileData] = useState<IUserInfoUpdate>({
+    fullName: userInfo?.fullName,
+    phone: userInfo?.phone,
+    address: userInfo.address,
+    dob: userInfo.dob ? dayjs(userInfo.dob).toDate() : null,
+  });
 
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({
     profileVisibility: true,
     showTravelHistory: true,
     allowMessages: false,
-  })
+  });
 
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    emailNotifications: true,
-    tripReminders: true,
-    socialUpdates: false,
-  })
+  const [notificationSettings, setNotificationSettings] =
+    useState<NotificationSettings>({
+      emailNotifications: true,
+      tripReminders: true,
+      socialUpdates: false,
+    });
 
-  const handleProfileChange = (field: keyof ProfileData) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setProfileData((prev) => ({
-      ...prev,
-      [field]: event.target.value,
-    }))
-  }
+  const handleProfileChange =
+    (field: keyof IUserInfoUpdate) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setProfileData((prev) => ({
+        ...prev,
+        [field]: event.target.value,
+      }));
+    };
 
-  const handlePrivacyChange = (field: keyof PrivacySettings) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPrivacySettings((prev) => ({
-      ...prev,
-      [field]: event.target.checked,
-    }))
-  }
+  const handlePrivacyChange =
+    (field: keyof PrivacySettings) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setPrivacySettings((prev) => ({
+        ...prev,
+        [field]: event.target.checked,
+      }));
+    };
 
   const handleNotificationChange =
-    (field: keyof NotificationSettings) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof NotificationSettings) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
       setNotificationSettings((prev) => ({
         ...prev,
         [field]: event.target.checked,
-      }))
-    }
+      }));
+    };
 
-  const handleSaveChanges = () => {
-    console.log("Saving changes...", {
-      profileData,
-      privacySettings,
-      notificationSettings,
-    })
-  }
+  const handleSaveChanges = async () => {
+    try {
+      await updateUserInfo(userInfo._id || " ", profileData);
+      loadUserInfo();
+      enqueueSnackbar("Update profile successful", {
+        variant: "success",
+      });
+    } catch (error) {
+      enqueueSnackbar(error instanceof Error ? error.message : String(error));
+    }
+  };
 
   return (
-    <Box sx={{ minHeight: "100vh", width: "1000px",   marginBottom: "20px", marginTop: "20px" }} >
+    <Box
+      sx={{
+        minHeight: "100vh",
+        width: "1000px",
+        marginBottom: "20px",
+        marginTop: "20px",
+      }}
+    >
       <Box sx={{ maxWidth: "100%", mx: "auto" }}>
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: "bold", color: "#1a1a1a", mb: 1 }}>
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: "bold", color: "#1a1a1a", mb: 1 }}
+          >
             Profile Settings
           </Typography>
           <Typography variant="body1" sx={{ color: "#666" }}>
@@ -92,10 +121,20 @@ export default function ProfileSettings() {
 
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {/* Profile Information Section */}
-          <Paper sx={{ p: 3, boxShadow: 1 }}>
+          <Paper
+            sx={{ p: 3, boxShadow: 1 }}
+            component="form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSaveChanges();
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
               <EditIcon sx={{ fontSize: 20, color: "#555" }} />
-              <Typography variant="h6" sx={{ fontWeight: 600, color: "#1a1a1a" }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 600, color: "#1a1a1a" }}
+              >
                 Profile Information
               </Typography>
             </Box>
@@ -104,43 +143,17 @@ export default function ProfileSettings() {
             </Typography>
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}>
-                    First Name
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    value={profileData.firstName}
-                    onChange={handleProfileChange("firstName")}
-                    variant="outlined"
-                    size="small"
-                    sx={{ backgroundColor: "white" }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}>
-                    Last Name
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    value={profileData.lastName}
-                    onChange={handleProfileChange("lastName")}
-                    variant="outlined"
-                    size="small"
-                    sx={{ backgroundColor: "white" }}
-                  />
-                </Grid>
-              </Grid>
-
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}>
-                  Username
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}
+                >
+                  Full Name
                 </Typography>
                 <TextField
                   fullWidth
-                  value={profileData.username}
-                  onChange={handleProfileChange("username")}
+                  value={profileData.fullName}
+                  onChange={handleProfileChange("fullName")}
                   variant="outlined"
                   size="small"
                   sx={{ backgroundColor: "white" }}
@@ -148,13 +161,16 @@ export default function ProfileSettings() {
               </Box>
 
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}>
-                  Email
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}
+                >
+                  Phone
                 </Typography>
                 <TextField
                   fullWidth
-                  value={profileData.email}
-                  onChange={handleProfileChange("email")}
+                  value={profileData.phone}
+                  onChange={handleProfileChange("phone")}
                   variant="outlined"
                   size="small"
                   sx={{ backgroundColor: "white" }}
@@ -162,34 +178,66 @@ export default function ProfileSettings() {
               </Box>
 
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}>
-                  Bio
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}
+                >
+                  Date of Birth
                 </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={profileData.bio}
-                  onChange={handleProfileChange("bio")}
-                  placeholder="Tell us about yourself..."
-                  variant="outlined"
-                  sx={{ backgroundColor: "white" }}
+                <DatePicker
+                  value={profileData.dob ? dayjs(profileData.dob) : null}
+                  onChange={(newValue) =>
+                    setProfileData((prev) => ({
+                      ...prev,
+                      dob: newValue ? newValue.toDate() : null,
+                    }))
+                  }
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      size: "small",
+                      variant: "outlined",
+                      sx: { backgroundColor: "white" },
+                    },
+                  }}
                 />
               </Box>
 
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}>
-                  Location
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}
+                >
+                  Address
                 </Typography>
                 <TextField
                   fullWidth
-                  value={profileData.location}
-                  onChange={handleProfileChange("location")}
-                  placeholder="Your current location"
+                  value={profileData.address}
+                  onChange={handleProfileChange("address")}
+                  placeholder="Your current address"
                   variant="outlined"
                   size="small"
                   sx={{ backgroundColor: "white" }}
                 />
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+                <Button
+                  variant="contained"
+                  type="submit"
+                  size="medium"
+                  sx={{
+                    backgroundColor: "#1f2937",
+                    "&:hover": { backgroundColor: "#111827" },
+                    textTransform: "none",
+                    fontWeight: 500,
+                    px: 3,
+                    py: 1,
+                    borderRadius: 2,
+                  }}
+                >
+                  Save Profile
+                </Button>
               </Box>
             </Box>
           </Paper>
@@ -198,7 +246,10 @@ export default function ProfileSettings() {
           <Paper sx={{ p: 3, boxShadow: 1 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
               <LockIcon sx={{ fontSize: 20, color: "#555" }} />
-              <Typography variant="h6" sx={{ fontWeight: 600, color: "#1a1a1a" }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 600, color: "#1a1a1a" }}
+              >
                 Privacy Settings
               </Typography>
             </Box>
@@ -207,9 +258,18 @@ export default function ProfileSettings() {
             </Typography>
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#1a1a1a" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, color: "#1a1a1a" }}
+                  >
                     Profile Visibility
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#666" }}>
@@ -225,9 +285,18 @@ export default function ProfileSettings() {
 
               <Divider />
 
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#1a1a1a" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, color: "#1a1a1a" }}
+                  >
                     Show Travel History
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#666" }}>
@@ -243,9 +312,18 @@ export default function ProfileSettings() {
 
               <Divider />
 
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#1a1a1a" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, color: "#1a1a1a" }}
+                  >
                     Allow Messages
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#666" }}>
@@ -265,7 +343,10 @@ export default function ProfileSettings() {
           <Paper sx={{ p: 3, boxShadow: 1 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
               <NotificationsIcon sx={{ fontSize: 20, color: "#555" }} />
-              <Typography variant="h6" sx={{ fontWeight: 600, color: "#1a1a1a" }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 600, color: "#1a1a1a" }}
+              >
                 Notifications
               </Typography>
             </Box>
@@ -274,9 +355,18 @@ export default function ProfileSettings() {
             </Typography>
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#1a1a1a" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, color: "#1a1a1a" }}
+                  >
                     Email Notifications
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#666" }}>
@@ -292,9 +382,18 @@ export default function ProfileSettings() {
 
               <Divider />
 
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#1a1a1a" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, color: "#1a1a1a" }}
+                  >
                     Trip Reminders
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#666" }}>
@@ -310,9 +409,18 @@ export default function ProfileSettings() {
 
               <Divider />
 
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#1a1a1a" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, color: "#1a1a1a" }}
+                  >
                     Social Updates
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#666" }}>
@@ -352,5 +460,5 @@ export default function ProfileSettings() {
         </Box>
       </Box>
     </Box>
-  )
+  );
 }

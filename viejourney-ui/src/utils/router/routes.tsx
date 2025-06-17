@@ -118,7 +118,7 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: (
-      <ProtectedRoute requireAuth={true}>
+      <ProtectedRoute requireAuth={false}>
         <SuspenseWrapper component={Dashboard} />
       </ProtectedRoute>
     ),

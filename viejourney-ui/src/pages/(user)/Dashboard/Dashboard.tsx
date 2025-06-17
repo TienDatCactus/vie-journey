@@ -2,33 +2,88 @@
 
 import {
   Add as AddIcon,
+  Close as CloseIcon,
   Edit as EditIcon,
   Group as GroupIcon,
   LocationOn as LocationIcon,
   Share as ShareIcon,
 } from "@mui/icons-material";
 import {
+  Alert,
   Avatar,
+  Box,
   Button,
   Card,
   CardContent,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
+  TextField,
   Typography,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import React from "react";
 import Map from "../../../components/Maps/Map";
 import { MainLayout } from "../../../layouts";
-import TripPlans from "./component/TripPlan";
+import { uploadImg } from "../../../services/api/asset";
+import { updateUserInfo } from "../../../services/api/user";
+import { useAuthStore } from "../../../services/stores/useAuthStore";
 import ProfileSettings from "./component/Setting";
 import TravelGuides from "./component/TravelGuides";
-import { useAuthStore } from "../../../services/stores/useAuthStore";
+import TripPlans from "./component/TripPlan";
 
 const Dashboard: React.FC = () => {
   const [value, setValue] = React.useState(0);
-  const { user } = useAuthStore();
+  const [editModalOpen, setEditModalOpen] = React.useState(false);
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = React.useState<string>("");
+  const { info, loadUserInfo } = useAuthStore();
+  const [uploading, setUploading] = React.useState(false);
 
-  console.log(user)
+  const handleEditClick = () => {
+    setEditModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setEditModalOpen(false);
+    setSelectedFile(null);
+    setPreviewUrl("");
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleSaveAvatar = async () => {
+    if (selectedFile) {
+      try {
+        setUploading(true);
+        const response = await uploadImg(selectedFile);
+
+        await updateUserInfo(info?._id || "", {
+          avatar: response.url,
+        });
+        loadUserInfo();
+        enqueueSnackbar("Updated image successful", {
+          variant: "success",
+        });
+        handleCloseModal();
+      } catch (error) {
+        enqueueSnackbar(error instanceof Error ? error.message : String(error));
+      } finally {
+        setUploading(false);
+      }
+    }
+  };
+
   return (
     <MainLayout>
       <div className="min-h-[900px] bg-gray-50 mt-[80px] ">
@@ -39,7 +94,7 @@ const Dashboard: React.FC = () => {
                 onClick={() => setValue(0)}
                 className={`flex-1 py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
                   value === 0
-                    ? "text-gray-900  bg-white"
+                    ? "text-gray-900 bg-white"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -47,9 +102,9 @@ const Dashboard: React.FC = () => {
               </button>
               <button
                 onClick={() => setValue(1)}
-                className={`flex-1 py-2 px-6 text-center font-medium transition-colors cursor-pointer  ${
+                className={`flex-1 py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
                   value === 1
-                    ? "text-gray-900  bg-white"
+                    ? "text-gray-900 bg-white"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -59,7 +114,7 @@ const Dashboard: React.FC = () => {
                 onClick={() => setValue(2)}
                 className={`flex-1 py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
                   value === 2
-                    ? "text-gray-900  bg-white"
+                    ? "text-gray-900 bg-white"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -69,7 +124,7 @@ const Dashboard: React.FC = () => {
                 onClick={() => setValue(3)}
                 className={`flex-1 py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
                   value === 3
-                    ? "text-gray-900  bg-white"
+                    ? "text-gray-900 bg-white"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -83,6 +138,18 @@ const Dashboard: React.FC = () => {
           {value === 0 && (
             <>
               <div className=" py-6">
+                {(!info?.fullName ||
+                  !info.address ||
+                  !info.dob ||
+                  !info.phone) && (
+                  <Box className="mb-6 px-4">
+                    <Alert severity="warning">
+                      Your profile is incomplete. Please update your full name,
+                      address, date of birth, and phone number to get the most
+                      out of your travel dashboard.
+                    </Alert>
+                  </Box>
+                )}
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                   {/* Left Sidebar - Profile */}
                   <div className="lg:col-span-1">
@@ -92,19 +159,17 @@ const Dashboard: React.FC = () => {
                           sx={{ width: 80, height: 80, margin: "0 auto 16px" }}
                           className="bg-gray-300"
                         >
-                          <EditIcon />
+                          <img
+                            src={info?.avatar || "/placeholder.svg"}
+                            className="w-full h-full"
+                            alt="avatar"
+                          />
                         </Avatar>
 
                         <Typography variant="h6" className="font-semibold mb-1">
-                          Tien Dat
+                          {info?.fullName}
                         </Typography>
-                        <Typography
-                          variant="body2"
-                          className="text-gray-500 mb-4"
-                        >
-                          @tien65
-                        </Typography>
-
+                       
                         <div className="flex justify-center gap-8 mb-4">
                           <div className="text-center">
                             <Typography variant="h6" className="font-bold">
@@ -125,7 +190,7 @@ const Dashboard: React.FC = () => {
                               variant="caption"
                               className="text-gray-500"
                             >
-                              Following
+                              Followers
                             </Typography>
                           </div>
                         </div>
@@ -136,6 +201,7 @@ const Dashboard: React.FC = () => {
                             startIcon={<EditIcon />}
                             className="flex-1 text-gray-700 border-gray-300"
                             size="small"
+                            onClick={handleEditClick}
                           >
                             Edit
                           </Button>
@@ -261,8 +327,94 @@ const Dashboard: React.FC = () => {
 
           {value === 2 && <TravelGuides />}
 
-          {value === 3 && <ProfileSettings />}
+          {value === 3 && info && <ProfileSettings userInfo={info} />}
         </div>
+
+        {/* Edit Avatar Modal */}
+        <Dialog
+          open={editModalOpen}
+          onClose={handleCloseModal}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography variant="h6">Edit Avatar</Typography>
+              <IconButton onClick={handleCloseModal} size="small">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+
+          <DialogContent>
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              gap={3}
+              py={2}
+            >
+              {/* Current/Preview Avatar */}
+              <Avatar sx={{ width: 120, height: 120 }} className="bg-gray-300">
+                <img
+                  src={previewUrl || info?.avatar}
+                  className="w-full h-full object-cover"
+                  alt="avatar preview"
+                />
+              </Avatar>
+
+              {/* File Input */}
+              <Box width="100%">
+                <Typography variant="body2" className="mb-2 font-medium">
+                  Choose new avatar
+                </Typography>
+                <TextField
+                  type="file"
+                  name="fileAttachment"
+                  fullWidth
+                  inputProps={{
+                    accept: ".jpg,.jpeg,.png,.gif,.webp",
+                  }}
+                  onChange={handleFileChange}
+                  variant="outlined"
+                />
+                <Typography variant="caption" className="text-gray-500 mt-1">
+                  Supported formats: JPG, JPEG, PNG, GIF, WEBP (max 5MB)
+                </Typography>
+              </Box>
+
+              {selectedFile && (
+                <Box width="100%" p={2} bgcolor="grey.50" borderRadius={1}>
+                  <Typography variant="body2" className="font-medium">
+                    Selected file:
+                  </Typography>
+                  <Typography variant="caption" className="text-gray-600">
+                    {selectedFile.name} (
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </DialogContent>
+
+          <DialogActions className="px-6 pb-4">
+            <Button onClick={handleCloseModal} color="inherit">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveAvatar}
+              variant="contained"
+              disabled={!selectedFile || uploading}
+              className="bg-gray-800 hover:bg-gray-900 text-white"
+            >
+              {uploading ? "Uploading..." : "Save Avatar"}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </MainLayout>
   );
