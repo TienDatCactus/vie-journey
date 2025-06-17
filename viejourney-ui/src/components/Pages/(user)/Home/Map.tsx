@@ -7,12 +7,13 @@ const HomeMap = () => {
       <h1 className="text-[1.875rem] font-bold">Map</h1>
       <div className="w-full h-[300px] mb-4 rounded-lg relative">
         <Map
-          position="static"
+          position="relative"
+          defaultZoom={20}
           detailed={false}
           className="w-full h-full rounded-lg"
         />
         {/* Stats overlay */}
-        <div className="z-20 absolute top-[2px] left-[2px] p-2 flex items-center gap-2 bg-gray-400/10 rounded-md bg-clip-padding backdrop-blur-sm border border-gray-100">
+        <div className="z-20 absolute top-2 right-2 p-2 flex items-center gap-2 bg-gray-400/10 rounded-md bg-clip-padding backdrop-blur-sm border border-gray-100">
           <div className="text-center">
             <p className="text-[16px] my-0">1</p>
             <h1 className="my-0 text-[16px]">Country</h1>

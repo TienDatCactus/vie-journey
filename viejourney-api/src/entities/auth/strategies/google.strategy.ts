@@ -13,7 +13,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         process.env.GOOGLE_CALLBACK_URL ||
         'http://localhost:5000/api/auth/google/redirect',
       passReqToCallback: true,
-      scope: ['email', 'profile'],
+      scope: [
+        'email',
+        'profile',
+        'profile',
+        'email',
+        'https://www.googleapis.com/auth/user.birthday.read',
+        'https://www.googleapis.com/auth/user.phonenumbers.read',
+        'https://www.googleapis.com/auth/user.addresses.read',
+      ],
       state: true, // Enable state parameter for CSRF protection
     });
 

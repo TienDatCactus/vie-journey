@@ -7,9 +7,9 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <NavAdmin collapsed={collapsed} setCollapsed={setCollapsed} />
-      <div 
+      <div
         className={`p-4 transition-all duration-300 ${
-          collapsed ? 'ml-20' : 'ml-64'
+          collapsed ? "ml-20" : "ml-64"
         }`}
       >
         {children}

@@ -8,18 +8,23 @@ import { LocalizationProvider } from "@mui/x-date-pickers-pro";
 import { AdapterDayjs } from "@mui/x-date-pickers-pro/AdapterDayjs";
 import { LicenseInfo } from "@mui/x-license";
 import { APIProvider } from "@vis.gl/react-google-maps";
+import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
 import { SnackbarProvider } from "notistack";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import { RouterProvider } from "react-router-dom";
 import "./index.css";
-import AuthProvider from "./services/contexts/AuthContext";
+import { AuthLayout } from "./layouts";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
+
+dayjs.extend(advancedFormat);
 
 const theme = createTheme({
   cssVariables: true,
@@ -46,30 +51,30 @@ const theme = createTheme({
 });
 
 root.render(
-  <React.StrictMode>
-    <StyledEngineProvider injectFirst>
-      <ScopedCssBaseline>
-        <ThemeProvider theme={theme}>
-          <SnackbarProvider>
-            <CssBaseline />
-            {/* <ScrollProvider> */}
+  <StyledEngineProvider injectFirst>
+    <ScopedCssBaseline>
+      <ThemeProvider theme={theme}>
+        <SnackbarProvider>
+          <CssBaseline />
+          {/* <ScrollProvider> */}
+          <React.Suspense fallback={<Fallback />}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <React.Suspense fallback={<Fallback />}>
-                <AuthProvider>
-                  <APIProvider
-                    apiKey={apiKey}
-                    language="en"
-                    libraries={["places", "marker", "geometry"]}
-                  >
+              <APIProvider
+                apiKey={apiKey}
+                language="en"
+                libraries={["places", "marker", "geometry"]}
+              >
+                <AuthLayout>
+                  <HelmetProvider>
                     <RouterProvider router={router} />
-                  </APIProvider>
-                </AuthProvider>
-              </React.Suspense>
+                  </HelmetProvider>
+                </AuthLayout>
+              </APIProvider>
             </LocalizationProvider>
-            {/* </ScrollProvider> */}
-          </SnackbarProvider>
-        </ThemeProvider>
-      </ScopedCssBaseline>
-    </StyledEngineProvider>
-  </React.StrictMode>
+          </React.Suspense>
+          {/* </ScrollProvider> */}
+        </SnackbarProvider>
+      </ThemeProvider>
+    </ScopedCssBaseline>
+  </StyledEngineProvider>
 );

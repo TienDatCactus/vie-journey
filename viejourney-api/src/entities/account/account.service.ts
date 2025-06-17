@@ -5,10 +5,9 @@ import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account } from './entities/account.entity';
 import { UserInfos } from '../userinfo/entities/userInfos.entity';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { EditProfileDto } from './dto/editProfile.dto';
 import { Asset } from './entities/asset.entity';
-import { v4 as uuidv4 } from 'uuid';
+import { AssetsService } from '../assets/assets.service';
 
 @Injectable()
 export class AccountService {
@@ -16,7 +15,7 @@ export class AccountService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
-    private readonly cloudinaryService: CloudinaryService,
+    private readonly assetsService: AssetsService,
   ) {}
   async activateUser(userId: Types.ObjectId): Promise<void> {
     const user = await this.accountModel.findByIdAndUpdate(
@@ -115,12 +114,10 @@ export class AccountService {
       // Handle file upload if present
       if (file) {
         if (existingInfo?.avatar?.publicId) {
-          await this.cloudinaryService.deleteImage(
-            existingInfo.avatar.publicId,
-          );
+          await this.assetsService.deleteImage(existingInfo.avatar.publicId);
         }
 
-        uploadResult = await this.cloudinaryService.uploadImage(file, {
+        uploadResult = await this.assetsService.uploadImage(file, {
           public_id: `users/${userId}/AVATAR/${file.filename}`,
         });
 

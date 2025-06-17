@@ -1,7 +1,7 @@
 import axios from "axios";
 import { enqueueSnackbar, SnackbarKey } from "notistack";
-import { getAccessToken } from "../api/token";
 import { refreshToken } from "../api";
+import { getToken } from "../api/token";
 
 interface ErrorHandlerOptions {
   redirectOnUnauthorized?: boolean;
@@ -351,7 +351,7 @@ http.interceptors.request.use(
       "/auth/refresh",
     ].some((endpoint) => config.url?.includes(endpoint));
     if (!isAuthEndpoint) {
-      const accessToken = getAccessToken();
+      const accessToken = getToken();
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }

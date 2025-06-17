@@ -2,7 +2,12 @@ import { Chip, Stack } from "@mui/material";
 import React from "react";
 import { MainLayout } from "../../../layouts";
 import { CreateTripForm } from "../../../components/Pages/(user)/Trips";
-import { AutoAwesome, AutoAwesomeOutlined } from "@mui/icons-material";
+import {
+  AutoAwesome,
+  AutoAwesomeOutlined,
+  ConnectingAirports,
+  Insights,
+} from "@mui/icons-material";
 const CreateTrip: React.FC = () => {
   return (
     <MainLayout>
@@ -45,7 +50,7 @@ const CreateTrip: React.FC = () => {
                 </Stack>
                 <Stack direction="row" alignItems="start" spacing={2}>
                   <div className="bg-green-200 p-1 rounded-md">
-                    <AutoAwesomeOutlined className="text-green-600" />
+                    <ConnectingAirports className="text-green-600" />
                   </div>
                   <div>
                     <dt className="font-semibold text-base">
@@ -58,7 +63,7 @@ const CreateTrip: React.FC = () => {
                 </Stack>
                 <Stack direction="row" alignItems="start" spacing={2}>
                   <div className="bg-blue-200 p-1 rounded-md">
-                    <AutoAwesomeOutlined className="text-blue-600" />
+                    <Insights className="text-blue-600" />
                   </div>
                   <div>
                     <dt className="font-semibold text-base">Local Insights</dt>

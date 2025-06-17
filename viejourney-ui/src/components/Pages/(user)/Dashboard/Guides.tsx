@@ -1,6 +1,6 @@
-import { Grid2, List, ListItem } from "@mui/material";
+import { Grid2 } from "@mui/material";
 import React from "react";
-import { GuideTag } from "../Home/_elements";
+import { GuideTag } from "../Home/elements";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;

@@ -1,3 +1,4 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   ConflictException,
   HttpException,
@@ -9,19 +10,21 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
+import { Model } from 'mongoose';
+import { UserInfos } from 'src/common/db/userinfo.schema';
 import { AccountService } from 'src/entities/account/account.service';
 import { Account } from '../account/entities/account.entity';
-import { Request, Response } from 'express';
-import { MailerService } from '@nestjs-modules/mailer';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly accountService: AccountService,
+
     private readonly jwtService: JwtService,
     @InjectModel(Account.name) private readonly accountModel: Model<Account>,
+    @InjectModel(UserInfos.name) private readonly userModel: Model<UserInfos>,
     private readonly mailService: MailerService,
   ) {}
   async resendVerificationEmail(email: string, res: Response) {
@@ -440,7 +443,7 @@ export class AuthService {
   }
   async googleAuth(profile: any, res: Response) {
     try {
-      const { email } = profile;
+      const { email, displayName, photos, picture } = profile;
       if (!email) {
         throw new HttpException(
           'No email found in Google profile',
@@ -456,7 +459,6 @@ export class AuthService {
           status: 'ACTIVE', // Auto-activate Google users
           role: 'USER',
         });
-        await user.save();
       }
 
       // Check if user is banned
@@ -474,6 +476,7 @@ export class AuthService {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
+      // You may want to postMessage or set token in FE securely
       return res.redirect(
         `${process.env.FE_URL}/auth/oauth-success?accessToken=${accessToken}`,
       );
@@ -485,9 +488,9 @@ export class AuthService {
       );
     }
   }
+
   async validateAccessToken(accessToken: string) {
     try {
-      this.logger.log('Validating access token:', accessToken);
       const secret = process.env.JWT_SECRET ? process.env.JWT_SECRET : 'secret';
       const payload = this.jwtService.verify(accessToken, {
         secret: secret,
