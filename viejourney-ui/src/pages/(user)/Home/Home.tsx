@@ -10,6 +10,7 @@ import {
 } from "../../../components/Pages/(user)/Home";
 
 const Home: React.FC = () => {
+ 
   return (
     <MainLayout>
       <HomeBanner />

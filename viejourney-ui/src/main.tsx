@@ -73,6 +73,7 @@ root.render(
               </APIProvider>
               <TypebotChat />
             </LocalizationProvider>
+            <TypebotChat />
           </React.Suspense>
           {/* </ScrollProvider> */}
         </SnackbarProvider>
