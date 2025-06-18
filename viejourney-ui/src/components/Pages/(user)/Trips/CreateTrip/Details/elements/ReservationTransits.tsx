@@ -37,34 +37,8 @@ import dayjs from "dayjs";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
+import { TransitData } from "../../../../../../../services/stores/storeInterfaces";
 import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
-
-interface TransitData {
-  id: string;
-  note: string;
-  cost: number;
-  currency?: string;
-  mode:
-    | "Train"
-    | "Flight"
-    | "Car"
-    | "Bus"
-    | "Boat"
-    | "Walk"
-    | "Bike"
-    | "Others";
-  departure: {
-    date: string; // ISO date string
-    time: string; // ISO time string
-    location: string;
-  };
-  arrival: {
-    date: string; // ISO date string
-    time: string; // ISO time string
-    location: string;
-  };
-  isEditing?: boolean;
-}
 
 interface ReservationCardsProps {
   index?: number;
@@ -149,8 +123,8 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
       },
     };
 
-    props.onUpdate(props.data.id, updated);
-    props.onToggleEdit(props.data.id);
+    props.onUpdate(props.data._id, updated);
+    props.onToggleEdit(props.data._id);
   };
 
   return (
@@ -398,7 +372,7 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
               variant="outlined"
               type="button"
               color="error"
-              onClick={() => props.onToggleEdit(props.data.id)}
+              onClick={() => props.onToggleEdit(props.data._id)}
             >
               Cancel
             </Button>
@@ -498,7 +472,7 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
                     className="bg-blue-100 text-blue-800"
                   />
                   <span className="font-mono text-sm text-gray-600 font-semibold">
-                    {data.id}
+                    {data._id}
                   </span>
                 </div>
               </Stack>
@@ -537,13 +511,13 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
               }
             >
               <MenuList>
-                <MenuItem onClick={() => props.onToggleEdit(data.id)}>
+                <MenuItem onClick={() => props.onToggleEdit(data._id)}>
                   <ListItemIcon>
                     <Edit fontSize="small" />
                   </ListItemIcon>
                   <ListItemText>Edit</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => props.onDelete(data.id)}>
+                <MenuItem onClick={() => props.onDelete(data._id)}>
                   <ListItemIcon>
                     <Delete fontSize="small" />
                   </ListItemIcon>
@@ -569,10 +543,10 @@ const ReservationTransits: React.FC = () => {
 
   const handleAddTransit = () => {
     const newTransit: TransitData = {
-      id: `transit-${Date.now()}`,
+      _id: `transit-${Date.now()}`,
       note: "",
       cost: 0,
-      currency: "USD",
+      currency: "$",
       mode: "Flight",
       departure: {
         date: dayjs().format("YYYY-MM-DD"),
@@ -613,7 +587,7 @@ const ReservationTransits: React.FC = () => {
           <div className="flex flex-col gap-4">
             {transits.map((transit, index) => (
               <TransitCards
-                key={transit.id}
+                key={transit._id}
                 data={transit}
                 index={index + 1}
                 onUpdate={updateTransit}

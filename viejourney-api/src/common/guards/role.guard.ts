@@ -1,6 +1,7 @@
 import { Injectable, Dependencies } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+import { Role } from '../enums/role.enum';
 
 @Injectable()
 @Dependencies(Reflector)
@@ -16,6 +17,7 @@ export class RolesGuard {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.some((role) => user.roles.includes(role));
+
+    return requiredRoles.some((role: Role) => user.role.includes(role));
   }
 }

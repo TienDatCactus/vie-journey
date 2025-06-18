@@ -1,4 +1,3 @@
-import axios from "axios";
 import { enqueueSnackbar } from "notistack";
 import http from "../axios";
 import { extractApiData } from "./apiHelpers";
@@ -109,20 +108,10 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
       return newTokenData;
     } else {
       clearToken();
-      window.dispatchEvent(new CustomEvent("auth:refresh-failed"));
       return null;
     }
   } catch (error) {
-    console.error("Failed to refresh token:", error);
     clearToken();
-
-    if (
-      axios.isAxiosError(error) &&
-      (error.response?.status === 401 || error.response?.status === 403)
-    ) {
-      window.dispatchEvent(new CustomEvent("auth:refresh-failed"));
-    }
-
     return null;
   }
 };
@@ -219,7 +208,6 @@ export const doGetUserInfo = async (userId: string) => {
   try {
     const resp = await http.get(`${USER?.GET_USER_INFO}/${userId}`);
     if (resp) {
-      console.log(resp);
       return extractApiData<GetUserInfoRespDTO>(resp);
     }
   } catch (error) {

@@ -159,19 +159,15 @@ function Accounts() {
 
   useEffect(() => {
     fetchAccounts({ page, pageSize, search, roleFilter, statusFilter });
-    // eslint-disable-next-line
   }, [page, pageSize, search, roleFilter, statusFilter]);
 
-  // Transform data for DataGrid (no client-side filtering since we use server-side)
   const rows = users.map((user: any, index) => ({
     id: user._id || index,
     ...user,
   }));
 
-  // Handle status change
   const handleStatusChange = async (userId: string, newStatus: string) => {
     try {
-      // Update UI first
       setUsers((prev) =>
         prev.map((u: any) =>
           (u as any)._id === userId
@@ -591,7 +587,16 @@ function Accounts() {
         }}
         onSave={handleEdit}
         loading={loadingEdit}
-        user={editIdx !== null ? users[editIdx] : undefined}
+        user={
+          editIdx !== null
+            ? (users[editIdx] as {
+                fullName?: string;
+                dob?: string;
+                phone?: string;
+                address?: string;
+              })
+            : undefined
+        }
       />
     </AdminLayout>
   );

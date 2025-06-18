@@ -1,7 +1,13 @@
 // store/useTripDetailStore.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { NoteData, PlaceNote, TransitData } from "./storeInterfaces";
+import {
+  Expense,
+  Intinerary,
+  NoteData,
+  PlaceNote,
+  TransitData,
+} from "./storeInterfaces";
 import { Trip } from "./storeTypes";
 
 interface TripDetailStore {
@@ -23,28 +29,26 @@ interface TripDetailStore {
   setTransits: (transits: TransitData[]) => void;
 
   placeNotes: PlaceNote[];
-  placeDetails: Record<string, google.maps.places.Place>;
-
   addPlaceNote: (note: PlaceNote) => void;
   updatePlaceNote: (id: string, content: string) => void;
   toggleEditPlaceNotes: (id: string) => void;
   deletePlaceNote: (id: string) => void;
   setPlaceNotes: (notes: PlaceNote[]) => void;
   togglePlaceVisited: (id: string) => void;
-  setPlaceDetails: (placeId: string, detail: google.maps.places.Place) => void;
+  setPlaceDetails: (
+    placeId: string,
+    detail: google.maps.places.PlaceResult
+  ) => void;
 
-  //   places: Place[];
-  //   transits: Transit[];
-  //   itineraries: DayItinerary[];
-  //   expenses: Expense[];
+  placeDetails: Record<string, google.maps.places.PlaceResult>;
+  itineraries: Intinerary[];
+  addItinerary: (itinerary: Intinerary) => void;
+  updateItinerary: (id: string, itinerary: Partial<Intinerary>) => void;
+  deleteItinerary: (id: string) => void;
+  setItineraries: (itineraries: Intinerary[]) => void;
+  toggleEditItinerary: (id: string) => void;
 
-  // CRUD methods (you can later modularize these)
-
-  //   addPlace: (place: Place) => void;
-  //   updatePlace: (place: Place) => void;
-  //   deletePlace: (id: string) => void;
-
-  // ...
+  expenses: Expense[];
 }
 
 export const useTripDetailStore = create<TripDetailStore>()(
@@ -54,17 +58,17 @@ export const useTripDetailStore = create<TripDetailStore>()(
       addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
       updateNote: (id, content) =>
         set((state) => ({
-          notes: state.notes.map((n) => (n.id === id ? { ...n, content } : n)),
+          notes: state.notes.map((n) => (n._id === id ? { ...n, content } : n)),
         })),
       toggleEditNote: (id) =>
         set((state) => ({
           notes: state.notes.map((n) =>
-            n.id === id ? { ...n, isEditing: !n.isEditing } : n
+            n._id === id ? { ...n, isEditing: !n.isEditing } : n
           ),
         })),
       deleteNote: (id) =>
         set((state) => ({
-          notes: state.notes.filter((n) => n.id !== id),
+          notes: state.notes.filter((n) => n._id !== id),
         })),
       setNotes: (notes) => set(() => ({ notes })),
       transits: [],
@@ -73,18 +77,18 @@ export const useTripDetailStore = create<TripDetailStore>()(
       updateTransit: (id, updated) =>
         set((state) => ({
           transits: state.transits.map((t) =>
-            t.id === id ? { ...t, ...updated } : t
+            t._id === id ? { ...t, ...updated } : t
           ),
         })),
       toggleEditTransit: (id) =>
         set((state) => ({
           transits: state.transits.map((t) =>
-            t.id === id ? { ...t, isEditing: !t.isEditing } : t
+            t._id === id ? { ...t, isEditing: !t.isEditing } : t
           ),
         })),
       deleteTransit: (id) =>
         set((state) => ({
-          transits: state.transits.filter((t) => t.id !== id),
+          transits: state.transits.filter((t) => t._id !== id),
         })),
       setTransits: (transits) => set(() => ({ transits })),
 
@@ -100,20 +104,20 @@ export const useTripDetailStore = create<TripDetailStore>()(
       updatePlaceNote: (id, note) =>
         set((state) => ({
           placeNotes: state.placeNotes.map((n) =>
-            n.id === id ? { ...n, note } : n
+            n._id === id ? { ...n, note } : n
           ),
         })),
 
       toggleEditPlaceNotes: (id) =>
         set((state) => ({
           placeNotes: state.placeNotes.map((n) =>
-            n.id === id ? { ...n, isEditing: !n.isEditing } : n
+            n._id === id ? { ...n, isEditing: !n.isEditing } : n
           ),
         })),
 
       deletePlaceNote: (id) =>
         set((state) => ({
-          placeNotes: state.placeNotes.filter((n) => n.id !== id),
+          placeNotes: state.placeNotes.filter((n) => n._id !== id),
         })),
       setPlaceNotes: (notes) => set(() => ({ placeNotes: notes })),
       setPlaceDetails: (placeId, detail) =>
@@ -126,7 +130,7 @@ export const useTripDetailStore = create<TripDetailStore>()(
       togglePlaceVisited: (id) =>
         set((state) => ({
           placeNotes: state.placeNotes.map((n) =>
-            n.id === id ? { ...n, visited: !n.visited } : n
+            n._id === id ? { ...n, visited: !n.visited } : n
           ),
         })),
       trip: {} as Trip,

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -27,13 +28,14 @@ export class UserService {
   }
 
   async getUserByID(id: string): Promise<UserInfos> {
+    console.log(id);
     const user = await this.userInfosModel
       .findOne({
         userId: new mongoose.Types.ObjectId(id),
       })
       .exec();
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new HttpException(`User with ID ${id} not found`, 404);
     }
     return user;
   }

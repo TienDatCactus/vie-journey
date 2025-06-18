@@ -43,30 +43,63 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
 
   // Fetch additional details only for places missing data
   useEffect(() => {
-    if (!placesLib || visiblePlaces.length === 0) return;
+    if (!placesLib || visiblePlaces.length === 0 || !mapInstance) return;
 
-    const fetchDetails = async () => {
-      const detailedList: POIData[] = await Promise.all(
-        visiblePlaces.map(async (place) => {
-          try {
-            const placeObj = new placesLib.Place({ id: place.id });
-            const result = await placeObj.fetchFields({
-              fields: [...import.meta.env.VITE_MAP_FIELDS.split(",")],
-            });
+    // Clear the detailed places first
+    setDetailedPlaces([]);
 
-            return result.place as POIData;
-          } catch (err) {
-            console.error("Failed to fetch place", err);
-            return place;
+    // Create a PlacesService instance
+    const placesService = new placesLib.PlacesService(mapInstance);
+
+    // Use a counter to track when all requests are done
+    let completedRequests = 0;
+    const tempDetailedPlaces: POIData[] = [];
+
+    // Process each place
+    visiblePlaces.forEach((place) => {
+      placesService.getDetails(
+        {
+          placeId: place.id,
+          fields: import.meta.env.VITE_MAP_FIELDS?.split(",") || [
+            "name",
+            "formatted_address",
+            "geometry",
+            "place_id",
+            "photos",
+            "rating",
+            "types",
+            "user_ratings_total",
+          ],
+        },
+        (result, status) => {
+          completedRequests++;
+
+          if (status === placesLib.PlacesServiceStatus.OK && result) {
+            // Convert PlaceResult to POIData format
+            const poiData = {
+              ...result,
+              id: result.place_id,
+              displayName: result.name || "",
+              formattedAddress: result.formatted_address || "",
+              location: result.geometry?.location,
+              userRatingCount: result.user_ratings_total,
+              types: result.types || [],
+            };
+
+            tempDetailedPlaces.push(poiData as POIData);
+          } else {
+            // If we can't get details, use the original place data
+            tempDetailedPlaces.push(place);
           }
-        })
+
+          // When all requests are done, update state
+          if (completedRequests === visiblePlaces.length) {
+            setDetailedPlaces(tempDetailedPlaces);
+          }
+        }
       );
-
-      setDetailedPlaces(detailedList);
-    };
-
-    fetchDetails();
-  }, [placesLib, visiblePlaces]);
+    });
+  }, [placesLib, visiblePlaces, mapInstance]);
 
   if (!isVisible) return null;
   return (

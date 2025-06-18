@@ -226,7 +226,7 @@ export class AuthService {
   async refresh(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token not found');
+      throw new NotFoundException('Refresh token not found');
     }
 
     try {
@@ -510,24 +510,24 @@ export class AuthService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      if (user.status !== 'ACTIVE') {
-        this.logger.warn(`User with ID ${userId} is not active`);
-        throw new UnauthorizedException('User is not active');
+      console.log(user);
+      switch (user.status) {
+        case Status.active:
+          this.logger.log(`User with ID ${userId} is active`);
+          break;
+        case Status.inactive:
+          this.logger.warn(`User with ID ${userId} is inactive`);
+          break;
+        case Status.banned:
+          this.logger.warn(`User with ID ${userId} is banned`);
+          break;
       }
       return {
         userId: user._id,
+        status: user.status,
       };
     } catch (error) {
       this.logger.error('Access token validation error:', error);
-      if (error.name === 'TokenExpiredError') {
-        throw new UnauthorizedException('Access token has expired');
-      } else if (error.name === 'JsonWebTokenError') {
-        throw new UnauthorizedException('Invalid access token');
-      }
-      throw new HttpException(
-        'Failed to validate access token',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
     }
   }
 }

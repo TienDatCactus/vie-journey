@@ -15,7 +15,7 @@ import { doGetTrip } from "../../../../services/api";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 
 const CreateTripDetails: React.FC = () => {
-  const { user } = useAuthStore();
+  const { info, user } = useAuthStore();
   const { setTrip } = useTripDetailStore();
   const { id } = useParams<{ id: string }>();
   useEffect(() => {
@@ -23,7 +23,11 @@ const CreateTripDetails: React.FC = () => {
       transports: ["websocket"],
       auth: {
         tripId: `${id}`,
-        email: user?.email,
+        user: {
+          id: user?.userId,
+          email: user?.email,
+          fullname: info?.fullName,
+        },
       },
     });
 

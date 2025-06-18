@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { TripService } from './trip.service';
+import { Handshake } from 'socket.io/dist/socket-types';
 
 @WebSocketGateway({
   cors: {
@@ -23,13 +24,16 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly tripService: TripService) {}
 
   async handleConnection(client: Socket) {
-    const { tripId, email } = client.handshake.auth;
-    if (!tripId || !email) {
+    const auth = client.handshake.auth as Handshake['auth'];
+    const tripId = auth.tripId as string;
+    const user = auth.user as { id: string; email: string; fullName: string };
+
+    if (!tripId || !user?.email) {
       client.disconnect();
       return;
     }
     const trip = await this.tripService.findOne(tripId as string);
-    if (!trip || !trip.tripmates.includes(email as string)) {
+    if (!trip || !trip.tripmates.includes(user.email as string)) {
       client.disconnect();
       return;
     }

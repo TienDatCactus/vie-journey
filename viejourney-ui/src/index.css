@@ -209,3 +209,7 @@ input:-webkit-autofill:active {
 button {
   text-transform: none !important;
 }
+* {
+  scroll-behavior: smooth;
+  scroll-snap-type: mandatory;
+}

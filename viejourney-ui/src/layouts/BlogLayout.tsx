@@ -1,5 +1,4 @@
 import { Grid2 } from "@mui/material";
-import React from "react";
 import SideHeader from "../components/Layout/Blog/SideHeader";
 
 const BlogLayout = () => {

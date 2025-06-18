@@ -7,6 +7,7 @@ import { UserInfosSchema } from 'src/infrastructure/database/userinfo.schema';
 import { AccountSchema } from 'src/infrastructure/database/account.schema';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { Account } from 'src/common/entities/account.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
