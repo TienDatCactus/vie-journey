@@ -45,8 +45,23 @@ export class Blog extends Document {
   })
   status: string;
 
-  @Prop({ required: false })
+  @Prop({
+    type: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'UserInfos',
+          required: true,
+        },
+        reason: { type: String, required: true },
+        date: { type: Date, default: Date.now },
+      },
+    ],
+    default: [],
+    required: false,
+  })
   flags: {
+    userId: UserInfos | mongoose.Types.ObjectId;
     reason: string;
     date: Date;
   }[];

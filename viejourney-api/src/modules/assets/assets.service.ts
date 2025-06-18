@@ -42,4 +42,11 @@ export class AssetsService {
   async deleteImage(publicId: string): Promise<any> {
     return cloudinary.uploader.destroy(publicId);
   }
+
+  getPublicIdFromUrl(url: string): string | null {
+    // Ví dụ: https://res.cloudinary.com/.../users/123/IMAGE_BLOG/filename.jpg
+    // public_id là phần sau '/upload/' và trước phần mở rộng
+    const matches = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/);
+    return matches ? matches[1] : null;
+  }
 }

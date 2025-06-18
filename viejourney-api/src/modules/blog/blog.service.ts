@@ -189,6 +189,16 @@ export class BlogService {
   async deleteBlogById(blogId: string) {
     const blog = await this.blogModel.findById(blogId).exec();
     if (!blog) throw new NotFoundException('Blog not found');
+
+    // Xóa ảnh trên Cloudinary nếu có coverImage
+    if (blog.coverImage) {
+      // Lấy public_id từ URL (giả sử bạn lưu đúng chuẩn Cloudinary)
+      const publicId = this.assetsService.getPublicIdFromUrl(blog.coverImage);
+      if (publicId) {
+        await this.assetsService.deleteImage(publicId);
+      }
+    }
+
     await this.blogModel.deleteOne({ _id: blogId }).exec();
     return { message: 'Blog deleted successfully' };
   }
@@ -223,5 +233,22 @@ export class BlogService {
     } catch (error) {
       throw new NotFoundException('Error creating blog');
     }
+  }
+
+  // create a flag for a blog
+  async createFlag(blogId: string, reason: string, userId: string) {
+    const blog = await this.blogModel.findById(blogId).exec();
+    if (!blog) throw new NotFoundException('Blog not found');
+
+    // Thêm flag mới vào mảng flags
+    blog.flags = blog.flags || [];
+    blog.flags.push({
+      reason,
+      userId: new Types.ObjectId(userId), // lưu lại ai là người flag
+      date: new Date(),
+    });
+
+    await blog.save();
+    return { message: 'Flag added successfully', flags: blog.flags };
   }
 }

@@ -17,6 +17,7 @@ export class Blog extends Document {
   likes?: Types.ObjectId[];
   status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED';
   flags?: {
+    userId: UserInfos | Types.ObjectId;
     reason: string;
     date: Date;
   }[];

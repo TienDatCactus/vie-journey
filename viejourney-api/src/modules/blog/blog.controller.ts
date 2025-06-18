@@ -92,4 +92,17 @@ export class BlogController {
   ) {
     return this.blogService.createBlog(createBlogDto, file, userId);
   }
+
+  // create flag for blog
+  @Post(':id/flag')
+  async createFlag(
+    @Param('id') blogId: string,
+    @Body('reason') reason: string,
+    @Body('userId') userId: string,
+  ) {
+    if (!reason || reason.trim().length === 0) {
+      throw new BadRequestException('Reason is required');
+    }
+    return this.blogService.createFlag(blogId, reason, userId);
+  }
 }
