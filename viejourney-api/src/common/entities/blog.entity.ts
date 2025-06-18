@@ -1,6 +1,6 @@
 import { Document, Types } from 'mongoose';
-import { UserInfos } from '../../account/entities/userInfos.entity';
-import { Trip } from '../../../common/db/trip.schema';
+import { UserInfos } from './userInfos.entity';
+import { Trip } from './trip.entity';
 import { Comment } from './comment.entity';
 
 export class Blog extends Document {
