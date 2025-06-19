@@ -8,7 +8,6 @@ import {
   Flag,
   GridView,
   MenuBook,
-  Refresh,
   Schedule,
   Search,
   ViewList,
@@ -16,12 +15,15 @@ import {
 import { Card, Checkbox, Switch } from "@mui/material";
 import { useState } from "react";
 import ManagerLayout from "../../../layouts/ManagerLayout";
-import { PostData } from "../../../utils/interfaces/blog";
+import { IBlogQuery } from "../../../utils/interfaces/blog";
 import NewPostDialog from "./component/AddPopup";
 import BlogPostRow from "./component/BlogPostRow";
 import StatCard from "./component/Card";
+import useBlog from "./component/Container/hook";
 
 export default function Blog() {
+  const { blogs, handleCreateBlog, handeleDeleteBlog } = useBlog();
+
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [searchQuery, setSearchQuery] = useState("");
   const [checked, setChecked] = useState(false);
@@ -37,16 +39,13 @@ export default function Blog() {
   //   return [];
   // };
 
-  const handleNewPostSubmit = (postData: PostData) => {
-    console.log("New post data:", postData);
-    // Here you would typically send the data to your backend API
-    // For now, we'll just log it to the console
+  const handleNewPostSubmit = (postData: IBlogQuery) => {
+    handleCreateBlog(postData);
     setIsNewPostDialogOpen(false);
   };
   return (
     <ManagerLayout>
       <div className=" mx-auto p-4 bg-white min-h-screen">
-      
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
             <div className="bg-indigo-100 p-2 rounded-md">
@@ -66,10 +65,7 @@ export default function Blog() {
               <Download sx={{ fontSize: 16 }} />
               <span>Export</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer">
-              <Refresh sx={{ fontSize: 16 }} />
-              <span>Refresh</span>
-            </button>
+
             <button
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 cursor-pointer"
               onClick={() => setIsNewPostDialogOpen(true)}
@@ -188,7 +184,7 @@ export default function Blog() {
           </div>
         </Card>
 
-        <div className="overflow-x-auto border border-gray-400 rounded-[10px]">
+        <div className="overflow-x-auto  border-gray-400 rounded-[10px]">
           <table className="w-full  ">
             <thead>
               <tr className="text-left text-gray-500 border-b border-gray-300">
@@ -199,56 +195,14 @@ export default function Blog() {
                 <th className="pb-3 pr-4 font-medium">Trip & Location</th>
                 <th className="pb-3 pr-4 font-medium">Content</th>
                 <th className="pb-3 pr-4 font-medium">Status</th>
-                <th className="pb-3 pr-4 font-medium">Performance</th>
                 <th className="pb-3 pr-4 font-medium">Dates</th>
                 <th className="pb-3 pr-4 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <BlogPostRow
-                title="Hidden Gems of Northern Vietnam: A Journey"
-                author="Sarah Chen"
-                trip="Vietnam Adventure 2024"
-                location="Ta Xua, Vietnam"
-                views={2847}
-                comments={15}
-                readTime={12}
-                status="published"
-                performance={12847}
-                likes={45}
-                modifiedDate="Mar 14, 2024"
-                publishedDate="Mar 15, 2024"
-                featured
-              />
-              <BlogPostRow
-                title="Street Food Paradise: 48 Hours in Da Nang"
-                author="Mike Rodriguez"
-                trip="Central Vietnam Food Tour"
-                location="Da Nang, Vietnam"
-                views={1923}
-                comments={22}
-                readTime={8}
-                status="pending"
-                performance={0}
-                likes={1}
-                modifiedDate="Mar 13, 2024"
-                publishedDate=""
-                flagged
-              />
-              <BlogPostRow
-                title="Sustainable Travel: Eco-Friendly Adventures in..."
-                author="Emma Thompson"
-                trip="Eco Sapa Experience"
-                location="Sapa, Vietnam"
-                views={3156}
-                comments={18}
-                readTime={14}
-                status="published"
-                performance={8934}
-                likes={32}
-                modifiedDate="Mar 11, 2024"
-                publishedDate="Mar 12, 2024"
-              />
+              {blogs?.map((blog) => {
+                return <BlogPostRow key={blog._id} blog={blog} handeleDeleteBlog={handeleDeleteBlog}/>;
+              })}
             </tbody>
           </table>
         </div>

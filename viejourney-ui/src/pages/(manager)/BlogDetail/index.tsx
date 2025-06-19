@@ -21,6 +21,8 @@ import {
   Block,
   ClearAll,
 } from "@mui/icons-material";
+import { useParams } from "react-router-dom";
+import useBlogDetail from "./container/hook";
 
 interface AuthorInfo {
   name: string;
@@ -96,6 +98,9 @@ The City of Light did not disappoint! I spent my days exploring the Louvre, clim
 
 export default function Blog() {
   const [post] = React.useState<BlogPost>(mockBlogPost);
+  const { id } = useParams<{ id: string }>();
+
+  const { blog } = useBlogDetail({ id: id ?? "" });
 
   const handleApprove = () => {
     console.log("Approving post:", post.id);
@@ -151,7 +156,7 @@ export default function Blog() {
                     variant="h4"
                     className="font-bold text-gray-900 mb-4"
                   >
-                    {post.title}
+                    {blog?.title}
                   </Typography>
                 </div>
 
@@ -161,48 +166,10 @@ export default function Blog() {
                     variant="body1"
                     className="text-gray-700 mb-4 leading-relaxed"
                   >
-                    Last summer, I embarked on an unforgettable journey through
-                    Europe, visiting 5 countries in just 3 weeks.
+                    {blog?.summary}
                   </Typography>
 
-                  <Typography
-                    variant="h6"
-                    className="font-semibold text-gray-900 mb-3"
-                  >
-                    Paris, France
-                  </Typography>
-
-                  <Typography
-                    variant="body1"
-                    className="text-gray-700 mb-6 leading-relaxed"
-                  >
-                    The City of Light did not disappoint! I spent my days
-                    exploring the Louvre, climbing the Eiffel Tower, and
-                    enjoying croissants at charming cafés.
-                  </Typography>
-
-                  {/* Placeholder Images */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className="bg-gray-200 rounded-lg h-48 flex items-center justify-center">
-                      <Typography variant="body2" color="text.secondary">
-                        Image Placeholder
-                      </Typography>
-                    </div>
-                    <div className="bg-gray-200 rounded-lg h-48 flex items-center justify-center">
-                      <Typography variant="body2" color="text.secondary">
-                        Image Placeholder
-                      </Typography>
-                    </div>
-                  </div>
-
-                  <Typography
-                    variant="body1"
-                    className="text-gray-700 leading-relaxed"
-                  >
-                    The City of Light did not disappoint! I spent my days
-                    exploring the Louvre, climbing the Eiffel Tower, and
-                    enjoying croissants at charming cafés.
-                  </Typography>
+                  {blog?.content}
                 </div>
               </CardContent>
             </Card>
