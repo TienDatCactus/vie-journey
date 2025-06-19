@@ -35,7 +35,7 @@ const OauthSuccess = lazy(
 );
 const Banner = lazy(() => import("../../pages/(admin)/Banner"));
 const Blog = lazy(() => import("../../pages/(manager)/Blog"));
-const BlogContent = lazy(() => import("../../pages/(user)/Blog"));
+const BlogContent = lazy(() => import("../../pages/(manager)/BlogDetail"));
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({

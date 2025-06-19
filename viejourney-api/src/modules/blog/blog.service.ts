@@ -30,7 +30,7 @@ export class BlogService {
       return {
         _id: blog._id,
         title: blog.title,
-        createdBy: blog.createdBy.fullName,
+        createdBy: blog.createdBy?.fullName,
         summary: blog.summary,
         destination: blog.tripId?.description,
         viewCount: blog.metrics?.viewCount || 0,

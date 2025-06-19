@@ -44,3 +44,7 @@ export const ASSET = {
   UPLOAD: "/assets/image"
 }
 
+export const BLOG = {
+  LIST_BLOGS: "/blogs/manager",
+  DELETE_BLOGS: "/blogs"
+}
