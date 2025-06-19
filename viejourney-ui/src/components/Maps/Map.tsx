@@ -159,7 +159,7 @@ const Map: React.FC<MapProps> = ({
             onPOIClick={handlePOIClick}
           />
           {/* Add category search UI when enabled */}
-          {detailed && (
+          {/* {detailed && (
             <>
               <GeneralFilter
                 selectedCategories={selectedCategories}
@@ -171,7 +171,7 @@ const Map: React.FC<MapProps> = ({
                 selectedPlace={selectedPOI}
               />
             </>
-          )}
+          )} */}
 
           {/* If we have a highlighted POI, show a custom marker */}
           {highlightedPOI && selectedPOI?.location && (

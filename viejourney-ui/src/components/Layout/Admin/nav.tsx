@@ -12,6 +12,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Avatar, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../../services/stores/useAuthStore";
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -40,6 +41,7 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
   collapsed,
   setCollapsed,
 }) => {
+  const { handleLogout } = useAuthStore();
   const navigate = useNavigate();
   const user = {
     name: "John Doe",
@@ -48,16 +50,8 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
     role: "Admin",
   };
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    console.log("Logging out...");
-    // navigate("/login")
-  };
-
   const handleProfile = () => {
-    // Add your profile navigation logic here
-    console.log("Opening profile...");
-    // navigate("/profile")
+    navigate("/profile");
   };
   return (
     <div
@@ -79,8 +73,8 @@ export const NavAdmin: React.FC<NavAdminProps> = ({
         )}
         <IconButton
           onClick={() => setCollapsed(!collapsed)}
-          className="text-gray-600 hover:bg-gray-100"
-          size="small"
+          className="text-gray-600 hover:bg-gray-100 mx-auto"
+          size="medium"
         >
           {collapsed ? <MenuIcon /> : <ChevronLeft />}
         </IconButton>

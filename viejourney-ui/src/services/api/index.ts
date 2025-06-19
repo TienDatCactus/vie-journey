@@ -102,7 +102,6 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
   try {
     const resp = await http.post(AUTH?.REFRESH_TOKEN);
     const newTokenData = extractApiData<RefreshTokenRespDTO>(resp);
-    console.log(resp);
     if (newTokenData && newTokenData.accessToken) {
       localStorage.setItem("token", JSON.stringify(newTokenData));
       return newTokenData;

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -52,7 +53,7 @@ export class UserService {
     return updatedUser;
   }
 
-  async deleteUserInfo(id: string): Promise<{ message: string }> {
+  async deleteUserInfo(id: string) {
     const userInfo = await this.userInfosModel.findById(id).exec();
     if (!userInfo) {
       throw new NotFoundException(`User info with ID ${id} not found`);
@@ -62,7 +63,7 @@ export class UserService {
 
     await this.userInfosModel.findByIdAndDelete(id).exec();
 
-    return { message: 'User and related account deleted successfully' };
+    return HttpStatus.OK;
   }
 
   async getPaginatedUsers(

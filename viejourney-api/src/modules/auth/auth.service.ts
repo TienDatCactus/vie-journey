@@ -62,9 +62,7 @@ export class AuthService {
       user.status = Status.active;
       await user.save();
 
-      return {
-        message: 'Email verified successfully',
-      };
+      return HttpStatus.OK;
     } catch (error) {
       this.logger.error('Token verification error:', error);
 
@@ -122,7 +120,7 @@ export class AuthService {
       }
       await user.updateOne({ password: await bcrypt.hash(password, 10) });
       this.logger.log(`Password updated for user: ${user.email}`);
-      return { message: 'Password updated!' };
+      return HttpStatus.OK;
     } catch (error) {
       throw new HttpException(
         'Failed to send reset password email',
@@ -161,10 +159,7 @@ export class AuthService {
     await user.save();
 
     this.sendRegistrationEmail(user);
-    return {
-      message:
-        'Registration successful, please check your email to verify account',
-    };
+    return HttpStatus.CREATED;
   }
   async login(res: Response, email: string, password: string) {
     const user = await this.accountModel.findOne({ email });
@@ -221,7 +216,7 @@ export class AuthService {
       maxAge: 0, // Expires immediately
     });
 
-    return { message: 'Logged out successfully' };
+    return HttpStatus.OK;
   }
   async refresh(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken;

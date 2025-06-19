@@ -34,6 +34,7 @@ import { useAuthStore } from "../../../services/stores/useAuthStore";
 import ProfileSettings from "./component/Setting";
 import TravelGuides from "./component/TravelGuides";
 import TripPlans from "./component/TripPlan";
+import { motion } from "motion/react";
 
 const Dashboard: React.FC = () => {
   const [value, setValue] = React.useState(0);
@@ -42,7 +43,12 @@ const Dashboard: React.FC = () => {
   const [previewUrl, setPreviewUrl] = React.useState<string>("");
   const { info, loadUserInfo } = useAuthStore();
   const [uploading, setUploading] = React.useState(false);
-
+  const menuItems = [
+    { id: 0, label: "Overview" },
+    { id: 1, label: "Trip Plans" },
+    { id: 2, label: "Guides" },
+    { id: 3, label: "Settings" },
+  ];
   const handleEditClick = () => {
     setEditModalOpen(true);
   };
@@ -86,52 +92,50 @@ const Dashboard: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="min-h-[900px] bg-gray-50 mt-[80px] ">
+      <div className="w-full max-w-[125rem] mx-auto lg:px-20 lg:py-10 bg-gray-50 ">
         <div className="bg-white border-b border-gray-200">
-          <div className="">
-            <div className="flex w-full bg-[#f4f4f4] p-2">
-              <button
-                onClick={() => setValue(0)}
-                className={`flex-1 py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
-                  value === 0
-                    ? "text-gray-900 bg-white"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+          <motion.ul
+            variants={{
+              hidden: {},
+              show: {
+                transition: {
+                  staggerChildren: 0.05, // delay từng item
+                },
+              },
+            }}
+            initial="hidden"
+            animate="show"
+            className="flex w-full bg-[#f4f4f4] p-2"
+          >
+            {menuItems.map((item) => (
+              <motion.li
+                initial={false}
+                className="flex-1 "
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  show: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.3, ease: "easeOut" },
+                  },
+                }}
+                key={item.id}
               >
-                Overview
-              </button>
-              <button
-                onClick={() => setValue(1)}
-                className={`flex-1 py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
-                  value === 1
-                    ? "text-gray-900 bg-white"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Trip Plans
-              </button>
-              <button
-                onClick={() => setValue(2)}
-                className={`flex-1 py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
-                  value === 2
-                    ? "text-gray-900 bg-white"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Guides
-              </button>
-              <button
-                onClick={() => setValue(3)}
-                className={`flex-1 py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
-                  value === 3
-                    ? "text-gray-900 bg-white"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Settings
-              </button>
-            </div>
-          </div>
+                <Button
+                  onClick={() => setValue(item.id)}
+                  className={`w-full py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
+                    value === item.id
+                      ? "text-gray-900 bg-white"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {item.label}
+                </Button>
+              </motion.li>
+            ))}
+          </motion.ul>
         </div>
 
         <div className="w-full">
@@ -142,22 +146,22 @@ const Dashboard: React.FC = () => {
                   !info.address ||
                   !info.dob ||
                   !info.phone) && (
-                  <Box className="mb-6 px-4">
-                    <Alert severity="warning">
-                      Your profile is incomplete. Please update your full name,
-                      address, date of birth, and phone number to get the most
-                      out of your travel dashboard.
-                    </Alert>
-                  </Box>
+                  <Alert severity="warning" className="mb-4">
+                    Your profile is incomplete. Please update your full name,
+                    address, date of birth, and phone number to get the most out
+                    of your travel dashboard.
+                  </Alert>
                 )}
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                  {/* Left Sidebar - Profile */}
-                  <div className="lg:col-span-1">
-                    <Card className="p-6">
-                      <CardContent className="text-center p-0">
+                  <div className="lg:col-span-1  h-full">
+                    <Card className="p-6  h-full ">
+                      <CardContent className="text-center p-0 flex flex-col justify-between h-full">
                         <Avatar
-                          sx={{ width: 80, height: 80, margin: "0 auto 16px" }}
-                          className="bg-gray-300"
+                          sx={{
+                            width: 140,
+                            height: 140,
+                          }}
+                          className="mx-auto bg-gray-300"
                         >
                           <img
                             src={info?.avatar || "/placeholder.svg"}
@@ -169,7 +173,7 @@ const Dashboard: React.FC = () => {
                         <Typography variant="h6" className="font-semibold mb-1">
                           {info?.fullName}
                         </Typography>
-                       
+
                         <div className="flex justify-center gap-8 mb-4">
                           <div className="text-center">
                             <Typography variant="h6" className="font-bold">
@@ -233,17 +237,17 @@ const Dashboard: React.FC = () => {
                         <div className="absolute top-4 left-4 flex gap-2">
                           <Chip
                             label="1 Country"
-                            className="bg-white/90 text-gray-800 backdrop-blur-sm border border-white/50 shadow-sm"
+                            className="bg-white/50 text-gray-800 backdrop-blur-sm border border-white/50 shadow-sm"
                             size="small"
                           />
                           <Chip
                             label="1 City & Region"
-                            className="bg-white/90 text-gray-800 backdrop-blur-sm border border-white/50 shadow-sm"
+                            className="bg-white/50  text-gray-800 backdrop-blur-sm border border-white/50 shadow-sm"
                             size="small"
                           />
                           <Chip
                             label="Novice"
-                            className="bg-white/90 text-gray-800 backdrop-blur-sm border border-white/50 shadow-sm"
+                            className="bg-white/50 text-gray-800 backdrop-blur-sm border border-white/50 shadow-sm"
                             size="small"
                           />
                         </div>
@@ -252,24 +256,23 @@ const Dashboard: React.FC = () => {
                         <div className="absolute top-4 right-4 flex gap-1">
                           <IconButton
                             size="small"
-                            className="bg-white/90 text-gray-600 hover:text-gray-800 backdrop-blur-sm shadow-sm"
+                            className="bg-white/50 text-gray-600 hover:text-gray-800 backdrop-blur-sm shadow-sm"
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
                           <IconButton
                             size="small"
-                            className="bg-white/90 text-gray-600 hover:text-gray-800 backdrop-blur-sm shadow-sm"
+                            className="bg-white/50 text-gray-600 hover:text-gray-800 backdrop-blur-sm shadow-sm"
                           >
                             <ShareIcon fontSize="small" />
                           </IconButton>
                         </div>
 
-                        {/* Add Places Button */}
                         <div className="absolute bottom-4 left-4">
                           <Button
                             variant="contained"
                             startIcon={<AddIcon />}
-                            className="bg-white/90 text-gray-800 backdrop-blur-sm border border-white/50 hover:bg-white shadow-sm"
+                            className="bg-white/50 text-gray-800 backdrop-blur-sm border border-white/50 hover:bg-white shadow-sm"
                             size="small"
                           >
                             Add visited places
@@ -282,7 +285,7 @@ const Dashboard: React.FC = () => {
               </div>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" className="font-semibold mb-2">
+                  <Typography variant="h6" className="font-semibold ">
                     Recent Activity
                   </Typography>
                   <Typography variant="body2" className="text-gray-500 mb-4">
@@ -290,7 +293,7 @@ const Dashboard: React.FC = () => {
                   </Typography>
 
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-center rounded-md gap-3 bg-neutral-100 p-2">
                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                         <LocationIcon className="w-4 h-4 text-blue-600" />
                       </div>
@@ -300,20 +303,6 @@ const Dashboard: React.FC = () => {
                         </Typography>
                         <Typography variant="caption" className="text-gray-500">
                           Trip to Paris • 2 days ago
-                        </Typography>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <GroupIcon className="w-4 h-4 text-green-600" />
-                      </div>
-                      <div className="flex-1">
-                        <Typography variant="body2" className="font-medium">
-                          Joined travel community
-                        </Typography>
-                        <Typography variant="caption" className="text-gray-500">
-                          Europe Travellers • 1 week ago
                         </Typography>
                       </div>
                     </div>
