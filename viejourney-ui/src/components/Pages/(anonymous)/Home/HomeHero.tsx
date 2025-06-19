@@ -33,6 +33,8 @@ const HomeHero: React.FC = () => {
           Plan Now
         </Button>
       </Stack>
+
+      
     </div>
   );
 };

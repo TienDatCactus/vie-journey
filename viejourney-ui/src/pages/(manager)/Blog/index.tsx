@@ -191,7 +191,7 @@ export default function Blog() {
           </div>
         </Card>
 
-        <div className="overflow-x-auto border border-gray-400 rounded-[10px]">
+        <div className="overflow-x-auto  border-gray-400 rounded-[10px]">
           <table className="w-full  ">
             <thead>
               <tr className="text-left text-gray-500 border-b border-gray-300">
