@@ -18,11 +18,11 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isAuthenticated, user, loadUserFromToken]);
 
- useEffect(() => {
-  if (isAuthenticated && user && !info) {
-    loadUserInfo();
-  }
-}, [isAuthenticated, user, info, loadUserInfo]);
+  useEffect(() => {
+    if (isAuthenticated && user && !info) {
+      loadUserInfo();
+    }
+  }, [isAuthenticated, info, loadUserInfo]);
   const smoothScrollTo = (targetY: number) => {
     const currentY = window.scrollY;
     animate(currentY, targetY, {
@@ -36,7 +36,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      {isAuthenticated ? <MainAuthHeader /> : <MainUnAuthHeader />}
+      {user ? <MainAuthHeader /> : <MainUnAuthHeader />}
       <main className="flex flex-col items-center justify-center bg-neutral-50">
         {children}
       </main>
