@@ -63,7 +63,7 @@ export class AdminController {
   }
 
   // addAsset/banner
-  @Post('assets/addBanner')
+  @Post('assets')
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {

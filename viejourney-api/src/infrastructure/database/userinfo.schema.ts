@@ -2,14 +2,15 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
 import { Asset } from './asset.schema';
+import { Account } from './account.schema';
 
 @Schema({
   timestamps: true,
   versionKey: false, // Removes the __v field
 })
 export class UserInfos extends Document {
-  @Prop({ type: mongoose.Types.ObjectId, ref: 'Account', required: true })
-  userId: mongoose.Types.ObjectId;
+  @Prop({ type: mongoose.Types.ObjectId, ref: 'Account' })
+  userId: Account;
 
   @Prop({ trim: true, maxLength: 100 })
   fullName: string;
