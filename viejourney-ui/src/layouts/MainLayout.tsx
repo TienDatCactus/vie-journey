@@ -1,17 +1,30 @@
-import React from "react";
-// import Header from "../components/Layout/(anonymous)/Header";
+import React, { useEffect } from "react";
 import { VerticalAlignTop } from "@mui/icons-material";
 import { Divider, Fab } from "@mui/material";
 import { animate } from "motion/react";
 import { MainAuthHeader, MainUnAuthHeader } from "../components/Layout";
 import Footer from "../components/Layout/Main/Footer";
-import { useAuth } from "../services/contexts/AuthContext";
+import { useAuthStore } from "../services/stores/useAuthStore";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { user, info, loadUserFromToken, loadUserInfo } = useAuthStore();
+  const isAuthenticated = useAuthStore(
+    (state) => state.credential?.userId != null
+  );
+
+  useEffect(() => {
+    if (isAuthenticated && !user) {
+      loadUserFromToken();
+    }
+  }, [isAuthenticated, user, loadUserFromToken]);
+
+ useEffect(() => {
+  if (isAuthenticated && user && !info) {
+    loadUserInfo();
+  }
+}, [isAuthenticated, user, info, loadUserInfo]);
   const smoothScrollTo = (targetY: number) => {
     const currentY = window.scrollY;
-
     animate(currentY, targetY, {
       duration: 0.8,
       ease: "easeInOut",
@@ -29,8 +42,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       </main>
       <Fab
         size="large"
-        aria-label="add"
-        className="fixed bottom-10 right-10 bg-neutral-50"
+        aria-label="scroll to top"
+        className="fixed bottom-20 right-5 bg-neutral-50"
         onClick={() => smoothScrollTo(0)}
       >
         <VerticalAlignTop />

@@ -2,22 +2,7 @@ export interface Account {
   userId: string;
   email: string;
   role: "USER" | "ADMIN" | "MANAGER";
-  active: boolean;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  role: string;
-  status: string;
-  fullName: string;
-  avatarUrl: string;
-  lastLoginAt?: Date;
-  flaggedCount: number; // how many times this user was flagged  ( by blogs )
-  banReason?: string;
-  bannedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  status: "ACTIVE" | "INACTIVE" | "BANNED";
 }
 
 export interface Trip {
@@ -26,8 +11,40 @@ export interface Trip {
   destination: string;
   startDate: Date;
   endDate: Date;
-  budgetRange: string;
-  tripmateRange: string;
+  budgetRange?: string;
+  tripmateRange?: string;
+  tripmates: string[];
   description: string;
   visibility: boolean;
+}
+
+export interface UserInfo {
+  _id?: string;
+  fullName: string;
+  dob: Date | null;
+  userId: string;
+  phone: string;
+  address: string;
+  avatar: string;
+  lastLoginAt: Date | null;
+  flaggedCount: number;
+  banReason: string | null;
+  bannedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IUserInfoUpdate {
+  _id?: string;
+  fullName?: string;
+  dob?: Date | null;
+  phone?: string;
+  address?: string;
+  avatar?: string;
+  lastLoginAt?: Date | null;
+  flaggedCount?: number;
+  banReason?: string | null;
+  bannedAt?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

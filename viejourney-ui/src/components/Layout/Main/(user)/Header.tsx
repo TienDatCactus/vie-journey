@@ -19,13 +19,13 @@ import {
   useScrollTrigger,
 } from "@mui/material";
 import React, { useState } from "react";
-import { doLogout } from "../../../../services/api";
-import { useAuth } from "../../../../services/contexts/AuthContext";
+import { useAuthStore } from "../../../../services/stores/useAuthStore";
+import { useNavigate } from "react-router-dom";
 interface Props {
   window?: () => Window;
   children?: React.ReactElement<unknown>;
 }
-export const headerNav: Array<{ name: string; link: string }> = [
+const headerNav: Array<{ name: string; link: string }> = [
   {
     name: "Home",
     link: "/home",
@@ -38,10 +38,7 @@ export const headerNav: Array<{ name: string; link: string }> = [
     name: "Hotels",
     link: "/hotels",
   },
-  {
-    name: "Map Search",
-    link: "/maps/search",
-  },
+
   {
     name: "Profile",
     link: "/profile",
@@ -49,9 +46,6 @@ export const headerNav: Array<{ name: string; link: string }> = [
 ];
 export function HideOnScroll(props: Props) {
   const { children, window } = props;
-  // Note that you normally won't need to set the window ref as useScrollTrigger
-  // will default to window.
-  // This is only being set here because the demo is in an iframe.
   const trigger = useScrollTrigger({
     target: window ? window() : undefined,
   });
@@ -62,17 +56,24 @@ export function HideOnScroll(props: Props) {
     </Slide>
   );
 }
+
 const Header = () => {
+  const info = useAuthStore((state) => state.info);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const navigate = useNavigate();
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const { handleLogout, isLoading } = useAuth();
+  const { handleLogout, isLoading } = useAuthStore();
   const handleClose = () => {
     setAnchorEl(null);
   };
 
+  const onLogout = async () => {
+    await handleLogout();
+    navigate("/");
+  };
   return (
     <HideOnScroll>
       <AppBar position="sticky" color="default" elevation={4}>
@@ -137,8 +138,9 @@ const Header = () => {
               <Avatar
                 sx={{ bgcolor: "#1d41c15d", width: 30, height: 30 }}
                 className="transition-all duration-200 ease-in-out shadow-md cursor-pointer hover:scale-110"
+                src={info?.avatar}
               >
-                N
+                {info?.fullName?.charAt(0).toUpperCase() || "U"}
               </Avatar>
             </IconButton>
             <Menu
@@ -195,7 +197,7 @@ const Header = () => {
                 </ListItemIcon>
                 Settings
               </MenuItem>
-              <MenuItem onClick={handleLogout} disabled={isLoading}>
+              <MenuItem onClick={onLogout} disabled={isLoading}>
                 {isLoading && (
                   <CircularProgress size={20} className="animate-spin" />
                 )}

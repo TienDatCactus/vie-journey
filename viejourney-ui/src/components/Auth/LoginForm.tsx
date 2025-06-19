@@ -21,12 +21,12 @@ import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../services/contexts/AuthContext";
+import { useAuthStore } from "../../services/stores/useAuthStore";
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const { handleLogin, handleGoogleLogin, handleSendForgotPasswordEmail } =
-    useAuth();
+    useAuthStore();
   const [loading, setLoading] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
   const {
@@ -38,20 +38,14 @@ const LoginForm: React.FC = () => {
     password: string;
   }>();
 
-  // Create a proper onSubmit handler using react-hook-form
   const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
     data
   ) => {
     try {
       setLoading(true);
       const response = await handleLogin(data.email, data.password);
-
       if (response.success) {
         navigate("/");
-      } else {
-        enqueueSnackbar(response.message || "Login failed", {
-          variant: "error",
-        });
       }
     } catch (error) {
       console.error("Login error:", error);

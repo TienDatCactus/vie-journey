@@ -1,19 +1,17 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AdminModule } from './entities/admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuthModule } from './entities/auth/auth.module';
-import { AccountModule } from './entities/account/account.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { UploadModule } from './upload/upload.module';
-import { HotelModule } from './entities/hotel/hotel.module';
-import { UserModule } from './entities/user/user.module';
-import { ManagerModule } from './entities/manager/manager.module';
-import { TripModule } from './entities/trip/trip.module';
-
+import { AdminModule } from './modules/admin/admin.module';
+import { ManagerModule } from './modules/manager/manager.module';
+import { HotelModule } from './modules/hotel/hotel.module';
+import { UserModule } from './modules/userinfo/user.module';
+import { AccountModule } from './modules/account/account.module';
+import { AssetsModule } from './modules/assets/assets.module';
+import { TripModule } from './modules/trip/trip.module';
+import { AuthModule } from './modules/auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,8 +28,7 @@ import { TripModule } from './entities/trip/trip.module';
     UserModule,
     AccountModule,
     TripModule,
-    CloudinaryModule,
-    UploadModule,
+    AssetsModule,
     MailerModule.forRoot({
       transport: {
         service: process.env.MAIL_SERVICE,
@@ -49,8 +46,6 @@ import { TripModule } from './entities/trip/trip.module';
     }),
     AuthModule,
     AccountModule,
-    CloudinaryModule,
-    UploadModule,
   ],
 
   controllers: [AppController],

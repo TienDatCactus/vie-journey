@@ -13,11 +13,7 @@ import {
   Search,
   ViewList,
 } from "@mui/icons-material";
-import {
-  Card,
-  Checkbox,
-  Switch
-} from "@mui/material";
+import { Card, Checkbox, Switch } from "@mui/material";
 import { useState } from "react";
 import ManagerLayout from "../../../layouts/ManagerLayout";
 import { PostData } from "../../../utils/interfaces/blog";
@@ -49,7 +45,8 @@ export default function Blog() {
   };
   return (
     <ManagerLayout>
-      <div className="max-w-7xl mx-auto p-4 bg-white min-h-screen">
+      <div className=" mx-auto p-4 bg-white min-h-screen">
+      
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
             <div className="bg-indigo-100 p-2 rounded-md">
@@ -339,7 +336,7 @@ export default function Blog() {
           </div>
         </div>
       </div>
-   
+
       <NewPostDialog
         open={isNewPostDialogOpen}
         onClose={() => setIsNewPostDialogOpen(false)}

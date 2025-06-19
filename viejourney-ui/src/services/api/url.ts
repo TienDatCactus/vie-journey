@@ -15,6 +15,9 @@ export const AUTH = {
 
 export const USER = {
   GET_PROFILE: "/account/profile",
+  GET_USER_INFO: "/user",
+  UPDATE: "/user/edit-profile"
+
 };
 
 export const ACCOUNTS = {
@@ -26,12 +29,18 @@ export const ADMIN = {
   GET_ASSET: "/admin/assets",
   UPDATE_ASSET: "/admin/update-asset",
   DELETE_ASSET: "/admin/assets/delete",
+  CHAGE_ROLE: "/admin/:id/role",
 };
 export const TRIP = {
   INVITE: "/trip/invite",
   GET_TRIPS: "/trip",
-  GET_TRIP: "/trip/:id",
+  GET_TRIP: "/trip",
   CREATE_TRIP: "/trip",
-  UPDATE_TRIP: "/trip/update/:id",
-  DELETE_TRIP: "/trip/delete/:id",
+  UPDATE_TRIP: "/trip/update",
+  DELETE_TRIP: "/trip/delete",
 };
+
+export const ASSET = {
+  UPLOAD: "/assets/image"
+}
+

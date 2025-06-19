@@ -1,10 +1,12 @@
 // store/useTripDetailStore.ts
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { devtools } from "zustand/middleware";
 import { NoteData, PlaceNote, TransitData } from "./storeInterfaces";
-import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { Trip } from "./storeTypes";
 
 interface TripDetailStore {
+  trip: Trip;
+  setTrip: (trip: Trip) => void;
   //   trip: Trip | null;
   notes: NoteData[];
   addNote: (note: NoteData) => void;
@@ -47,92 +49,89 @@ interface TripDetailStore {
 
 export const useTripDetailStore = create<TripDetailStore>()(
   devtools(
-    persist(
-      (set, get) => ({
-        notes: [],
-        addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
-        updateNote: (id, content) =>
-          set((state) => ({
-            notes: state.notes.map((n) =>
-              n.id === id ? { ...n, content } : n
-            ),
-          })),
-        toggleEditNote: (id) =>
-          set((state) => ({
-            notes: state.notes.map((n) =>
-              n.id === id ? { ...n, isEditing: !n.isEditing } : n
-            ),
-          })),
-        deleteNote: (id) =>
-          set((state) => ({
-            notes: state.notes.filter((n) => n.id !== id),
-          })),
-        setNotes: (notes) => set(() => ({ notes })),
-        transits: [],
-        addTransit: (transit) =>
-          set((state) => ({ transits: [...state.transits, transit] })),
-        updateTransit: (id, updated) =>
-          set((state) => ({
-            transits: state.transits.map((t) =>
-              t.id === id ? { ...t, ...updated } : t
-            ),
-          })),
-        toggleEditTransit: (id) =>
-          set((state) => ({
-            transits: state.transits.map((t) =>
-              t.id === id ? { ...t, isEditing: !t.isEditing } : t
-            ),
-          })),
-        deleteTransit: (id) =>
-          set((state) => ({
-            transits: state.transits.filter((t) => t.id !== id),
-          })),
-        setTransits: (transits) => set(() => ({ transits })),
+    (set, get) => ({
+      notes: [],
+      addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
+      updateNote: (id, content) =>
+        set((state) => ({
+          notes: state.notes.map((n) => (n.id === id ? { ...n, content } : n)),
+        })),
+      toggleEditNote: (id) =>
+        set((state) => ({
+          notes: state.notes.map((n) =>
+            n.id === id ? { ...n, isEditing: !n.isEditing } : n
+          ),
+        })),
+      deleteNote: (id) =>
+        set((state) => ({
+          notes: state.notes.filter((n) => n.id !== id),
+        })),
+      setNotes: (notes) => set(() => ({ notes })),
+      transits: [],
+      addTransit: (transit) =>
+        set((state) => ({ transits: [...state.transits, transit] })),
+      updateTransit: (id, updated) =>
+        set((state) => ({
+          transits: state.transits.map((t) =>
+            t.id === id ? { ...t, ...updated } : t
+          ),
+        })),
+      toggleEditTransit: (id) =>
+        set((state) => ({
+          transits: state.transits.map((t) =>
+            t.id === id ? { ...t, isEditing: !t.isEditing } : t
+          ),
+        })),
+      deleteTransit: (id) =>
+        set((state) => ({
+          transits: state.transits.filter((t) => t.id !== id),
+        })),
+      setTransits: (transits) => set(() => ({ transits })),
 
-        // Place notes implementation
-        placeNotes: [],
-        placeDetails: {},
+      // Place notes implementation
+      placeNotes: [],
+      placeDetails: {},
 
-        addPlaceNote: (note) =>
-          set((state) => ({
-            placeNotes: [...state.placeNotes, note],
-          })),
+      addPlaceNote: (note) =>
+        set((state) => ({
+          placeNotes: [...state.placeNotes, note],
+        })),
 
-        updatePlaceNote: (id, note) =>
-          set((state) => ({
-            placeNotes: state.placeNotes.map((n) =>
-              n.id === id ? { ...n, note } : n
-            ),
-          })),
+      updatePlaceNote: (id, note) =>
+        set((state) => ({
+          placeNotes: state.placeNotes.map((n) =>
+            n.id === id ? { ...n, note } : n
+          ),
+        })),
 
-        toggleEditPlaceNotes: (id) =>
-          set((state) => ({
-            placeNotes: state.placeNotes.map((n) =>
-              n.id === id ? { ...n, isEditing: !n.isEditing } : n
-            ),
-          })),
+      toggleEditPlaceNotes: (id) =>
+        set((state) => ({
+          placeNotes: state.placeNotes.map((n) =>
+            n.id === id ? { ...n, isEditing: !n.isEditing } : n
+          ),
+        })),
 
-        deletePlaceNote: (id) =>
-          set((state) => ({
-            placeNotes: state.placeNotes.filter((n) => n.id !== id),
-          })),
-        setPlaceNotes: (notes) => set(() => ({ placeNotes: notes })),
-        setPlaceDetails: (placeId, detail) =>
-          set((state) => ({
-            placeDetails: {
-              ...state.placeDetails,
-              [placeId]: detail,
-            },
-          })),
-        togglePlaceVisited: (id) =>
-          set((state) => ({
-            placeNotes: state.placeNotes.map((n) =>
-              n.id === id ? { ...n, visited: !n.visited } : n
-            ),
-          })),
-      }),
-
-      { name: "trip-detail-storage" }
-    )
+      deletePlaceNote: (id) =>
+        set((state) => ({
+          placeNotes: state.placeNotes.filter((n) => n.id !== id),
+        })),
+      setPlaceNotes: (notes) => set(() => ({ placeNotes: notes })),
+      setPlaceDetails: (placeId, detail) =>
+        set((state) => ({
+          placeDetails: {
+            ...state.placeDetails,
+            [placeId]: detail,
+          },
+        })),
+      togglePlaceVisited: (id) =>
+        set((state) => ({
+          placeNotes: state.placeNotes.map((n) =>
+            n.id === id ? { ...n, visited: !n.visited } : n
+          ),
+        })),
+      trip: {} as Trip,
+      setTrip: (trip) => set(() => ({ trip })),
+    }),
+    { name: "trip-detail-storage" }
   )
 );

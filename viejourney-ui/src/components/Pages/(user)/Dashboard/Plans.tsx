@@ -1,6 +1,6 @@
 import React from "react";
 import { Grid2 } from "@mui/material";
-import { PlanCard } from "./_element";
+import { PlanCard } from "./elements";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
