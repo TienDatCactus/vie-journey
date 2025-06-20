@@ -23,6 +23,7 @@ import {
 } from "@mui/icons-material";
 import { useParams } from "react-router-dom";
 import useBlogDetail from "./container/hook";
+import dayjs from "dayjs";
 
 interface AuthorInfo {
   name: string;
@@ -129,6 +130,7 @@ export default function Blog() {
           <Button
             variant="text"
             size="small"
+            href="/manager/blog"
             className="text-blue-600 hover:text-blue-800"
           >
             Back to All Blogs
@@ -248,13 +250,13 @@ export default function Blog() {
                   className="font-semibold mb-4 flex items-center gap-2"
                 >
                   <Flag className="w-5 h-5 text-red-500" />
-                  Flags ({post.flags.length})
+                  Flags ({blog?.flags.length})
                 </Typography>
 
                 <div className="space-y-3">
-                  {post.flags.map((flag) => (
+                  {blog?.flags.map((flag, index) => (
                     <Paper
-                      key={flag.id}
+                      key={index}
                       className="p-3 bg-red-50 border border-red-200"
                     >
                       <div className="flex items-start gap-2">
@@ -267,7 +269,8 @@ export default function Blog() {
                             {flag.reason}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Reported by {flag.reportedBy} • {flag.date}
+                            Reported by manager •{" "}
+                            {dayjs(flag.date).format("YYYY-MM-DD")}
                           </Typography>
                         </div>
                       </div>

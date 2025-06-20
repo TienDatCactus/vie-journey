@@ -1,44 +1,32 @@
 import {
-  ChevronLeft,
-  Dashboard,
-  Logout,
-  Menu as MenuIcon,
-  Settings,
-  AdminPanelSettings,
-  Hotel as HotelIcon,
+    ChevronLeft,
+    Logout,
+    Menu as MenuIcon,
+    Settings
 } from "@mui/icons-material";
-import PermMediaIcon from "@mui/icons-material/PermMedia";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Avatar, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
+ interface NavProps {
+    collapsed: boolean;
+    setCollapsed: (collapsed: boolean) => void;
+    menuItems: MenuItem[];
+  }
+
+  
 interface MenuItem {
   icon: React.ReactNode;
   label: string;
   path: string;
 }
 
-const menuItems: MenuItem[] = [
-  { icon: <Dashboard />, label: "Dashboard", path: "/admin/dashboard" },
-  { icon: <AccountCircleIcon />, label: "Account", path: "/admin/accounts" },
-  { icon: <HotelIcon />, label: "Hotel", path: "/admin/hotels" },
-  { icon: <PermMediaIcon />, label: "Media", path: "/admin/media" },
-  {
-    icon: <AdminPanelSettings />,
-    label: "Role",
-    path: "/admin/role-management",
-  },
-];
 
-interface NavAdminProps {
-  collapsed: boolean;
-  setCollapsed: (collapsed: boolean) => void;
-}
 
-export const NavAdmin: React.FC<NavAdminProps> = ({
+export const Nav: React.FC<NavProps> = ({
   collapsed,
   setCollapsed,
+  menuItems
 }) => {
   const navigate = useNavigate();
   const user = {
