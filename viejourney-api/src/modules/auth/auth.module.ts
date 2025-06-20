@@ -13,9 +13,11 @@ import { AccountSchema } from 'src/infrastructure/database/account.schema';
 import { UserInfosSchema } from 'src/infrastructure/database/userinfo.schema';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { GoogleStrategy } from 'src/common/strategies/google.strategy';
+import { AssetsModule } from '../assets/assets.module';
 @Module({
   imports: [
     ConfigModule,
+    AssetsModule,
     PassportModule.register({ defaultStrategy: 'jwt', session: true }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',

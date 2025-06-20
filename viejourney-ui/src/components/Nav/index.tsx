@@ -7,7 +7,7 @@ import {
 import { Avatar, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../../services/stores/useAuthStore";
+import { useAuthStore } from "../../services/stores/useAuthStore";
 
  interface NavProps {
     collapsed: boolean;
@@ -29,15 +29,8 @@ export const Nav: React.FC<NavProps> = ({
   setCollapsed,
   menuItems
 }) => {
-  const { handleLogout } = useAuthStore();
+  const { info, user, handleLogout } = useAuthStore();
   const navigate = useNavigate();
-  const user = {
-    name: "John Doe",
-    email: "john.doe@viejourney.com",
-    avatar: "/placeholder.svg?height=40&width=40",
-    role: "Admin",
-  };
-
   const handleProfile = () => {
     navigate("/profile");
   };
@@ -47,7 +40,6 @@ export const Nav: React.FC<NavProps> = ({
         collapsed ? "w-20" : "w-64"
       }`}
     >
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
         {!collapsed && (
           <div className="flex items-center gap-2">
@@ -101,19 +93,19 @@ export const Nav: React.FC<NavProps> = ({
           <div className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <Avatar
-                src={user.avatar}
-                alt={user.name}
+                src={info?.avatar}
+                alt={info?.fullName}
                 sx={{ width: 40, height: 40 }}
                 className="border-2 border-gray-200"
               >
-                {user.name.charAt(0)}
+                {info?.fullName?.charAt(0)}
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {user.name}
+                  {info?.fullName}
                 </p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                <p className="text-xs text-blue-600 font-medium">{user.role}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                <p className="text-xs text-blue-600 font-medium">{user?.role}</p>
               </div>
             </div>
 
@@ -141,16 +133,16 @@ export const Nav: React.FC<NavProps> = ({
           </div>
         ) : (
           <div className="p-2 flex flex-col gap-2">
-            <Tooltip title={`${user.name} - Profile`} placement="right">
+            <Tooltip title={`${info?.fullName} - Profile`} placement="right">
               <div className="flex justify-center">
                 <Avatar
-                  src={user.avatar}
-                  alt={user.name}
+                  src={info?.avatar}
+                  alt={info?.fullName}
                   sx={{ width: 32, height: 32 }}
                   className="border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-all"
                   onClick={handleProfile}
                 >
-                  {user.name.charAt(0)}
+                  {info?.fullName?.charAt(0)}
                 </Avatar>
               </div>
             </Tooltip>
