@@ -88,7 +88,7 @@ export default function BlogPostRow({
             <span className="font-medium">{blog.summary}</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <Avatar sx={{ width: 24, height: 24 }}>
+            <Avatar sx={{ width: 24, height: 24 }} src={blog?.avatar}>
               {blog?.createdBy?.charAt(0) ?? ""}
             </Avatar>
             <span className="text-sm text-gray-500">
