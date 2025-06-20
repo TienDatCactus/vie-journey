@@ -1,46 +1,44 @@
-"use client"
+"use client";
 
-import { ChevronLeft, Menu as MenuIcon, Logout, Settings } from "@mui/icons-material"
-import ArticleIcon from "@mui/icons-material/Article"
-import { IconButton, Tooltip, Avatar } from "@mui/material"
-import type React from "react"
-import { useNavigate } from "react-router-dom"
+import {
+  ChevronLeft,
+  Menu as MenuIcon,
+  Logout,
+  Settings,
+} from "@mui/icons-material";
+import ArticleIcon from "@mui/icons-material/Article";
+import { IconButton, Tooltip, Avatar } from "@mui/material";
+import type React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../../services/stores/useAuthStore";
 
 interface MenuItem {
-  icon: React.ReactNode
-  label: string
-  path: string
+  icon: React.ReactNode;
+  label: string;
+  path: string;
 }
 
-const menuItems: MenuItem[] = [{ icon: <ArticleIcon />, label: "Blog", path: "/manager/blog" }]
+const menuItems: MenuItem[] = [
+  { icon: <ArticleIcon />, label: "Blog", path: "/manager/blog" },
+];
 
 interface NavAdminProps {
-  collapsed: boolean
-  setCollapsed: (collapsed: boolean) => void
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
 }
 
-export const NavManager: React.FC<NavAdminProps> = ({ collapsed, setCollapsed }) => {
-  const navigate = useNavigate()
-
-  // Mock user data - replace with actual user data from your auth system
-  const user = {
-    name: "John Doe",
-    email: "john.doe@viejourney.com",
-    avatar: "/placeholder.svg?height=40&width=40",
-    role: "Manager",
-  }
-
-  const handleLogout = () => {
-    // Add your logout logic here
-    console.log("Logging out...")
-    // navigate("/login")
-  }
+export const NavManager: React.FC<NavAdminProps> = ({
+  collapsed,
+  setCollapsed,
+}) => {
+  const navigate = useNavigate();
+  const { info, user, handleLogout } = useAuthStore();
 
   const handleProfile = () => {
     // Add your profile navigation logic here
-    console.log("Opening profile...")
+    console.log("Opening profile...");
     // navigate("/profile")
-  }
+  };
 
   return (
     <div
@@ -60,7 +58,11 @@ export const NavManager: React.FC<NavAdminProps> = ({ collapsed, setCollapsed })
             </h1>
           </div>
         )}
-        <IconButton onClick={() => setCollapsed(!collapsed)} className="text-gray-600 hover:bg-gray-100" size="small">
+        <IconButton
+          onClick={() => setCollapsed(!collapsed)}
+          className="text-gray-600 w-fit mx-auto hover:bg-gray-100"
+          size="small"
+        >
           {collapsed ? <MenuIcon /> : <ChevronLeft />}
         </IconButton>
       </div>
@@ -68,16 +70,24 @@ export const NavManager: React.FC<NavAdminProps> = ({ collapsed, setCollapsed })
       {/* Navigation Menu */}
       <div className="flex flex-col space-y-1 mt-4 px-3 flex-1">
         {menuItems.map((item, index) => (
-          <Tooltip key={index} title={collapsed ? item.label : ""} placement="right">
+          <Tooltip
+            key={index}
+            title={collapsed ? item.label : ""}
+            placement="right"
+          >
             <div
               onClick={() => navigate(item.path)}
               className={`flex items-center px-3 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition-all group ${
                 collapsed ? "justify-center" : ""
               }`}
             >
-              <div className="text-gray-600 group-hover:text-blue-600">{item.icon}</div>
+              <div className="text-gray-600 group-hover:text-blue-600">
+                {item.icon}
+              </div>
               {!collapsed && (
-                <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">{item.label}</span>
+                <span className="ml-3 font-medium text-gray-700 group-hover:text-blue-600">
+                  {item.label}
+                </span>
               )}
             </div>
           </Tooltip>
@@ -90,17 +100,21 @@ export const NavManager: React.FC<NavAdminProps> = ({ collapsed, setCollapsed })
           <div className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <Avatar
-                src={user.avatar}
-                alt={user.name}
+                src={info?.avatar}
+                alt={info?.fullName || "User"}
                 sx={{ width: 40, height: 40 }}
                 className="border-2 border-gray-200"
               >
-                {user.name.charAt(0)}
+                {info?.fullName.charAt(0)}
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                <p className="text-xs text-blue-600 font-medium">{user.role}</p>
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {info?.fullName}
+                </p>
+                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                <p className="text-xs text-blue-600 font-medium">
+                  {user?.role}
+                </p>
               </div>
             </div>
 
@@ -128,16 +142,16 @@ export const NavManager: React.FC<NavAdminProps> = ({ collapsed, setCollapsed })
           </div>
         ) : (
           <div className="p-2 flex flex-col gap-2">
-            <Tooltip title={`${user.name} - Profile`} placement="right">
+            <Tooltip title={`${info?.fullName} - Profile`} placement="right">
               <div className="flex justify-center">
                 <Avatar
-                  src={user.avatar}
-                  alt={user.name}
+                  src={info?.avatar}
+                  alt={info?.fullName || "User"}
                   sx={{ width: 32, height: 32 }}
                   className="border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-all"
                   onClick={handleProfile}
                 >
-                  {user.name.charAt(0)}
+                  {info?.fullName.charAt(0)}
                 </Avatar>
               </div>
             </Tooltip>
@@ -146,7 +160,7 @@ export const NavManager: React.FC<NavAdminProps> = ({ collapsed, setCollapsed })
               <IconButton
                 onClick={handleProfile}
                 size="small"
-                className="text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 w-fit mx-auto"
               >
                 <Settings sx={{ fontSize: 18 }} />
               </IconButton>
@@ -156,7 +170,7 @@ export const NavManager: React.FC<NavAdminProps> = ({ collapsed, setCollapsed })
               <IconButton
                 onClick={handleLogout}
                 size="small"
-                className="text-gray-600 hover:text-red-600 hover:bg-red-50"
+                className="text-gray-600 hover:text-red-600 hover:bg-red-50 w-fit mx-auto"
               >
                 <Logout sx={{ fontSize: 18 }} />
               </IconButton>
@@ -165,5 +179,5 @@ export const NavManager: React.FC<NavAdminProps> = ({ collapsed, setCollapsed })
         )}
       </div>
     </div>
-  )
-}
+  );
+};

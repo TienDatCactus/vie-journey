@@ -7,9 +7,7 @@ import { Account } from 'src/common/entities/account.entity';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { CreateBlogDto } from 'src/common/dtos/create-blog.dto';
 import { AssetsService } from '../assets/assets.service';
-import { create } from 'domain';
 import { v4 as uuidv4 } from 'uuid';
-
 @Injectable()
 export class BlogService {
   constructor(
@@ -221,7 +219,7 @@ export class BlogService {
       if (!user) throw new NotFoundException('User not found');
       let uploadResult: import('cloudinary').UploadApiResponse | null = null;
       uploadResult = await this.assetsService.uploadImage(file, {
-        public_id: `users/${userId}/IMAGE_BLOG/${uuidv4()}`,
+        public_id: `users/${userId}/IMAGE_BLOG/${file.filename || uuidv4()}`,
       });
       const newBlog = new this.blogModel({
         ...createBlogDto,

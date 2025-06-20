@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { MapProps as GoogleMapProps } from "@vis.gl/react-google-maps";
 // Use Place as the base type for POI data
 export type POIData = google.maps.places.Place;
+export type OldPOIData = google.maps.places.PlaceResult;
 export interface SearchPlacesControlProps {
   onPlaceSelected?: (place: google.maps.places.Place) => void;
   placeholder?: string;

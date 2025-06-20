@@ -35,12 +35,9 @@ interface TripDetailStore {
   deletePlaceNote: (id: string) => void;
   setPlaceNotes: (notes: PlaceNote[]) => void;
   togglePlaceVisited: (id: string) => void;
-  setPlaceDetails: (
-    placeId: string,
-    detail: google.maps.places.PlaceResult
-  ) => void;
+  setPlaceDetails: (placeId: string, detail: google.maps.places.Place) => void;
 
-  placeDetails: Record<string, google.maps.places.PlaceResult>;
+  placeDetails: Record<string, google.maps.places.Place>;
   itineraries: Intinerary[];
   addItinerary: (itinerary: Intinerary) => void;
   updateItinerary: (id: string, itinerary: Partial<Intinerary>) => void;

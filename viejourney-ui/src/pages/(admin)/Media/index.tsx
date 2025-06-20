@@ -2,12 +2,21 @@
 
 import type React from "react";
 
-import { ChevronLeft, ChevronRight, Close } from "@mui/icons-material";
-import { Box, Container, Grid, IconButton, Modal } from "@mui/material";
+import { Add, ChevronLeft, ChevronRight, Close } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Chip,
+  Grid2,
+  IconButton,
+  Modal,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { AdminLayout } from "../../../layouts";
 import { ASSET_TYPE } from "../../../utils/interfaces/admin";
-import Card from "./component/card";
+import AssetCard from "./component/card";
 import useHook from "./container/hook";
 
 interface TabPanelProps {
@@ -79,60 +88,125 @@ const Banner = () => {
 
   return (
     <AdminLayout>
-      <div className="py-[10px] bg-[#f6f8f9] min-h-screen">
-        <Container>
-          <Box sx={{ mt: 2 }}>
-            <div className="flex items-center justify-between ">
-              <div className="flex items-center gap-6">
-                <button
-                  onClick={() => {
-                    handleTabChange(ASSET_TYPE.AVATAR);
-                    setTabValue(0);
-                  }}
-                  className={`text-sm font-medium px-3 py-1 rounded transition-colors cursor-pointer uppercase ${
-                    tabValue === 0
-                      ? "text-green-100 bg-[#1bb99a]"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  Avatar ({avatarLength})
-                </button>
-                <button
-                  onClick={() => {
-                    handleTabChange(ASSET_TYPE.BANNER);
-                    setTabValue(1);
-                  }}
-                  className={`text-sm font-medium px-3 py-1 rounded transition-colors uppercase cursor-pointer  ${
-                    tabValue === 1
-                      ? "text-green-100 bg-[#1bb99a]"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  Banner ({bannerLength})
-                </button>
-                <button
-                  onClick={() => {
-                    handleTabChange(ASSET_TYPE.CONTENT);
-                    setTabValue(2);
-                  }}
-                  className={`text-sm font-medium px-3 py-1 rounded transition-colors  uppercase cursor-pointer ${
-                    tabValue === 2
-                      ? "text-green-100 bg-[#1bb99a]"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  Content ({contentLength})
-                </button>
+      <div className="p-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4 ">
+            Media Management
+          </h1>
+          <p className="text-gray-600 ">
+            Manage your media assets including avatars, banners, and content.
+          </p>
+        </div>
+        <div className="flex items-center my-4  shadow-sm border border-neutral-100 rounded-md  w-fit">
+          <Button
+            onClick={() => {
+              handleTabChange(ASSET_TYPE.AVATAR);
+              setTabValue(0);
+            }}
+            className={`text-sm font-medium px-3 py-2 transition-colors rounded-s-md gap-2 rounded-e-none cursor-pointer uppercase ${
+              tabValue === 0
+                ? "text-blue-100 bg-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Avatar{" "}
+            <Chip
+              size="small"
+              className="text-dark-700 bg-neutral-50"
+              label={avatarLength}
+            />
+          </Button>
+          <Button
+            onClick={() => {
+              handleTabChange(ASSET_TYPE.BANNER);
+              setTabValue(1);
+            }}
+            className={`text-sm font-medium px-3 py-2  transition-colors rounded-none uppercase gap-2 cursor-pointer  ${
+              tabValue === 1
+                ? "text-blue-100 bg-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Banner{" "}
+            <Chip
+              size="small"
+              className="text-dark-700 bg-neutral-50"
+              label={bannerLength}
+            />
+          </Button>
+          <Button
+            onClick={() => {
+              handleTabChange(ASSET_TYPE.CONTENT);
+              setTabValue(2);
+            }}
+            className={`text-sm font-medium px-3 py-2 rounded-s-none gap-2 transition-colors rounded-e-lg  uppercase cursor-pointer ${
+              tabValue === 2
+                ? "text-blue-100 bg-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Content{" "}
+            <Chip
+              size="small"
+              className="text-dark-700 bg-neutral-50"
+              label={contentLength}
+            />
+          </Button>
+        </div>
+        <div
+          className="border border-neutral-400 rounded-md p-4
+        "
+        >
+          <Stack
+            direction={"row"}
+            alignItems={"center"}
+            justifyContent={"space-between"}
+          >
+            {tabValue === 0 ? (
+              <div>
+                <h1 className="text-2xl font-semibold">Avatar Images</h1>
+                <p className="text-sm text-gray-600">
+                  Profile pictures and avatar images
+                </p>
               </div>
+            ) : tabValue === 1 ? (
+              <div>
+                <h1 className="text-2xl font-semibold">Banner Images</h1>
+                <p className="text-sm text-gray-600">
+                  Images used for banners and promotional content
+                </p>
+              </div>
+            ) : (
+              <div>
+                <h1 className="text-2xl font-semibold">Content Images</h1>
+                <p className="text-sm text-gray-600">
+                  Images used for content and articles
+                </p>
+              </div>
+            )}
+            <div>
+              <Button variant="contained" color="primary" startIcon={<Add />}>
+                Upload{" "}
+                {tabValue === 0
+                  ? "Avatar"
+                  : tabValue === 1
+                  ? "Banner"
+                  : "Content"}
+              </Button>
             </div>
-          </Box>
-
-          {/* Tab Panels */}
+          </Stack>
           <TabPanel value={tabValue} index={0}>
-            <Grid container spacing={2}>
+            <Grid2 container spacing={2}>
               {currentData.map((image, index) => (
-                <Grid item xs={12} sm={6} md={4} key={image._id}>
-                  <Card
+                <Grid2
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 4,
+                  }}
+                  key={image._id}
+                >
+                  <AssetCard
                     imageSrc={image.url}
                     title={image.userId}
                     size={image.file_size}
@@ -143,16 +217,23 @@ const Banner = () => {
                     }
                     onDelete={() => deleteAsset(image._id, ASSET_TYPE.AVATAR)}
                   />
-                </Grid>
+                </Grid2>
               ))}
-            </Grid>
+            </Grid2>
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <Grid container spacing={2}>
+            <Grid2 container spacing={2}>
               {currentData.map((image, index) => (
-                <Grid item xs={12} sm={6} md={4} key={image._id}>
-                  <Card
+                <Grid2
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 4,
+                  }}
+                  key={image._id}
+                >
+                  <AssetCard
                     imageSrc={image.url}
                     title={image.userId}
                     size={image.file_size}
@@ -163,16 +244,16 @@ const Banner = () => {
                     }
                     onDelete={() => deleteAsset(image._id, ASSET_TYPE.AVATAR)}
                   />
-                </Grid>
+                </Grid2>
               ))}
-            </Grid>
+            </Grid2>
           </TabPanel>
 
           <TabPanel value={tabValue} index={2}>
-            <Grid container spacing={2}>
+            <Grid2 container spacing={2}>
               {currentData.map((image, index) => (
-                <Grid item xs={12} sm={6} md={4} key={image._id}>
-                  <Card
+                <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={image._id}>
+                  <AssetCard
                     imageSrc={image.url}
                     title={image.userId}
                     size={image.file_size}
@@ -183,11 +264,11 @@ const Banner = () => {
                     }
                     onDelete={() => deleteAsset(image._id, ASSET_TYPE.AVATAR)}
                   />
-                </Grid>
+                </Grid2>
               ))}
-            </Grid>
+            </Grid2>
           </TabPanel>
-        </Container>
+        </div>
 
         <Modal
           open={open}

@@ -14,11 +14,16 @@ import {
   Box,
   Paper,
   Chip,
+  Card,
+  CardActions,
+  CardMedia,
+  CardContent,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
+import { Delete, Edit } from "@mui/icons-material";
 
 export interface SimpleCardProps {
   imageSrc: string;
@@ -30,7 +35,7 @@ export interface SimpleCardProps {
   onDelete?: () => void;
 }
 
-const Card = ({
+const AssetCard = ({
   imageSrc,
   title,
   size,
@@ -105,102 +110,73 @@ const Card = ({
 
   return (
     <>
-      <div className="w-full h-[340px] bg-white p-[10px] rounded-[10px] shadow-[0_2px_4px_rgba(0,0,0,0.1)] cursor-pointer hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-shadow group">
+      <Card
+        className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-md"
+        sx={{ maxWidth: 345 }}
+      >
         <div
-          className="relative w-full h-[250px] rounded-[5px] overflow-hidden"
-          onClick={onClick}
+          className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden cursor-pointer"
+          onClick={imageSrc ? onClick : undefined}
         >
-          <img
-            src={imageSrc || "/placeholder.svg"}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          <CardMedia
+            component="img"
+            height="194"
+            image={imageSrc || "/placeholder.svg"}
+            alt="Paella dish"
           />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="absolute bottom-4 left-4 right-4 flex justify-center gap-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpenModal(true);
-                }}
-                className="flex items-center justify-center w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 cursor-pointer"
-                title="Update"
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+          <div className="absolute bottom-2 right-1/2 transform translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <CardActions className="flex gap-1">
+              <IconButton
+                onClick={() => setOpenModal(true)}
+                className="bg-white"
+                aria-label="add to favorites"
               >
-                <svg
-                  className="w-5 h-5 text-gray-700"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-              </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpenConfirm(true);
-                }}
-                className="flex items-center justify-center w-10 h-10 bg-red-500/90 hover:bg-red-500 rounded-full shadow-lg transition-all duration-200 hover:scale-110 cursor-pointer"
-                title="Delete"
+                <Edit />
+              </IconButton>
+              <IconButton
+                onClick={() => setOpenConfirm(true)}
+                className="bg-red-500 text-white"
+                aria-label="share"
               >
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
+                <Delete />
+              </IconButton>
+            </CardActions>
           </div>
         </div>
-        <Dialog
-          open={openConfirm}
-          onClose={() => setOpenConfirm(false)}
-          maxWidth="xs"
-          fullWidth
-        >
-          <DialogTitle>Confirm Deletion</DialogTitle>
-          <DialogContent>
-            <Typography>Are you sure you want to delete this image?</Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenConfirm(false)} color="inherit">
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                onDelete?.();
-                setOpenConfirm(false);
-              }}
-              color="error"
-              variant="contained"
-            >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <div>
-          <h3 className="font-[700] text-[20px]">{title}</h3>
-          <div className="flex justify-between">
-            <p className="mt-[10px] text-[#a6acaf]">{size}</p>
-            <p className="mt-[10px] text-[#a6acaf]">{dimensions}</p>
-          </div>
-        </div>
-      </div>
+        <CardContent>
+          <h1 className="font-semibold">{title}</h1>
+          <Typography variant="body2" color="text.secondary">
+            Size: {size || "Unknown"} | Dimensions: {dimensions || "Unknown"}
+          </Typography>
+        </CardContent>
+      </Card>
+      <Dialog
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this image?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirm(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              onDelete?.();
+              setOpenConfirm(false);
+            }}
+            color="error"
+            variant="contained"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={openModal}
@@ -467,4 +443,4 @@ const Card = ({
   );
 };
 
-export default Card;
+export default AssetCard;

@@ -17,6 +17,7 @@ import { AccountService } from '../account/account.service';
 import { Account } from 'src/common/entities/account.entity';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { Status } from 'src/common/enums/status.enum';
+import { AssetsService } from '../assets/assets.service';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -27,6 +28,7 @@ export class AuthService {
     @InjectModel(Account.name) private readonly accountModel: Model<Account>,
     @InjectModel(UserInfos.name) private readonly userModel: Model<UserInfos>,
     private readonly mailService: MailerService,
+    private readonly assetService: AssetsService,
   ) {}
   async resendVerificationEmail(email: string, res: Response) {
     const user = await this.accountModel.findOne({ email });
@@ -458,14 +460,17 @@ export class AuthService {
         const avatar =
           picture || (Array.isArray(photos) ? photos[0]?.value : '') || '';
 
-        await this.userModel.create({
+        const createdUser = await this.userModel.create({
           userId: user._id,
           fullName: displayName || '',
           dob: '',
-          avatar,
           phone: '',
           address: '',
         });
+
+        if (createdUser) {
+          await this.assetService.uploadImage(avatar, {});
+        }
       }
 
       const accessToken = this.createAccessToken(user._id, user.email);

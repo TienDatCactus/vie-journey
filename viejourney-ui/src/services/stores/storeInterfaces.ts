@@ -38,7 +38,7 @@ export interface TransitData {
   updatedAt?: string; // ISO date string
 }
 
-export interface PlaceData extends google.maps.places.PlaceResult {
+export interface PlaceData extends google.maps.places.Place {
   _id: String;
   placeId: google.maps.places.PlacePrediction["placeId"];
   content: string;

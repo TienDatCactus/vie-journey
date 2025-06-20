@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
-import { POIData } from "../types";
+import { OldPOIData, POIData } from "../types";
 import PlaceMarker from "./PlaceMarker";
 
 interface MarkerClusterProps {
-  places: POIData[];
+  places: OldPOIData[];
   onPlaceClick: (place?: POIData) => void;
   selectedPlace: POIData | null;
 }
@@ -18,6 +18,7 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
   const placesLib = useMapsLibrary("places");
   const [isVisible, setIsVisible] = useState(false);
   const [detailedPlaces, setDetailedPlaces] = useState<POIData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Delay for performance
   useEffect(() => {
@@ -35,8 +36,8 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
     if (!bounds) return places;
 
     return places.filter((place) => {
-      if (!place.location) return false;
-      const latLng = new google.maps.LatLng(place.location);
+      if (!place.geometry?.location) return false;
+      const latLng = new google.maps.LatLng(place.geometry?.location);
       return bounds.contains(latLng);
     });
   }, [mapInstance, places, isVisible]);
@@ -44,63 +45,62 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
   // Fetch additional details only for places missing data
   useEffect(() => {
     if (!placesLib || visiblePlaces.length === 0 || !mapInstance) return;
-
-    // Clear the detailed places first
-    setDetailedPlaces([]);
-
-    // Create a PlacesService instance
-    const placesService = new placesLib.PlacesService(mapInstance);
-
-    // Use a counter to track when all requests are done
-    let completedRequests = 0;
+    setIsLoading(true);
     const tempDetailedPlaces: POIData[] = [];
-
-    // Process each place
+    let completedRequests = 0;
     visiblePlaces.forEach((place) => {
-      placesService.getDetails(
-        {
-          placeId: place.id,
-          fields: import.meta.env.VITE_MAP_FIELDS?.split(",") || [
-            "name",
-            "formatted_address",
-            "geometry",
-            "place_id",
-            "photos",
-            "rating",
-            "types",
-            "user_ratings_total",
-          ],
-        },
-        (result, status) => {
-          completedRequests++;
+      try {
+        const placeId = place.place_id || "";
 
-          if (status === placesLib.PlacesServiceStatus.OK && result) {
-            // Convert PlaceResult to POIData format
-            const poiData = {
-              ...result,
-              id: result.place_id,
-              displayName: result.name || "",
-              formattedAddress: result.formatted_address || "",
-              location: result.geometry?.location,
-              userRatingCount: result.user_ratings_total,
-              types: result.types || [],
-            };
+        const placeInstance = new placesLib.Place({ id: placeId });
 
-            tempDetailedPlaces.push(poiData as POIData);
-          } else {
-            // If we can't get details, use the original place data
-            tempDetailedPlaces.push(place);
-          }
+        placeInstance
+          .fetchFields({
+            fields: import.meta.env.VITE_MAP_FIELDS.split(",")
+              ? import.meta.env.VITE_MAP_FIELDS.split(",")
+              : [
+                  "name",
+                  "formattedAddress",
+                  "rating",
+                  "userRatingCount",
+                  "photos",
+                  "types",
+                ],
+          })
+          .then((res) => {
+            tempDetailedPlaces.push(res.place);
+          })
+          .catch((error) => {
+            console.error(
+              `Error fetching details for place ${placeId}:`,
+              error
+            );
+            tempDetailedPlaces.push(place as unknown as POIData);
+          })
+          .finally(() => {
+            completedRequests++;
+            if (completedRequests === visiblePlaces.length) {
+              setDetailedPlaces(tempDetailedPlaces);
+              setIsLoading(false);
+            }
+          });
+      } catch (error) {
+        console.error("Error processing place:", error);
+        completedRequests++;
+        tempDetailedPlaces.push(place as unknown as POIData);
 
-          // When all requests are done, update state
-          if (completedRequests === visiblePlaces.length) {
-            setDetailedPlaces(tempDetailedPlaces);
-          }
+        if (completedRequests === visiblePlaces.length) {
+          setDetailedPlaces(tempDetailedPlaces);
+          setIsLoading(false);
         }
-      );
+      }
     });
+    return () => {
+      setDetailedPlaces([]);
+      setIsLoading(false);
+    };
   }, [placesLib, visiblePlaces, mapInstance]);
-
+  console.log("detailedPlaces", detailedPlaces);
   if (!isVisible) return null;
   return (
     <>

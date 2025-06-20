@@ -2,13 +2,17 @@ import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Accounts from "../../pages/(admin)/Accounts";
 import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
-import HotelManagement from "../../pages/(admin)/Hotel";
 import RoleManagement from "../../pages/(admin)/RoleManagement";
-import BlogList from "../../pages/(manager)/Blog/BlogList";
-import BlogDetail from "../../pages/(user)/Guides/BlogDetail";
+import BlogManagementList from "../../pages/(manager)/Blog/BlogManagementList";
+import BlogManagementView from "../../pages/(manager)/Blog/BlogManagementView";
+import HotelManagement from "../../pages/(manager)/Hotel";
+import BlogDetail from "../../pages/(user)/Blogs/BlogDetail/BlogDetail";
+import CreateBlogDetail from "../../pages/(user)/Blogs/CreateBlogDetail/CreateBlogDetail";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import BlogList from "../../pages/(user)/Blogs/BlogList";
+import CreateBlog from "../../pages/(user)/Blogs/CreateBlog/CreateBlog";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -34,8 +38,6 @@ const OauthSuccess = lazy(
   () => import("./../../pages/(anonymous)/Auth/OauthSuccess")
 );
 const Media = lazy(() => import("../../pages/(admin)/Media"));
-const Blog = lazy(() => import("../../pages/(manager)/Blog/BlogList"));
-const BlogView = lazy(() => import("../../pages/(manager)/Blog/BlogView"));
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
@@ -145,6 +147,24 @@ const router = createBrowserRouter([
         ),
         errorElement: <ErrorBoundary />,
       },
+      {
+        path: ":id/edit",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={BlogDetail} />
+          </ProtectedRoute>
+        ),
+        errorElement: <ErrorBoundary />,
+      },
+      {
+        path: "create",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={CreateBlog} />
+          </ProtectedRoute>
+        ),
+        errorElement: <ErrorBoundary />,
+      },
     ],
   },
 
@@ -236,7 +256,7 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: ":id",
+        path: "edit/:id",
         element: (
           <ProtectedRoute requireAuth={false}>
             <SuspenseWrapper component={CreateTripDetails} />
@@ -254,7 +274,7 @@ const router = createBrowserRouter([
         path: "blog",
         element: (
           <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={Blog} />
+            <SuspenseWrapper component={BlogManagementList} />
           </ProtectedRoute>
         ),
         children: [
@@ -262,7 +282,7 @@ const router = createBrowserRouter([
             path: ":id",
             element: (
               <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={BlogView} />
+                <SuspenseWrapper component={BlogManagementView} />
               </ProtectedRoute>
             ),
           },
@@ -271,9 +291,50 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/blog",
+    path: "/blogs",
     errorElement: <ErrorBoundary />,
-    children: [],
+    children: [
+      {
+        path: "",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={BlogList} />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "edit/:id",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={CreateBlogDetail} />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ":id",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={BlogDetail} />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "create",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={CreateBlog} />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ":id/edit",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SuspenseWrapper component={CreateBlogDetail} />
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
 ]);
 

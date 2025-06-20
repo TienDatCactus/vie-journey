@@ -139,75 +139,14 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
     if (!suggestion?.placePrediction || !placesLib || !mapInstance) {
       return;
     }
+    const placeInstance = new placesLib.Place({
+      id: suggestion.placePrediction.placeId,
+    });
+    handlePOIClick(placeInstance);
 
-    setLoading(true);
-
-    try {
-      // Use the classic PlacesService with callbacks
-      const placesService = new placesLib.PlacesService(mapInstance);
-      placesService.getDetails(
-        {
-          placeId: suggestion.placePrediction.placeId,
-          fields: [
-            "name",
-            "formatted_address",
-            "geometry",
-            "place_id",
-            "photos",
-          ],
-        },
-        (result, status) => {
-          if (status === placesLib.PlacesServiceStatus.OK && result) {
-            const location = result.geometry?.location;
-            if (location) {
-              mapInstance.panTo(location);
-              mapInstance.setZoom(15);
-
-              // Create POI data from result
-              const poiData = {
-                ...result,
-                id: result.place_id,
-                displayName: result.name || "",
-                formattedAddress: result.formatted_address || "",
-                location: location,
-              };
-
-              handlePOIClick(poiData as any);
-              setHighlightedPOI(result.place_id || null);
-              setSelectedPlace({
-                placePrediction: suggestion.placePrediction || null,
-              });
-              setDestination(
-                result.name || suggestion?.placePrediction?.mainText?.text || ""
-              );
-
-              // Create a marker
-              new google.maps.marker.AdvancedMarkerElement({
-                position: location,
-                map: mapInstance,
-                title: (
-                  result.name ||
-                  suggestion?.placePrediction?.mainText ||
-                  ""
-                ).toString(),
-              });
-            } else {
-              console.error("Location not available for this place");
-            }
-          } else {
-            console.error("Place details request failed:", status);
-          }
-
-          // Clear loading state
-          setLoading(false);
-          setOpen(false);
-        }
-      );
-    } catch (error) {
-      console.error("Error fetching place details:", error);
-      setLoading(false);
-      setOpen(false);
-    }
+    setHighlightedPOI(placeInstance.id);
+    setDestination(suggestion.placePrediction.mainText + "");
+    setOpen(false);
   };
   return (
     <>

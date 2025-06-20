@@ -1,4 +1,5 @@
-import { Box, CircularProgress, Typography } from "@mui/material";
+import Search from "@mui/icons-material/Search";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import {
   AdvancedMarker,
   Map as GoogleMap,
@@ -109,8 +110,14 @@ const Map: React.FC<MapProps> = ({
   ...mapProps
 }) => {
   const isApiLoaded = useApiIsLoaded();
-  const { selectedCategories, categoryResults, handleCategoryToggle } =
-    useCategorySearch({});
+  const {
+    selectedCategories,
+    categoryResults,
+    handleCategoryToggle,
+    searchPlacesInBounds,
+    isSearching,
+    hasSearched,
+  } = useCategorySearch({});
 
   const {
     selectedPOI,
@@ -159,6 +166,20 @@ const Map: React.FC<MapProps> = ({
             onPOIClick={handlePOIClick}
           />
           {/* Add category search UI when enabled */}
+          {selectedCategories.length > 0 && (
+            <Button
+              variant="contained"
+              color="primary"
+              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-white text-dark-900"
+              onClick={searchPlacesInBounds}
+              disabled={isSearching}
+              startIcon={
+                isSearching ? <CircularProgress size={20} /> : <Search />
+              }
+            >
+              {isSearching ? "Searching..." : "Search This Area"}
+            </Button>
+          )}
           {/* {detailed && (
             <>
               <GeneralFilter
@@ -194,6 +215,11 @@ const Map: React.FC<MapProps> = ({
 
           {children}
         </GoogleMap>
+      )}
+      {hasSearched && categoryResults.length === 0 && !isSearching && (
+        <div className="no-results-message">
+          No places found in this area. Try zooming out or changing categories.
+        </div>
       )}
       {!isApiLoaded && (
         <Box
