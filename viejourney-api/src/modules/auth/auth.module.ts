@@ -19,6 +19,7 @@ import { AssetsModule } from '../assets/assets.module';
 @Module({
   imports: [
     ConfigModule,
+    AssetsModule,
     PassportModule.register({ defaultStrategy: 'jwt', session: true }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',

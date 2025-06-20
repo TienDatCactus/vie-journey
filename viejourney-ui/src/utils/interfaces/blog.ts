@@ -25,6 +25,7 @@ export interface IBlogPost {
   flags: number;
   createdAt: string; 
   updatedAt: string; 
+  avatar: string;
 }
 
 
