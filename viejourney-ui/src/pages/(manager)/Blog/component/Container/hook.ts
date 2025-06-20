@@ -16,9 +16,7 @@ function useBlog() {
         setBlogs(res);
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      console.log(error);
     }
   };
 
@@ -30,13 +28,11 @@ function useBlog() {
         getBlogs();
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      console.log(error);
     }
   };
 
-  const handeleDeleteBlog = async (id: string) => {
+  const handleDeleteBlog = async (id: string) => {
     try {
       const res = await deleteBlog(id);
       if (res) {
@@ -46,16 +42,14 @@ function useBlog() {
         getBlogs();
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      console.log(error);
     }
   };
 
   useEffect(() => {
     getBlogs();
   }, []);
-  return { blogs, handleCreateBlog, handeleDeleteBlog };
+  return { blogs, handleCreateBlog, handleDeleteBlog };
 }
 
 export default useBlog;

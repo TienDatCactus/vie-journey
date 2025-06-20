@@ -24,9 +24,7 @@ function useHook() {
       const res = await getAssetByType(param);
       if (res) setListImg(res);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      console.log(error);
     }
   };
 
@@ -47,9 +45,7 @@ function useHook() {
       });
       if (contentRes) setContentLength(contentRes.length);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      console.log(error);
     }
   };
 
@@ -73,9 +69,7 @@ function useHook() {
         });
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      console.log(error);
     }
   };
 
@@ -100,9 +94,7 @@ function useHook() {
         });
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      console.log(error);
     }
   };
 

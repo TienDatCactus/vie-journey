@@ -496,10 +496,6 @@ export class AuthService {
           phone: '',
           address: '',
         });
-
-        if (createdUser) {
-          await this.assetService.uploadImage(avatar, {});
-        }
       }
 
       const accessToken = this.createAccessToken(user._id, user.email);

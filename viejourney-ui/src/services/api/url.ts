@@ -16,8 +16,8 @@ export const AUTH = {
 export const USER = {
   GET_PROFILE: "/account/profile",
   GET_USER_INFO: "/user",
-  UPDATE: "/user/edit-profile"
-
+  UPDATE: "/user/edit-profile",
+  EDIT_AVATAR: "/user/edit-avatar",
 };
 
 export const ACCOUNTS = {
@@ -41,10 +41,10 @@ export const TRIP = {
 };
 
 export const ASSET = {
-  UPLOAD: "/assets/image"
-}
+  UPLOAD: "/assets/image",
+};
 
 export const BLOG = {
   LIST_BLOGS: "/blogs/manager",
-  DELETE_BLOGS: "/blogs"
-}
+  DELETE_BLOGS: "/blogs",
+};

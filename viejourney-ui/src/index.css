@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wght@0,200..900;1,200..900&display=swap");
 @import "tailwindcss" important;
-/* @import "../@/styles/_variables.scss";
-@import "../@/styles/_keyframe-animations.scss"; */
+@import "../@/styles/_variables.scss";
+@import "../@/styles/_keyframe-animations.scss";
 
 @theme {
   /* Primary colors - main brand colors */
@@ -210,7 +210,4 @@ input:-webkit-autofill:active {
 
 button {
   text-transform: none !important;
-}
-* {
-  scroll-behavior: smooth;
 }

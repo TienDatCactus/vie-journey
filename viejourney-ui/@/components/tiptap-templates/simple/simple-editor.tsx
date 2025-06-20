@@ -187,7 +187,6 @@ export function SimpleEditor() {
     "main" | "highlighter" | "link"
   >("main");
   const toolbarRef = React.useRef<HTMLDivElement>(null);
-
   const editor = useEditor({
     immediatelyRender: false,
     editorProps: {
@@ -227,6 +226,9 @@ export function SimpleEditor() {
     content: content,
   });
 
+  console.log("HTML:", editor?.getHTML());
+  console.log("JSON:", editor?.getJSON());
+  console.log("Text:", editor?.getText());
   const bodyRect = useCursorVisibility({
     editor,
     overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,

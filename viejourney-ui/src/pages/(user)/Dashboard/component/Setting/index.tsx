@@ -93,7 +93,7 @@ export default function ProfileSettings({ userInfo }: { userInfo: UserInfo }) {
         variant: "success",
       });
     } catch (error) {
-      enqueueSnackbar(error instanceof Error ? error.message : String(error));
+      console.log(error);
     }
   };
 
