@@ -8,6 +8,7 @@ import { AccountModule } from '../account/account.module';
 import { JwtModule } from '@nestjs/jwt';
 import { TripSchema } from 'src/infrastructure/database/trip.schema';
 import { Trip } from 'src/common/entities/trip.entity';
+import { PlanStateService } from './plan-state/plan-state.service';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { Trip } from 'src/common/entities/trip.entity';
     forwardRef(() => AuthModule),
   ],
   controllers: [TripController],
-  providers: [TripService, TripGateway],
+  providers: [TripService, TripGateway, PlanStateService],
   exports: [TripService],
 })
 export class TripModule {}

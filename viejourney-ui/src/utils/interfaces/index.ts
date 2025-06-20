@@ -1,5 +1,5 @@
 export interface Account {
-  userId: string;
+  _id: string;
   email: string;
   role: "USER" | "ADMIN" | "MANAGER";
   status: "ACTIVE" | "INACTIVE" | "BANNED";
