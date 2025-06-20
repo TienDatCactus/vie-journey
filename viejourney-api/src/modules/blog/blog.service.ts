@@ -40,12 +40,8 @@ export class BlogService {
       return {
         _id: blog._id,
         title: blog.title,
-<<<<<<< HEAD
         createdBy: blog.createdBy,
         avatarUser: blog.createdBy.avatar?.url || null,
-=======
-        createdBy: blog.createdBy?.fullName,
->>>>>>> origin/dev_dat
         summary: blog.summary,
         destination: blog.tripId?.destination || null,
         viewCount: blog.metrics?.viewCount || 0,

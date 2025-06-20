@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -16,7 +17,7 @@ import { UserService } from './user.service';
 import { ObjectId } from 'mongoose';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -34,19 +35,22 @@ export class UserController {
   }
   @Post('edit-avatar')
   @UseInterceptors(
-    FileInterceptor('file', {
+    FileInterceptor('avatar', {
       limits: {
         fileSize: 5 * 1024 * 1024, // 5MB
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|avif)$/)) {
+          return cb(new BadRequestException('Chỉ chấp nhận file ảnh!'), false);
+        }
+        cb(null, true);
       },
     }),
   )
   async updateUserAvatar(
     @UploadedFile() file: Express.Multer.File,
-    @Body()
-    updateUserAvatarDto: {
-      id: string;
-    },
+    @Body('id') id: string,
   ) {
-    return this.userService.updateUserAvatar(updateUserAvatarDto.id, file);
+    return this.userService.updateUserAvatar(id, file);
   }
 }
