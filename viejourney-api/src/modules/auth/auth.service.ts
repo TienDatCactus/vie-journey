@@ -12,20 +12,25 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { AccountService } from '../account/account.service';
 import { Account } from 'src/common/entities/account.entity';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { Status } from 'src/common/enums/status.enum';
+import { AssetsService } from '../assets/assets.service';
+import { Asset } from 'src/common/entities/asset.entity';
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly accountService: AccountService,
+    private readonly assetsService: AssetsService,
 
     private readonly jwtService: JwtService,
     @InjectModel(Account.name) private readonly accountModel: Model<Account>,
     @InjectModel(UserInfos.name) private readonly userModel: Model<UserInfos>,
+    @InjectModel(Asset.name) private readonly assetModel: Model<Asset>,
     private readonly mailService: MailerService,
   ) {}
   async resendVerificationEmail(email: string, res: Response) {
@@ -459,15 +464,39 @@ export class AuthService {
           password: '',
           status: 'ACTIVE',
         });
-
-        const avatar =
+        const avatarUrl =
           picture || (Array.isArray(photos) ? photos[0]?.value : '') || '';
+        let assetId;
+        if (avatarUrl) {
+          const uploadResult = await this.assetsService.uploadImageFromUrl(
+            avatarUrl,
+            {
+              public_id: `users/${user._id}/AVATAR/google-avatar`,
+              folder: 'vie-journey/avatars',
+            },
+          );
 
+          const assetData = {
+            userId: new Types.ObjectId(user._id),
+            type: 'AVATAR',
+            url: uploadResult?.secure_url,
+            publicId: uploadResult?.public_id,
+            location: uploadResult.public_id.split('/')[0],
+            format: uploadResult.format.toLocaleUpperCase(),
+            file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
+            dimensions: `${uploadResult.width} x ${uploadResult.height}`,
+          };
+
+          const asset = await this.assetModel.create(assetData);
+          assetId = asset._id;
+        }
+
+        // Tạo hồ sơ user mới
         await this.userModel.create({
           userId: user._id,
           fullName: displayName || '',
           dob: '',
-          avatar,
+          avatar: assetId, // nếu có thì gán
           phone: '',
           address: '',
         });

@@ -261,4 +261,6 @@ export class BlogService {
     await blog.save();
     return { message: 'Flag added successfully', flags: blog.flags };
   }
+
+  // update a blog by id
 }
