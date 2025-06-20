@@ -1,5 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wght@0,200..900;1,200..900&display=swap");
 @import "tailwindcss" important;
+@import "../@/styles/_variables.scss";
+@import "../@/styles/_keyframe-animations.scss";
 
 @theme {
   /* Primary colors - main brand colors */
@@ -82,9 +84,6 @@ html.dark {
   color-scheme: dark;
 }
 
-html {
-  scroll-behavior: smooth;
-}
 * {
   font-family: "Mona Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -98,11 +97,14 @@ input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px white inset !important;
 }
-
+/* 
 *::-webkit-scrollbar {
-  display: none;
-  /* Safari and Chrome */
-}
+  border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  -ms-border-radius: 2px;
+  -o-border-radius: 2px;
+} */
 
 .swiper {
   width: 240px;

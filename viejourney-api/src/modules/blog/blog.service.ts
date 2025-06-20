@@ -7,9 +7,7 @@ import { Account } from 'src/common/entities/account.entity';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { CreateBlogDto } from 'src/common/dtos/create-blog.dto';
 import { AssetsService } from '../assets/assets.service';
-import { create } from 'domain';
 import { v4 as uuidv4 } from 'uuid';
-
 @Injectable()
 export class BlogService {
   constructor(
@@ -23,16 +21,18 @@ export class BlogService {
   async findAll() {
     const blogs = await this.blogModel
       .find()
-      .populate('createdBy updatedBy tripId')
+      .populate('createdBy tripId')
       .populate({
         path: 'createdBy',
+        select: 'fullName',
         populate: {
-          path: 'avatar', // avatar là ref tới Account
+          path: 'avatar',
           model: 'Asset',
-          select: 'url', // chỉ lấy trường url nếu muốn
+          select: 'url',
         },
       })
       .exec();
+    console.log(blogs);
     if (!blogs || blogs.length === 0) {
       throw new NotFoundException('No blogs found');
     }
@@ -40,8 +40,12 @@ export class BlogService {
       return {
         _id: blog._id,
         title: blog.title,
+<<<<<<< HEAD
         createdBy: blog.createdBy,
         avatarUser: blog.createdBy.avatar?.url || null,
+=======
+        createdBy: blog.createdBy?.fullName,
+>>>>>>> origin/dev_dat
         summary: blog.summary,
         destination: blog.tripId?.destination || null,
         viewCount: blog.metrics?.viewCount || 0,
@@ -222,7 +226,7 @@ export class BlogService {
       if (!user) throw new NotFoundException('User not found');
       let uploadResult: import('cloudinary').UploadApiResponse | null = null;
       uploadResult = await this.assetsService.uploadImage(file, {
-        public_id: `users/${userId}/IMAGE_BLOG/${uuidv4()}`,
+        public_id: `users/${userId}/IMAGE_BLOG/${file.filename || uuidv4()}`,
       });
       const newBlog = new this.blogModel({
         ...createBlogDto,

@@ -9,6 +9,20 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { TripService } from './trip.service';
+import { Handshake } from 'socket.io/dist/socket-types';
+import {
+  AddMessage,
+  DeleteMessage,
+  PlanSection,
+  PlanStateService,
+  UpdateMessage,
+} from './plan-state/plan-state.service';
+
+interface WSUser {
+  id: string;
+  email: string;
+  fullName: string;
+}
 
 @WebSocketGateway({
   cors: {
@@ -20,21 +34,28 @@ import { TripService } from './trip.service';
 export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
-  constructor(private readonly tripService: TripService) {}
+  constructor(
+    private readonly tripService: TripService,
+    private readonly planService: PlanStateService,
+  ) {}
 
   async handleConnection(client: Socket) {
-    const { tripId, email } = client.handshake.auth;
-    if (!tripId || !email) {
+    const tripId = client.handshake.auth.tripId as string;
+    const user = client.handshake.auth.user as WSUser;
+    if (!tripId || !user) {
       client.disconnect();
       return;
     }
-    const trip = await this.tripService.findOne(tripId as string);
-    if (!trip || !trip.tripmates.includes(email as string)) {
+    const trip = await this.tripService.findOne(tripId);
+    if (!trip || !trip.tripmates.includes(user?.email)) {
       client.disconnect();
       return;
     }
     await client.join(trip._id);
     console.log(`Client connected: ${client.id}`);
+    console.log(
+      `Client: ${JSON.stringify(client.handshake.auth?.user, null, 2)}`,
+    );
   }
 
   handleDisconnect(client: Socket) {
@@ -44,6 +65,83 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('ping')
   handlePing(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
     console.log(`Received ping from client: ${client.id}`, data);
+    console.log(
+      `Auth: ${JSON.stringify(client.handshake.auth?.user, null, 2)}`,
+    );
     this.server.emit('pong', { message: 'pong', received: data });
+  }
+
+  // Payload: Doesn't work for non-array section
+  // {
+  //    section: "notes",
+  //    item: {
+  //        text: "abcxyz"
+  //    }
+  // }
+  @SubscribeMessage('planItemAdded')
+  handlePlanItemAdded<T extends PlanSection>(
+    @MessageBody() data: AddMessage<T>,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const tripId = client.handshake.auth?.tripId as string;
+    const user = client.handshake.auth?.user as WSUser;
+    const itemId = this.planService.addItem(tripId, data.section, data.item);
+    this.server.emit('onPlanItemAdded', {
+      section: data.section,
+      item: { ...data.item, id: itemId },
+      addedBy: user,
+    });
+  }
+
+  // Payload:
+  // {
+  //    section: "notes", // Type array
+  //    item: {
+  //        id: uuid1,
+  //        text: "updated abcxyz"
+  //    }
+  // }
+  //
+  // or
+  //
+  // {
+  //    section: "expenses", // Type non-array
+  //    item: {
+  //        placeholder1: "update part of the expenses object"
+  //    }
+  // }
+  @SubscribeMessage('planItemUpdated')
+  handlePlanItemUpdated<T extends PlanSection>(
+    @MessageBody() data: UpdateMessage<T>,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const tripId = client.handshake.auth?.tripId as string;
+    const user = client.handshake.auth?.user as WSUser;
+    this.planService.updateItem(tripId, data.section, data.item);
+    this.server.to(tripId).emit('onPlanItemUpdated', {
+      section: data.section,
+      item: data.item,
+      updatedBy: user,
+    });
+  }
+
+  // Payload: Doesn't work for non-array section
+  // {
+  //    section: "notes",
+  //    itemId: uuid1
+  // }
+  @SubscribeMessage('planItemDeleted')
+  handlePlanItemDeleted<T extends PlanSection>(
+    @MessageBody() data: DeleteMessage<T>,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const tripId = client.handshake.auth?.tripId as string;
+    const user = client.handshake.auth?.user as WSUser;
+    this.planService.deleteItem(tripId, data.section, data.itemId);
+    this.server.to(tripId).emit('onPlanItemDeleted', {
+      section: data.section,
+      itemId: data.itemId,
+      deletedBy: user,
+    });
   }
 }

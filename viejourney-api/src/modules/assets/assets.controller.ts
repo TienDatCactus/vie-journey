@@ -37,16 +37,12 @@ export class AssetsController {
       const result = await this.assetsService.uploadImage(file);
 
       return {
-        statusCode: HttpStatus.OK,
-        message: 'Upload ảnh thành công!',
-        data: {
-          url: result.secure_url,
-          publicId: result.public_id,
-          width: result.width,
-          height: result.height,
-          format: result.format,
-          size: result.bytes,
-        },
+        url: result.secure_url,
+        publicId: result.public_id,
+        width: result.width,
+        height: result.height,
+        format: result.format,
+        size: result.bytes,
       };
     } catch (error) {
       throw new BadRequestException('Error uploading asset ' + error.message);
@@ -79,18 +75,14 @@ export class AssetsController {
 
       const results = await Promise.all(uploadPromises);
 
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Upload nhiều ảnh thành công!',
-        data: results.map((result) => ({
-          url: result.secure_url,
-          publicId: result.public_id,
-          width: result.width,
-          height: result.height,
-          format: result.format,
-          size: result.bytes,
-        })),
-      };
+      return results.map((result) => ({
+        url: result.secure_url,
+        publicId: result.public_id,
+        width: result.width,
+        height: result.height,
+        format: result.format,
+        size: result.bytes,
+      }));
     } catch (error) {
       throw new BadRequestException('Lỗi khi upload ảnh: ' + error.message);
     }

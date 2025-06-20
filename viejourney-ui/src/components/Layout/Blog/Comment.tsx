@@ -1,6 +1,6 @@
-import React from "react";
-import TextField from "@mui/material/TextField";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
+import Button from "@mui/material/Button/Button";
+import TextField from "@mui/material/TextField";
 
 const Comment = () => {
   return (
@@ -34,13 +34,12 @@ const Comment = () => {
               },
             }}
           />
-          <button className="absolute font-bold cursor-pointer right-2 top-1/2 transform -translate-y-1/2  text-blue-600 px-4 py-1.5 rounded-full text-sm font-medium hover:text-blue-900 transition-colors">
+          <Button className="absolute font-bold cursor-pointer right-2 top-1/2 transform -translate-y-1/2  text-blue-600 px-4 py-1.5 rounded-full text-sm hover:text-blue-900 transition-colors">
             Post
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Comment Thread */}
       <div className="comments-block mt-15 flex gap-5">
         <img
           src="https://cdn.pixabay.com/photo/2016/09/28/02/14/user-1699635_1280.png"

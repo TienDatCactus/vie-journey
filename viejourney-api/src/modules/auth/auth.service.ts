@@ -32,6 +32,7 @@ export class AuthService {
     @InjectModel(UserInfos.name) private readonly userModel: Model<UserInfos>,
     @InjectModel(Asset.name) private readonly assetModel: Model<Asset>,
     private readonly mailService: MailerService,
+    private readonly assetService: AssetsService,
   ) {}
   async resendVerificationEmail(email: string, res: Response) {
     const user = await this.accountModel.findOne({ email });
@@ -67,9 +68,7 @@ export class AuthService {
       user.status = Status.active;
       await user.save();
 
-      return {
-        message: 'Email verified successfully',
-      };
+      return HttpStatus.OK;
     } catch (error) {
       this.logger.error('Token verification error:', error);
 
@@ -127,7 +126,7 @@ export class AuthService {
       }
       await user.updateOne({ password: await bcrypt.hash(password, 10) });
       this.logger.log(`Password updated for user: ${user.email}`);
-      return { message: 'Password updated!' };
+      return HttpStatus.OK;
     } catch (error) {
       throw new HttpException(
         'Failed to send reset password email',
@@ -166,10 +165,7 @@ export class AuthService {
     await user.save();
 
     this.sendRegistrationEmail(user);
-    return {
-      message:
-        'Registration successful, please check your email to verify account',
-    };
+    return HttpStatus.CREATED;
   }
   async login(res: Response, email: string, password: string) {
     const user = await this.accountModel.findOne({ email });
@@ -226,12 +222,12 @@ export class AuthService {
       maxAge: 0, // Expires immediately
     });
 
-    return { message: 'Logged out successfully' };
+    return HttpStatus.OK;
   }
   async refresh(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token not found');
+      throw new NotFoundException('Refresh token not found');
     }
 
     try {
@@ -539,24 +535,24 @@ export class AuthService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      if (user.status !== 'ACTIVE') {
-        this.logger.warn(`User with ID ${userId} is not active`);
-        throw new UnauthorizedException('User is not active');
+      console.log(user);
+      switch (user.status) {
+        case Status.active:
+          this.logger.log(`User with ID ${userId} is active`);
+          break;
+        case Status.inactive:
+          this.logger.warn(`User with ID ${userId} is inactive`);
+          break;
+        case Status.banned:
+          this.logger.warn(`User with ID ${userId} is banned`);
+          break;
       }
       return {
         userId: user._id,
+        status: user.status,
       };
     } catch (error) {
       this.logger.error('Access token validation error:', error);
-      if (error.name === 'TokenExpiredError') {
-        throw new UnauthorizedException('Access token has expired');
-      } else if (error.name === 'JsonWebTokenError') {
-        throw new UnauthorizedException('Invalid access token');
-      }
-      throw new HttpException(
-        'Failed to validate access token',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
     }
   }
 }

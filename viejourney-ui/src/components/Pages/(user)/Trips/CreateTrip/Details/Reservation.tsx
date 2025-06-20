@@ -16,6 +16,7 @@ import {
   ReservationTransits,
 } from "./elements";
 const Reservation: React.FC = () => {
+
   const reservationItems = [
     { icon: <TransferWithinAStation />, label: "Transit" },
     { icon: <Hotel />, label: "Lodging" },
@@ -67,7 +68,7 @@ const Reservation: React.FC = () => {
           className="font-semibold"
         />
       </Divider>
-      <ReservationTransits state={{ handleClick, handleClose, anchorEl }} />
+      <ReservationTransits />
       <Divider textAlign="left">
         <Chip
           icon={<Explore />}

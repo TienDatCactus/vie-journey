@@ -49,7 +49,6 @@ const LoginForm: React.FC = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      enqueueSnackbar("An error occurred during login", { variant: "error" });
     } finally {
       setLoading(false);
     }

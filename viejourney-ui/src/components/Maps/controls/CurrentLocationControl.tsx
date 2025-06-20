@@ -8,7 +8,6 @@ interface CurrentLocationControlProps {
   onLocationFound?: (position: GeolocationPosition) => void;
   onLocationError?: (error: GeolocationPositionError) => void;
 }
-
 const CurrentLocationControl: React.FC<CurrentLocationControlProps> = ({
   zoomLevel = 15,
   onLocationFound,
@@ -35,7 +34,7 @@ const CurrentLocationControl: React.FC<CurrentLocationControlProps> = ({
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const { latitude, longitude } = position.coords; // Center the map to the current position
+        const { latitude, longitude } = position.coords;
         mapInstance.panTo({ lat: latitude, lng: longitude });
         setCurrentLocation(new google.maps.LatLng(latitude, longitude));
         // Safely check and set zoom level

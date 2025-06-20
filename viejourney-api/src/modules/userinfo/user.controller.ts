@@ -1,11 +1,23 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UpdateUserInfoDto } from 'src/common/dtos/update-userinfo.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { UserService } from './user.service';
+import { ObjectId } from 'mongoose';
+import { FileInterceptor } from '@nestjs/platform-express';
 
+@UseGuards(JwtAuthGuard)
 @Controller('user')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -19,5 +31,22 @@ export class UserController {
   @Get(':id')
   async getUserInfo(@Param('id') id: string) {
     return this.userService.getUserByID(id);
+  }
+  @Post('edit-avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
+  async updateUserAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @Body()
+    updateUserAvatarDto: {
+      id: string;
+    },
+  ) {
+    return this.userService.updateUserAvatar(updateUserAvatarDto.id, file);
   }
 }

@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -8,6 +13,7 @@ import { Request } from 'express';
 import { Trip } from 'src/common/entities/trip.entity';
 import { CreateTripDto } from 'src/common/dtos/create-trip.dto';
 import { UpdateTripDto } from 'src/common/dtos/update-trip.dto';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class TripService {
@@ -101,13 +107,15 @@ export class TripService {
   }
 
   findOne(id: string) {
-    try {
-      return this.tripModel.findOne({
-        _id: id,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    const trip = this.tripModel.findOne({
+      _id: id,
+    });
+    if (!trip)
+      throw new HttpException(
+        `No trip found with id ${id}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    return trip;
   }
 
   update(id: number, updateTripDto: UpdateTripDto) {

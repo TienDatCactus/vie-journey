@@ -1,10 +1,12 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, ObjectId } from 'mongoose';
 
 import { AssetsService } from '../assets/assets.service';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
@@ -26,18 +28,50 @@ export class UserService {
     return this.userInfosModel.find().populate('userId').exec();
   }
 
-  async getUserByID(id: string): Promise<UserInfos> {
+  async getUserByID(id: string) {
     const user = await this.userInfosModel
       .findOne({
         userId: new mongoose.Types.ObjectId(id),
       })
+      .populate({
+        path: 'avatar',
+        model: 'Asset',
+        select: 'url -_id',
+      })
+      .lean()
       .exec();
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-    return user;
-  }
 
+    if (!user) {
+      throw new HttpException(`User with ID ${id} not found`, 404);
+    }
+    return {
+      ...user,
+      avatar: user.avatar ? user.avatar?.url?.toString() : null,
+    };
+  }
+  async updateUserAvatar(
+    id: string,
+    file: Express.Multer.File,
+  ): Promise<UserInfos> {
+    const userInfo = await this.userInfosModel.findById(id).exec();
+    if (!userInfo) {
+      throw new NotFoundException(`User info with ID ${id} not found`);
+    }
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    const asset = await this.assetsService.uploadImage(file, {
+      public_id: `users/${userInfo._id}/AVATAR/google-avatar`,
+      folder: 'vie-journey/avatars',
+    });
+    if (!asset) {
+      throw new BadRequestException('Error uploading asset');
+    }
+
+    userInfo.avatar = asset?._id;
+    await userInfo.save();
+    return userInfo;
+  }
   async updateUserInfo(id: string, updateUserInfoDto: any): Promise<UserInfos> {
     const updatedUser = await this.userInfosModel
       .findByIdAndUpdate(id, updateUserInfoDto, { new: true })
@@ -50,7 +84,7 @@ export class UserService {
     return updatedUser;
   }
 
-  async deleteUserInfo(id: string): Promise<{ message: string }> {
+  async deleteUserInfo(id: string) {
     const userInfo = await this.userInfosModel.findById(id).exec();
     if (!userInfo) {
       throw new NotFoundException(`User info with ID ${id} not found`);
@@ -60,7 +94,7 @@ export class UserService {
 
     await this.userInfosModel.findByIdAndDelete(id).exec();
 
-    return { message: 'User and related account deleted successfully' };
+    return HttpStatus.OK;
   }
 
   async getPaginatedUsers(
