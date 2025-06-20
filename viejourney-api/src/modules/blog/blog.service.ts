@@ -7,6 +7,8 @@ import { Account } from 'src/common/entities/account.entity';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { CreateBlogDto } from 'src/common/dtos/create-blog.dto';
 import { AssetsService } from '../assets/assets.service';
+import { create } from 'domain';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class BlogService {
@@ -21,7 +23,15 @@ export class BlogService {
   async findAll() {
     const blogs = await this.blogModel
       .find()
-      .populate('createdBy updatedBy')
+      .populate('createdBy updatedBy tripId')
+      .populate({
+        path: 'createdBy',
+        populate: {
+          path: 'avatar', // avatar là ref tới Account
+          model: 'Asset',
+          select: 'url', // chỉ lấy trường url nếu muốn
+        },
+      })
       .exec();
     if (!blogs || blogs.length === 0) {
       throw new NotFoundException('No blogs found');
@@ -32,7 +42,7 @@ export class BlogService {
         title: blog.title,
         createdBy: blog.createdBy?.fullName,
         summary: blog.summary,
-        destination: blog.tripId?.description,
+        destination: blog.tripId?.destination || null,
         viewCount: blog.metrics?.viewCount || 0,
         likeCount: blog.metrics?.likeCount || 0,
         commentCount: blog.metrics?.commentCount || 0,
@@ -46,10 +56,7 @@ export class BlogService {
   }
 
   async updateMetrics(blogId: string, reqUserId?: string) {
-    const blog = await this.blogModel
-      .findById(blogId)
-      .populate('createdBy')
-      .exec();
+    const blog = await this.blogModel.findById(blogId).exec();
 
     if (!blog) throw new NotFoundException('Blog not found');
 
@@ -59,11 +66,7 @@ export class BlogService {
 
     // Xử lý viewCount: chỉ tăng nếu người xem không phải là người tạo blog
     let viewCount = blog.metrics?.viewCount || 0;
-    if (
-      reqUserId &&
-      blog.createdBy &&
-      blog.createdBy.userId?.toString() !== reqUserId
-    ) {
+    if (reqUserId && blog.createdBy.toString() !== reqUserId) {
       viewCount++;
     }
 
@@ -97,6 +100,7 @@ export class BlogService {
       tripId: blog.tripId,
       destination: blog.tripId?.description,
       flags: blog.flags || [],
+      createdAt: blog.createdAt,
     };
   }
 
@@ -106,6 +110,7 @@ export class BlogService {
     if (!blog) throw new NotFoundException('Blog not found');
 
     blog.status = status;
+    blog.updatedAt = new Date(); // Cập nhật thời gian sửa đổi
     await blog.save();
 
     return {
@@ -210,14 +215,18 @@ export class BlogService {
     userId: string,
   ) {
     try {
+      const user = await this.userInfosModel
+        .find({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
       let uploadResult: import('cloudinary').UploadApiResponse | null = null;
       uploadResult = await this.assetsService.uploadImage(file, {
-        public_id: `users/${userId}/IMAGE_BLOG/${file.filename}`,
+        public_id: `users/${userId}/IMAGE_BLOG/${uuidv4()}`,
       });
       const newBlog = new this.blogModel({
         ...createBlogDto,
-        createdBy: new Types.ObjectId(userId),
-        updatedBy: new Types.ObjectId(userId),
+        createdBy: new Types.ObjectId(user[0]._id), // Lấy userId từ userInfos
+        updatedBy: new Types.ObjectId(user[0]._id),
         coverImage: uploadResult?.secure_url || '',
         status: 'APPROVED',
         metrics: {
