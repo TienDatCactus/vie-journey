@@ -13,6 +13,8 @@ import { AccountSchema } from 'src/infrastructure/database/account.schema';
 import { UserInfosSchema } from 'src/infrastructure/database/userinfo.schema';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { GoogleStrategy } from 'src/common/strategies/google.strategy';
+import { Asset } from 'src/common/entities/asset.entity';
+import { AssetSchema } from 'src/infrastructure/database/asset.schema';
 import { AssetsModule } from '../assets/assets.module';
 @Module({
   imports: [
@@ -26,9 +28,11 @@ import { AssetsModule } from '../assets/assets.module';
     MongooseModule.forFeature([
       { name: Account.name, schema: AccountSchema },
       { name: UserInfos.name, schema: UserInfosSchema },
+      { name: Asset.name, schema: AssetSchema }, // Assuming Asset is also stored in UserInfos
     ]),
     UserModule,
     AccountModule,
+    AssetsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, GoogleStrategy, Logger],

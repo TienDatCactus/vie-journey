@@ -12,21 +12,22 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { AccountService } from '../account/account.service';
 import { Account } from 'src/common/entities/account.entity';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { Status } from 'src/common/enums/status.enum';
-import { AssetsService } from '../assets/assets.service';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly accountService: AccountService,
+    private readonly assetsService: AssetsService,
 
     private readonly jwtService: JwtService,
     @InjectModel(Account.name) private readonly accountModel: Model<Account>,
     @InjectModel(UserInfos.name) private readonly userModel: Model<UserInfos>,
+    @InjectModel(Asset.name) private readonly assetModel: Model<Asset>,
     private readonly mailService: MailerService,
     private readonly assetService: AssetsService,
   ) {}
@@ -456,14 +457,14 @@ export class AuthService {
           password: '',
           status: 'ACTIVE',
         });
-
-        const avatar =
+        const avatarUrl =
           picture || (Array.isArray(photos) ? photos[0]?.value : '') || '';
 
-        const createdUser = await this.userModel.create({
+        await this.userModel.create({
           userId: user._id,
           fullName: displayName || '',
           dob: '',
+          avatar,
           phone: '',
           address: '',
         });
