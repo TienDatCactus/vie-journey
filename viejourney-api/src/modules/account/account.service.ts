@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { AssetsService } from '../assets/assets.service';
@@ -36,7 +36,7 @@ export class AccountService {
   async findOne(id: string) {
     const account = await this.accountModel.findById(id);
     if (!account) {
-      throw new NotFoundException(`Account with id ${id} not found`);
+      throw new HttpException(`Account with id ${id} not found`, 404);
     }
     return {
       _id: account._id,

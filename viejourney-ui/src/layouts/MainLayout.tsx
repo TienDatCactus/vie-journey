@@ -1,28 +1,14 @@
-import React, { useEffect } from "react";
 import { VerticalAlignTop } from "@mui/icons-material";
 import { Divider, Fab } from "@mui/material";
 import { animate } from "motion/react";
+import React from "react";
 import { MainAuthHeader, MainUnAuthHeader } from "../components/Layout";
 import Footer from "../components/Layout/Main/Footer";
 import { useAuthStore } from "../services/stores/useAuthStore";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const { user, info, loadUserFromToken, loadUserInfo } = useAuthStore();
-  const isAuthenticated = useAuthStore(
-    (state) => state.credential?.userId != null
-  );
+  const { user } = useAuthStore();
 
-  useEffect(() => {
-    if (isAuthenticated && !user) {
-      loadUserFromToken();
-    }
-  }, [isAuthenticated, user, loadUserFromToken]);
-
-  useEffect(() => {
-    if (isAuthenticated && user && !info) {
-      loadUserInfo();
-    }
-  }, [isAuthenticated, info, loadUserInfo]);
   const smoothScrollTo = (targetY: number) => {
     const currentY = window.scrollY;
     animate(currentY, targetY, {

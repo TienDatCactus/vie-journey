@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -27,13 +29,14 @@ export class UserService {
   }
 
   async getUserByID(id: string): Promise<UserInfos> {
+    console.log(id);
     const user = await this.userInfosModel
       .findOne({
         userId: new mongoose.Types.ObjectId(id),
       })
       .exec();
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new HttpException(`User with ID ${id} not found`, 404);
     }
     return user;
   }
@@ -50,7 +53,7 @@ export class UserService {
     return updatedUser;
   }
 
-  async deleteUserInfo(id: string): Promise<{ message: string }> {
+  async deleteUserInfo(id: string) {
     const userInfo = await this.userInfosModel.findById(id).exec();
     if (!userInfo) {
       throw new NotFoundException(`User info with ID ${id} not found`);
@@ -60,7 +63,7 @@ export class UserService {
 
     await this.userInfosModel.findByIdAndDelete(id).exec();
 
-    return { message: 'User and related account deleted successfully' };
+    return HttpStatus.OK;
   }
 
   async getPaginatedUsers(

@@ -63,6 +63,6 @@ export class ManagerController {
     const hotels: any[] = XLSX.utils.sheet_to_json(sheet);
 
     await this.hotelService.addListOfHotels(hotels);
-    return { message: 'Import successfully', count: hotels.length };
+    return { count: hotels.length };
   }
 }

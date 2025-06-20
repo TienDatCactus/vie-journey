@@ -40,6 +40,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (requireAuth && user && !isAuthenticated) {
+    console.log("ProtectedRoute: User is authenticated but not logged in");
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 

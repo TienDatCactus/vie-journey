@@ -7,6 +7,7 @@ import {
 import { Avatar, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../../services/stores/useAuthStore";
 
  interface NavProps {
     collapsed: boolean;
@@ -28,6 +29,7 @@ export const Nav: React.FC<NavProps> = ({
   setCollapsed,
   menuItems
 }) => {
+  const { handleLogout } = useAuthStore();
   const navigate = useNavigate();
   const user = {
     name: "John Doe",
@@ -36,16 +38,8 @@ export const Nav: React.FC<NavProps> = ({
     role: "Admin",
   };
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    console.log("Logging out...");
-    // navigate("/login")
-  };
-
   const handleProfile = () => {
-    // Add your profile navigation logic here
-    console.log("Opening profile...");
-    // navigate("/profile")
+    navigate("/profile");
   };
   return (
     <div
@@ -67,8 +61,8 @@ export const Nav: React.FC<NavProps> = ({
         )}
         <IconButton
           onClick={() => setCollapsed(!collapsed)}
-          className="text-gray-600 hover:bg-gray-100"
-          size="small"
+          className="text-gray-600 hover:bg-gray-100 mx-auto"
+          size="medium"
         >
           {collapsed ? <MenuIcon /> : <ChevronLeft />}
         </IconButton>

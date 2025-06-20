@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { TripService } from './trip.service';
+import { Handshake } from 'socket.io/dist/socket-types';
 import {
   AddMessage,
   DeleteMessage,

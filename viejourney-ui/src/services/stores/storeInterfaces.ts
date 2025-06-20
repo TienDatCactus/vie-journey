@@ -1,8 +1,7 @@
 import { UserInfo } from "../../utils/interfaces";
-import { create } from "zustand";
 
 export interface NoteData {
-  id: string;
+  _id: string;
   content: string;
   by: UserInfo | null;
   isEditing?: boolean;
@@ -11,9 +10,10 @@ export interface NoteData {
 }
 
 export interface TransitData {
-  id: string;
+  _id: string;
   note: string;
   cost: number;
+  currency: string;
   mode:
     | "Train"
     | "Flight"
@@ -49,12 +49,37 @@ export interface PlaceData extends google.maps.places.Place {
 }
 
 export interface PlaceNote {
-  id: string;
+  _id: string;
   placeId: string;
   note: string;
   visited: boolean;
   addedBy: UserInfo;
   isEditing?: boolean;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
+}
+
+export interface Intinerary {
+  _id: string;
+  date: string; // ISO date string
+  placeId: string;
+  note: string;
+  time: {
+    startTime: string; // ISO time string
+    endTime: string; // ISO time string
+  };
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
+}
+
+export interface Expense {
+  _id: string;
+  paidAt: string; // place title
+  paidBy: UserInfo;
+  paidOn: string; // ISO date string
+  amount: number;
+  type: string;
+  currency: string;
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
 }

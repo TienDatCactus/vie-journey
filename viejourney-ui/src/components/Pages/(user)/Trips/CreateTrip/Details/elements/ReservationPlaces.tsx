@@ -45,9 +45,9 @@ import { useForm } from "react-hook-form";
 import { PlaceNote } from "../../../../../../../services/stores/storeInterfaces";
 import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
 import { useAutocompleteSuggestions } from "../../../../../../../utils/hooks/use-autocomplete-suggestion";
-import { User } from "../../../../../../../utils/interfaces";
 import { useFetchPlaceDetails } from "../../../../../../../utils/hooks/use-fetch-place";
 import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
+import { UserInfo } from "../../../../../../../utils/interfaces";
 function getPlacePhotoUrl(photo: any): string {
   const fallbackImage = "/images/placeholder-main.png";
   if (!photo) return fallbackImage;
@@ -292,8 +292,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   };
 
   const handleBlur = () => {
-    onUpdateNote(placeNote.id, localContent); // sync lên cha khi blur
-    onToggleEdit(placeNote.id); // giữ nguyên
+    onUpdateNote(placeNote._id, localContent); // sync lên cha khi blur
+    onToggleEdit(placeNote._id); // giữ nguyên
   };
 
   return (
@@ -357,7 +357,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    onToggleEdit(placeNote.id);
+                    onToggleEdit(placeNote._id);
                   }}
                 >
                   <Edit fontSize="small" sx={{ mr: 1 }} /> Edit Notes
@@ -365,7 +365,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    onDelete(placeNote.id);
+                    onDelete(placeNote._id);
                   }}
                 >
                   <Delete fontSize="small" sx={{ mr: 1 }} /> Delete
@@ -483,7 +483,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                     control={
                       <Checkbox
                         checked={placeNote.visited}
-                        onChange={() => onToggleVisited(placeNote.id)}
+                        onChange={() => onToggleVisited(placeNote._id)}
                         color="success"
                       />
                     }
@@ -524,7 +524,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                     variant="outlined"
                     color="error"
                     startIcon={<DoDisturb />}
-                    onClick={() => onToggleEdit(placeNote.id)}
+                    onClick={() => onToggleEdit(placeNote._id)}
                   >
                     Cancel
                   </Button>
@@ -532,7 +532,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                     variant="contained"
                     startIcon={<Save />}
                     color="primary"
-                    onClick={() => onToggleEdit(placeNote.id)}
+                    onClick={() => onToggleEdit(placeNote._id)}
                   >
                     Save
                   </Button>
@@ -557,17 +557,17 @@ const ReservationPlaces: React.FC = () => {
     togglePlaceVisited,
   } = useTripDetailStore();
   const { fetchPlaceDetail } = useFetchPlaceDetails();
-  const { user } = useAuthStore();
+  const { info } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const handleAddPlace = (placeId: string) => {
     try {
       setLoading(true);
       const newPlaceNote: PlaceNote = {
-        id: `place-note-${Date.now()}`,
+        _id: `place-note-${Date.now()}`,
         placeId: placeId,
         note: "",
         visited: false,
-        addedBy: user as User,
+        addedBy: info as UserInfo,
         isEditing: true,
       };
 
@@ -615,7 +615,7 @@ const ReservationPlaces: React.FC = () => {
               placeNotes.map((placeNote) => (
                 <PlaceCard
                   isLoading={loading}
-                  key={placeNote.id}
+                  key={placeNote._id}
                   placeNote={placeNote}
                   placeDetail={placeDetails[placeNote.placeId]}
                   onUpdateNote={updatePlaceNote}

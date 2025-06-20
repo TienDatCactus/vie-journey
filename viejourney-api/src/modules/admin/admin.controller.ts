@@ -23,8 +23,8 @@ import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 import { UpdateUserInfoDto } from 'src/common/dtos/update-userinfo.dto';
+@UseGuards(RolesGuard, JwtAuthGuard)
 // @Roles(Role.Admin)
-// @UseGuards(RolesGuard, JwtAuthGuard)
 @Controller('admin')
 export class AdminController {
   constructor(

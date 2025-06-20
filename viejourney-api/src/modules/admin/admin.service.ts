@@ -99,9 +99,8 @@ export class AdminService {
     // 1. Xóa ảnh cũ trên Cloudinary
     await this.assetsService.deleteImage(publicId);
 
-    // 2. Upload ảnh mới
     const uploadResult = await this.assetsService.uploadImage(file, {
-      public_id: `users/${asset.userId}/AVATAR/${file.filename}`,
+      public_id: `users/${asset.userId}/AVATAR/${file.filename || uuidv4()}`,
     });
     if (!uploadResult || !uploadResult.secure_url) {
       throw new BadRequestException('Failed to upload image to Cloudinary');

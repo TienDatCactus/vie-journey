@@ -17,9 +17,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateAccountDto } from 'src/common/dtos/update-account.dto';
 import { CreateAccountDto } from 'src/common/dtos/create-account.dto';
 import { EditProfileDto } from 'src/common/dtos/editProfile.dto';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/role.guard';
+import { Role } from 'src/common/enums/role.enum';
 
-// @Roles(Role.Admin, Role.User)
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.Admin, Role.User)
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}

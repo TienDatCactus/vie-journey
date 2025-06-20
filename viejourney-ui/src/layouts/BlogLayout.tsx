@@ -1,7 +1,7 @@
 import { Grid2 } from "@mui/material";
 import SideHeader from "../components/Layout/Blog/SideHeader";
 
-const BlogLayout = () => {
+const BlogLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <Grid2
       container
@@ -17,7 +17,7 @@ const BlogLayout = () => {
       <Grid2 size={9}>
         <SideHeader />
       </Grid2>
-      <Grid2 size={3}></Grid2>
+      <Grid2 size={3}>{children}</Grid2>
     </Grid2>
   );
 };
