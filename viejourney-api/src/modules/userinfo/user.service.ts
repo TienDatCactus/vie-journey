@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model, ObjectId } from 'mongoose';
+import mongoose, { Model, ObjectId, Types } from 'mongoose';
 
 import { AssetsService } from '../assets/assets.service';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
@@ -15,12 +15,14 @@ import {
   PaginationDto,
   PaginationResponseDto,
 } from 'src/common/dtos/pagination-userlist.dto';
+import { Asset } from 'src/common/entities/asset.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     @InjectModel('Account') private readonly accountModel: Model<Account>,
+    @InjectModel('Asset') private readonly assetModel: Model<Asset>,
     private readonly assetsService: AssetsService,
   ) {}
 
@@ -49,28 +51,55 @@ export class UserService {
       avatar: user.avatar ? user.avatar?.url?.toString() : null,
     };
   }
-  async updateUserAvatar(
-    id: string,
-    file: Express.Multer.File,
-  ): Promise<UserInfos> {
-    const userInfo = await this.userInfosModel.findById(id).exec();
+  async updateUserAvatar(id: string, file: Express.Multer.File) {
+    const userInfo = await this.userInfosModel
+      .findOne({ userId: new Types.ObjectId(id) })
+      .populate('avatar')
+      .exec();
     if (!userInfo) {
       throw new NotFoundException(`User info with ID ${id} not found`);
     }
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    const asset = await this.assetsService.uploadImage(file, {
+    if (userInfo?.avatar?.publicId) {
+      await this.assetsService.deleteImage(userInfo.avatar.publicId);
+    }
+    let uploadResult: import('cloudinary').UploadApiResponse | null = null;
+    let assetId;
+    uploadResult = await this.assetsService.uploadImage(file, {
       public_id: `users/${userInfo._id}/AVATAR/google-avatar`,
       folder: 'vie-journey/avatars',
     });
-    if (!asset) {
-      throw new BadRequestException('Error uploading asset');
-    }
+    const assetData = {
+      userId: new Types.ObjectId(id),
+      type: 'AVATAR',
+      url: uploadResult?.secure_url,
+      publicId: uploadResult?.public_id,
+      location: uploadResult.public_id.split('/')[0],
+      format: uploadResult.format.toLocaleUpperCase(),
+      file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
+      dimensions: `${uploadResult.width} x ${uploadResult.height}`,
+    };
+    if (userInfo?.avatar?._id) {
+      await this.assetModel.updateOne(
+        { _id: userInfo.avatar._id },
+        { $set: assetData },
+      );
+    } else {
+      const asset = await this.assetModel.create(assetData);
+      assetId = asset._id;
 
-    userInfo.avatar = asset?._id;
-    await userInfo.save();
-    return userInfo;
+      userInfo.avatar = assetId;
+      await userInfo.save();
+    }
+    // Populate lại avatar để lấy thông tin mới nhất
+    const updatedUserInfo = await this.userInfosModel
+      .findById(userInfo._id)
+      .populate('avatar')
+      .exec();
+
+    return updatedUserInfo;
   }
   async updateUserInfo(id: string, updateUserInfoDto: any): Promise<UserInfos> {
     const updatedUser = await this.userInfosModel
