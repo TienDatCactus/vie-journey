@@ -11,6 +11,9 @@ import CreateBlogDetail from "../../pages/(user)/Blogs/CreateBlogDetail/CreateBl
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import RoleManagement from "../../pages/(admin)/RoleManagement";
+import HotelManagement from "../../pages/(admin)/Hotel";
+import HotelDetail from "../../pages/(admin)/Hotel/HotelDetail";
 import BlogList from "../../pages/(user)/Blogs/BlogList";
 import CreateBlog from "../../pages/(user)/Blogs/CreateBlog/CreateBlog";
 
@@ -212,11 +215,24 @@ const router = createBrowserRouter([
       },
       {
         path: "hotels",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={HotelManagement} />
-          </ProtectedRoute>
-        ),
+        children: [
+          {
+            path: "",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={HotelManagement} />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "detail/:id",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={HotelDetail} />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       },
       {
         path: "role-management",
