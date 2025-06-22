@@ -4,7 +4,7 @@ import { Nav } from "../components/Nav";
 
 const ManagerLayout = ({ children }: { children: ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
-const menuItems = [{ icon: <ArticleIcon />, label: "Blog", path: "/manager/blog" }]
+const menuItems = [{ icon: <ArticleIcon />, label: "Blog", path: "/manager/blogs" }]
 
   return (
     <>

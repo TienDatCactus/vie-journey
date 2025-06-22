@@ -4,7 +4,7 @@ import Accounts from "../../pages/(admin)/Accounts";
 import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
 import RoleManagement from "../../pages/(admin)/RoleManagement";
 import BlogManagementList from "../../pages/(manager)/Blog/BlogManagementList";
-import BlogManagementView from "../../pages/(manager)/Blog/BlogManagementView";
+import BlogManagementView from "../../pages/(manager)/BlogDetail/index";
 import HotelManagement from "../../pages/(manager)/Hotel";
 import BlogDetail from "../../pages/(user)/Blogs/BlogDetail/BlogDetail";
 import CreateBlogDetail from "../../pages/(user)/Blogs/CreateBlogDetail/CreateBlogDetail";
@@ -271,13 +271,16 @@ const router = createBrowserRouter([
     errorElement: <ErrorBoundary />,
     children: [
       {
-        path: "blog",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={BlogManagementList} />
-          </ProtectedRoute>
-        ),
+        path: "blogs",
         children: [
+          {
+            path: "",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={BlogManagementList} />
+              </ProtectedRoute>
+            ),
+          },
           {
             path: ":id",
             element: (
