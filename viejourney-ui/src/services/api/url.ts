@@ -16,13 +16,23 @@ export const AUTH = {
 export const USER = {
   GET_PROFILE: "/account/profile",
   GET_USER_INFO: "/user",
-  UPDATE: "/user/edit-profile"
-
+  UPDATE: "/user/edit-profile",
 };
 
 export const ACCOUNTS = {
-  GET_ACCOUNTS: "/admin/userInfo/",
+  GET_ACCOUNTS: "/admin/users",
+  FILTER_USERS: "/admin/users/filter",
   PAGINATE_ACCOUNTS: "/admin/userInfo/paginate",
+  UPDATE_STATUS: "/admin/accounts/updateActive/:id",
+};
+
+export const HOTELS = {
+  GET_HOTELS: "/manager/hotel",
+  GET_HOTEL: "/manager/hotel/:id",
+  CREATE_HOTEL: "/manager/hotel/add",
+  UPDATE_HOTEL: "/manager/hotel/:id",
+  DELETE_HOTEL: "/manager/hotel/:id",
+  IMPORT_HOTEL: "/manager/hotel/import",
 };
 
 export const ADMIN = {
@@ -41,6 +51,5 @@ export const TRIP = {
 };
 
 export const ASSET = {
-  UPLOAD: "/assets/image"
-}
-
+  UPLOAD: "/assets/image",
+};

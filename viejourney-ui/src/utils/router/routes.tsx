@@ -8,6 +8,7 @@ import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
 import RoleManagement from "../../pages/(admin)/RoleManagement";
 import HotelManagement from "../../pages/(admin)/Hotel";
+import HotelDetail from "../../pages/(admin)/Hotel/HotelDetail";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -192,11 +193,24 @@ const router = createBrowserRouter([
       },
       {
         path: "hotels",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={HotelManagement} />
-          </ProtectedRoute>
-        ),
+        children: [
+          {
+            path: "",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={HotelManagement} />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "detail/:id",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={HotelDetail} />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       },
       {
         path: "role-management",

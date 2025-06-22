@@ -21,7 +21,6 @@ import { DataGridPremium } from "@mui/x-data-grid-premium";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
@@ -29,22 +28,6 @@ import { ACCOUNTS } from "../../../services/api/url";
 import { Link } from "react-router-dom";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditAccountDialog from "./EditAccountDialog";
-
-// Status options
-const statusOptions = [
-  { value: "all", label: "All Status" },
-  { value: "active", label: "Active" },
-  { value: "banned", label: "Banned" },
-  { value: "inactive", label: "Inactive" },
-];
-
-// Role options
-const roleOptions = [
-  { value: "all", label: "All Roles" },
-  { value: "user", label: "User" },
-  { value: "manager", label: "Manager" },
-  { value: "admin", label: "Admin" },
-];
 
 function stringAvatar(name: string) {
   if (!name) return "";
@@ -112,8 +95,22 @@ const ActionMenu = ({
 function Accounts() {
   const [users, setUsers] = useState<unknown[]>([]);
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  const roleOptions = [
+    { value: "", label: "All Roles" },
+    { value: "ADMIN", label: "Admin" },
+    { value: "USER", label: "User" },
+    { value: "MANAGER", label: "Manager" },
+  ];
+
+  const statusOptions = [
+    { value: "", label: "All Status" },
+    { value: "ACTIVE", label: "Active" },
+    { value: "INACTIVE", label: "Inactive" },
+    { value: "BANNED", label: "Banned" },
+  ];
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
@@ -121,46 +118,101 @@ function Accounts() {
   const [loadingEdit, setLoadingEdit] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
 
   const fetchAccounts = async (params?: {
-    page?: number;
-    pageSize?: number;
     search?: string;
     roleFilter?: string;
     statusFilter?: string;
   }) => {
     setLoading(true);
     try {
-      const payload = {
-        page: params?.page || page,
-        pageSize: params?.pageSize || pageSize,
-        search: params?.search || search,
-        roleFilter: params?.roleFilter || roleFilter,
-        statusFilter: params?.statusFilter || statusFilter,
-      };
-      const res = await axios.post(
-        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.PAGINATE_ACCOUNTS,
-        payload,
-        { withCredentials: true }
-      );
-      setUsers(res.data.data || []);
-      setTotalPages(res.data.totalPages || 1);
-      setTotalItems(res.data.totalItems || 0);
-      setPage(res.data.currentPage || 1);
+      // Check if any filter is applied
+      const hasFilters =
+        params?.search ||
+        search ||
+        params?.roleFilter ||
+        roleFilter ||
+        params?.statusFilter ||
+        statusFilter;
+
+      let res;
+
+      if (hasFilters) {
+        // Use filter API when filters are applied
+        const queryParams = new URLSearchParams();
+
+        if (params?.search || search) {
+          queryParams.append("username", params?.search || search);
+          queryParams.append("email", params?.search || search);
+        }
+        if (params?.roleFilter || roleFilter) {
+          queryParams.append("role", params?.roleFilter || roleFilter);
+        }
+        if (params?.statusFilter || statusFilter) {
+          queryParams.append("status", params?.statusFilter || statusFilter);
+        }
+
+        const url =
+          import.meta.env.VITE_PRIVATE_URL +
+          ACCOUNTS.FILTER_USERS +
+          `?${queryParams.toString()}`;
+
+        res = await axios.get(url, { withCredentials: true });
+      } else {
+        // Use regular GET API when no filters
+        res = await axios.get(
+          import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS,
+          { withCredentials: true }
+        );
+      }
+
+      // Handle response based on API type
+      if (hasFilters) {
+        // Filter API response: { status, message, data: { users, total } }
+        if (res.data.status === "success" && res.data.data?.users) {
+          const transformedUsers = res.data.data.users.map((user: any) => ({
+            _id: user.userId,
+            fullName: user.userName,
+            userId: {
+              _id: user.accountId,
+              email: user.email,
+              role: user.role,
+              status: user.status,
+              createdAt: user.createdAt,
+            },
+            phone: user.phone,
+            address: user.address,
+            createdAt: user.createdAt,
+            flaggedCount: 0,
+          }));
+          setUsers(transformedUsers);
+        } else {
+          setUsers([]);
+        }
+      } else {
+        // Regular API response: array directly
+        const transformedUsers = (res.data || []).map((user: any) => ({
+          _id: user._id,
+          fullName: user.fullName,
+          userId: user.userId,
+          phone: user.phone,
+          address: user.address,
+          createdAt: user.createdAt,
+          flaggedCount: user.flaggedCount || 0,
+        }));
+        setUsers(transformedUsers);
+      }
     } catch (err) {
       console.error("Error fetching accounts:", err);
+      setUsers([]);
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchAccounts({ page, pageSize, search, roleFilter, statusFilter });
+    fetchAccounts({ search, roleFilter, statusFilter });
     // eslint-disable-next-line
-  }, [page, pageSize, search, roleFilter, statusFilter]);
+  }, [search, roleFilter, statusFilter]);
 
   // Transform data for DataGrid (no client-side filtering since we use server-side)
   const rows = users.map((user: any, index) => ({
@@ -169,17 +221,17 @@ function Accounts() {
   }));
 
   // Handle status change
-  const handleStatusChange = async (userId: string, newStatus: string) => {
+  const handleStatusChange = async (accountId: string, newStatus: string) => {
     try {
-      // Update UI first
+      // Update UI first (optimistic update)
       setUsers((prev) =>
         prev.map((u: any) =>
-          (u as any)._id === userId
+          u._id === accountId
             ? {
                 ...u,
                 userId: {
-                  ...((u as any).userId || {}),
-                  active: newStatus === "Active",
+                  ...u.userId,
+                  status: newStatus === "Active" ? "ACTIVE" : "INACTIVE",
                 },
               }
             : u
@@ -187,18 +239,18 @@ function Accounts() {
       );
 
       // Call API to update on server
-      const endpoint = `/admin/users/${userId}/role`;
-      const role = newStatus === "Active" ? "user" : "inactive";
+      const active = newStatus === "Active";
 
       await axios.patch(
-        import.meta.env.VITE_PRIVATE_URL + endpoint,
-        { role },
+        import.meta.env.VITE_PRIVATE_URL +
+          ACCOUNTS.UPDATE_STATUS.replace(":id", accountId),
+        { active },
         { withCredentials: true }
       );
     } catch (err) {
       console.error("Error updating status:", err);
-      // Revert on error
-      fetchAccounts({ page, pageSize, search, roleFilter, statusFilter });
+      // Revert on error by refetching data
+      fetchAccounts({ search, roleFilter, statusFilter });
     }
   };
 
@@ -216,10 +268,12 @@ function Accounts() {
         >
           <Stack direction="row" alignItems="center" spacing={2}>
             <Avatar sx={{ width: 32, height: 32 }}>
-              {stringAvatar(params.row.fullName)}
+              {stringAvatar(
+                params.row.fullName || params.row.userId?.email || "U"
+              )}
             </Avatar>
             <Typography variant="body2" fontWeight={500}>
-              {params.row.fullName}
+              {params.row.fullName || params.row.userId?.email || "No Name"}
             </Typography>
           </Stack>
         </Link>
@@ -231,18 +285,53 @@ function Accounts() {
       flex: 1,
       minWidth: 200,
       renderCell: (params: any) => (
-        <Typography variant="body2">{params.value || "-"}</Typography>
+        <Typography variant="body2">
+          {params.row.userId?.email || "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "role",
+      headerName: "ROLE",
+      flex: 0.6,
+      minWidth: 100,
+      renderCell: (params: any) => (
+        <Chip
+          label={params.row.userId?.role || "USER"}
+          size="small"
+          color={
+            params.row.userId?.role === "ADMIN"
+              ? "error"
+              : params.row.userId?.role === "MANAGER"
+              ? "warning"
+              : "default"
+          }
+          variant="outlined"
+        />
       ),
     },
     {
       field: "createdAt",
-      headerName: "DATE",
+      headerName: "CREATED AT",
       flex: 0.6,
       minWidth: 120,
       renderCell: (params: any) => (
         <Typography variant="body2">
           {params.value ? new Date(params.value).toLocaleDateString() : "-"}
         </Typography>
+      ),
+    },
+    {
+      field: "flaggedCount",
+      headerName: "FLAG",
+      flex: 0.5,
+      minWidth: 80,
+      renderCell: (params: any) => (
+        <Chip
+          label={params.row.flaggedCount || 0}
+          size="small"
+          variant="filled"
+        />
       ),
     },
     {
@@ -253,7 +342,9 @@ function Accounts() {
       renderCell: (params: any) => (
         <FormControl size="small" sx={{ minWidth: 130 }}>
           <Select
-            value={params.row.userId?.active ? "Active" : "Inactive"}
+            value={
+              params.row.userId?.status === "ACTIVE" ? "Active" : "Inactive"
+            }
             onChange={(e) => handleStatusChange(params.row._id, e.target.value)}
             sx={{
               fontWeight: 500,
@@ -317,32 +408,22 @@ function Accounts() {
       minWidth: 150,
       sortable: false,
       renderCell: (params: any) => (
-        <Stack direction="row" spacing={1}>
-          <IconButton
-            component={Link}
-            to={`detail/${params.row._id}`}
-            color="primary"
-            size="small"
-          >
-            <VisibilityIcon />
-          </IconButton>
-          <ActionMenu
-            onEdit={() => {
-              const userIndex = users.findIndex(
-                (u: any) => (u as any)._id === params.row._id
-              );
-              setEditIdx(userIndex);
-              setOpenEdit(true);
-            }}
-            onDelete={() => {
-              const userIndex = users.findIndex(
-                (u: any) => (u as any)._id === params.row._id
-              );
-              setDeleteIdx(userIndex);
-              setOpenDelete(true);
-            }}
-          />
-        </Stack>
+        <ActionMenu
+          onEdit={() => {
+            const userIndex = users.findIndex(
+              (u: any) => (u as any)._id === params.row._id
+            );
+            setEditIdx(userIndex);
+            setOpenEdit(true);
+          }}
+          onDelete={() => {
+            const userIndex = users.findIndex(
+              (u: any) => (u as any)._id === params.row._id
+            );
+            setDeleteIdx(userIndex);
+            setOpenDelete(true);
+          }}
+        />
       ),
     },
   ];
@@ -357,7 +438,7 @@ function Accounts() {
         { withCredentials: true }
       );
       // Refresh data after delete
-      fetchAccounts({ page, pageSize, search, roleFilter, statusFilter });
+      fetchAccounts({ search, roleFilter, statusFilter });
       setOpenDelete(false);
       setLoadingDelete(false);
       setDeleteIdx(null);
@@ -382,7 +463,7 @@ function Accounts() {
         { withCredentials: true }
       );
       // Refresh data after edit
-      fetchAccounts({ page, pageSize, search, roleFilter, statusFilter });
+      fetchAccounts({ search, roleFilter, statusFilter });
       setLoadingEdit(false);
       setOpenEdit(false);
       setEditIdx(null);
@@ -506,7 +587,7 @@ function Accounts() {
             mb={3}
           >
             <Typography variant="h6" fontWeight="bold">
-              Users ({totalItems})
+              Users ({users.length})
             </Typography>
             <Button
               variant="outlined"
@@ -528,20 +609,10 @@ function Accounts() {
               columns={columns}
               getRowId={(row) => row._id || row.id}
               loading={loading}
-              paginationMode="server"
-              rowCount={totalItems}
-              paginationModel={{
-                page: page - 1, // DataGrid uses 0-based indexing
-                pageSize: pageSize,
-              }}
-              onPaginationModelChange={(model) => {
-                setPage(model.page + 1); // Convert back to 1-based
-                setPageSize(model.pageSize);
-              }}
-              pageSizeOptions={[5, 10, 25, 50]}
               disableRowSelectionOnClick
               disableColumnMenu
               hideFooterSelectedRowCount
+              hideFooter
               checkboxSelection={false}
               disableColumnSelector
               disableColumnFilter
