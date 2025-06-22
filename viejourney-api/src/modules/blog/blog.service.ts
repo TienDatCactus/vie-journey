@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from 'src/common/entities/blog.entity';
@@ -8,6 +12,7 @@ import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { CreateBlogDto } from 'src/common/dtos/create-blog.dto';
 import { AssetsService } from '../assets/assets.service';
 import { v4 as uuidv4 } from 'uuid';
+import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 @Injectable()
 export class BlogService {
   constructor(
@@ -18,32 +23,70 @@ export class BlogService {
   ) {}
 
   // list all blogs
-  async findAll() {
-    const blogs = await this.blogModel
-      .find()
-      .populate('createdBy tripId')
-      .populate({
-        path: 'createdBy',
-        select: 'fullName',
-        populate: {
-          path: 'avatar',
-          model: 'Asset',
-          select: 'url',
-        },
-      })
-      .exec();
-    console.log(blogs);
-    if (!blogs || blogs.length === 0) {
-      throw new NotFoundException('No blogs found');
+  async findAll(paginationDto: PaginationDto) {
+    const page = paginationDto.page ?? 1;
+    const pageSize = paginationDto.pageSize ?? 10;
+    const search = paginationDto.search?.trim();
+
+    const skip = (page - 1) * pageSize;
+
+    // Tạo query filter
+    const filter: any = {};
+    if (search) {
+      filter.title = { $regex: search, $options: 'i' }; // tìm kiếm không phân biệt hoa thường
+    }
+
+    const [blogs, totalItems] = await Promise.all([
+      this.blogModel
+        .find(filter)
+        .skip(skip)
+        .limit(pageSize)
+        .populate('createdBy tripId')
+        .populate({
+          path: 'createdBy',
+          populate: {
+            path: 'avatar',
+            model: 'Asset',
+            select: 'url',
+          },
+        })
+        .exec(),
+      this.blogModel.countDocuments(filter).exec(),
+    ]);
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    // Nếu vượt quá số trang, trả về mảng rỗng và thông báo hợp lý
+    if (page > totalPages && totalItems > 0) {
+      return {
+        data: [],
+        totalPages,
+        currentPage: page,
+        pageSize: pageSize,
+        totalItems,
+        message:
+          'Page exceeds total number of pages, no blogs found for this page.',
+      };
+    }
+
+    // Nếu không có blog nào trong hệ thống
+    if (totalItems === 0) {
+      return {
+        data: [],
+        totalPages: 0,
+        currentPage: page,
+        pageSize: pageSize,
+        totalItems: 0,
+        message: 'No blogs found in the system.',
+      };
     }
     const listBlogs = blogs.map((blog) => {
       return {
         _id: blog._id,
         title: blog.title,
-        createdBy: blog.createdBy,
-        avatarUser: blog.createdBy.avatar?.url || null,
+        createdBy: blog?.createdBy,
+        avatarUser: blog?.createdBy?.avatar?.url || null,
         summary: blog.summary,
-        destination: blog.tripId?.destination || null,
+        destination: blog?.destination?.location || null,
         viewCount: blog.metrics?.viewCount || 0,
         likeCount: blog.metrics?.likeCount || 0,
         commentCount: blog.metrics?.commentCount || 0,
@@ -53,7 +96,13 @@ export class BlogService {
         updatedAt: blog.updatedAt,
       };
     });
-    return listBlogs;
+    return {
+      data: listBlogs,
+      Total_Blogs: totalItems,
+      currentPage: page,
+      pageSize: pageSize,
+      totalPages,
+    };
   }
 
   async updateMetrics(blogId: string, reqUserId?: string) {
@@ -84,7 +133,7 @@ export class BlogService {
   }
 
   // view blog detail by id
-  async findOneBlogById(blogId: string) {
+  async findBlogById(blogId: string) {
     const blog = await this.blogModel
       .findById(blogId)
       .populate('createdBy updatedBy')
@@ -95,11 +144,12 @@ export class BlogService {
     return {
       title: blog.title,
       content: blog.content,
-      createdBy: blog.createdBy.fullName,
+      createdBy: blog?.createdBy,
       summary: blog.summary,
       coverImage: blog.coverImage,
-      tripId: blog.tripId,
-      destination: blog.tripId?.description,
+      tripId: blog?.tripId,
+      destination: blog?.destination?.location || null,
+      status: blog.status,
       flags: blog.flags || [],
       createdAt: blog.createdAt,
     };
@@ -229,6 +279,11 @@ export class BlogService {
         createdBy: new Types.ObjectId(user[0]._id), // Lấy userId từ userInfos
         updatedBy: new Types.ObjectId(user[0]._id),
         coverImage: uploadResult?.secure_url || '',
+        tripId: null,
+        destination: {
+          location: createBlogDto?.location || null,
+          placeId: null,
+        },
         status: 'APPROVED',
         metrics: {
           likeCount: 0,
@@ -262,5 +317,25 @@ export class BlogService {
     return { message: 'Flag added successfully', flags: blog.flags };
   }
 
-  // update a blog by id
+  async getBlogStatistics() {
+    const blogs = await this.blogModel.find().exec();
+
+    let totalPosts = blogs.length;
+    let approvedPosts = 0;
+    let pendingPosts = 0;
+    let flaggedPosts = 0;
+
+    blogs.forEach((blog) => {
+      if (blog.status === 'APPROVED') approvedPosts++;
+      if (blog.status === 'PENDING') pendingPosts++;
+      if (blog.flags && blog.flags.length >= 1) flaggedPosts++;
+    });
+
+    return {
+      total_Blogs: totalPosts,
+      Count_Approved: approvedPosts,
+      Count_Pending: pendingPosts,
+      Count_Flags: flaggedPosts,
+    };
+  }
 }

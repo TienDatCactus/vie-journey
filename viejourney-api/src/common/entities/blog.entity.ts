@@ -12,6 +12,10 @@ export class Blog extends Document {
   tags?: string[];
   coverImage?: string;
   tripId?: Trip | null;
+  destination?: {
+    location: string | null;
+    placeId: string | null;
+  };
   createdBy: UserInfos;
   updatedBy: UserInfos | Types.ObjectId;
   likes?: Types.ObjectId[];
