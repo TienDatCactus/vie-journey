@@ -75,6 +75,7 @@ export class AccountService {
     }
     return deletedAccount;
   }
+
   async editInfos(
     file: Express.Multer.File,
     editProfile: EditProfileDto,

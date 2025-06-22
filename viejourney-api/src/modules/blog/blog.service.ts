@@ -21,16 +21,18 @@ export class BlogService {
   async findAll() {
     const blogs = await this.blogModel
       .find()
-      .populate('createdBy updatedBy tripId')
+      .populate('createdBy tripId')
       .populate({
         path: 'createdBy',
+        select: 'fullName',
         populate: {
-          path: 'avatar', // avatar là ref tới Account
+          path: 'avatar',
           model: 'Asset',
-          select: 'url', // chỉ lấy trường url nếu muốn
+          select: 'url',
         },
       })
       .exec();
+    console.log(blogs);
     if (!blogs || blogs.length === 0) {
       throw new NotFoundException('No blogs found');
     }
@@ -38,8 +40,8 @@ export class BlogService {
       return {
         _id: blog._id,
         title: blog.title,
-        createdBy: blog.createdBy?.fullName,
-        avatar: blog.createdBy?.avatar?.url || null,
+        createdBy: blog.createdBy,
+        avatarUser: blog.createdBy.avatar?.url || null,
         summary: blog.summary,
         destination: blog.tripId?.destination || null,
         viewCount: blog.metrics?.viewCount || 0,

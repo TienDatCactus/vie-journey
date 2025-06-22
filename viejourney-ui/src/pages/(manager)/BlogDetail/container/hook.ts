@@ -1,4 +1,3 @@
-import { enqueueSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { getBlogDetail } from "../../../../services/api/blog";
 import { IBlogDetail } from "../../../../utils/interfaces/blog";
@@ -13,9 +12,7 @@ function useBlogDetail({ id }: { id: string }) {
         setBlog(res);
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      console.log(error);
     }
   };
 

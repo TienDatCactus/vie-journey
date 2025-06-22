@@ -4,7 +4,6 @@ import {
   Add as AddIcon,
   Close as CloseIcon,
   Edit as EditIcon,
-  Group as GroupIcon,
   LocationOn as LocationIcon,
   Share as ShareIcon,
 } from "@mui/icons-material";
@@ -24,17 +23,16 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { motion } from "motion/react";
 import { enqueueSnackbar } from "notistack";
 import React from "react";
 import Map from "../../../components/Maps/Map";
 import { MainLayout } from "../../../layouts";
-import { uploadImg } from "../../../services/api/asset";
-import { updateUserInfo } from "../../../services/api/user";
+import { editUserAvatar, updateUserInfo } from "../../../services/api/user";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 import ProfileSettings from "./component/Setting";
 import TravelGuides from "./component/TravelGuides";
 import TripPlans from "./component/TripPlan";
-import { motion } from "motion/react";
 
 const Dashboard: React.FC = () => {
   const [value, setValue] = React.useState(0);
@@ -72,18 +70,28 @@ const Dashboard: React.FC = () => {
     if (selectedFile) {
       try {
         setUploading(true);
-        const response = await uploadImg(selectedFile);
+        if (selectedFile.size > 5 * 1024 * 1024) {
+          enqueueSnackbar("File size exceeds 5MB limit", {
+            variant: "error",
+          });
+          return;
+        }
+        if (!info?._id) {
+          enqueueSnackbar("User ID is not available", {
+            variant: "error",
+          });
+          return;
+        }
+        console.log(selectedFile);
+        await editUserAvatar(info?._id, selectedFile);
 
-        await updateUserInfo(info?._id || "", {
-          avatar: response.url,
-        });
         loadUserInfo();
         enqueueSnackbar("Updated image successful", {
           variant: "success",
         });
         handleCloseModal();
       } catch (error) {
-        enqueueSnackbar(error instanceof Error ? error.message : String(error));
+        console.log(error);
       } finally {
         setUploading(false);
       }

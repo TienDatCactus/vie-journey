@@ -496,7 +496,6 @@ export class AuthService {
           phone: '',
           address: '',
         });
-
       }
 
       const accessToken = this.createAccessToken(user._id, user.email);

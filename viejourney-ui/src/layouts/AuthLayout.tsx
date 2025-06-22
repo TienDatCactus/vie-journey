@@ -15,7 +15,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
     if (user && !info) {
       loadUserInfo();
     }
-  }, [user, info]);
+  }, [user, info, loadUserInfo]);
 
   return (
     <>

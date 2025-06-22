@@ -7,12 +7,15 @@ import { UserInfosSchema } from 'src/infrastructure/database/userinfo.schema';
 import { AssetsModule } from '../assets/assets.module';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { Asset } from 'src/common/entities/asset.entity';
+import { AssetSchema } from 'src/infrastructure/database/asset.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: UserInfos.name, schema: UserInfosSchema },
       { name: Account.name, schema: AccountSchema },
+      { name: Asset.name, schema: AssetSchema },
     ]),
     AssetsModule,
   ],
