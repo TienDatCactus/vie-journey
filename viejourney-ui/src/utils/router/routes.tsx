@@ -4,16 +4,14 @@ import Accounts from "../../pages/(admin)/Accounts";
 import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
 import RoleManagement from "../../pages/(admin)/RoleManagement";
 import BlogManagementList from "../../pages/(manager)/Blog/BlogManagementList";
-import BlogManagementView from "../../pages/(manager)/Blog/BlogManagementView";
-import HotelManagement from "../../pages/(manager)/Hotel";
+import BlogManagementView from "../../pages/(manager)/BlogDetail/index";
 import BlogDetail from "../../pages/(user)/Blogs/BlogDetail/BlogDetail";
 import CreateBlogDetail from "../../pages/(user)/Blogs/CreateBlogDetail/CreateBlogDetail";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
-import RoleManagement from "../../pages/(admin)/RoleManagement";
-import HotelManagement from "../../pages/(admin)/Hotel";
-import HotelDetail from "../../pages/(admin)/Hotel/HotelDetail";
+import HotelManagement from "../../pages/(manager)/Hotel";
+import HotelDetail from "../../pages/(manager)/Hotel/HotelDetail";
 import BlogList from "../../pages/(user)/Blogs/BlogList";
 import CreateBlog from "../../pages/(user)/Blogs/CreateBlog/CreateBlog";
 
@@ -287,13 +285,16 @@ const router = createBrowserRouter([
     errorElement: <ErrorBoundary />,
     children: [
       {
-        path: "blog",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={BlogManagementList} />
-          </ProtectedRoute>
-        ),
+        path: "blogs",
         children: [
+          {
+            path: "",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={BlogManagementList} />
+              </ProtectedRoute>
+            ),
+          },
           {
             path: ":id",
             element: (

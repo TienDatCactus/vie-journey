@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import type React from "react";
+import type React from "react"
 
-import { Close, CloudUpload } from "@mui/icons-material";
+import { Close, CloudUpload, Delete } from "@mui/icons-material"
 import {
   Box,
   Button,
@@ -14,98 +14,103 @@ import {
   Divider,
   FormControl,
   IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
   TextField,
   Typography,
-} from "@mui/material";
-import { useState } from "react";
-import { useAuthStore } from "../../../../../services/stores/useAuthStore";
-import { STATUS_BLOG, TAG_BLOG } from "../../../../../utils/constants/common";
-import { IBlogQuery } from "../../../../../utils/interfaces/blog";
+} from "@mui/material"
+import { useState } from "react"
+import { useAuthStore } from "../../../../../services/stores/useAuthStore"
+import { TAG_BLOG } from "../../../../../utils/constants/common"
+import type { IBlogQuery } from "../../../../../utils/interfaces/blog"
 
 interface NewPostDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (postData: IBlogQuery) => void;
+  open: boolean
+  onClose: () => void
+  onSubmit: (postData: IBlogQuery) => void
 }
 
-export default function NewPostDialog({
-  open,
-  onClose,
-  onSubmit,
-}: NewPostDialogProps) {
-  const { user } = useAuthStore();
+export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialogProps) {
+  const { user } = useAuthStore()
 
   const [formData, setFormData] = useState({
     title: "",
     userId: user?._id || "",
-    // trip: "",
     tripId: "",
-    // location: "",
     content: "",
     slug: "",
-    status: STATUS_BLOG[0].value,
     tags: [] as string[],
-    // readTime: "",
-    // featured: false,
     summary: "",
-  });
+  })
 
-  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [coverImage, setCoverImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const handleInputChange = (field: string, value: string | string[]) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }));
-  };
+    }))
+  }
 
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0] ?? null;
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
 
-    setCoverImage(file);
-  };
+    if (file) {
+      setCoverImage(file)
+
+      // Create preview URL
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setCoverImage(null)
+    setImagePreview(null)
+    // Reset the file input
+    const fileInput = document.getElementById("cover-image-upload") as HTMLInputElement
+    if (fileInput) {
+      fileInput.value = ""
+    }
+  }
 
   const handleRemoveTag = (tagToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
       tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }));
-  };
+    }))
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault()
     const postData = {
       ...formData,
       file: coverImage ?? null,
-    };
-    onSubmit(postData);
-    handleClose();
-  };
+    }
+    onSubmit(postData)
+    handleClose()
+  }
 
   const handleClose = () => {
     setFormData({
       title: "",
       userId: user?._id || "",
-
-      // trip: "",
-      // location: "",
       content: "",
-      status: STATUS_BLOG[0].value,
       tags: [],
-      // readTime: "",
-      // featured: false,
       slug: "",
       summary: "",
       tripId: "",
-    });
-    setCoverImage(null);
-    onClose();
-  };
+    })
+    setCoverImage(null)
+    setImagePreview(null)
+    onClose()
+  }
 
   return (
     <Dialog
@@ -127,10 +132,7 @@ export default function NewPostDialog({
               Add a new travel blog post to your dashboard
             </Typography>
           </div>
-          <IconButton
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <IconButton onClick={handleClose} className="text-gray-400 hover:text-gray-600">
             <Close />
           </IconButton>
         </DialogTitle>
@@ -160,98 +162,27 @@ export default function NewPostDialog({
               onChange={(e) => handleInputChange("slug", e.target.value)}
               placeholder="Enter an engaging slug for your blog post"
               required
+              slotProps={{
+                input: {
+                  startAdornment: <InputAdornment position="start">localhost:5173/blogs/</InputAdornment>,
+                },
+              }}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <TextField
                 fullWidth
-                label="Trip "
+                label="Destination "
                 variant="outlined"
                 value={formData.tripId}
                 onChange={(e) => handleInputChange("tripId", e.target.value)}
-                placeholder="Trip id"
+                placeholder="Destination"
                 // required
               />
-
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={formData.status}
-                  label="Status"
-                  onChange={(e) => handleInputChange("status", e.target.value)}
-                  MenuProps={{ disablePortal: true }}
-                >
-                  {STATUS_BLOG.map((status, index) => {
-                    return (
-                      <MenuItem key={index} value={status.value}>
-                        {status.label}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
             </div>
           </div>
 
           <Divider />
-
-          {/* Trip & Location */}
-          {/* <div className="space-y-4">
-            <Typography variant="h6" className="font-semibold text-gray-800">
-              Trip & Location Details
-            </Typography>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextField
-                fullWidth
-                label="Trip Name"
-                variant="outlined"
-                value={formData.trip}
-                onChange={(e) => handleInputChange("trip", e.target.value)}
-                placeholder="e.g., Vietnam Adventure 2024"
-              />
-
-              <TextField
-                fullWidth
-                label="Location"
-                variant="outlined"
-                value={formData.location}
-                onChange={(e) => handleInputChange("location", e.target.value)}
-                placeholder="e.g., Da Nang, Vietnam"
-              />
-            </div>
-
-            <TextField
-              fullWidth
-              label="Estimated Read Time (minutes)"
-              variant="outlined"
-              type="number"
-              value={formData.readTime}
-              onChange={(e) => handleInputChange("readTime", e.target.value)}
-              placeholder="e.g., 8"
-            />
-          </div> */}
-
-          <Divider />
-
-          {/* Content */}
-          <div className="space-y-4">
-            <Typography variant="h6" className="font-semibold text-gray-800">
-              Content
-            </Typography>
-
-            <TextField
-              fullWidth
-              label="Blog Content"
-              variant="outlined"
-              multiline
-              rows={6}
-              value={formData.content}
-              onChange={(e) => handleInputChange("content", e.target.value)}
-              placeholder="Write your blog post content here..."
-              required
-            />
-          </div>
 
           <div className="space-y-4">
             <Typography variant="h6" className="font-semibold text-gray-800">
@@ -285,9 +216,7 @@ export default function NewPostDialog({
                 labelId="tag-select-label"
                 multiple
                 value={formData.tags}
-                onChange={(e) =>
-                  handleInputChange("tags", e.target.value as string[])
-                }
+                onChange={(e) => handleInputChange("tags", e.target.value as string[])}
                 MenuProps={{ disablePortal: true }}
                 renderValue={(selected) => (
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
@@ -319,27 +248,83 @@ export default function NewPostDialog({
               Cover Image
             </Typography>
 
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition-colors">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="cover-image-upload"
-              />
-              <label htmlFor="cover-image-upload" className="cursor-pointer">
-                <CloudUpload
-                  className="text-gray-400 mb-2"
-                  sx={{ fontSize: 48 }}
+            {imagePreview ? (
+              <div className="space-y-4">
+                {/* Image Preview */}
+                <div className="relative">
+                  <img
+                    src={imagePreview || "/placeholder.svg"}
+                    alt="Cover preview"
+                    className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                  />
+                  <IconButton
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
+                    size="small"
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+                </div>
+
+                {/* File Info */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <Typography variant="body2" className="font-medium text-gray-700">
+                      {coverImage?.name}
+                    </Typography>
+                    <Typography variant="caption" className="text-gray-500">
+                      {coverImage && `${(coverImage.size / 1024 / 1024).toFixed(2)} MB`}
+                    </Typography>
+                  </div>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleRemoveImage}
+                    startIcon={<Delete />}
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="cover-image-upload"
                 />
-                <Typography variant="body1" className="text-gray-600 mb-1">
-                  {coverImage ? coverImage.name : "Click to upload cover image"}
-                </Typography>
-                <Typography variant="body2" className="text-gray-400">
-                  PNG, JPG, GIF up to 10MB
-                </Typography>
-              </label>
-            </div>
+                <label htmlFor="cover-image-upload" className="cursor-pointer">
+                  <CloudUpload className="text-gray-400 mb-2" sx={{ fontSize: 48 }} />
+                  <Typography variant="body1" className="text-gray-600 mb-1">
+                    Click to upload cover image
+                  </Typography>
+                  <Typography variant="body2" className="text-gray-400">
+                    PNG, JPG, GIF up to 10MB
+                  </Typography>
+                </label>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <Typography variant="h6" className="font-semibold text-gray-800">
+              Content
+            </Typography>
+
+            <TextField
+              fullWidth
+              label="Blog Content"
+              variant="outlined"
+              multiline
+              rows={6}
+              value={formData.content}
+              onChange={(e) => handleInputChange("content", e.target.value)}
+              placeholder="Write your blog post content here..."
+              required
+            />
           </div>
         </DialogContent>
 
@@ -358,5 +343,5 @@ export default function NewPostDialog({
         </DialogActions>
       </form>
     </Dialog>
-  );
+  )
 }

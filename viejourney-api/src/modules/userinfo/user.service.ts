@@ -25,7 +25,7 @@ export class UserService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
     private readonly assetsService: AssetsService,
-  ) { }
+  ) {}
 
   async getAllUser(): Promise<UserInfos[]> {
     return this.userInfosModel.find().populate('userId').exec();
@@ -47,7 +47,7 @@ export class UserService {
         createdAt: Date;
       }>;
       total: number;
-    }
+    };
   }> {
     let query = this.userInfosModel.find();
 
@@ -62,7 +62,7 @@ export class UserService {
     const populateQuery: any = {
       path: 'userId',
       model: 'Account',
-      select: 'email role status createdAt'
+      select: 'email role status createdAt',
     };
 
     if (filter?.role || filter?.status || filter?.email) {
@@ -79,14 +79,11 @@ export class UserService {
       populateQuery.match = match;
     }
 
-    const users = await query
-      .populate(populateQuery)
-      .lean()
-      .exec();
+    const users = await query.populate(populateQuery).lean().exec();
 
     const filteredUsers = users
-      .filter(user => user.userId)
-      .map(user => ({
+      .filter((user) => user.userId)
+      .map((user) => ({
         userId: user._id.toString(),
         accountId: (user.userId as any)._id.toString(),
         email: (user.userId as any).email,
@@ -95,19 +92,19 @@ export class UserService {
         status: (user.userId as any).status,
         phone: user.phone || '',
         address: user.address || '',
-        createdAt: (user.userId as any).createdAt
+        createdAt: (user.userId as any).createdAt,
       }));
 
     if (filteredUsers.length === 0) {
       return {
         status: 'success',
-        message: filter ?
-          `No users found matching filters: ${JSON.stringify(filter)}` :
-          'No users found in the system',
+        message: filter
+          ? `No users found matching filters: ${JSON.stringify(filter)}`
+          : 'No users found in the system',
         data: {
           users: [],
-          total: 0
-        }
+          total: 0,
+        },
       };
     }
 
@@ -116,15 +113,15 @@ export class UserService {
       message: 'Users retrieved successfully',
       data: {
         users: filteredUsers,
-        total: filteredUsers.length
-      }
+        total: filteredUsers.length,
+      },
     };
   }
 
-  async getUserByID(id: string): Promise<UserInfos> {
+  async getUserByID(id: string) {
     const user = await this.userInfosModel
       .findOne({
-        _id: new mongoose.Types.ObjectId(id),
+        userId: new Types.ObjectId(id),
       })
       .populate({
         path: 'avatar',

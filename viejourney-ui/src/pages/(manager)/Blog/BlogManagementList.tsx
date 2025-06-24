@@ -12,17 +12,27 @@ import {
   Search,
   ViewList,
 } from "@mui/icons-material";
-import { Card, Checkbox, Switch } from "@mui/material";
+import {
+  Card,
+  Checkbox,
+  Switch,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  type SelectChangeEvent,
+  Button,
+} from "@mui/material";
 import { useState } from "react";
 import ManagerLayout from "../../../layouts/ManagerLayout";
-import { IBlogQuery } from "../../../utils/interfaces/blog";
+import type { IBlogQuery } from "../../../utils/interfaces/blog";
 import NewPostDialog from "./component/AddPopup";
 import BlogPostRow from "./component/BlogPostRow";
 import StatCard from "./component/Card";
 import useBlog from "./component/Container/hook";
 
 export default function BlogManagementList() {
-  const { blogs, handleCreateBlog, handeleDeleteBlog } = useBlog();
+  const { blogs, handleCreateBlog, handleDeleteBlog } = useBlog();
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,17 +42,28 @@ export default function BlogManagementList() {
   const [totalItems, setTotalItems] = useState(15);
   const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
 
-  // const getCurrentItems = (items) => {
-  //   const indexOfLastItem = currentPage * itemsPerPage;
-  //   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [authorFilter, setAuthorFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("lastModified");
 
-  //   return [];
-  // };
+  const handleStatusFilterChange = (event: SelectChangeEvent) => {
+    setStatusFilter(event.target.value);
+  };
+
+  const handleAuthorFilterChange = (event: SelectChangeEvent) => {
+    setAuthorFilter(event.target.value);
+  };
+
+  const handleSortByChange = (event: SelectChangeEvent) => {
+    setSortBy(event.target.value);
+  };
 
   const handleNewPostSubmit = (postData: IBlogQuery) => {
     handleCreateBlog(postData);
     setIsNewPostDialogOpen(false);
   };
+
   return (
     <ManagerLayout>
       <div className=" mx-auto p-4 bg-white min-h-screen">
@@ -122,25 +143,41 @@ export default function BlogManagementList() {
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between gap-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <FilterList className="text-gray-500" sx={{ fontSize: 16 }} />
                   <span className="text-gray-500 text-sm">Filters:</span>
                 </div>
 
-                <select className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                  <option>All Status</option>
-                  <option>Published</option>
-                  <option>Pending</option>
-                  <option>Flagged</option>
-                </select>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <InputLabel id="status-filter-label">Status</InputLabel>
+                  <Select
+                    labelId="status-filter-label"
+                    value={statusFilter}
+                    label="Status"
+                    onChange={handleStatusFilterChange}
+                  >
+                    <MenuItem value="all">All Status</MenuItem>
+                    <MenuItem value="published">Published</MenuItem>
+                    <MenuItem value="pending">Pending</MenuItem>
+                    <MenuItem value="flagged">Flagged</MenuItem>
+                  </Select>
+                </FormControl>
 
-                <select className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                  <option>All Authors</option>
-                  <option>Sarah Chen</option>
-                  <option>Mike Rodriguez</option>
-                  <option>Emma Thompson</option>
-                </select>
+                <FormControl size="small" sx={{ minWidth: 140 }}>
+                  <InputLabel id="author-filter-label">Author</InputLabel>
+                  <Select
+                    labelId="author-filter-label"
+                    value={authorFilter}
+                    label="Author"
+                    onChange={handleAuthorFilterChange}
+                  >
+                    <MenuItem value="all">All Authors</MenuItem>
+                    <MenuItem value="sarah">Sarah Chen</MenuItem>
+                    <MenuItem value="mike">Mike Rodriguez</MenuItem>
+                    <MenuItem value="emma">Emma Thompson</MenuItem>
+                  </Select>
+                </FormControl>
 
                 <label className="flex items-center gap-2 text-sm text-gray-700">
                   <Switch
@@ -153,14 +190,24 @@ export default function BlogManagementList() {
                   />
                   Flagged only
                 </label>
-                <select className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                  <option>Last Modified</option>
-                  <option>Date Published</option>
-                  <option>Title</option>
-                  <option>Author</option>
-                </select>
+
+                <FormControl size="small" sx={{ minWidth: 140 }}>
+                  <InputLabel id="sort-by-label">Sort By</InputLabel>
+                  <Select
+                    labelId="sort-by-label"
+                    value={sortBy}
+                    label="Sort By"
+                    onChange={handleSortByChange}
+                  >
+                    <MenuItem value="lastModified">Last Modified</MenuItem>
+                    <MenuItem value="datePublished">Date Published</MenuItem>
+                    <MenuItem value="title">Title</MenuItem>
+                    <MenuItem value="author">Author</MenuItem>
+                  </Select>
+                </FormControl>
               </div>
-              <div className="flex justify-end ">
+
+              <div className="flex justify-end">
                 <div className="bg-gray-100 rounded-md p-1 flex">
                   <button
                     className={`px-3 py-1 rounded-md cursor-pointer ${
@@ -171,7 +218,7 @@ export default function BlogManagementList() {
                     <GridView sx={{ fontSize: 16 }} />
                   </button>
                   <button
-                    className={`px-3 py-1 rounded-md  cursor-pointer ${
+                    className={`px-3 py-1 rounded-md cursor-pointer ${
                       viewMode === "table" ? "bg-white shadow-sm" : ""
                     }`}
                     onClick={() => setViewMode("table")}
@@ -184,8 +231,8 @@ export default function BlogManagementList() {
           </div>
         </Card>
 
-        <div className="overflow-x-auto  border-gray-400 rounded-[10px]">
-          <table className="w-full  ">
+        <div className="overflow-x-auto border-gray-400 rounded-[10px]">
+          <table className="w-full">
             <thead>
               <tr className="text-left text-gray-500 border-b border-gray-300">
                 <th className="pb-3 pr-4 font-medium">
@@ -205,13 +252,14 @@ export default function BlogManagementList() {
                   <BlogPostRow
                     key={blog._id}
                     blog={blog}
-                    handeleDeleteBlog={handeleDeleteBlog}
+                    handleDeleteBlog={handleDeleteBlog}
                   />
                 );
               })}
             </tbody>
           </table>
         </div>
+
         <div className="flex items-center justify-between mt-4 px-2">
           <div className="text-sm text-gray-500">
             Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}{" "}
@@ -219,10 +267,10 @@ export default function BlogManagementList() {
             {totalItems} posts
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className={`px-3 py-1 cursor-pointer  ${
+              className={`px-3 py-1 cursor-pointer ${
                 currentPage === 1
                   ? "text-gray-300 cursor-not-allowed"
                   : "text-gray-500 hover:text-gray-700"
@@ -244,13 +292,13 @@ export default function BlogManagementList() {
                 </svg>
                 Previous
               </span>
-            </button>
+            </Button>
 
             {Array.from(
               { length: Math.ceil(totalItems / itemsPerPage) },
               (_, i) => i + 1
             ).map((page) => (
-              <button
+              <Button
                 key={page}
                 onClick={() => setCurrentPage(page)}
                 className={`w-8 h-8 flex items-center justify-center rounded-md cursor-pointer ${
@@ -260,7 +308,7 @@ export default function BlogManagementList() {
                 }`}
               >
                 {page}
-              </button>
+              </Button>
             ))}
 
             <button
@@ -270,7 +318,7 @@ export default function BlogManagementList() {
                 )
               }
               disabled={currentPage === Math.ceil(totalItems / itemsPerPage)}
-              className={`px-3 py-1 cursor-pointer  ${
+              className={`px-3 py-1 cursor-pointer ${
                 currentPage === Math.ceil(totalItems / itemsPerPage)
                   ? "text-gray-300 cursor-not-allowed"
                   : "text-gray-500 hover:text-gray-700"

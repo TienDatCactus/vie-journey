@@ -1,122 +1,46 @@
 "use client";
 
-import React from "react";
 import {
-  Card,
-  CardContent,
-  Typography,
+  Block,
+  Check,
+  ClearAll,
+  Close,
+  Flag,
+  LocationOn,
+  Phone
+} from "@mui/icons-material";
+import {
   Avatar,
   Button,
-  Chip,
+  Card,
+  CardContent,
   Divider,
   Paper,
+  Typography
 } from "@mui/material";
-import {
-  Flag,
-  Email,
-  Phone,
-  LocationOn,
-  Check,
-  Close,
-  Block,
-  ClearAll,
-} from "@mui/icons-material";
+import dayjs from "dayjs";
 import { useParams } from "react-router-dom";
 import useBlogDetail from "./container/hook";
-import dayjs from "dayjs";
-
-interface AuthorInfo {
-  name: string;
-  avatar: string;
-  joinDate: string;
-  email: string;
-  phone: string;
-  location: string;
-  posts: number;
-  followers: number;
-}
-
-interface ModerationFlag {
-  id: string;
-  type: "inappropriate" | "spam";
-  reason: string;
-  reportedBy: string;
-  date: string;
-}
-
-interface BlogPost {
-  id: string;
-  title: string;
-  publishedDate: string;
-  category: string;
-  status: "pending" | "approved" | "rejected";
-  content: string;
-  author: AuthorInfo;
-  flags: ModerationFlag[];
-}
-
-// Mock data - replace with your backend data
-const mockBlogPost: BlogPost = {
-  id: "1",
-  title: "My Amazing Journey Through Europe",
-  publishedDate: "28/7/2023",
-  category: "Travel",
-  status: "pending",
-  content: `Last summer, I embarked on an unforgettable journey through Europe, visiting 5 countries in just 3 weeks.
-
-Paris, France
-
-The City of Light did not disappoint! I spent my days exploring the Louvre, climbing the Eiffel Tower, and enjoying croissants at charming cafés.
-
-The City of Light did not disappoint! I spent my days exploring the Louvre, climbing the Eiffel Tower, and enjoying croissants at charming cafés.`,
-  author: {
-    name: "Jane Smith",
-    avatar: "/placeholder.svg?height=40&width=40",
-    joinDate: "12 years ago",
-    email: "jane@email.com",
-    phone: "+1 234-567-890",
-    location: "New York, USA",
-    posts: 23,
-    followers: 1250,
-  },
-  flags: [
-    {
-      id: "1",
-      type: "inappropriate",
-      reason: "Inappropriate content",
-      reportedBy: "User_123",
-      date: "28/7/2023",
-    },
-    {
-      id: "2",
-      type: "spam",
-      reason: "Spam",
-      reportedBy: "User_456",
-      date: "28/7/2023",
-    },
-  ],
-};
 
 export default function Blog() {
-  const [post] = React.useState<BlogPost>(mockBlogPost);
   const { id } = useParams<{ id: string }>();
 
   const { blog } = useBlogDetail({ id: id ?? "" });
 
   const handleApprove = () => {
-    console.log("Approving post:", post.id);
+    // console.log("Approving post:", post.id);
   };
 
   const handleReject = () => {
-    console.log("Rejecting post:", post.id);
+    // console.log("Rejecting post:", post.id);
   };
 
   const handleBanAuthor = () => {
-    console.log("Banning author:", post.author.name);
+    // console.log("Banning author:", post.author.name);
   };
 
   const handleClearFlags = () => {
-    console.log("Clearing flags for post:", post.id);
+    // console.log("Clearing flags for post:", post.id);
   };
 
   return (
@@ -130,7 +54,7 @@ export default function Blog() {
           <Button
             variant="text"
             size="small"
-            href="/manager/blog"
+            href="/manager/blogs"
             className="text-blue-600 hover:text-blue-800"
           >
             Back to All Blogs
@@ -145,14 +69,14 @@ export default function Blog() {
                 {/* Post Header */}
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Typography variant="body2" color="text.secondary">
+                    {/* <Typography variant="body2" color="text.secondary">
                       Published on {post.publishedDate}
                     </Typography>
                     <Chip
                       label={post.category}
                       size="small"
                       className="bg-blue-100 text-blue-800"
-                    />
+                    /> */}
                   </div>
                   <Typography
                     variant="h4"
@@ -188,39 +112,42 @@ export default function Blog() {
 
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar
-                    src={post.author.avatar}
-                    alt={post.author.name}
+                    src={blog?.createdBy.avatar.url}
+                    alt={blog?.createdBy.fullName}
                     className="w-12 h-12"
                   />
                   <div>
                     <Typography variant="subtitle1" className="font-medium">
-                      {post.author.name}
+                      {blog?.createdBy.fullName}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    {/* <Typography variant="body2" color="text.secondary">
                       Joined {post.author.joinDate}
-                    </Typography>
+                    </Typography> */}
                   </div>
                 </div>
 
                 <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     <Email className="w-4 h-4 text-gray-500" />
-                    <Typography variant="body2">{post.author.email}</Typography>
-                  </div>
+                    <Typography variant="body2">{blog?.createdBy.phone}</Typography>
+                  </div> */}
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-gray-500" />
-                    <Typography variant="body2">{post.author.phone}</Typography>
+                    <Typography variant="body2">
+                  
+                      {blog?.createdBy.phone}
+                    </Typography>
                   </div>
                   <div className="flex items-center gap-2">
                     <LocationOn className="w-4 h-4 text-gray-500" />
                     <Typography variant="body2">
-                      {post.author.location}
+                      {blog?.createdBy.address}
                     </Typography>
                   </div>
                 </div>
 
                 <Divider className="my-4" />
-
+{/* 
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
                     <Typography variant="h6" className="font-semibold">
@@ -238,7 +165,7 @@ export default function Blog() {
                       Followers
                     </Typography>
                   </div>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
 
@@ -288,7 +215,8 @@ export default function Blog() {
                 </Typography>
 
                 <div className="space-y-3">
-                  <div className="flex gap-2">
+              {blog?.status === "PENDING" ? ( 
+                    <div className="flex gap-2">
                     <Button
                       variant="contained"
                       color="success"
@@ -309,6 +237,7 @@ export default function Blog() {
                     </Button>
                   </div>
 
+              ) : (<></>)}
                   <Button
                     variant="outlined"
                     startIcon={<ClearAll />}

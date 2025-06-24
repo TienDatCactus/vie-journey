@@ -24,7 +24,6 @@ export class BlogService {
       .populate('createdBy tripId')
       .populate({
         path: 'createdBy',
-        select: 'fullName',
         populate: {
           path: 'avatar',
           model: 'Asset',
@@ -32,7 +31,6 @@ export class BlogService {
         },
       })
       .exec();
-    console.log(blogs);
     if (!blogs || blogs.length === 0) {
       throw new NotFoundException('No blogs found');
     }
@@ -40,8 +38,8 @@ export class BlogService {
       return {
         _id: blog._id,
         title: blog.title,
-        createdBy: blog.createdBy?.fullName,
-        avatar: blog.createdBy?.avatar?.url || null,
+        createdBy: blog.createdBy,
+        avatarUser: blog.createdBy.avatar?.url || null,
         summary: blog.summary,
         destination: blog.tripId?.destination || null,
         viewCount: blog.metrics?.viewCount || 0,
@@ -95,9 +93,10 @@ export class BlogService {
     return {
       title: blog.title,
       content: blog.content,
-      createdBy: blog.createdBy.fullName,
+      createdBy: blog.createdBy,
       summary: blog.summary,
       coverImage: blog.coverImage,
+      status: blog.status,
       tripId: blog.tripId,
       destination: blog.tripId?.description,
       flags: blog.flags || [],
