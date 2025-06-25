@@ -17,8 +17,8 @@ export default function TravelGuides() {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        width: "1000px",
+        maxWidth: "125rem",
+        mx: "auto",
         backgroundColor: "#fafafa",
         py: 4,
       }}

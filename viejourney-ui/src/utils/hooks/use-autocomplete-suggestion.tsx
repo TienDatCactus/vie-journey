@@ -1,5 +1,5 @@
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type UseAutocompleteSuggestionsReturn = {
   suggestions: google.maps.places.AutocompleteSuggestion[];
@@ -40,6 +40,22 @@ export type UseAutocompleteSuggestionsReturn = {
  * }
  * ```
  */
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export function useAutocompleteSuggestions(
   inputString: string,
   requestOptions: Partial<google.maps.places.AutocompleteRequest> = {}
@@ -58,10 +74,15 @@ export function useAutocompleteSuggestions(
   // indicates if there is currently an incomplete request to the places API
   const [isLoading, setIsLoading] = useState(false);
 
-  // once the PlacesLibrary is loaded and whenever the input changes, a query
+  // Debounce the input
+  const debouncedInput = useDebounce(inputString, 300); // 300ms delay
+
   // is sent to the Autocomplete Data API.
   useEffect(() => {
-    if (!placesLib) return;
+    if (!placesLib || debouncedInput === "") {
+      if (suggestions.length > 0) setSuggestions([]);
+      return;
+    }
 
     const { AutocompleteSessionToken, AutocompleteSuggestion } = placesLib;
 
@@ -74,21 +95,18 @@ export function useAutocompleteSuggestions(
 
     const request: google.maps.places.AutocompleteRequest = {
       ...requestOptions,
-      input: inputString,
+      input: debouncedInput,
       sessionToken: sessionTokenRef.current,
     };
-
-    if (inputString === "") {
-      if (suggestions.length > 0) setSuggestions([]);
-      return;
-    }
 
     setIsLoading(true);
     AutocompleteSuggestion.fetchAutocompleteSuggestions(request).then((res) => {
       setSuggestions(res.suggestions);
       setIsLoading(false);
     });
-  }, [placesLib, inputString]);
+  }, [placesLib, debouncedInput]);
+
+  // Lazy loading approach for place details
 
   return {
     suggestions,

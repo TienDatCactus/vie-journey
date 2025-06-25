@@ -3,6 +3,31 @@ import { enqueueSnackbar, SnackbarKey } from "notistack";
 import { refreshToken } from "../api";
 import { getToken } from "../api/token";
 
+// Helper function to trim data before sending
+const trimData = (data: any): any => {
+  if (!data) return data;
+  if (typeof data !== "object") return data;
+
+  if (Array.isArray(data)) {
+    return data.map((item) => trimData(item));
+  }
+
+  const result: Record<string, any> = {};
+  for (const key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      const value = data[key];
+      if (typeof value === "string") {
+        result[key] = value.trim();
+      } else if (typeof value === "object" && value !== null) {
+        result[key] = trimData(value);
+      } else {
+        result[key] = value;
+      }
+    }
+  }
+  return result;
+};
+
 interface ErrorHandlerOptions {
   redirectOnUnauthorized?: boolean;
   loginRedirectPath?: string;
@@ -67,6 +92,7 @@ const http = axios.create({
   },
   baseURL: import.meta.env.VITE_PRIVATE_URL,
   withCredentials: true,
+  timeout: 60000,
 });
 
 let currentOperationCount = 0;
@@ -79,6 +105,7 @@ const trackOperationStart = () => {
   currentOperationCount++;
   return currentOperationCount;
 };
+
 const trackOperationEnd = () => {
   currentOperationCount--;
 
@@ -110,15 +137,51 @@ const trackOperationEnd = () => {
     pendingMessages.clear();
   }
 };
+
+// Parse response body for custom API status codes
+const parseBody = (response: any) => {
+  const resData = response.data;
+
+  if (response?.status === 200) {
+    if (resData.StatusCode === 401) {
+      localStorage.removeItem("token");
+      window.location.replace("/auth/login");
+      return;
+    }
+
+    // Handle custom status codes
+    if (resData.Status === -2) return resData; // ma sp, ten sp ton tai
+    if (resData.Status === 0) return resData; // API tra ve success
+
+    if (resData.Status !== -1 && resData.Object) {
+      showDebouncedSnackbar(resData.Object, { variant: "error" });
+    }
+
+    if (resData.Status !== 1 && resData.Object) {
+      return {
+        ...resData,
+        object: resData.Object,
+      };
+    }
+  }
+
+  return response;
+};
+
 const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
   const {
-    redirectOnUnauthorized = true,
+    redirectOnUnauthorized = window.location.pathname !== "/auth/login",
     loginRedirectPath = "/auth/login",
-    defaultSystemErrorMessage = "The system is experiencing issues. Please try again later.",
+    defaultSystemErrorMessage = "Hệ thống đang tạm thời gián đoạn. Xin vui lòng trở lại sau hoặc liên hệ với quản trị viên.",
     logger = console.error,
-    authErrorExceptions = ["Invalid credentials", "Invalid email or password"],
+    authErrorExceptions = [
+      "Invalid credentials",
+      "Invalid email or password",
+      "Thông tin đăng nhập không chính xác",
+    ],
   } = options;
 
+  // Vietnamese error messages by status code
   const errorMessages: Record<number, string> = {
     400: "Invalid request. Please check the information.",
     401: "Session has expired. Please log in again.",
@@ -142,14 +205,32 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
     const responseData = err?.response?.data;
     const status =
       err?.response?.statusCode || err?.response?.status || err?.status;
-    console.log(status);
-    const errorMessage =
-      responseData?.message || responseData?.error || err?.message;
 
-    // Additional error details provided by ResponseInterceptor
+    // Extract error message from response data with priority order
+    let errorMessage = null;
+
+    // First check for API-specific error formats
+    if (responseData) {
+      if (responseData.message) {
+        errorMessage = responseData.message;
+      } else if (responseData.error) {
+        errorMessage = responseData.error;
+      } else if (responseData.Object) {
+        errorMessage = responseData.Object;
+      } else if (
+        err.message &&
+        !err.message.includes("Network Error") &&
+        !err.message.includes("timeout")
+      ) {
+        errorMessage = err.message;
+      }
+    }
+
+    // Get validation errors if any
     const errors = responseData?.errors;
 
-    if (!status) {
+    // Network or connection errors
+    if (err.code === "ECONNABORTED" || (!status && !errorMessage)) {
       showDebouncedSnackbar(
         "Lost connection. Please check the network connection.",
         {
@@ -160,7 +241,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       return Promise.reject(err);
     }
 
-    // Check if the error is due to an expired token (status 401)
+    // Handle 401 unauthorized errors specially
     if (status === 401) {
       // Check if this is a login attempt with invalid credentials
       const isAuthErrorException = authErrorExceptions.some(
@@ -185,19 +266,37 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
               autoHideDuration: 3000,
             }
           );
-
-          setTimeout(() => {
-            window.location.replace(loginRedirectPath);
-          }, 1000);
+          if (
+            window.location.pathname !== loginRedirectPath &&
+            window.location.pathname !== "/"
+          ) {
+            setTimeout(() => {
+              window.location.replace(loginRedirectPath);
+            }, 1000);
+          }
         }
       }
 
       return Promise.reject(err);
     }
 
-    // Handle other error cases (with proper messages from ResponseInterceptor)
+    // Server errors (500+)
+    if (status >= 500 && !errorMessage) {
+      showDebouncedSnackbar(
+        `Hệ thống đang tạm thời gián đoạn. Xin vui lòng trở lại sau hoặc liên hệ với quản trị viên. (SC${status})`,
+        { variant: "error", autoHideDuration: 5000 }
+      );
+      return Promise.reject(err);
+    }
+
+    // Priority order for error messages:
+    // 1. Use message from response if available
+    // 2. If error has validation errors, include those details
+    // 3. If no message, use status code based message
+    // 4. Fall back to default message
+
     if (errorMessage) {
-      // If we have specific validation errors, show those details
+      // If we have specific validation errors, include those details
       if (errors) {
         const errorDetails = Array.isArray(errors)
           ? errors.join(", ")
@@ -210,20 +309,20 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
           autoHideDuration: 5000,
         });
       } else {
-        // Show the main error message
+        // Just show the error message from response
         showDebouncedSnackbar(errorMessage, {
           variant: "error",
           autoHideDuration: 3000,
         });
       }
-    } else if (status in errorMessages) {
-      // Use predefined messages for known status codes
+    } else if (status && status in errorMessages) {
+      // No message from response, use status code based message
       showDebouncedSnackbar(errorMessages[status], {
         variant: "error",
         autoHideDuration: 3000,
       });
     } else {
-      // Fallback error handling
+      // Last resort: default error message
       showDebouncedSnackbar(defaultSystemErrorMessage, {
         variant: "error",
         autoHideDuration: 3000,
@@ -240,8 +339,13 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
 const handleError = createErrorHandler({
   redirectOnUnauthorized: true,
   loginRedirectPath: "/auth/login",
-  defaultSystemErrorMessage: "An error occurred. Please try again.",
-  authErrorExceptions: ["Invalid credentials", "Invalid email or password"],
+  defaultSystemErrorMessage:
+    "Hệ thống đang tạm thời gián đoạn. Xin vui lòng trở lại sau hoặc liên hệ với quản trị viên.",
+  authErrorExceptions: [
+    "Invalid credentials",
+    "Invalid email or password",
+    "Thông tin đăng nhập không chính xác",
+  ],
   logger: (message, error) => {
     console.error(message, error);
   },
@@ -250,7 +354,12 @@ const handleError = createErrorHandler({
 // Success response interceptor
 http.interceptors.response.use(
   (response) => {
-    const { data } = response;
+    // Parse response for custom status codes
+    const parsedResponse = parseBody(response);
+    if (!parsedResponse) return;
+
+    // Handle success messages
+    const { data } = parsedResponse;
     if (data && data.status === "success" && data.message) {
       if (currentOperationCount > 1) {
         const message = data.message;
@@ -262,8 +371,9 @@ http.interceptors.response.use(
         });
       }
     }
+
     trackOperationEnd();
-    return response;
+    return parsedResponse;
   },
   async (error) => {
     trackOperationEnd();
@@ -345,11 +455,29 @@ http.interceptors.request.use(
     // Track the start of this operation
     const operationId = trackOperationStart();
     config.headers["X-Operation-ID"] = operationId;
+
+    // Trim request data if it's not a FormData
+    if (config.data && !(config.data instanceof FormData)) {
+      config.data = trimData(config.data);
+    }
+
+    // Add upload progress tracking if needed
+    if (config.data instanceof FormData) {
+      config.onUploadProgress = (progressEvent) => {
+        const percentCompleted = Math.floor(
+          (progressEvent.loaded * 100) / (progressEvent.total || 1)
+        );
+        // You can dispatch progress updates here if needed
+        console.debug(`Upload progress: ${percentCompleted}%`);
+      };
+    }
+
     const isAuthEndpoint = [
       "/auth/login",
       "/auth/register",
       "/auth/refresh",
     ].some((endpoint) => config.url?.includes(endpoint));
+
     if (!isAuthEndpoint) {
       const accessToken = getToken();
       if (accessToken) {
@@ -366,6 +494,15 @@ http.interceptors.request.use(
   }
 );
 
+// Export file download utility
+export const httpGetFile = (path = "", optionalHeader = {}) =>
+  http({
+    method: "GET",
+    url: path,
+    responseType: "blob",
+    headers: { ...optionalHeader },
+  });
+
 // Export the enhanced methods for use in components
 export const enhancedHttp = {
   ...http,
@@ -381,6 +518,32 @@ export const enhancedHttp = {
       return await callback();
     } finally {
       trackOperationEnd();
+    }
+  },
+  /**
+   * Download a file and save it with the specified filename
+   * @param url The URL to download from
+   * @param filename The name to save the file as
+   * @returns Promise that resolves when download completes
+   */
+  downloadFile: async (url: string, filename: string) => {
+    try {
+      const response = await httpGetFile(url);
+      // Create blob link to download
+      const blob = new Blob([response.data]);
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = filename;
+      // Append to html link element page
+      document.body.appendChild(link);
+      // Start download
+      link.click();
+      // Clean up and remove the link
+      link.parentNode?.removeChild(link);
+      return true;
+    } catch (error) {
+      handleError(error);
+      return false;
     }
   },
 };

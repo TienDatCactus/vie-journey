@@ -39,9 +39,8 @@ const OauthSuccess: React.FC = () => {
               userId: tokenData.userId,
             });
             setCredential({ userId: tokenData.userId, token });
-            await loadUserFromToken().then(async () => {
-              await loadUserInfo();
-            });
+            await loadUserFromToken();
+            await loadUserInfo();
           }
         } catch (error) {
           console.error("Error processing OAuth callback:", error);
@@ -91,8 +90,12 @@ const OauthSuccess: React.FC = () => {
               <CircularProgress size={20} className="self-start" />
             ) : (
               <>
-                <h1 className="text-lg font-semibold">{user?.email}</h1>
-                <p className="text-sm text-neutral-600">{info?.fullName}</p>
+                <h1 className="text-lg font-semibold truncate w-3/4">
+                  {user?.email}
+                </h1>
+                <p className="text-sm text-neutral-600 truncate w-3/4">
+                  {info?.fullName}
+                </p>
               </>
             )}
             <Button

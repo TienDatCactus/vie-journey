@@ -110,7 +110,11 @@ export class TripService {
     const trip = this.tripModel.findOne({
       _id: id,
     });
-    if (!trip) throw new NotFoundException(`No trip found with id ${id}`);
+    if (!trip)
+      throw new HttpException(
+        `No trip found with id ${id}`,
+        HttpStatus.BAD_REQUEST,
+      );
     return trip;
   }
 

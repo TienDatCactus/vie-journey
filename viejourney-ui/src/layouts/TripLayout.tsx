@@ -15,7 +15,6 @@ import { CSSObject, styled, Theme } from "@mui/material/styles";
 import * as React from "react";
 import { TripHeader } from "../components/Layout";
 import { TripMap } from "../components/Pages/(user)/Trips";
-import { useTripDetailStore } from "../services/stores/useTripDetailStore";
 
 const drawerWidth = 200;
 
@@ -58,7 +57,6 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 const TripLayout = ({ children }: { children: React.ReactNode }) => {
-  const trip = useTripDetailStore((state) => state.trip);
   const [open, setOpen] = React.useState(false);
 
   const handleDrawerOpen = () => {
@@ -96,31 +94,33 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
             <List>
               {["Inbox", "Starred", "Send email", "Drafts"].map(
                 (text, index) => (
-                  <ListItem key={text} disablePadding sx={{ display: "block" }}>
-                    <ListItemButton
-                      sx={{
-                        minHeight: 48,
-                        px: 2.5,
-                        justifyContent: open ? "initial" : "center",
-                      }}
-                    >
-                      <ListItemIcon
+                  <a href="#placeNotes" key={text} className="">
+                    <ListItem disablePadding sx={{ display: "block" }}>
+                      <ListItemButton
                         sx={{
-                          minWidth: 0,
-                          justifyContent: "center",
-                          mr: open ? 3 : "auto",
+                          minHeight: 48,
+                          px: 2.5,
+                          justifyContent: open ? "initial" : "center",
                         }}
                       >
-                        {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={text}
-                        sx={{
-                          opacity: open ? 1 : 0,
-                        }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
+                        <ListItemIcon
+                          sx={{
+                            minWidth: 0,
+                            justifyContent: "center",
+                            mr: open ? 3 : "auto",
+                          }}
+                        >
+                          {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={text}
+                          sx={{
+                            opacity: open ? 1 : 0,
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  </a>
                 )
               )}
             </List>

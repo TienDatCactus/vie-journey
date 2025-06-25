@@ -18,7 +18,6 @@ export class AssetsService {
         .upload_stream(
           {
             resource_type: 'image',
-            folder: 'vie-journey',
             transformation: [
               { width: 1200, height: 800, crop: 'limit' },
               { quality: 'auto' },
@@ -41,5 +40,31 @@ export class AssetsService {
 
   async deleteImage(publicId: string): Promise<any> {
     return cloudinary.uploader.destroy(publicId);
+  }
+
+  getPublicIdFromUrl(url: string): string | null {
+    // Ví dụ: https://res.cloudinary.com/.../users/123/IMAGE_BLOG/filename.jpg
+    // public_id là phần sau '/upload/' và trước phần mở rộng
+    const matches = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/);
+    return matches ? matches[1] : null;
+  }
+
+  async uploadImageFromUrl(
+    imageUrl: string,
+    options?: { public_id?: string; folder?: string },
+  ): Promise<UploadApiResponse> {
+    try {
+      const result = await cloudinary.uploader.upload(imageUrl, {
+        resource_type: 'image',
+        transformation: [
+          { width: 1200, height: 800, crop: 'limit' },
+          { quality: 'auto' },
+        ],
+        ...options, // chứa public_id nếu có
+      });
+      return result;
+    } catch (error) {
+      throw new Error(`Failed to upload image from URL: ${error.message}`);
+    }
   }
 }

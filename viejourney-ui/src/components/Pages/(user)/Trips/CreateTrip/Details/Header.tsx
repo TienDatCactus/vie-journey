@@ -1,24 +1,74 @@
-import { Edit, ExpandMore, Explore } from "@mui/icons-material";
+import { Close, Edit, ExpandMore, Explore, Upload } from "@mui/icons-material";
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Avatar,
   AvatarGroup,
+  Box,
   Button,
   Card,
   CardActions,
   CardContent,
   CardMedia,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   IconButton,
   Stack,
+  Tab,
+  Tabs,
 } from "@mui/material";
+import * as React from "react";
 
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
-import React from "react";
 import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function CustomTabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
 const Header: React.FC = () => {
+  const [value, setValue] = React.useState(0);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const trip = useTripDetailStore((state) => state.trip);
   return (
     <section>
@@ -31,7 +81,10 @@ const Header: React.FC = () => {
           alt=""
           className="w-full h-[17.5rem] object-cover"
         />
-        <IconButton className="absolute top-4 right-4 bg-neutral-50/20">
+        <IconButton
+          onClick={handleClickOpen}
+          className="absolute top-4 right-4 bg-neutral-50/20"
+        >
           <Edit className="text-neutral-200 " />
         </IconButton>
         <div className="absolute bottom-0 left-0 w-full h-[10rem] bg-gradient-to-t from-neutral-900 to-transparent"></div>
@@ -195,6 +248,75 @@ const Header: React.FC = () => {
           </AccordionDetails>
         </Accordion>
       </div>
+      <Dialog
+        slotProps={{
+          transition: { unmountOnExit: true },
+          paper: {
+            className: "bg-white rounded-lg shadow-lg min-w-200",
+          },
+        }}
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          <Stack>
+            <h1 className="text-2xl">Change cover image</h1>
+            <IconButton
+              className="absolute top-2 right-2"
+              onClick={handleClose}
+            >
+              <Close />
+            </IconButton>
+          </Stack>
+        </DialogTitle>
+        <DialogContent className="">
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              aria-label="basic tabs example"
+            >
+              <Tab label="Your Photos" {...a11yProps(0)} />
+              <Tab label="Select Photos" {...a11yProps(1)} />
+            </Tabs>
+          </Box>
+          <CustomTabPanel value={value} index={0}>
+            <div className="flex flex-col items-center justify-center gap-4 p-4">
+              <img
+                src="/images/svg/undraw_upload-image_tpmp.svg"
+                alt="upload image"
+                className="lg:w-100 h-auto mx-auto"
+              />
+              <h1 className="text-3xl font-semibold">Upload your photos</h1>
+              <p className="text-base text-neutral-600">
+                You haven't uploaded any photos
+              </p>
+              <Button startIcon={<Upload />} variant="contained" className="">
+                Upload your photos
+              </Button>
+            </div>
+          </CustomTabPanel>
+          <CustomTabPanel value={value} index={1}>
+            <Stack
+              className="grid lg:grid-cols-3"
+              flexWrap="wrap"
+              gap={2}
+              justifyContent="center"
+            >
+              {Array.from({ length: 12 }).map((_, index) => (
+                <img
+                  key={index}
+                  src="/images/placeholders/main-placeholder.jpg"
+                  alt={`placeholder-${index}`}
+                  className="w-full h-auto object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity duration-200"
+                />
+              ))}
+            </Stack>
+          </CustomTabPanel>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };

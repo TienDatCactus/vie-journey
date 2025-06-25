@@ -12,21 +12,27 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { AccountService } from '../account/account.service';
 import { Account } from 'src/common/entities/account.entity';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { Status } from 'src/common/enums/status.enum';
+import { AssetsService } from '../assets/assets.service';
+import { Asset } from 'src/common/entities/asset.entity';
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly accountService: AccountService,
+    private readonly assetsService: AssetsService,
 
     private readonly jwtService: JwtService,
     @InjectModel(Account.name) private readonly accountModel: Model<Account>,
     @InjectModel(UserInfos.name) private readonly userModel: Model<UserInfos>,
+    @InjectModel(Asset.name) private readonly assetModel: Model<Asset>,
     private readonly mailService: MailerService,
+    private readonly assetService: AssetsService,
   ) {}
   async resendVerificationEmail(email: string, res: Response) {
     const user = await this.accountModel.findOne({ email });
@@ -62,9 +68,7 @@ export class AuthService {
       user.status = Status.active;
       await user.save();
 
-      return {
-        message: 'Email verified successfully',
-      };
+      return HttpStatus.OK;
     } catch (error) {
       this.logger.error('Token verification error:', error);
 
@@ -122,7 +126,7 @@ export class AuthService {
       }
       await user.updateOne({ password: await bcrypt.hash(password, 10) });
       this.logger.log(`Password updated for user: ${user.email}`);
-      return { message: 'Password updated!' };
+      return HttpStatus.OK;
     } catch (error) {
       throw new HttpException(
         'Failed to send reset password email',
@@ -152,19 +156,24 @@ export class AuthService {
       throw new ConflictException('User already exists');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    // Create user
     const user = new this.accountModel({
       email,
       password: hashedPassword,
       status: 'INACTIVE',
     });
     await user.save();
-
+    if (user) {
+      await this.userModel.create({
+        userId: user._id,
+        fullName: '',
+        dob: '',
+        avatar: null, // No avatar initially
+        phone: '',
+        address: '',
+      });
+    }
     this.sendRegistrationEmail(user);
-    return {
-      message:
-        'Registration successful, please check your email to verify account',
-    };
+    return HttpStatus.CREATED;
   }
   async login(res: Response, email: string, password: string) {
     const user = await this.accountModel.findOne({ email });
@@ -213,7 +222,6 @@ export class AuthService {
     };
   }
   async logout(req: Request, res: Response) {
-    // Clear the refresh token cookie
     res.cookie('refreshToken', '', {
       httpOnly: true,
       sameSite: 'none',
@@ -221,12 +229,12 @@ export class AuthService {
       maxAge: 0, // Expires immediately
     });
 
-    return { message: 'Logged out successfully' };
+    return HttpStatus.OK;
   }
   async refresh(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token not found');
+      throw new NotFoundException('Refresh token not found');
     }
 
     try {
@@ -459,15 +467,39 @@ export class AuthService {
           password: '',
           status: 'ACTIVE',
         });
-
-        const avatar =
+        const avatarUrl =
           picture || (Array.isArray(photos) ? photos[0]?.value : '') || '';
+        let assetId;
+        if (avatarUrl) {
+          const uploadResult = await this.assetsService.uploadImageFromUrl(
+            avatarUrl,
+            {
+              public_id: `users/${user._id}/AVATAR/google-avatar`,
+              folder: 'vie-journey/avatars',
+            },
+          );
 
+          const assetData = {
+            userId: new Types.ObjectId(user._id),
+            type: 'AVATAR',
+            url: uploadResult?.secure_url,
+            publicId: uploadResult?.public_id,
+            location: uploadResult.public_id.split('/')[0],
+            format: uploadResult.format.toLocaleUpperCase(),
+            file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
+            dimensions: `${uploadResult.width} x ${uploadResult.height}`,
+          };
+
+          const asset = await this.assetModel.create(assetData);
+          assetId = asset._id;
+        }
+
+        // Tạo hồ sơ user mới
         await this.userModel.create({
           userId: user._id,
           fullName: displayName || '',
           dob: '',
-          avatar,
+          avatar: assetId, // nếu có thì gán
           phone: '',
           address: '',
         });
@@ -510,24 +542,24 @@ export class AuthService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      if (user.status !== 'ACTIVE') {
-        this.logger.warn(`User with ID ${userId} is not active`);
-        throw new UnauthorizedException('User is not active');
+      console.log(user);
+      switch (user.status) {
+        case Status.active:
+          this.logger.log(`User with ID ${userId} is active`);
+          break;
+        case Status.inactive:
+          this.logger.warn(`User with ID ${userId} is inactive`);
+          break;
+        case Status.banned:
+          this.logger.warn(`User with ID ${userId} is banned`);
+          break;
       }
       return {
         userId: user._id,
+        status: user.status,
       };
     } catch (error) {
       this.logger.error('Access token validation error:', error);
-      if (error.name === 'TokenExpiredError') {
-        throw new UnauthorizedException('Access token has expired');
-      } else if (error.name === 'JsonWebTokenError') {
-        throw new UnauthorizedException('Invalid access token');
-      }
-      throw new HttpException(
-        'Failed to validate access token',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
     }
   }
 }
