@@ -4,7 +4,7 @@ import {
   CategoryType,
   PLACE_CATEGORIES,
 } from "../../components/Maps/controls/GeneralFilter";
-import { POIData } from "../../components/Maps/types";
+import { OldPOIData, POIData } from "../../components/Maps/types";
 import { PlaceDetails } from "./use-poi";
 
 export interface FilterOptions {
@@ -56,10 +56,12 @@ export const useCategorySearch = ({
   // ===== STATE =====
   // Category search state
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [categoryResults, setCategoryResults] = useState<POIData[]>([]);
+  const [categoryResults, setCategoryResults] = useState<OldPOIData[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [showResultsPanel, setShowResultsPanel] = useState<boolean>(false);
+  // New state to track if a search has been performed
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
 
   // Nearby search state
   const [nearbyPlaces, setNearbyPlaces] = useState<
@@ -74,8 +76,6 @@ export const useCategorySearch = ({
   );
   const sessionTokenRef =
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
-
-  // For debouncing
 
   // ===== INITIALIZATION =====
   // Initialize Places Service
@@ -198,62 +198,26 @@ export const useCategorySearch = ({
       const uniqueResults = Array.from(
         new Map(flatResults.map((place) => [place.place_id, place])).values()
       );
-
-      // For each unique place, convert to POIData
-      const processedResults: POIData[] = [];
+      // Remove duplicates based on place_id
+      const processedResults: OldPOIData[] = [];
 
       for (const place of uniqueResults) {
         if (place.place_id && place.geometry?.location) {
-          // Transform each place into our POIData format
-          const poiData: POIData = {
-            id: place.place_id,
-            displayName: place.name || "",
-            location: {
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng(),
-            },
-            formattedAddress: place.vicinity || "",
-            types: place.types || [],
-            rating: place.rating,
-            userRatingCount: place.user_ratings_total,
-            photos: place.photos || [],
-            // Add other fields if available
-          } as unknown as POIData;
-
-          processedResults.push(poiData);
+          processedResults.push(place as OldPOIData);
         }
       }
 
       setCategoryResults(processedResults);
+      setHasSearched(true); // Mark that a search has been performed
     } catch (err) {
       setSearchError("Error searching for places");
-      console.error("Places search error:", err);
     } finally {
       setIsSearching(false);
     }
   }, [mapInstance, getSelectedPlaceTypes]);
 
-  // Search when categories change or map is ready
-  useEffect(() => {
-    if (
-      mapInstance &&
-      placesServiceRef.current &&
-      selectedCategories.length > 0
-    ) {
-      searchPlacesInBounds();
-
-      // Add listener for bounds changed
-      const boundsChangedListener = mapInstance.addListener("idle", () => {
-        searchPlacesInBounds();
-      });
-
-      return () => {
-        google.maps.event.removeListener(boundsChangedListener);
-      };
-    } else {
-      setCategoryResults([]);
-    }
-  }, [mapInstance, selectedCategories, searchPlacesInBounds]);
+  // REMOVED: The automatic search effect
+  // Now we only trigger searches when the user explicitly requests them
 
   // Handle category selection toggle
   const handleCategoryToggle = useCallback((categoryId: string) => {
@@ -357,6 +321,8 @@ export const useCategorySearch = ({
   const clearResults = useCallback(() => {
     setNearbyPlaces([]);
     setNearbyError(null);
+    setCategoryResults([]);
+    setHasSearched(false);
   }, []);
 
   return {
@@ -367,6 +333,7 @@ export const useCategorySearch = ({
     searchError,
     showResultsPanel,
     setShowResultsPanel,
+    hasSearched, // New state to track if a search has been performed
 
     // Nearby search state
     nearbyPlaces,
@@ -374,7 +341,7 @@ export const useCategorySearch = ({
 
     // Category search actions
     handleCategoryToggle,
-    searchPlacesInBounds,
+    searchPlacesInBounds, // This is now exposed for button-triggered searches
 
     // Nearby search actions
     searchPlacesByType,

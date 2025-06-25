@@ -29,7 +29,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
-import { UserInfo } from "../../../../../../../utils/interfaces";
+import { NoteData } from "../../../../../../../services/stores/storeInterfaces";
 
 interface ReservationNotesProps {
   state: {
@@ -37,13 +37,6 @@ interface ReservationNotesProps {
     handleClose?: () => void;
     anchorEl?: HTMLElement | null;
   };
-}
-
-interface NoteData {
-  id: string;
-  content: string;
-  by: UserInfo | null;
-  isEditing?: boolean;
 }
 
 interface NotesCardProps {
@@ -74,8 +67,8 @@ const NotesCard: React.FC<NotesCardProps> = ({
   };
 
   const handleBlur = () => {
-    onUpdate(data.id, localContent); // sync lên cha khi blur
-    onToggleEdit(data.id); // giữ nguyên
+    onUpdate(data._id, localContent); // sync lên cha khi blur
+    onToggleEdit(data._id); // giữ nguyên
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -100,8 +93,8 @@ const NotesCard: React.FC<NotesCardProps> = ({
           <h1 className="text-lg font-semibold text-dark-900">Note #{index}</h1>
           <IconButton
             className="p-1"
-            id={`note-menu-${data.id}`}
-            aria-controls={open ? `note-menu-${data.id}` : undefined}
+            id={`note-menu-${data._id}`}
+            aria-controls={open ? `note-menu-${data._id}` : undefined}
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
             onClick={handleClick}
@@ -109,13 +102,13 @@ const NotesCard: React.FC<NotesCardProps> = ({
             <Settings />
           </IconButton>
           <Menu
-            id={`note-menu-${data.id}`}
+            id={`note-menu-${data._id}`}
             anchorEl={anchorEl}
             open={open}
             onClose={handleClose}
             slotProps={{
               list: {
-                "aria-labelledby": `note-menu-${data.id}`,
+                "aria-labelledby": `note-menu-${data._id}`,
               },
             }}
           >
@@ -123,7 +116,7 @@ const NotesCard: React.FC<NotesCardProps> = ({
               <MenuItem
                 onClick={() => {
                   handleClose();
-                  onDelete(data.id);
+                  onDelete(data._id);
                 }}
               >
                 <ListItemIcon>
@@ -137,7 +130,7 @@ const NotesCard: React.FC<NotesCardProps> = ({
               <MenuItem
                 onClick={() => {
                   handleClose();
-                  onToggleEdit(data.id);
+                  onToggleEdit(data._id);
                 }}
               >
                 <ListItemIcon>
@@ -174,7 +167,7 @@ const NotesCard: React.FC<NotesCardProps> = ({
           />
         ) : (
           <p
-            onDoubleClick={() => onToggleEdit(data.id)}
+            onDoubleClick={() => onToggleEdit(data._id)}
             className="text-base pt-2 pb-4 text-neutral-600 font-medium text-ellipsis line-clamp-2"
           >
             {data.content || (
@@ -205,7 +198,7 @@ const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
   const { info } = useAuthStore();
   const handleAddNote = () => {
     addNote({
-      id: `note-${Date.now()}`,
+      _id: `note-${Date.now()}`,
       content: "",
       by: info,
       isEditing: true,
@@ -248,7 +241,7 @@ const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
           <div className="grid gap-4">
             {notes.map((note, index) => (
               <NotesCard
-                key={note.id}
+                key={note._id}
                 data={note}
                 index={index + 1}
                 onUpdate={handleUpdateNote}

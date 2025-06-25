@@ -1,4 +1,3 @@
-import axios from "axios";
 import { enqueueSnackbar } from "notistack";
 import http from "../axios";
 import { extractApiData } from "./apiHelpers";
@@ -103,26 +102,15 @@ export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
   try {
     const resp = await http.post(AUTH?.REFRESH_TOKEN);
     const newTokenData = extractApiData<RefreshTokenRespDTO>(resp);
-    console.log(resp);
     if (newTokenData && newTokenData.accessToken) {
       localStorage.setItem("token", JSON.stringify(newTokenData));
       return newTokenData;
     } else {
       clearToken();
-      window.dispatchEvent(new CustomEvent("auth:refresh-failed"));
       return null;
     }
   } catch (error) {
-    console.error("Failed to refresh token:", error);
     clearToken();
-
-    if (
-      axios.isAxiosError(error) &&
-      (error.response?.status === 401 || error.response?.status === 403)
-    ) {
-      window.dispatchEvent(new CustomEvent("auth:refresh-failed"));
-    }
-
     return null;
   }
 };
@@ -189,16 +177,20 @@ export const doValidateAccessToken = async (accessToken: string) => {
 
 export const doCreateTrip = async (data: CreateTripDto) => {
   try {
+    console.log(data);
     const resp = await http.post(TRIP?.CREATE_TRIP, data);
     if (resp) {
       const trip = extractApiData<CreateTripRespDto>(resp);
+      if (!trip) {
+        enqueueSnackbar("Failed to create trip", { variant: "error" });
+        return null;
+      }
       enqueueSnackbar("Trip created successfully", { variant: "success" });
-      window.location.href = `/trip/${trip?._id}`;
+      window.location.href = `/trips/edit/${trip?._id}`;
       return trip;
     }
   } catch (error) {
     console.error(error);
-    enqueueSnackbar("Failed to create trip", { variant: "error" });
   }
   return null;
 };
@@ -219,7 +211,6 @@ export const doGetUserInfo = async (userId: string) => {
   try {
     const resp = await http.get(`${USER?.GET_USER_INFO}/${userId}`);
     if (resp) {
-      console.log(resp);
       return extractApiData<GetUserInfoRespDTO>(resp);
     }
   } catch (error) {

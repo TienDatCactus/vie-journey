@@ -1,7 +1,6 @@
-import { Close, Search, TravelExplore, Tune } from "@mui/icons-material";
+import { Search } from "@mui/icons-material";
 import AttractionsIcon from "@mui/icons-material/Attractions";
 import CoffeeIcon from "@mui/icons-material/Coffee";
-import EvStationIcon from "@mui/icons-material/EvStation";
 import HotelIcon from "@mui/icons-material/Hotel";
 import LocalBarIcon from "@mui/icons-material/LocalBar";
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
@@ -10,26 +9,20 @@ import RestaurantIcon from "@mui/icons-material/Restaurant";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import {
   Autocomplete,
+  Checkbox,
   CircularProgress,
-  Divider,
-  FormControl,
-  FormLabel,
   IconButton,
   InputAdornment,
-  MenuItem,
-  Paper,
-  Select,
-  Slider,
   Stack,
-  Switch,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
+import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
+import { motion } from "motion/react";
 import React, { useCallback, useState } from "react";
 import { useAutocompleteSuggestions } from "../../../utils/hooks/use-autocomplete-suggestion";
 import usePOI from "../../../utils/hooks/use-poi";
-import { useMapsLibrary } from "@vis.gl/react-google-maps";
 
 export interface CategoryType {
   id: string;
@@ -43,14 +36,14 @@ export const PLACE_CATEGORIES: CategoryType[] = [
   {
     id: "food",
     label: "Food",
-    icon: <RestaurantIcon className="text-red-500" />,
+    icon: <RestaurantIcon />,
     placeTypes: ["restaurant", "meal_takeaway", "bakery", "cafe"],
     color: "#e53935", // Red
   },
   {
     id: "attractions",
     label: "Attractions",
-    icon: <AttractionsIcon className="text-purple-500" />,
+    icon: <AttractionsIcon />,
     placeTypes: [
       "tourist_attraction",
       "museum",
@@ -64,7 +57,7 @@ export const PLACE_CATEGORIES: CategoryType[] = [
   {
     id: "gas",
     label: "Gas Stations",
-    icon: <LocalGasStationIcon className="text-orange-500" />,
+    icon: <LocalGasStationIcon />,
     placeTypes: ["gas_station"],
     color: "#f57c00", // Orange
   },
@@ -72,21 +65,21 @@ export const PLACE_CATEGORIES: CategoryType[] = [
   {
     id: "lodging",
     label: "Hotels",
-    icon: <HotelIcon className="text-blue-500" />,
+    icon: <HotelIcon />,
     placeTypes: ["lodging", "hotel", "campground"],
     color: "#1e88e5", // Blue
   },
   {
     id: "coffee",
     label: "Coffee",
-    icon: <CoffeeIcon className="text-brown-500" />,
+    icon: <CoffeeIcon />,
     placeTypes: ["cafe"],
     color: "#795548", // Brown
   },
   {
     id: "shopping",
     label: "Shopping",
-    icon: <ShoppingCartIcon className="text-gray-500" />,
+    icon: <ShoppingCartIcon />,
     placeTypes: [
       "shopping_mall",
       "department_store",
@@ -98,7 +91,7 @@ export const PLACE_CATEGORIES: CategoryType[] = [
   {
     id: "parks",
     label: "Parks",
-    icon: <ParkIcon className="text-green-500" />,
+    icon: <ParkIcon />,
     placeTypes: ["park", "natural_feature", "campground"],
     color: "#4caf50", // Green
   },
@@ -120,13 +113,16 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
   selectedCategories,
   onCategoryToggle,
 }) => {
+  const mapInstance = useMap();
   const placesLib = useMapsLibrary("places");
   const [destination, setDestination] = useState<string>("");
   const [selectedPlace, setSelectedPlace] = useState<{
-    placePrediction: google.maps.places.PlacePrediction;
+    placePrediction: google.maps.places.PlacePrediction | null;
   } | null>(null);
-  const [open, setOpen] = useState(false); // Use the hook with proper debouncing configuration
+  const [open, setOpen] = useState(false);
+  const [openSearch, setOpenSearch] = useState(false);
   const { suggestions, isLoading } = useAutocompleteSuggestions(destination);
+  const [loading, setLoading] = useState(false);
   const { handlePOIClick, setHighlightedPOI } = usePOI();
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -140,189 +136,136 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
       placePrediction: google.maps.places.PlacePrediction | null;
     } | null
   ) => {
-    if (suggestion?.placePrediction && placesLib) {
-      const placeInstance = new placesLib.Place({
-        id: suggestion.placePrediction.placeId,
-      });
-      handlePOIClick(placeInstance);
-
-      setHighlightedPOI(placeInstance.id);
-      setDestination(suggestion.placePrediction.mainText + "");
-      setOpen(false);
+    if (!suggestion?.placePrediction || !placesLib || !mapInstance) {
+      return;
     }
+    const placeInstance = new placesLib.Place({
+      id: suggestion.placePrediction.placeId,
+    });
+    handlePOIClick(placeInstance);
+
+    setHighlightedPOI(placeInstance.id);
+    setDestination(suggestion.placePrediction.mainText + "");
+    setOpen(false);
   };
   return (
-    <Paper
-      elevation={3}
-      className="absolute space-y-2 top-2 right-2 z-10 p-2 w-full max-w-80"
-    >
-      <Stack
-        direction="row"
-        justifyContent={"space-between"}
-        alignItems="center"
-      >
-        <Stack direction={"row"} spacing={1} alignItems="center">
-          <TravelExplore />
-          <h1 className="text-xl font-bold">Explore Nearby</h1>
-        </Stack>
-        <IconButton>
-          <Close />
-        </IconButton>
-      </Stack>
-      {/* Replace your TextField with this Autocomplete */}{" "}
-      <Autocomplete
-        id="destination-autocomplete"
-        open={open}
-        onOpen={() => {
-          if (destination.length >= 2) setOpen(true);
-        }}
-        onClose={() => setOpen(false)}
-        isOptionEqualToValue={(option, value) =>
-          option.placePrediction?.placeId === value.placePrediction?.placeId
-        }
-        getOptionLabel={(option) => option.placePrediction?.mainText + ""}
-        options={suggestions}
-        loading={isLoading}
-        value={selectedPlace}
-        onChange={(_, newValue) => handlePlaceSelect(newValue)}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            className="rounded-lg"
-            size="small"
-            fullWidth
-            placeholder="e.g Ta xua, Sapa, Da Nang"
-            variant="outlined"
-            value={destination}
-            onChange={handleInputChange}
-            InputProps={{
-              ...params.InputProps,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search color="action" />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <>
-                  {isLoading ? (
-                    <CircularProgress color="inherit" size={20} />
-                  ) : null}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            }}
-          />
-        )}
-        renderOption={(props, option) => (
-          <li {...props} key={option.placePrediction?.placeId}>
-            <Stack>
-              <div className="font-medium">
-                {option?.placePrediction?.mainText + ""}
-              </div>
-              <div className="text-sm text-gray-500">
-                {option.placePrediction?.secondaryText != null
-                  ? option.placePrediction?.secondaryText + ""
-                  : option.placePrediction?.text + ""}
-              </div>
-            </Stack>
-          </li>
-        )}
-      />
-      <Stack
-        direction={"row"}
-        justifyContent={"space-between"}
-        alignItems="center"
-      >
-        <Stack direction={"row"} spacing={1} alignItems="center">
-          <Tune />
-          <h2 className="text-base font-semibold">Filters</h2>
-        </Stack>
-        <FormControl>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent={"space-between"}
-          >
-            <Switch />
-            <FormLabel>
-              <p className="text-sm text-gray-500">Open now</p>
-            </FormLabel>
-          </Stack>
-        </FormControl>
-      </Stack>
-      <div>
-        <Stack
-          direction={"row"}
-          justifyContent={"space-between"}
-          alignItems="center"
+    <>
+      {openSearch ? (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="absolute space-y-1 top-2 right-2 z-10 p-2 w-full max-w-80"
         >
-          <h2 className="text-base font-semibold">Search radius</h2>
-          <p className="text-sm text-gray-500">5 km</p>
-        </Stack>
-
-        <Slider
-          value={5000}
-          min={0}
-          max={20000}
-          step={1000}
-          className="text-dark-800"
-        />
-      </div>
-      <FormControl>
-        <Stack direction={"row"} spacing={1} alignItems="center">
-          <FormLabel htmlFor="sort-by" className="text-base font-semibold">
-            Sort by:
-          </FormLabel>
-          <Select
-            variant="standard"
-            className="w-40 text-sm text-gray-700"
-            id="sort-by"
-            defaultValue="distance"
-            size="small"
-          >
-            <MenuItem value="distance">Distance</MenuItem>
-            <MenuItem value="reviews">Reviews</MenuItem>
-            <MenuItem value="price">Price</MenuItem>
-            <MenuItem value="rating">Rating</MenuItem>
-          </Select>
-        </Stack>
-      </FormControl>
-      <Divider />
-      <div className="lg:h-50 relative">
-        <h1 className="text-base font-semibold pb-2">Categories</h1>
-        <div className="grid gap-1 lg:grid-cols-2 overflow-auto max-h-40 ">
-          {PLACE_CATEGORIES.map((category) => (
-            <Tooltip key={category.id} title={category.label}>
-              <Stack
-                direction={"row"}
-                spacing={1}
-                alignItems="center"
-                padding={2}
-                onClick={() => onCategoryToggle(category.id)}
-                className={`shadow-sm  hover:shadow-md border border-neutral-300 rounded-md transition-shadow duration-200 cursor-pointer ${
-                  selectedCategories.includes(category.id)
-                    ? "bg-gray-200"
-                    : "bg-white"
-                }`}
-              >
-                <div>
-                  {React.cloneElement(category.icon as React.ReactElement, {})}
-                </div>
-                <Typography variant="caption">{category.label}</Typography>
-              </Stack>
-            </Tooltip>
-          ))}
-        </div>
-        {/* Faded mask at the bottom */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.9) 70%, rgba(255,255,255,1))",
-          }}
-        />
-      </div>
-    </Paper>
+          {/* Replace your TextField with this Autocomplete */}{" "}
+          <Autocomplete
+            id="destination-autocomplete"
+            loadingText="Loading suggestions..."
+            onBlur={() => setOpenSearch(false)}
+            open={open}
+            onOpen={() => {
+              if (destination.length >= 2) setOpen(true);
+            }}
+            onClose={() => setOpen(false)}
+            isOptionEqualToValue={(option, value) =>
+              option.placePrediction?.placeId === value.placePrediction?.placeId
+            }
+            getOptionLabel={(option) => option.placePrediction?.mainText + ""}
+            options={suggestions}
+            loading={loading}
+            value={selectedPlace}
+            onChange={(_, newValue) => handlePlaceSelect(newValue)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                className="rounded-lg "
+                size="small"
+                fullWidth
+                placeholder="e.g Ta xua, Sapa, Da Nang"
+                variant="outlined"
+                value={destination}
+                onChange={handleInputChange}
+                InputProps={{
+                  ...params.InputProps,
+                  className: "rounded-lg bg-white ",
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search color="action" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {isLoading ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <li {...props} key={option.placePrediction?.placeId}>
+                <Stack>
+                  <div className="font-medium">
+                    {option?.placePrediction?.mainText + ""}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {option.placePrediction?.secondaryText != null
+                      ? option.placePrediction?.secondaryText + ""
+                      : option.placePrediction?.text + ""}
+                  </div>
+                </Stack>
+              </li>
+            )}
+          />
+          <div className=" relative bg-white rounded-lg py-2">
+            <div className="grid grid-cols-1 overflow-auto max-h-40 ">
+              {PLACE_CATEGORIES.map((category) => (
+                <Tooltip key={category.id} title={category.label}>
+                  <Stack
+                    direction={"row"}
+                    spacing={1}
+                    alignItems="center"
+                    justifyContent="space-between"
+                    padding={1}
+                    onClick={() => onCategoryToggle(category.id)}
+                    className={` hover:shadow-md  transition-shadow duration-200  cursor-pointer ${
+                      selectedCategories.includes(category.id)
+                        ? "bg-gray-200"
+                        : "bg-white"
+                    }`}
+                  >
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <div>
+                        {React.cloneElement(
+                          category.icon as React.ReactElement,
+                          {}
+                        )}
+                      </div>
+                      <Typography variant="caption">
+                        {category.label}
+                      </Typography>
+                    </Stack>
+                    <Checkbox
+                      checked={selectedCategories.includes(category.id)}
+                    />
+                  </Stack>
+                </Tooltip>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      ) : (
+        <IconButton
+          className="absolute top-2 right-2 bg-white z-10"
+          onClick={() => setOpenSearch(true)}
+          size="large"
+        >
+          <Search />
+        </IconButton>
+      )}
+    </>
   );
 };
 

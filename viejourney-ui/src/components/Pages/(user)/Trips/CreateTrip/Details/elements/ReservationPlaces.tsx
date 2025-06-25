@@ -23,6 +23,7 @@ import {
   Button,
   ButtonGroup,
   Card,
+  CardActionArea,
   CardContent,
   CardMedia,
   Checkbox,
@@ -45,9 +46,10 @@ import { useForm } from "react-hook-form";
 import { PlaceNote } from "../../../../../../../services/stores/storeInterfaces";
 import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
 import { useAutocompleteSuggestions } from "../../../../../../../utils/hooks/use-autocomplete-suggestion";
-import { User } from "../../../../../../../utils/interfaces";
 import { useFetchPlaceDetails } from "../../../../../../../utils/hooks/use-fetch-place";
 import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
+import { UserInfo } from "../../../../../../../utils/interfaces";
+import { motion, useAnimation } from "motion/react";
 function getPlacePhotoUrl(photo: any): string {
   const fallbackImage = "/images/placeholder-main.png";
   if (!photo) return fallbackImage;
@@ -108,7 +110,7 @@ function getPlacePhotoUrl(photo: any): string {
 interface PlaceCardProps {
   placeNote: PlaceNote;
   placeDetail?: google.maps.places.Place;
-  onUpdateNote: (id: string, note: string) => void;
+  onUpdateNote: (id: string, note: string, visited: boolean) => void;
   onToggleEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onToggleVisited: (id: string) => void;
@@ -253,8 +255,27 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   const [details, setDetails] = useState<google.maps.places.Place | undefined>(
     placeDetail
   );
-  const [localContent, setLocalContent] = useState(placeNote.note);
+  const [localContent, setLocalContent] = useState({
+    note: placeNote.note,
+    visited: placeNote.visited,
+  });
+
   const open = Boolean(anchorEl);
+  let duration = 20;
+  const controls = useAnimation();
+  useEffect(() => {
+    controls.start({
+      x: ["0%", "-100%"],
+      transition: {
+        x: {
+          repeat: Infinity,
+          repeatType: "loop",
+          duration: duration,
+          ease: "linear",
+        },
+      },
+    });
+  }, [controls, placeDetail?.types]);
   useEffect(() => {
     const fetchDetails = async () => {
       if (!placeDetail && !loading) {
@@ -276,8 +297,13 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   }, [placeDetail, placeNote.placeId, onFetchDetails]);
 
   useEffect(() => {
-    setLocalContent(placeNote.note);
-  }, [placeNote.note, placeNote.isEditing]);
+    if (placeNote.isEditing) {
+      setLocalContent({
+        note: placeNote.note,
+        visited: placeNote.visited,
+      });
+    }
+  }, [placeNote.note, placeNote.visited, placeNote.isEditing]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -286,20 +312,26 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalContent(e.target.value);
+  const handleSave = () => {
+    onUpdateNote(placeNote._id, localContent.note, localContent.visited);
+    onToggleEdit(placeNote._id);
   };
 
-  const handleBlur = () => {
-    onUpdateNote(placeNote.id, localContent); // sync lên cha khi blur
-    onToggleEdit(placeNote.id); // giữ nguyên
+  const handleCancel = () => {
+    // Just exit edit mode without saving
+    onToggleEdit(placeNote._id);
+  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalContent((prev) => ({
+      ...prev,
+      note: e.target.value,
+    }));
   };
 
   return (
     <Card
       elevation={0}
-      className="w-full grid lg:grid-cols-3 rounded-xl lg:min-h-64 flex-col "
+      className="w-full grid lg:grid-cols-3 rounded-xl lg:min-h-64 z-20 flex-col "
     >
       {loading ? (
         // Loading state rendering
@@ -324,7 +356,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             }
             className="object-cover col-span-1 w-full h-full rounded-s-lg"
           />
-          <CardContent className="p-0 px-4 lg:py-1 gap-4 flex flex-col col-span-2 justify-between">
+          <CardContent className="p-0 px-4 lg:py-1 flex flex-col col-span-2 justify-between z-20">
             <Stack
               direction={"row"}
               alignItems={"center"}
@@ -357,7 +389,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    onToggleEdit(placeNote.id);
+                    onToggleEdit(placeNote._id);
                   }}
                 >
                   <Edit fontSize="small" sx={{ mr: 1 }} /> Edit Notes
@@ -365,7 +397,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    onDelete(placeNote.id);
+                    onDelete(placeNote._id);
                   }}
                 >
                   <Delete fontSize="small" sx={{ mr: 1 }} /> Delete
@@ -418,9 +450,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 placeholder="Add a description..."
                 variant="standard"
                 size="small"
-                value={localContent}
+                value={localContent.note}
                 onChange={handleChange}
-                onBlur={handleBlur}
                 slotProps={{
                   input: {
                     className:
@@ -429,31 +460,36 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 }}
               />
             )}
-            <i className="text-sm text-gray-600">{details?.editorialSummary}</i>
-            <Stack
-              direction={"row"}
-              alignItems={"center"}
-              gap={1}
-              flexWrap={"wrap"}
-            >
-              {!!details?.types?.length && (
-                <>
-                  {details.types.map((type) => (
-                    <Chip
-                      key={type}
-                      label={type
-                        .split("_")
-                        .map(
-                          (item) => item.charAt(0).toUpperCase() + item.slice(1)
-                        )
-                        .join(" ")}
-                      size="small"
-                      className="text-xs"
-                    />
-                  ))}
-                </>
-              )}
-            </Stack>
+            {details?.editorialSummary && (
+              <i className="text-sm text-gray-600">
+                {details?.editorialSummary}
+              </i>
+            )}
+            <div className="max-w-full overflow-hidden">
+              <motion.div
+                className="flex gap-2 z-10 whitespace-nowrap"
+                animate={controls}
+              >
+                {!!details?.types?.length && (
+                  <>
+                    {details.types.map((type) => (
+                      <Chip
+                        key={type}
+                        label={type
+                          .split("_")
+                          .map(
+                            (item) =>
+                              item.charAt(0).toUpperCase() + item.slice(1)
+                          )
+                          .join(" ")}
+                        size="small"
+                        className="text-xs"
+                      />
+                    ))}
+                  </>
+                )}
+              </motion.div>
+            </div>
             <Divider className="" />
             <Stack
               direction={"row"}
@@ -482,8 +518,13 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={placeNote.visited}
-                        onChange={() => onToggleVisited(placeNote.id)}
+                        checked={localContent.visited}
+                        onChange={() =>
+                          setLocalContent((prev) => ({
+                            ...prev,
+                            visited: !prev.visited,
+                          }))
+                        }
                         color="success"
                       />
                     }
@@ -524,15 +565,14 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                     variant="outlined"
                     color="error"
                     startIcon={<DoDisturb />}
-                    onClick={() => onToggleEdit(placeNote.id)}
+                    onClick={handleCancel}
                   >
                     Cancel
                   </Button>
                   <Button
                     variant="contained"
                     startIcon={<Save />}
-                    color="primary"
-                    onClick={() => onToggleEdit(placeNote.id)}
+                    onClick={handleSave}
                   >
                     Save
                   </Button>
@@ -557,17 +597,17 @@ const ReservationPlaces: React.FC = () => {
     togglePlaceVisited,
   } = useTripDetailStore();
   const { fetchPlaceDetail } = useFetchPlaceDetails();
-  const { user } = useAuthStore();
+  const { info } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const handleAddPlace = (placeId: string) => {
     try {
       setLoading(true);
       const newPlaceNote: PlaceNote = {
-        id: `place-note-${Date.now()}`,
+        _id: `place-note-${Date.now()}`,
         placeId: placeId,
         note: "",
         visited: false,
-        addedBy: user as User,
+        addedBy: info as UserInfo,
         isEditing: true,
       };
 
@@ -615,7 +655,7 @@ const ReservationPlaces: React.FC = () => {
               placeNotes.map((placeNote) => (
                 <PlaceCard
                   isLoading={loading}
-                  key={placeNote.id}
+                  key={placeNote._id}
                   placeNote={placeNote}
                   placeDetail={placeDetails[placeNote.placeId]}
                   onUpdateNote={updatePlaceNote}

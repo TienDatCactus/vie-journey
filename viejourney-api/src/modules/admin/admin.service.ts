@@ -99,9 +99,8 @@ export class AdminService {
     // 1. Xóa ảnh cũ trên Cloudinary
     await this.assetsService.deleteImage(publicId);
 
-    // 2. Upload ảnh mới
     const uploadResult = await this.assetsService.uploadImage(file, {
-      public_id: `users/${asset.userId}/AVATAR/${file.filename}`,
+      public_id: `users/${asset.userId}/AVATAR/${file.filename || uuidv4()}`,
     });
     if (!uploadResult || !uploadResult.secure_url) {
       throw new BadRequestException('Failed to upload image to Cloudinary');
@@ -219,11 +218,14 @@ export class AdminService {
     id: string,
     active: boolean,
   ): Promise<Account | undefined> {
-    const account = await this.accountModel.findById(id).exec();
+    const account = await this.accountModel
+      .findByIdAndUpdate(id, {
+        status: active ? Status.active : Status.inactive,
+      })
+      .exec();
     if (!account) {
       throw new Error(`Account with ID ${id} not found`);
     }
-    account.status = active ? Status.active : Status.inactive;
-    return account.save();
+    return account;
   }
 }

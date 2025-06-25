@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+export
 @Schema({
   versionKey: false, // Removes the __v field
   timestamps: true,

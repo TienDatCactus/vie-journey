@@ -23,8 +23,9 @@ import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 import { UpdateUserInfoDto } from 'src/common/dtos/update-userinfo.dto';
+import { FilterUserDto } from 'src/common/dtos/filter-userinfo.dto';
+@UseGuards(RolesGuard, JwtAuthGuard)
 // @Roles(Role.Admin)
-// @UseGuards(RolesGuard, JwtAuthGuard)
 @Controller('admin')
 export class AdminController {
   constructor(
@@ -63,7 +64,7 @@ export class AdminController {
   }
 
   // addAsset/banner
-  @Post('assets/addBanner')
+  @Post('assets')
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -125,6 +126,11 @@ export class AdminController {
   @Get('users')
   async getAllUsers() {
     return this.userService.getAllUser();
+  }
+
+  @Get('users/filter')
+  async getFilterUsers(@Query() filter: FilterUserDto) {
+    return this.userService.getAllUsers(filter);
   }
 
   @Post('users/paginate')

@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
-import { Asset } from 'src/infrastructure/database/asset.schema';
+import { Asset } from './asset.entity';
+import { Account } from './account.entity';
 
 export class UserInfos {
   _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
+  userId: Account;
   fullName: string;
   dob: Date;
   phone: string;

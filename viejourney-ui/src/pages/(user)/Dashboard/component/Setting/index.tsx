@@ -93,17 +93,15 @@ export default function ProfileSettings({ userInfo }: { userInfo: UserInfo }) {
         variant: "success",
       });
     } catch (error) {
-      enqueueSnackbar(error instanceof Error ? error.message : String(error));
+      console.log(error);
     }
   };
 
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        width: "1000px",
-        marginBottom: "20px",
-        marginTop: "20px",
+        py: 4,
+        maxWidth: "125rem",
       }}
     >
       <Box sx={{ maxWidth: "100%", mx: "auto" }}>

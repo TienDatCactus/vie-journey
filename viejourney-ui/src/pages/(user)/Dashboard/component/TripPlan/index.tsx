@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { Add } from "@mui/icons-material"
-import { Box, Button, Grid, Typography } from "@mui/material"
-import type React from "react"
-import TripCard from "./Card"
+import { Add } from "@mui/icons-material";
+import { Box, Button, Grid, Typography } from "@mui/material";
+import type React from "react";
+import TripCard from "./Card";
 
 interface TripData {
-  id: string
-  title: string
-  user: string
-  dateRange: string
-  places: number
-  backgroundImage?: string
+  id: string;
+  title: string;
+  user: string;
+  dateRange: string;
+  places: number;
+  backgroundImage?: string;
 }
 
 const tripData: TripData[] = [
@@ -29,15 +29,12 @@ const tripData: TripData[] = [
     dateRange: "Feb, 2023 - Feb, 2023",
     places: 3,
   },
-]
-
-
+];
 
 const TripPlans: React.FC = () => {
   return (
-    <Box className="lg:w-[900px] xl:w-[1200px] bg-gray-50 mt-[30px]">
+    <Box className="max-w-[125rem] mx-auto bg-gray-50  my-4">
       <Box className="">
-        {/* Header */}
         <Box className="flex justify-between items-start mb-8">
           <Box>
             <Typography variant="h4" className="font-bold text-gray-900 mb-2">
@@ -75,7 +72,7 @@ const TripPlans: React.FC = () => {
         </Grid>
       </Box>
     </Box>
-  )
-}
+  );
+};
 
-export default TripPlans
+export default TripPlans;

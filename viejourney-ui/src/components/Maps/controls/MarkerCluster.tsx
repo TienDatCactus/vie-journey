@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
-import { POIData } from "../types";
+import { OldPOIData, POIData } from "../types";
 import PlaceMarker from "./PlaceMarker";
 
 interface MarkerClusterProps {
-  places: POIData[];
+  places: OldPOIData[];
   onPlaceClick: (place?: POIData) => void;
   selectedPlace: POIData | null;
 }
@@ -18,6 +18,7 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
   const placesLib = useMapsLibrary("places");
   const [isVisible, setIsVisible] = useState(false);
   const [detailedPlaces, setDetailedPlaces] = useState<POIData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Delay for performance
   useEffect(() => {
@@ -35,39 +36,70 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
     if (!bounds) return places;
 
     return places.filter((place) => {
-      if (!place.location) return false;
-      const latLng = new google.maps.LatLng(place.location);
+      if (!place.geometry?.location) return false;
+      const latLng = new google.maps.LatLng(place.geometry?.location);
       return bounds.contains(latLng);
     });
   }, [mapInstance, places, isVisible]);
 
   // Fetch additional details only for places missing data
   useEffect(() => {
-    if (!placesLib || visiblePlaces.length === 0) return;
+    if (!placesLib || visiblePlaces.length === 0 || !mapInstance) return;
+    setIsLoading(true);
+    const tempDetailedPlaces: POIData[] = [];
+    let completedRequests = 0;
+    visiblePlaces.forEach((place) => {
+      try {
+        const placeId = place.place_id || "";
 
-    const fetchDetails = async () => {
-      const detailedList: POIData[] = await Promise.all(
-        visiblePlaces.map(async (place) => {
-          try {
-            const placeObj = new placesLib.Place({ id: place.id });
-            const result = await placeObj.fetchFields({
-              fields: [...import.meta.env.VITE_MAP_FIELDS.split(",")],
-            });
+        const placeInstance = new placesLib.Place({ id: placeId });
 
-            return result.place as POIData;
-          } catch (err) {
-            console.error("Failed to fetch place", err);
-            return place;
-          }
-        })
-      );
+        placeInstance
+          .fetchFields({
+            fields: import.meta.env.VITE_MAP_FIELDS.split(",")
+              ? import.meta.env.VITE_MAP_FIELDS.split(",")
+              : [
+                  "name",
+                  "formattedAddress",
+                  "rating",
+                  "userRatingCount",
+                  "photos",
+                  "types",
+                ],
+          })
+          .then((res) => {
+            tempDetailedPlaces.push(res.place);
+          })
+          .catch((error) => {
+            console.error(
+              `Error fetching details for place ${placeId}:`,
+              error
+            );
+            tempDetailedPlaces.push(place as unknown as POIData);
+          })
+          .finally(() => {
+            completedRequests++;
+            if (completedRequests === visiblePlaces.length) {
+              setDetailedPlaces(tempDetailedPlaces);
+              setIsLoading(false);
+            }
+          });
+      } catch (error) {
+        console.error("Error processing place:", error);
+        completedRequests++;
+        tempDetailedPlaces.push(place as unknown as POIData);
 
-      setDetailedPlaces(detailedList);
+        if (completedRequests === visiblePlaces.length) {
+          setDetailedPlaces(tempDetailedPlaces);
+          setIsLoading(false);
+        }
+      }
+    });
+    return () => {
+      setDetailedPlaces([]);
+      setIsLoading(false);
     };
-
-    fetchDetails();
-  }, [placesLib, visiblePlaces]);
-
+  }, [placesLib, visiblePlaces, mapInstance]);
   if (!isVisible) return null;
   return (
     <>
