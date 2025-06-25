@@ -8,25 +8,46 @@ export interface PostData {
   tags: string[];
   readTime: string;
   featured: boolean;
-  coverImage:  File | null;
+  coverImage: File | null;
   createdDate: string;
 }
 
+export interface IUserAvatar {
+  _id: string;
+  url: string;
+}
+
+export interface IUser {
+  _id: string;
+  userId: string;
+  fullName: string;
+  dob: string;
+  phone: string;
+  address: string;
+  avatar: IUserAvatar;
+  lastLoginAt: string | null;
+  flaggedCount: number;
+  banReason: string | null;
+  bannedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface IBlogPost {
   _id: string;
   title: string;
-  createdBy: string;
+  createdBy: IUser;
+  avatarUser: string;
   summary: string;
+  destination: string;
   viewCount: number;
   likeCount: number;
   commentCount: number;
-  status: 'APPROVED' | 'PENDING';
+  status: "APPROVED" | "PENDING" | "REJECTED";
   flags: number;
-  createdAt: string; 
-  updatedAt: string; 
+  createdAt: string;
+  updatedAt: string;
 }
-
 
 export interface IBlogQuery {
   title: string;
@@ -50,29 +71,30 @@ export interface IBlogRes {
   tripId: string;
   createdBy: string;
   updatedBy: string;
-  likes: string[]; 
-  status: "APPROVED" | "PENDING";
-  flags: string[]; 
+  likes: string[];
+  status: "APPROVED" | "PENDING" | "REJECTED";
+  flags: string[];
   metrics: {
     viewCount: number;
     likeCount: number;
     commentCount: number;
   };
-  comments: any[]; 
+  comments: any[];
   createdAt: string;
   updatedAt: string;
 }
 
 export interface IFlag {
   reason: string;
-  date: string; 
+  date: string;
 }
 
 export interface IBlogDetail {
   title: string;
   content: string;
-  createdBy: string;
+  createdBy: IUser;
   summary: string;
+  status: "APPROVED" | "PENDING" | "REJECTED";
   coverImage: string;
   tripId: string | null;
   flags: IFlag[];

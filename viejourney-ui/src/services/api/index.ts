@@ -177,16 +177,20 @@ export const doValidateAccessToken = async (accessToken: string) => {
 
 export const doCreateTrip = async (data: CreateTripDto) => {
   try {
+    console.log(data);
     const resp = await http.post(TRIP?.CREATE_TRIP, data);
     if (resp) {
       const trip = extractApiData<CreateTripRespDto>(resp);
+      if (!trip) {
+        enqueueSnackbar("Failed to create trip", { variant: "error" });
+        return null;
+      }
       enqueueSnackbar("Trip created successfully", { variant: "success" });
-      window.location.href = `/trip/${trip?._id}`;
+      window.location.href = `/trips/edit/${trip?._id}`;
       return trip;
     }
   } catch (error) {
     console.error(error);
-    enqueueSnackbar("Failed to create trip", { variant: "error" });
   }
   return null;
 };

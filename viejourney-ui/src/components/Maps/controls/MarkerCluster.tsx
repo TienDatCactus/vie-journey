@@ -100,7 +100,6 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
       setIsLoading(false);
     };
   }, [placesLib, visiblePlaces, mapInstance]);
-  console.log("detailedPlaces", detailedPlaces);
   if (!isVisible) return null;
   return (
     <>

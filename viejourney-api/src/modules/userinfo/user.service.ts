@@ -16,6 +16,7 @@ import {
   PaginationResponseDto,
 } from 'src/common/dtos/pagination-userlist.dto';
 import { Asset } from 'src/common/entities/asset.entity';
+import { FilterUserDto } from 'src/common/dtos/filter-userinfo.dto';
 
 @Injectable()
 export class UserService {
@@ -30,25 +31,110 @@ export class UserService {
     return this.userInfosModel.find().populate('userId').exec();
   }
 
+  async getAllUsers(filter?: FilterUserDto): Promise<{
+    status: string;
+    message: string;
+    data: {
+      users: Array<{
+        userId: string;
+        accountId: string;
+        email: string;
+        userName: string;
+        role: string;
+        status: string;
+        phone: string;
+        address: string;
+        createdAt: Date;
+      }>;
+      total: number;
+    };
+  }> {
+    let query = this.userInfosModel.find();
+
+    if (filter?.username) {
+      query = query.where('fullName', new RegExp(filter.username, 'i'));
+    }
+
+    if (filter?.userId) {
+      query = query.where('_id', filter.userId);
+    }
+
+    const populateQuery: any = {
+      path: 'userId',
+      model: 'Account',
+      select: 'email role status createdAt',
+    };
+
+    if (filter?.role || filter?.status || filter?.email) {
+      const match: any = {};
+      if (filter.role) {
+        match.role = filter.role;
+      }
+      if (filter.status) {
+        match.status = filter.status;
+      }
+      if (filter.email) {
+        match.email = new RegExp(filter.email, 'i');
+      }
+      populateQuery.match = match;
+    }
+
+    const users = await query.populate(populateQuery).lean().exec();
+
+    const filteredUsers = users
+      .filter((user) => user.userId)
+      .map((user) => ({
+        userId: user._id.toString(),
+        accountId: (user.userId as any)._id.toString(),
+        email: (user.userId as any).email,
+        userName: user.fullName,
+        role: (user.userId as any).role,
+        status: (user.userId as any).status,
+        phone: user.phone || '',
+        address: user.address || '',
+        createdAt: (user.userId as any).createdAt,
+      }));
+
+    if (filteredUsers.length === 0) {
+      return {
+        status: 'success',
+        message: filter
+          ? `No users found matching filters: ${JSON.stringify(filter)}`
+          : 'No users found in the system',
+        data: {
+          users: [],
+          total: 0,
+        },
+      };
+    }
+
+    return {
+      status: 'success',
+      message: 'Users retrieved successfully',
+      data: {
+        users: filteredUsers,
+        total: filteredUsers.length,
+      },
+    };
+  }
+
   async getUserByID(id: string) {
     const user = await this.userInfosModel
       .findOne({
-        userId: new mongoose.Types.ObjectId(id),
+        userId: new Types.ObjectId(id),
       })
       .populate({
         path: 'avatar',
         model: 'Asset',
         select: 'url -_id',
       })
-      .lean()
       .exec();
-
     if (!user) {
       throw new HttpException(`User with ID ${id} not found`, 404);
     }
     return {
-      ...user,
-      avatar: user.avatar ? user.avatar?.url?.toString() : null,
+      ...user.toObject(),
+      avatar: user.avatar ? user.avatar.url?.toString() : null,
     };
   }
   async updateUserAvatar(id: string, file: Express.Multer.File) {

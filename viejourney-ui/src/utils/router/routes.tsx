@@ -2,17 +2,18 @@ import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Accounts from "../../pages/(admin)/Accounts";
 import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
-import RoleManagement from "../../pages/(admin)/RoleManagement";
 import BlogManagementList from "../../pages/(manager)/Blog/BlogManagementList";
-import BlogManagementView from "../../pages/(manager)/Blog/BlogManagementView";
-import HotelManagement from "../../pages/(manager)/Hotel";
+import BlogManagementView from "../../pages/(manager)/BlogDetail/index";
 import BlogDetail from "../../pages/(user)/Blogs/BlogDetail/BlogDetail";
 import CreateBlogDetail from "../../pages/(user)/Blogs/CreateBlogDetail/CreateBlogDetail";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import HotelManagement from "../../pages/(manager)/Hotel";
+import HotelDetail from "../../pages/(manager)/Hotel/HotelDetail";
 import BlogList from "../../pages/(user)/Blogs/BlogList";
 import CreateBlog from "../../pages/(user)/Blogs/CreateBlog/CreateBlog";
+import RoleManagement from "../../pages/(admin)/RoleManagement";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -70,7 +71,6 @@ const router = createBrowserRouter([
     ],
     errorElement: <ErrorBoundary />,
   },
-
   {
     path: "/auth",
     errorElement: <ErrorBoundary />,
@@ -212,11 +212,24 @@ const router = createBrowserRouter([
       },
       {
         path: "hotels",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={HotelManagement} />
-          </ProtectedRoute>
-        ),
+        children: [
+          {
+            path: "",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={HotelManagement} />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "detail/:id",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={HotelDetail} />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       },
       {
         path: "role-management",
@@ -238,7 +251,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/trip",
+    path: "/trips",
     // element: <ProtectedRoute requireAuth={false} />,
     errorElement: <ErrorBoundary />,
     children: [
@@ -265,19 +278,21 @@ const router = createBrowserRouter([
       },
     ],
   },
-
   {
     path: "/manager",
     errorElement: <ErrorBoundary />,
     children: [
       {
-        path: "blog",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={BlogManagementList} />
-          </ProtectedRoute>
-        ),
+        path: "blogs",
         children: [
+          {
+            path: "",
+            element: (
+              <ProtectedRoute requireAuth={false}>
+                <SuspenseWrapper component={BlogManagementList} />
+              </ProtectedRoute>
+            ),
+          },
           {
             path: ":id",
             element: (

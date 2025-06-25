@@ -218,11 +218,14 @@ export class AdminService {
     id: string,
     active: boolean,
   ): Promise<Account | undefined> {
-    const account = await this.accountModel.findById(id).exec();
+    const account = await this.accountModel
+      .findByIdAndUpdate(id, {
+        status: active ? Status.active : Status.inactive,
+      })
+      .exec();
     if (!account) {
       throw new Error(`Account with ID ${id} not found`);
     }
-    account.status = active ? Status.active : Status.inactive;
-    return account.save();
+    return account;
   }
 }

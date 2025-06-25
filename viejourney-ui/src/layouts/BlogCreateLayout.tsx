@@ -7,7 +7,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { ReactNode, useCallback, useState } from "react";
+import { ReactNode, useCallback, useRef, useState } from "react";
 import { useBlocker } from "react-router-dom";
 import BlogCreateHeader from "../components/Layout/Blog/BlogCreateHeader";
 import BlogCreateToolbar from "../components/Layout/Blog/BlogCreateToolbar";
@@ -15,23 +15,26 @@ import BlogCreateToolbar from "../components/Layout/Blog/BlogCreateToolbar";
 const BlogCreateLayout = ({ children }: { children: ReactNode }) => {
   const [isDirty, setIsDirty] = useState(true);
   const [open, setOpen] = useState(true);
-  let blocker = useBlocker(useCallback(() => isDirty, [isDirty]));
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  const [hasProceeded, setHasProceeded] = useState(false);
+
+  const blockerRef = useRef<ReturnType<typeof useBlocker> | null>(null);
+  blockerRef.current = useBlocker(useCallback(() => isDirty, [isDirty]));
 
   const handleClose = () => {
     setOpen(false);
   };
+
   const handleProceed = () => {
+    if (hasProceeded) return;
+    setHasProceeded(true);
     setOpen(false);
     setIsDirty(false);
-    blocker?.proceed();
+    blockerRef.current?.proceed();
   };
 
   return (
     <>
-      {blocker?.state === "blocked" && (
+      {blockerRef.current?.state === "blocked" && (
         <Dialog
           open={open}
           onClose={handleClose}

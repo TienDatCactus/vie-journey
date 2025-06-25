@@ -12,12 +12,15 @@ import {
   Rating,
   Chip,
   IconButton,
+  Alert,
 } from "@mui/material";
 import {
   Save as SaveIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
+import axios from "axios";
+import { HOTELS } from "../../../services/api/url";
 
 interface Hotel {
   _id: string;
@@ -33,7 +36,8 @@ interface EditHotelDialogProps {
   open: boolean;
   onClose: () => void;
   hotel: Hotel | null;
-  onSave: (hotelData: Partial<Hotel>) => void;
+  onSave?: (hotelData: Partial<Hotel>) => void;
+  onUpdate?: () => void; // Callback after successful update
   loading?: boolean;
 }
 
@@ -42,6 +46,7 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
   onClose,
   hotel,
   onSave,
+  onUpdate,
   loading = false,
 }) => {
   const [formData, setFormData] = useState({
@@ -53,6 +58,8 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
     images: [] as string[],
   });
   const [newImage, setNewImage] = useState("");
+  const [apiLoading, setApiLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (hotel) {
@@ -75,10 +82,11 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
       });
     }
     setNewImage("");
+    setError(null);
   }, [hotel, open]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -86,7 +94,7 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
 
   const handleAddImage = () => {
     if (newImage.trim()) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         images: [...prev.images, newImage.trim()],
       }));
@@ -95,34 +103,77 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
   };
 
   const handleRemoveImage = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
     }));
   };
 
-  const handleSave = () => {
-    const hotelData = {
-      name: formData.name,
-      description: formData.description,
-      rating: formData.rating,
-      address: formData.address,
-      coordinate: formData.coordinate,
-      image: formData.images,
-    };
-    onSave(hotelData);
+  const handleSave = async () => {
+    if (!hotel) return;
+
+    setApiLoading(true);
+    setError(null);
+
+    try {
+      const payload = {
+        hotelId: hotel._id,
+        name: formData.name,
+        address: formData.address,
+        description: formData.description,
+        rating: formData.rating,
+      };
+
+      await axios.patch(
+        import.meta.env.VITE_PRIVATE_URL +
+          HOTELS.UPDATE_HOTEL.replace(":id", hotel._id),
+        payload,
+        { withCredentials: true }
+      );
+
+      // Call onSave if provided (for backward compatibility)
+      if (onSave) {
+        const hotelData = {
+          name: formData.name,
+          description: formData.description,
+          rating: formData.rating,
+          address: formData.address,
+          coordinate: formData.coordinate,
+          image: formData.images,
+        };
+        onSave(hotelData);
+      }
+
+      // Call onUpdate callback
+      if (onUpdate) {
+        onUpdate();
+      }
+
+      onClose();
+    } catch (err: any) {
+      console.error("Error updating hotel:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to update hotel. Please try again."
+      );
+    } finally {
+      setApiLoading(false);
+    }
   };
 
-  const isFormValid = formData.name.trim() && formData.description.trim() && formData.address.trim();
+  const isFormValid =
+    formData.name.trim() &&
+    formData.description.trim() &&
+    formData.address.trim();
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="md" 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
       fullWidth
       PaperProps={{
-        sx: { minHeight: "600px" }
+        sx: { minHeight: "600px" },
       }}
     >
       <DialogTitle>
@@ -136,6 +187,13 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
 
       <DialogContent dividers>
         <Stack spacing={3}>
+          {/* Error Display */}
+          {error && (
+            <Alert severity="error" onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+
           {/* Basic Information */}
           <Box>
             <Typography variant="h6" fontWeight="bold" mb={2}>
@@ -152,7 +210,9 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
               <TextField
                 label="Description"
                 value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 fullWidth
                 multiline
                 rows={3}
@@ -168,7 +228,9 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
               <TextField
                 label="Coordinate (JSON format)"
                 value={formData.coordinate}
-                onChange={(e) => handleInputChange("coordinate", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("coordinate", e.target.value)
+                }
                 fullWidth
                 placeholder="{'latitude': 12.2388, 'longitude': 109.1967}"
                 helperText="Enter coordinates in JSON format"
@@ -184,7 +246,9 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
             <Stack direction="row" alignItems="center" spacing={2}>
               <Rating
                 value={formData.rating}
-                onChange={(_, newValue) => handleInputChange("rating", newValue || 0)}
+                onChange={(_, newValue) =>
+                  handleInputChange("rating", newValue || 0)
+                }
                 precision={0.1}
                 size="large"
               />
@@ -199,7 +263,7 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
             <Typography variant="h6" fontWeight="bold" mb={2}>
               Images
             </Typography>
-            
+
             {/* Add Image */}
             <Stack direction="row" spacing={2} alignItems="center" mb={2}>
               <TextField
@@ -246,16 +310,16 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} disabled={loading}>
+        <Button onClick={onClose} disabled={loading || apiLoading}>
           Cancel
         </Button>
         <Button
           variant="contained"
           onClick={handleSave}
-          disabled={loading || !isFormValid}
-          startIcon={loading ? undefined : <SaveIcon />}
+          disabled={loading || apiLoading || !isFormValid}
+          startIcon={loading || apiLoading ? undefined : <SaveIcon />}
         >
-          {loading ? "Updating..." : "Update Hotel"}
+          {loading || apiLoading ? "Updating..." : "Update Hotel"}
         </Button>
       </DialogActions>
     </Dialog>

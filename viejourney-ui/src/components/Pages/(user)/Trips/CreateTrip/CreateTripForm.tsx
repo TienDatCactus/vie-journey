@@ -46,7 +46,7 @@ export const CreateTripForm: React.FC = () => {
   const [selectedPlace, setSelectedPlace] = useState<{
     placePrediction: google.maps.places.PlacePrediction;
   } | null>(null);
-  const [open, setOpen] = useState(false); // Use the hook with proper debouncing configuration
+  const [open, setOpen] = useState(false);
   const { suggestions, isLoading } = useAutocompleteSuggestions(destination, {
     includedPrimaryTypes: ["(regions)"],
   });
@@ -108,7 +108,13 @@ export const CreateTripForm: React.FC = () => {
     console.log("Form submitted with data:", { ...data, inviteEmails });
     try {
       setLoading(true);
-      await doCreateTrip({ ...data, inviteEmails });
+      await doCreateTrip({
+        ...data,
+        inviteEmails,
+        dates: data.dates.map(
+          (date: Dayjs | null) => date?.toISOString() || null
+        ),
+      });
     } catch (error) {
       console.error(error);
     } finally {

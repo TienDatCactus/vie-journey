@@ -11,8 +11,8 @@ import {
   IconButton,
   Modal,
   Stack,
-  Typography,
 } from "@mui/material";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { AdminLayout } from "../../../layouts";
 import { ASSET_TYPE } from "../../../utils/interfaces/admin";
@@ -198,14 +198,7 @@ const Banner = () => {
           <TabPanel value={tabValue} index={0}>
             <Grid2 container spacing={2}>
               {currentData.map((image, index) => (
-                <Grid2
-                  size={{
-                    xs: 12,
-                    sm: 6,
-                    md: 4,
-                  }}
-                  key={image._id}
-                >
+                <Grid2 size={3} key={image._id}>
                   <AssetCard
                     imageSrc={image.url}
                     title={image.userId}
@@ -225,14 +218,7 @@ const Banner = () => {
           <TabPanel value={tabValue} index={1}>
             <Grid2 container spacing={2}>
               {currentData.map((image, index) => (
-                <Grid2
-                  size={{
-                    xs: 12,
-                    sm: 6,
-                    md: 4,
-                  }}
-                  key={image._id}
-                >
+                <Grid2 size={3} key={image._id}>
                   <AssetCard
                     imageSrc={image.url}
                     title={image.userId}
@@ -252,7 +238,7 @@ const Banner = () => {
           <TabPanel value={tabValue} index={2}>
             <Grid2 container spacing={2}>
               {currentData.map((image, index) => (
-                <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={image._id}>
+                <Grid2 size={3} key={image._id}>
                   <AssetCard
                     imageSrc={image.url}
                     title={image.userId}
@@ -305,10 +291,14 @@ const Banner = () => {
               <ChevronRight />
             </IconButton>
 
-            <img
+            <motion.img
+              initial={{ x: -50 }}
+              animate={{ x: 0 }}
+              transition={{ duration: 0.3 }}
+              key={currentImage?.publicId}
               src={currentImage?.url || "/placeholder.svg"}
               alt={currentImage?.publicId}
-              className="max-w-[50%] max-h-full object-contain rounded-[8px]"
+              className=" w-120 h-auto object-contain rounded-[8px]"
             />
           </Box>
         </Modal>

@@ -21,8 +21,19 @@ export const USER = {
 };
 
 export const ACCOUNTS = {
-  GET_ACCOUNTS: "/admin/userInfo/",
+  GET_ACCOUNTS: "/admin/users",
+  FILTER_USERS: "/admin/users/filter",
   PAGINATE_ACCOUNTS: "/admin/userInfo/paginate",
+  UPDATE_STATUS: "/admin/accounts/updateActive/:id",
+};
+
+export const HOTELS = {
+  GET_HOTELS: "/manager/hotel",
+  GET_HOTEL: "/manager/hotel/:id",
+  CREATE_HOTEL: "/manager/hotel/add",
+  UPDATE_HOTEL: "/manager/hotel/:id",
+  DELETE_HOTEL: "/manager/hotel/:id",
+  IMPORT_HOTEL: "/manager/hotel/import",
 };
 
 export const ADMIN = {

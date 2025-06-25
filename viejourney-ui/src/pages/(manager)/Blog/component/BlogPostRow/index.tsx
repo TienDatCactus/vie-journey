@@ -6,11 +6,8 @@ import {
   Delete,
   Edit,
   LocationOn,
-  MoreVert,
-  OpenInNew,
   Schedule,
-  Share,
-  Visibility,
+  Visibility
 } from "@mui/icons-material";
 import {
   Avatar,
@@ -24,18 +21,17 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { IBlogPost } from "../../../../../utils/interfaces/blog";
 
 export default function BlogPostRow({
   blog,
-  handeleDeleteBlog,
+  handleDeleteBlog, 
 }: {
   blog: IBlogPost;
-  handeleDeleteBlog: (id: string) => void;
+  handleDeleteBlog: (id: string) => void; 
 }) {
-  const [showDropdown, setShowDropdown] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedBlogId, setSelectedBlogId] = useState<string | null>(null);
 
@@ -60,23 +56,6 @@ export default function BlogPostRow({
     }
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   return (
     <tr className="border-b border-gray-300 hover:bg-gray-50">
       <td className="py-4 pr-4">
@@ -88,11 +67,11 @@ export default function BlogPostRow({
             <span className="font-medium">{blog.summary}</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <Avatar sx={{ width: 24, height: 24 }}>
-              {blog?.createdBy?.charAt(0) ?? ""}
+            <Avatar sx={{ width: 24, height: 24 }} src={blog?.avatarUser}>
+              {blog?.createdBy.fullName}
             </Avatar>
             <span className="text-sm text-gray-500">
-              {blog?.createdBy ?? ""}
+              {blog?.createdBy.fullName}
             </span>
           </div>
         </div>
@@ -138,52 +117,29 @@ export default function BlogPostRow({
       </td>
       <td className="py-4 pr-4">
         <div className="flex items-center gap-1">
-          <IconButton size="small">
+          <Link
+            to={`http://localhost:5173/manager/blogs/${blog._id}`}
+            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left cursor-pointer"
+          >
             <Visibility className="text-gray-500" sx={{ fontSize: 16 }} />
-          </IconButton>
+          </Link>
+
           <IconButton size="small">
             <Edit className="text-gray-500" sx={{ fontSize: 16 }} />
           </IconButton>
-          <div className="relative" ref={dropdownRef}>
-            <IconButton
-              size="small"
-              onClick={() => setShowDropdown(!showDropdown)}
-            >
-              <MoreVert className="text-gray-500" sx={{ fontSize: 16 }} />
-            </IconButton>
 
-            {showDropdown && (
-              <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg py-2 min-w-[140px] z-10">
-                <button
-                  onClick={() => {
-                    setShowDropdown(false);
-                    // Có thể thêm logic chia sẻ ở đây
-                  }}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-                >
-                  <Share sx={{ fontSize: 16 }} />
-                  Share
-                </button>
-                <Link
-                  to={`http://localhost:5173/blog/${blog._id}`}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left cursor-pointer"
-                >
-                  <OpenInNew sx={{ fontSize: 16 }} />
-                  View Live
-                </Link>
-                <button
-                  onClick={() => {
-                    setSelectedBlogId(blog._id);
-                    setOpenConfirm(true);
-                    setShowDropdown(false);
-                  }}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left cursor-pointer"
-                >
-                  <Delete sx={{ fontSize: 16 }} />
-                  Delete
-                </button>
-              </div>
-            )}
+          <Button
+            onClick={() => {
+              setSelectedBlogId(blog._id);
+              setOpenConfirm(true);
+            }}
+            className=" text-red-600 hover:bg-red-50 cursor-pointer"
+          >
+            <Delete sx={{ fontSize: 16 }} />
+          </Button>
+
+          {/* Confirm delete dialog */}
+          <div className="relative" ref={dropdownRef}>
             <Dialog
               open={openConfirm}
               onClose={() => setOpenConfirm(false)}
@@ -203,7 +159,7 @@ export default function BlogPostRow({
                 <Button
                   onClick={() => {
                     if (selectedBlogId) {
-                      handeleDeleteBlog(selectedBlogId);
+                      handleDeleteBlog(selectedBlogId); // ✅ Sử dụng đúng tên hàm
                     }
                     setOpenConfirm(false);
                     setSelectedBlogId(null);

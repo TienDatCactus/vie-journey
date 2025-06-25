@@ -23,6 +23,7 @@ export class BlogService {
   ) {}
 
   // list all blogs
+<<<<<<< HEAD
   async findAll(paginationDto: PaginationDto) {
     const page = paginationDto.page ?? 1;
     const pageSize = paginationDto.pageSize ?? 10;
@@ -78,6 +79,23 @@ export class BlogService {
         totalItems: 0,
         message: 'No blogs found in the system.',
       };
+=======
+  async findAll() {
+    const blogs = await this.blogModel
+      .find()
+      .populate('createdBy tripId')
+      .populate({
+        path: 'createdBy',
+        populate: {
+          path: 'avatar',
+          model: 'Asset',
+          select: 'url',
+        },
+      })
+      .exec();
+    if (!blogs || blogs.length === 0) {
+      throw new NotFoundException('No blogs found');
+>>>>>>> 4778ed27451d64c20d8c851022513e6e8d36794a
     }
     const listBlogs = blogs.map((blog) => {
       return {

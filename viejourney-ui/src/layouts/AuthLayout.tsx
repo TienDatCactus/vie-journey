@@ -27,7 +27,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
             if (user.status && !shown) {
               setShown(true);
             }
-          }, [user.status]);
+          }, [user.status == "INACTIVE" || user.status == "BANNED"]);
 
           return !shown ? <StatusDialog status={user?.status} /> : null;
         })}

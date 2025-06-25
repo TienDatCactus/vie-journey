@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "../../../layouts";
 import {
   Box,
@@ -30,11 +31,24 @@ import AddHotelDialog from "./AddHotelDialog";
 import EditHotelDialog from "./EditHotelDialog";
 import ImportHotelDialog from "./ImportHotelDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
+import axios from "axios";
+import { HOTELS } from "../../../services/api/url";
 
 // Set MUI Pro License
 LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
 
 interface Hotel {
+  _id: string;
+  name: string;
+  description: string;
+  rating: number;
+  address: string;
+  coordinate: string;
+  image: string[];
+}
+
+// Interface for API response
+interface HotelApiResponse {
   _id: string;
   name: string;
   description: string;
@@ -124,39 +138,9 @@ const ActionMenu = ({
   );
 };
 
-// Sample data
-const sampleHotels: Hotel[] = [
-  {
-    _id: "684472f4c7f674e5061783c7",
-    name: "Sunshine Resort",
-    description: "Resort bên bờ biển với tiện nghi cao cấp",
-    rating: 4.8,
-    address: "123 Biển Xanh, Nha Trang",
-    coordinate: "{'latitude': 12.2388, 'longitude': 109.1967}",
-    image: ["resort1.jpg", "resort2.jpg"],
-  },
-  {
-    _id: "684472f4c7f674e5061783c8",
-    name: "Grand Plaza Hotel",
-    description: "Khách sạn sang trọng tại trung tâm thành phố",
-    rating: 4.5,
-    address: "456 Nguyễn Huệ, Quận 1, TP.HCM",
-    coordinate: "{'latitude': 10.7769, 'longitude': 106.7009}",
-    image: ["hotel1.jpg", "hotel2.jpg"],
-  },
-  {
-    _id: "684472f4c7f674e5061783c9",
-    name: "Mountain View Lodge",
-    description: "Khu nghỉ dưỡng trên núi với view tuyệt đẹp",
-    rating: 4.2,
-    address: "789 Đường Núi, Sa Pa, Lào Cai",
-    coordinate: "{'latitude': 22.3364, 'longitude': 103.8438}",
-    image: ["lodge1.jpg", "lodge2.jpg"],
-  },
-];
-
 const HotelManagement = () => {
-  const [hotels, setHotels] = useState<Hotel[]>(sampleHotels);
+  const navigate = useNavigate();
+  const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Dialog states
@@ -164,9 +148,57 @@ const HotelManagement = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [deleteHotelId, setDeleteHotelId] = useState<string | null>(null);
+
+  // Fetch hotels data
+  useEffect(() => {
+    const fetchHotels = async () => {
+      setLoading(true);
+      try {
+        const result = await axios.get(
+          import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
+          { withCredentials: true }
+        );
+
+        // Process the response data to match our interface
+        const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
+          _id: hotel._id,
+          name: hotel.name,
+          description: hotel.description,
+          rating: hotel.rating,
+          address: hotel.address,
+          coordinate: hotel.coordinate,
+          // Parse image array if it's a string
+          image: Array.isArray(hotel.image)
+            ? hotel.image
+                .map((img: string) => {
+                  // If image is in format "['img1.jpg', 'img2.jpg']", parse it
+                  if (img.startsWith("[") && img.endsWith("]")) {
+                    try {
+                      return JSON.parse(img.replace(/'/g, '"'));
+                    } catch {
+                      return [img];
+                    }
+                  }
+                  return img;
+                })
+                .flat()
+            : hotel.image || [],
+        }));
+
+        setHotels(processedHotels);
+      } catch (error) {
+        console.error("Error fetching hotels:", error);
+        // Set fallback data if API fails
+        setHotels([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHotels();
+  }, []);
 
   const handleAddHotel = () => {
     setAddDialogOpen(true);
@@ -190,15 +222,14 @@ const HotelManagement = () => {
   };
 
   const handleViewHotel = (hotelId: string) => {
-    console.log("View hotel:", hotelId);
-    // Navigate to hotel detail page
+    navigate(`/admin/hotels/detail/${hotelId}`);
   };
 
   const handleSaveHotel = async (hotelData: Partial<Hotel>) => {
     setLoading(true);
     try {
       if (selectedHotel) {
-        // Update existing hotel
+        // Update existing hotel (this is for backward compatibility)
         setHotels((prev) =>
           prev.map((h) =>
             h._id === selectedHotel._id ? { ...h, ...hotelData } : h
@@ -228,6 +259,53 @@ const HotelManagement = () => {
     }
   };
 
+  // New function to handle hotel update via API
+  const handleUpdateHotel = async () => {
+    // Refresh the hotel list after successful update
+    const fetchHotels = async () => {
+      setLoading(true);
+      try {
+        const result = await axios.get(
+          import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
+          { withCredentials: true }
+        );
+
+        const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
+          _id: hotel._id,
+          name: hotel.name,
+          description: hotel.description,
+          rating: hotel.rating,
+          address: hotel.address,
+          coordinate: hotel.coordinate,
+          image: Array.isArray(hotel.image)
+            ? hotel.image
+                .map((img: string) => {
+                  if (img.startsWith("[") && img.endsWith("]")) {
+                    try {
+                      return JSON.parse(img.replace(/'/g, '"'));
+                    } catch {
+                      return [img];
+                    }
+                  }
+                  return img;
+                })
+                .flat()
+            : hotel.image || [],
+        }));
+
+        setHotels(processedHotels);
+      } catch (error) {
+        console.error("Error fetching hotels:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    await fetchHotels();
+    setEditDialogOpen(false);
+    setSelectedHotel(null);
+  };
+
   const handleConfirmDelete = async () => {
     if (!deleteHotelId) return;
 
@@ -243,8 +321,101 @@ const HotelManagement = () => {
     }
   };
 
+  // New function to handle hotel delete via API
+  const handleDeleteHotelAPI = async () => {
+    // Refresh the hotel list after successful delete
+    const fetchHotels = async () => {
+      setLoading(true);
+      try {
+        const result = await axios.get(
+          import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
+          { withCredentials: true }
+        );
+
+        const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
+          _id: hotel._id,
+          name: hotel.name,
+          description: hotel.description,
+          rating: hotel.rating,
+          address: hotel.address,
+          coordinate: hotel.coordinate,
+          image: Array.isArray(hotel.image)
+            ? hotel.image
+                .map((img: string) => {
+                  if (img.startsWith("[") && img.endsWith("]")) {
+                    try {
+                      return JSON.parse(img.replace(/'/g, '"'));
+                    } catch {
+                      return [img];
+                    }
+                  }
+                  return img;
+                })
+                .flat()
+            : hotel.image || [],
+        }));
+
+        setHotels(processedHotels);
+      } catch (error) {
+        console.error("Error fetching hotels:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    await fetchHotels();
+    setDeleteDialogOpen(false);
+    setDeleteHotelId(null);
+  };
+
   const handleImportComplete = (importedHotels: Hotel[]) => {
     setHotels((prev) => [...prev, ...importedHotels]);
+    setImportDialogOpen(false);
+  };
+
+  // New function to handle hotel import via API
+  const handleImportSuccess = async () => {
+    // Refresh the hotel list after successful import
+    const fetchHotels = async () => {
+      setLoading(true);
+      try {
+        const result = await axios.get(
+          import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
+          { withCredentials: true }
+        );
+
+        const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
+          _id: hotel._id,
+          name: hotel.name,
+          description: hotel.description,
+          rating: hotel.rating,
+          address: hotel.address,
+          coordinate: hotel.coordinate,
+          image: Array.isArray(hotel.image)
+            ? hotel.image
+                .map((img: string) => {
+                  if (img.startsWith("[") && img.endsWith("]")) {
+                    try {
+                      return JSON.parse(img.replace(/'/g, '"'));
+                    } catch {
+                      return [img];
+                    }
+                  }
+                  return img;
+                })
+                .flat()
+            : hotel.image || [],
+        }));
+
+        setHotels(processedHotels);
+      } catch (error) {
+        console.error("Error fetching hotels:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    await fetchHotels();
     setImportDialogOpen(false);
   };
 
@@ -455,6 +626,7 @@ const HotelManagement = () => {
           }}
           hotel={selectedHotel}
           onSave={handleSaveHotel}
+          onUpdate={handleUpdateHotel}
           loading={loading}
         />
 
@@ -462,6 +634,7 @@ const HotelManagement = () => {
           open={importDialogOpen}
           onClose={() => setImportDialogOpen(false)}
           onImport={handleImportComplete}
+          onImportSuccess={handleImportSuccess}
           loading={loading}
         />
 
@@ -472,7 +645,9 @@ const HotelManagement = () => {
             setDeleteHotelId(null);
           }}
           onConfirm={handleConfirmDelete}
+          onDelete={handleDeleteHotelAPI}
           loading={loading}
+          hotelId={deleteHotelId || ""}
           hotelName={
             deleteHotelId
               ? hotels.find((h) => h._id === deleteHotelId)?.name || ""
