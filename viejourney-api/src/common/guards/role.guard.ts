@@ -17,6 +17,11 @@ export class RolesGuard {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
+    
+    // Check if user exists and has role property
+    if (!user || !user.role) {
+      return false;
+    }
 
     return requiredRoles.some((role: Role) => user.role.includes(role));
   }

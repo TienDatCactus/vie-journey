@@ -25,13 +25,10 @@ export class UserService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
     private readonly assetsService: AssetsService,
-  ) {}
-
-  async getAllUser(): Promise<UserInfos[]> {
-    return this.userInfosModel.find().populate('userId').exec();
-  }
-
-  async getAllUsers(filter?: FilterUserDto): Promise<{
+  ) {}  async getAllUser(
+    filter?: FilterUserDto,
+    pagination?: PaginationDto
+  ): Promise<{
     status: string;
     message: string;
     data: {
@@ -46,11 +43,15 @@ export class UserService {
         address: string;
         createdAt: Date;
       }>;
-      total: number;
+      totalPages?: number;
+      currentPage?: number;
+      pageSize?: number;
+      totalItems: number;
     };
   }> {
     let query = this.userInfosModel.find();
 
+    // Apply filters
     if (filter?.username) {
       query = query.where('fullName', new RegExp(filter.username, 'i'));
     }
@@ -79,6 +80,15 @@ export class UserService {
       populateQuery.match = match;
     }
 
+    // Get total count for pagination
+    const totalItems = await this.userInfosModel.countDocuments(query.getQuery());
+
+    // Apply pagination if provided
+    if (pagination?.page && pagination?.pageSize) {
+      const skip = (pagination.page - 1) * pagination.pageSize;
+      query = query.skip(skip).limit(pagination.pageSize);
+    }
+
     const users = await query.populate(populateQuery).lean().exec();
 
     const filteredUsers = users
@@ -95,26 +105,33 @@ export class UserService {
         createdAt: (user.userId as any).createdAt,
       }));
 
+    const responseData: any = {
+      users: filteredUsers,
+      totalItems,
+    };
+
+    // Add pagination info if pagination is requested
+    if (pagination?.page && pagination?.pageSize) {
+      const totalPages = Math.ceil(totalItems / pagination.pageSize);
+      responseData.totalPages = totalPages;
+      responseData.currentPage = pagination.page;
+      responseData.pageSize = pagination.pageSize;
+    }
+
     if (filteredUsers.length === 0) {
       return {
         status: 'success',
         message: filter
           ? `No users found matching filters: ${JSON.stringify(filter)}`
           : 'No users found in the system',
-        data: {
-          users: [],
-          total: 0,
-        },
+        data: responseData,
       };
     }
 
     return {
       status: 'success',
       message: 'Users retrieved successfully',
-      data: {
-        users: filteredUsers,
-        total: filteredUsers.length,
-      },
+      data: responseData,
     };
   }
 
@@ -137,6 +154,7 @@ export class UserService {
       avatar: user.avatar ? user.avatar.url?.toString() : null,
     };
   }
+  
   async updateUserAvatar(id: string, file: Express.Multer.File) {
     const userInfo = await this.userInfosModel
       .findOne({ userId: new Types.ObjectId(id) })
@@ -211,34 +229,49 @@ export class UserService {
 
     return HttpStatus.OK;
   }
-
-  async getPaginatedUsers(
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResponseDto<UserInfos>> {
-    if (!paginationDto.page || !paginationDto.pageSize) {
-      throw new BadRequestException('Page and pageSize are required');
+  async updateUserRole(userInfoId: string, role: string): Promise<{
+    status: string;
+    message: string;
+    data: {
+      userId: string;
+      accountId: string;
+      email: string;
+      userName: string;
+      role: string;
+      status: string;
+    };
+  }> {
+    // Find user info
+    const userInfo = await this.userInfosModel.findById(userInfoId);
+    if (!userInfo) {
+      throw new NotFoundException(`User with ID ${userInfoId} not found`);
     }
 
-    const skip = (paginationDto.page - 1) * paginationDto.pageSize;
+    // Find related account using userId from userInfo
+    const account = await this.accountModel.findById(userInfo.userId);
+    if (!account) {
+      throw new NotFoundException(`Account not found for user ${userInfoId}`);
+    }
 
-    const [users, totalItems] = await Promise.all([
-      this.userInfosModel
-        .find()
-        .populate('userId')
-        .skip(skip)
-        .limit(paginationDto.pageSize)
-        .exec(),
-      this.userInfosModel.countDocuments(),
-    ]);
+    try {
+      // Update account role
+      account.role = role as any;
+      await account.save();
 
-    const totalPages = Math.ceil(totalItems / paginationDto.pageSize);
-
-    return {
-      data: users,
-      totalPages,
-      currentPage: paginationDto.page,
-      pageSize: paginationDto.pageSize,
-      totalItems,
-    };
+      return {
+        status: 'success',
+        message: 'User role updated successfully',
+        data: {
+          userId: userInfo._id.toString(),
+          accountId: account._id.toString(),
+          email: account.email,
+          userName: userInfo.fullName,
+          role: account.role,
+          status: account.status
+        }
+      };
+    } catch (error) {
+      throw new BadRequestException(`Failed to update user role: ${error.message}`);
+    }
   }
 }
