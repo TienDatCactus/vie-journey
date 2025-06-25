@@ -1,7 +1,7 @@
-import { MainLayout } from "../../../../layouts";
+import { BlogLayout, MainLayout } from "../../../../layouts";
 
 const BlogDetail = () => {
-  return <MainLayout>dat</MainLayout>;
+  return <BlogLayout>dat</BlogLayout>;
 };
 
 export default BlogDetail;

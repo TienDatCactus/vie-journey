@@ -2,7 +2,6 @@ import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Accounts from "../../pages/(admin)/Accounts";
 import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
-import RoleManagement from "../../pages/(admin)/RoleManagement";
 import BlogManagementList from "../../pages/(manager)/Blog/BlogManagementList";
 import BlogManagementView from "../../pages/(manager)/BlogDetail/index";
 import BlogDetail from "../../pages/(user)/Blogs/BlogDetail/BlogDetail";
@@ -14,6 +13,7 @@ import HotelManagement from "../../pages/(manager)/Hotel";
 import HotelDetail from "../../pages/(manager)/Hotel/HotelDetail";
 import BlogList from "../../pages/(user)/Blogs/BlogList";
 import CreateBlog from "../../pages/(user)/Blogs/CreateBlog/CreateBlog";
+import RoleManagement from "../../pages/(admin)/RoleManagement";
 
 // Anonymous routes (no auth required)
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
@@ -71,7 +71,6 @@ const router = createBrowserRouter([
     ],
     errorElement: <ErrorBoundary />,
   },
-
   {
     path: "/auth",
     errorElement: <ErrorBoundary />,
@@ -252,7 +251,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/trip",
+    path: "/trips",
     // element: <ProtectedRoute requireAuth={false} />,
     errorElement: <ErrorBoundary />,
     children: [
@@ -279,7 +278,6 @@ const router = createBrowserRouter([
       },
     ],
   },
-
   {
     path: "/manager",
     errorElement: <ErrorBoundary />,

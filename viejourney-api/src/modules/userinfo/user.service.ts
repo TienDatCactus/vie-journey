@@ -128,15 +128,13 @@ export class UserService {
         model: 'Asset',
         select: 'url -_id',
       })
-      .lean()
       .exec();
-
     if (!user) {
       throw new HttpException(`User with ID ${id} not found`, 404);
     }
     return {
-      ...user,
-      avatar: user.avatar ? user.avatar?.url?.toString() : null,
+      ...user.toObject(),
+      avatar: user.avatar ? user.avatar.url?.toString() : null,
     };
   }
   async updateUserAvatar(id: string, file: Express.Multer.File) {

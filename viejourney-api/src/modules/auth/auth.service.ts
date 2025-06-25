@@ -156,14 +156,22 @@ export class AuthService {
       throw new ConflictException('User already exists');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    // Create user
     const user = new this.accountModel({
       email,
       password: hashedPassword,
       status: 'INACTIVE',
     });
     await user.save();
-
+    if (user) {
+      await this.userModel.create({
+        userId: user._id,
+        fullName: '',
+        dob: '',
+        avatar: null, // No avatar initially
+        phone: '',
+        address: '',
+      });
+    }
     this.sendRegistrationEmail(user);
     return HttpStatus.CREATED;
   }
@@ -214,7 +222,6 @@ export class AuthService {
     };
   }
   async logout(req: Request, res: Response) {
-    // Clear the refresh token cookie
     res.cookie('refreshToken', '', {
       httpOnly: true,
       sameSite: 'none',

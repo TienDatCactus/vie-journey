@@ -138,8 +138,8 @@ const POIDetails: React.FC<POIDetailsProps> = ({
       className="w-full h-full flex flex-col bg-white rounded-lg shadow-lg overflow-hidden"
     >
       {/* Header with image */}
-      <div className="relative lg:h-48">
-        <Swiper className="mySwiper lg:h-48 rounded-t-lg z-0 w-full">
+      <div className="relative lg:h-64">
+        <Swiper className="mySwiper lg:h-64 rounded-t-lg z-0 w-full">
           {poi.photos && poi.photos.length > 0 ? (
             poi.photos.map((photo, index) => (
               <SwiperSlide key={index}>
@@ -155,7 +155,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
                     e.currentTarget.src = `https://placehold.co/600x400?text=Image+not+available`;
                   }}
                   alt={`${poi.displayName || "Place"} - photo ${index + 1}`}
-                  className="relative h-48 w-full -z-10 object-cover"
+                  className="relative h-64 w-full -z-10 object-cover"
                 />
               </SwiperSlide>
             ))
@@ -202,13 +202,15 @@ const POIDetails: React.FC<POIDetailsProps> = ({
             }}
             className=""
           >
-            <Typography
-              variant="h5"
-              component="h2"
-              className="font-bold text-2xl"
-            >
-              {poi.displayName}
-            </Typography>
+            {poi?.displayName && (
+              <Typography
+                variant="h5"
+                component="h2"
+                className="font-bold text-2xl"
+              >
+                {poi.displayName}
+              </Typography>
+            )}
             {poi.editorialSummary && (
               <Typography
                 variant="body2"
@@ -228,7 +230,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
               md: 3,
               lg: 2,
             }}
-            className="flex items-center space-x-1"
+            className="flex items-center justify-end space-x-1"
           >
             <Tooltip
               arrow
@@ -293,119 +295,139 @@ const POIDetails: React.FC<POIDetailsProps> = ({
         )}
 
         {/* Status */}
-        <div className="mt-1">
-          {poi.businessStatus === "OPERATIONAL" && openNow !== null && (
-            <Chip
-              label={openNow ? "Open Now" : "Closed Now"}
-              size="small"
-              color={openNow ? "success" : "default"}
-              sx={{ mr: 1, mb: 1 }}
-            />
-          )}
-
-          {/* Types */}
-          {poi.types &&
-            poi.types
-              .filter(
-                (type) =>
-                  type !== "point_of_interest" && type !== "establishment"
-              )
-              .map((type) => (
-                <Chip
-                  key={type}
-                  label={type.replace(/_/g, " ")}
-                  size="small"
-                  variant="outlined"
-                  sx={{ mr: 1, mb: 1, textTransform: "capitalize" }}
-                />
-              ))}
-        </div>
-        <Grid2 container spacing={2} className="mt-4">
-          <Grid2
-            size={{
-              xs: 12,
-              sm: 6,
-              md: 6,
-            }}
-          >
-            {/* Address */}
-            {poi.formattedAddress && (
-              <div className="flex items-center my-2">
-                <PlaceIcon fontSize="small" className="text-neutral-600 mr-2" />
-                <Typography variant="body2">{poi.formattedAddress}</Typography>
-              </div>
+        {(poi?.businessStatus || (poi?.types && poi?.types?.length > 0)) && (
+          <div className="mt-1">
+            {poi.businessStatus === "OPERATIONAL" && openNow !== null && (
+              <Chip
+                label={openNow ? "Open Now" : "Closed Now"}
+                size="small"
+                color={openNow ? "success" : "default"}
+                sx={{ mr: 1, mb: 1 }}
+              />
             )}
 
-            {/* Opening hours */}
-            {poi.regularOpeningHours && (
-              <div className="flex items-center my-2">
-                <TimeIcon fontSize="small" className="text-neutral-600 mr-2" />
-                <div>
+            {/* Types */}
+            {poi.types &&
+              poi.types
+                .filter(
+                  (type) =>
+                    type !== "point_of_interest" && type !== "establishment"
+                )
+                .map((type) => (
+                  <Chip
+                    key={type}
+                    label={type.replace(/_/g, " ")}
+                    size="small"
+                    variant="outlined"
+                    sx={{ mr: 1, mb: 1, textTransform: "capitalize" }}
+                  />
+                ))}
+          </div>
+        )}
+        {poi?.formattedAddress ||
+        poi?.regularOpeningHours ||
+        (poi?.nationalPhoneNumber && poi?.internationalPhoneNumber) ||
+        poi?.websiteURI ? (
+          <Grid2 container spacing={2} className="mt-4">
+            <Grid2
+              size={{
+                xs: 12,
+                sm: 6,
+                md: 6,
+              }}
+            >
+              {/* Address */}
+              {poi.formattedAddress && (
+                <div className="flex items-center my-2">
+                  <PlaceIcon
+                    fontSize="small"
+                    className="text-neutral-600 mr-2"
+                  />
                   <Typography variant="body2">
-                    {formatOpeningHours()}
+                    {poi.formattedAddress}
                   </Typography>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Phone */}
-            {(poi.nationalPhoneNumber || poi.internationalPhoneNumber) && (
-              <div className="flex items-center">
-                <PhoneIcon fontSize="small" className="mr-2 text-neutral-600" />
-                <Link
-                  href={`tel:${poi.nationalPhoneNumber}`}
-                  underline="hover"
-                  variant="body2"
-                  color="primary"
-                >
-                  {poi.nationalPhoneNumber}
-                </Link>
-                <Divider
-                  orientation="vertical"
-                  flexItem
-                  className="border-neutral-900 ml-2"
-                />
-                <Link
-                  href={`tel:${poi.internationalPhoneNumber}`}
-                  underline="hover"
-                  variant="body2"
-                  color="primary"
-                  sx={{ ml: 1 }}
-                >
-                  {poi.internationalPhoneNumber}
-                </Link>
-              </div>
-            )}
+              {/* Opening hours */}
+              {poi.regularOpeningHours && (
+                <div className="flex items-center my-2">
+                  <TimeIcon
+                    fontSize="small"
+                    className="text-neutral-600 mr-2"
+                  />
+                  <div>
+                    <Typography variant="body2">
+                      {formatOpeningHours()}
+                    </Typography>
+                  </div>
+                </div>
+              )}
 
-            {/* Website */}
-            {poi.websiteURI && (
-              <div className="flex items-center mt-2">
-                <WebsiteIcon
-                  fontSize="small"
-                  className="mr-2 text-neutral-600"
-                />
-                <Link
-                  href={poi.websiteURI}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  underline="hover"
-                  variant="body2"
-                  color="primary"
-                  sx={{
-                    maxWidth: "calc(100% - 32px)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    display: "inline-block",
-                  }}
-                >
-                  {new URL(poi.websiteURI).hostname}
-                </Link>
-              </div>
-            )}
+              {/* Phone */}
+              {(poi.nationalPhoneNumber || poi.internationalPhoneNumber) && (
+                <div className="flex items-center">
+                  <PhoneIcon
+                    fontSize="small"
+                    className="mr-2 text-neutral-600"
+                  />
+                  <Link
+                    href={`tel:${poi.nationalPhoneNumber}`}
+                    underline="hover"
+                    variant="body2"
+                    color="primary"
+                  >
+                    {poi.nationalPhoneNumber}
+                  </Link>
+                  <Divider
+                    orientation="vertical"
+                    flexItem
+                    className="border-neutral-900 ml-2"
+                  />
+                  <Link
+                    href={`tel:${poi.internationalPhoneNumber}`}
+                    underline="hover"
+                    variant="body2"
+                    color="primary"
+                    sx={{ ml: 1 }}
+                  >
+                    {poi.internationalPhoneNumber}
+                  </Link>
+                </div>
+              )}
+
+              {/* Website */}
+              {poi.websiteURI && (
+                <div className="flex items-center mt-2">
+                  <WebsiteIcon
+                    fontSize="small"
+                    className="mr-2 text-neutral-600"
+                  />
+                  <Link
+                    href={poi.websiteURI}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    underline="hover"
+                    variant="body2"
+                    color="primary"
+                    sx={{
+                      maxWidth: "calc(100% - 32px)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      display: "inline-block",
+                    }}
+                  >
+                    {new URL(poi.websiteURI).hostname}
+                  </Link>
+                </div>
+              )}
+            </Grid2>
+            <Grid2 size={{ xs: 12, sm: 6, md: 6 }}></Grid2>
           </Grid2>
-          <Grid2 size={{ xs: 12, sm: 6, md: 6 }}></Grid2>
-        </Grid2>
+        ) : (
+          ""
+        )}
         {/* Amenities/Features */}
         {(poi.isGoodForChildren ||
           poi.hasOutdoorSeating ||

@@ -1,17 +1,15 @@
+import { Editor, EditorContent, EditorContext, useEditor } from "@tiptap/react";
 import * as React from "react";
-import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
 
 // --- Tiptap Core Extensions ---
-import { StarterKit } from "@tiptap/starter-kit";
+import { Highlight } from "@tiptap/extension-highlight";
 import { Image } from "@tiptap/extension-image";
 import { TaskItem } from "@tiptap/extension-task-item";
 import { TaskList } from "@tiptap/extension-task-list";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { Typography } from "@tiptap/extension-typography";
-import { Highlight } from "@tiptap/extension-highlight";
-import { Subscript } from "@tiptap/extension-subscript";
-import { Superscript } from "@tiptap/extension-superscript";
 import { Underline } from "@tiptap/extension-underline";
+import StarterKit from "@tiptap/starter-kit";
 
 // --- Custom Extensions ---
 import { Link } from "../../..//components/tiptap-extension/link-extension";
@@ -28,28 +26,27 @@ import {
 } from "../../..//components/tiptap-ui-primitive/toolbar";
 
 // --- Tiptap Node ---
-import { ImageUploadNode } from "../../..//components/tiptap-node/image-upload-node/image-upload-node-extension";
 import "../../..//components/tiptap-node/code-block-node/code-block-node.scss";
-import "../../..//components/tiptap-node/list-node/list-node.scss";
 import "../../..//components/tiptap-node/image-node/image-node.scss";
+import { ImageUploadNode } from "../../..//components/tiptap-node/image-upload-node/image-upload-node-extension";
+import "../../..//components/tiptap-node/list-node/list-node.scss";
 import "../../..//components/tiptap-node/paragraph-node/paragraph-node.scss";
 
 // --- Tiptap UI ---
-import { HeadingDropdownMenu } from "../../..//components/tiptap-ui/heading-dropdown-menu";
-import { ImageUploadButton } from "../../..//components/tiptap-ui/image-upload-button";
-import { ListDropdownMenu } from "../../..//components/tiptap-ui/list-dropdown-menu";
 import { BlockQuoteButton } from "../../..//components/tiptap-ui/blockquote-button";
-import { CodeBlockButton } from "../../..//components/tiptap-ui/code-block-button";
 import {
   ColorHighlightPopover,
-  ColorHighlightPopoverContent,
   ColorHighlightPopoverButton,
+  ColorHighlightPopoverContent,
 } from "../../..//components/tiptap-ui/color-highlight-popover";
+import { HeadingDropdownMenu } from "../../..//components/tiptap-ui/heading-dropdown-menu";
+import { ImageUploadButton } from "../../..//components/tiptap-ui/image-upload-button";
 import {
-  LinkPopover,
-  LinkContent,
   LinkButton,
+  LinkContent,
+  LinkPopover,
 } from "../../..//components/tiptap-ui/link-popover";
+import { ListDropdownMenu } from "../../..//components/tiptap-ui/list-dropdown-menu";
 import { MarkButton } from "../../..//components/tiptap-ui/mark-button";
 import { TextAlignButton } from "../../..//components/tiptap-ui/text-align-button";
 import { UndoRedoButton } from "../../..//components/tiptap-ui/undo-redo-button";
@@ -60,12 +57,12 @@ import { HighlighterIcon } from "../../..//components/tiptap-icons/highlighter-i
 import { LinkIcon } from "../../..//components/tiptap-icons/link-icon";
 
 // --- Hooks ---
-import { useMobile } from "../../../hooks/use-mobile";
-import { useWindowSize } from "../../..//hooks/use-window-size";
 import { useCursorVisibility } from "../../..//hooks/use-cursor-visibility";
+import { useWindowSize } from "../../..//hooks/use-window-size";
+import { useMobile } from "../../../hooks/use-mobile";
 
 // --- Components ---
-import { ThemeToggle } from "../../..//components/tiptap-templates/simple/theme-toggle";
+import { PlaceAutocomplete } from "../../..//components/tiptap-customs/nodes/place-nodes";
 
 // --- Lib ---
 import { handleImageUpload, MAX_FILE_SIZE } from "../../..//lib/tiptap-utils";
@@ -73,22 +70,33 @@ import { handleImageUpload, MAX_FILE_SIZE } from "../../..//lib/tiptap-utils";
 // --- Styles ---
 import "../../..//components/tiptap-templates/simple/simple-editor.scss";
 
+import { Place } from "@mui/icons-material";
 import content from "../../..//components/tiptap-templates/simple/data/content.json";
+import { ThemeToggle } from "./theme-toggle";
 
 const MainToolbarContent = ({
+  editor,
   onHighlighterClick,
   onLinkClick,
   isMobile,
 }: {
+  editor: Editor | null;
   onHighlighterClick: () => void;
   onLinkClick: () => void;
   isMobile: boolean;
 }) => {
+  const insertPlaceNode = () => {
+    editor?.chain().focus().insertContent({ type: "placeAutocomplete" }).run();
+  };
   return (
     <>
       <Spacer />
 
       <ToolbarGroup>
+        <Button onClick={insertPlaceNode}>
+          <Place className="tiptap-button-icon" />
+          <span>Add places</span>
+        </Button>
         <UndoRedoButton action="undo" />
         <UndoRedoButton action="redo" />
       </ToolbarGroup>
@@ -99,7 +107,6 @@ const MainToolbarContent = ({
         <HeadingDropdownMenu levels={[1, 2, 3, 4]} />
         <ListDropdownMenu types={["bulletList", "orderedList", "taskList"]} />
         <BlockQuoteButton />
-        <CodeBlockButton />
       </ToolbarGroup>
 
       <ToolbarSeparator />
@@ -108,7 +115,6 @@ const MainToolbarContent = ({
         <MarkButton type="bold" />
         <MarkButton type="italic" />
         <MarkButton type="strike" />
-        <MarkButton type="code" />
         <MarkButton type="underline" />
         {!isMobile ? (
           <ColorHighlightPopover />
@@ -119,11 +125,6 @@ const MainToolbarContent = ({
       </ToolbarGroup>
 
       <ToolbarSeparator />
-
-      <ToolbarGroup>
-        <MarkButton type="superscript" />
-        <MarkButton type="subscript" />
-      </ToolbarGroup>
 
       <ToolbarSeparator />
 
@@ -206,8 +207,6 @@ export function SimpleEditor() {
       Highlight.configure({ multicolor: true }),
       Image,
       Typography,
-      Superscript,
-      Subscript,
       Image.configure({
         inline: false,
         allowBase64: true,
@@ -222,13 +221,11 @@ export function SimpleEditor() {
       }),
       TrailingNode,
       Link.configure({ openOnClick: false }),
+      PlaceAutocomplete,
     ],
     content: content,
   });
 
-  console.log("HTML:", editor?.getHTML());
-  console.log("JSON:", editor?.getJSON());
-  console.log("Text:", editor?.getText());
   const bodyRect = useCursorVisibility({
     editor,
     overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
@@ -243,6 +240,7 @@ export function SimpleEditor() {
   return (
     <EditorContext.Provider value={{ editor }}>
       <Toolbar
+        className="rounded-xl"
         ref={toolbarRef}
         style={
           isMobile
@@ -254,6 +252,7 @@ export function SimpleEditor() {
       >
         {mobileView === "main" ? (
           <MainToolbarContent
+            editor={editor}
             onHighlighterClick={() => setMobileView("highlighter")}
             onLinkClick={() => setMobileView("link")}
             isMobile={isMobile}

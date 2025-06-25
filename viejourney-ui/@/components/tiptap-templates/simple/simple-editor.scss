@@ -54,7 +54,7 @@ body,
 }
 
 .simple-editor-content {
-  max-width: 640px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
 }
@@ -67,4 +67,12 @@ body,
   .simple-editor-content .tiptap.ProseMirror {
     padding: 1rem 1.5rem;
   }
+}
+// styles.scss
+.custom-node {
+  border: 1px solid #ccc;
+  padding: 12px;
+  border-radius: 6px;
+  background: #f9f9f9;
+  font-style: italic;
 }

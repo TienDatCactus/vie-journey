@@ -29,6 +29,12 @@ export class Blog extends Document {
   @Prop({ type: mongoose.Types.ObjectId, ref: 'Trip', required: false }) // Link to trip if blog is about a trip
   tripId: Trip | null;
 
+  @Prop({ type: Object, required: false })
+  destination: {
+    location: string | null; // Location of the blog, e.g., "Tokyo, Japan"
+    placeId: string | null; // Google Place ID or similar identifier
+  };
+
   @Prop({ required: true, type: mongoose.Types.ObjectId, ref: 'UserInfos' })
   createdBy: UserInfos;
 

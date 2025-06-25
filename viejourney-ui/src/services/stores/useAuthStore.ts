@@ -279,9 +279,6 @@ export const useAuthStore = create<AuthState>()(
             set({ isLoading: true });
             const info = await doGetUserInfo(cred.userId);
             if (!info) {
-              enqueueSnackbar("User information not found", {
-                variant: "error",
-              });
               return;
             }
             set({ info });

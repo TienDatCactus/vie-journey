@@ -1,7 +1,6 @@
 import {
   Add,
   ArrowForward,
-  AttachMoney,
   Circle,
   Delete,
   Edit,
@@ -13,6 +12,7 @@ import {
   AccordionSummary,
   Badge,
   Button,
+  ButtonGroup,
   Card,
   CardContent,
   Chip,
@@ -31,8 +31,9 @@ import {
   Stack,
   TextField,
   Tooltip,
+  Typography,
 } from "@mui/material";
-import { DatePicker, TimePicker } from "@mui/x-date-pickers-pro";
+import { DateTimePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -54,17 +55,17 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
     control,
     formState: { errors },
     register,
+    watch,
   } = useForm({
     defaultValues: {
       mode: props.data.mode,
       departureLocation: props.data.departure.location,
       arrivalLocation: props.data.arrival.location,
-      departureDate: dayjs(props.data.departure.date),
-      departureTime: dayjs(props.data.departure.time),
-      arrivalDate: dayjs(props.data.arrival.date),
-      arrivalTime: dayjs(props.data.arrival.time),
+      departureDateTime: dayjs(props.data.departure.datetime),
+      arrivalDateTime: dayjs(props.data.arrival.datetime),
       cost: props.data.cost,
       note: props.data.note,
+      currency: props.data.currency || "$",
     },
   });
   // const placesLib = useMapsLibrary("places");
@@ -113,14 +114,13 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
       mode: data.mode,
       departure: {
         location: data.departureLocation,
-        date: data.departureDate,
-        time: data.departureTime,
+        datetime: data.departureDateTime,
       },
       arrival: {
         location: data.arrivalLocation,
-        date: data.arrivalDate,
-        time: data.arrivalTime,
+        datetime: data.arrivalDateTime,
       },
+      currency: data.currency || "$",
     };
 
     props.onUpdate(props.data._id, updated);
@@ -134,12 +134,8 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
     >
       <CardContent className="p-0 lg:py-1 gap-4 flex flex-col justify-between">
         <form onSubmit={handleSubmit(onFormSubmit)}>
-          <Grid2 container spacing={2} justifyContent={"space-between"}>
-            <Grid2
-              size={{
-                lg: 6,
-              }}
-            >
+          <Stack spacing={2} justifyContent={"space-between"}>
+            <Stack direction="row" justifyContent="space-between">
               <FormControl fullWidth className="mb-2">
                 <FormLabel className="text-sm font-semibold text-neutral-700 uppercase">
                   Mode
@@ -152,11 +148,10 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                     <Select
                       {...field}
                       variant="standard"
-                      size="small"
                       slotProps={{
                         input: {
                           className:
-                            "text-neutral-800 text-sm border-none no-underline",
+                            "text-neutral-800 text-base border-none no-underline",
                         },
                       }}
                     >
@@ -184,117 +179,6 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                   <FormHelperText error>Mode is required</FormHelperText>
                 )}
               </FormControl>
-
-              <FormControl fullWidth className="mb-2">
-                <FormLabel className="text-sm font-semibold text-neutral-700 uppercase">
-                  Departure
-                </FormLabel>
-                <Grid2 container spacing={2} alignItems="center">
-                  <Grid2 size={6}>
-                    <Controller
-                      name="departureDate"
-                      control={control}
-                      render={({ field }) => (
-                        <DatePicker
-                          {...field}
-                          slotProps={{
-                            field: {
-                              className: "text-neutral-800 text-sm border-none",
-                            },
-                          }}
-                          className="*:text-neutral-800 *:text-sm"
-                        />
-                      )}
-                    />
-                  </Grid2>
-                  <Grid2 size={6}>
-                    <Controller
-                      name="departureTime"
-                      control={control}
-                      render={({ field }) => (
-                        <TimePicker
-                          {...field}
-                          className="*:text-neutral-800 *:text-sm"
-                        />
-                      )}
-                    />
-                  </Grid2>
-                  <Grid2 size={12}>
-                    <Controller
-                      name="departureLocation"
-                      control={control}
-                      rules={{ required: "Location required" }}
-                      render={({ field }) => <TextField fullWidth />}
-                    />
-                  </Grid2>
-                </Grid2>
-                {errors.departureLocation && (
-                  <FormHelperText error>
-                    {errors.departureLocation.message as string}
-                  </FormHelperText>
-                )}
-              </FormControl>
-
-              <FormControl fullWidth className="mb-2">
-                <FormLabel className="text-sm font-semibold text-neutral-700 uppercase">
-                  Arrival
-                </FormLabel>
-                <Grid2 container spacing={2} alignItems="center">
-                  <Grid2 size={6}>
-                    <Controller
-                      name="arrivalDate"
-                      control={control}
-                      render={({ field }) => (
-                        <DatePicker
-                          {...field}
-                          slotProps={{
-                            field: {
-                              className: "text-neutral-800 text-sm border-none",
-                            },
-                          }}
-                          className="*:text-neutral-800 *:text-sm"
-                        />
-                      )}
-                    />
-                  </Grid2>
-                  <Grid2 size={6}>
-                    <Controller
-                      name="arrivalTime"
-                      control={control}
-                      render={({ field }) => (
-                        <TimePicker
-                          {...field}
-                          className="*:text-neutral-800 *:text-sm"
-                        />
-                      )}
-                    />
-                  </Grid2>
-                  <Grid2 size={12}>
-                    <Controller
-                      name="arrivalLocation"
-                      control={control}
-                      rules={{ required: "Location required" }}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          error={!!errors.arrivalLocation}
-                          variant="standard"
-                          placeholder="Location"
-                          fullWidth
-                        />
-                      )}
-                    />
-                  </Grid2>
-                </Grid2>
-                {errors.arrivalLocation && (
-                  <FormHelperText error>
-                    {errors.arrivalLocation.message as string}
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Grid2>
-
-            <Grid2 size={{ lg: 6 }}>
               <FormControl fullWidth className="mb-2 w-full">
                 <FormLabel className="text-sm font-semibold text-neutral-700 uppercase">
                   Cost
@@ -312,15 +196,56 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                         })}
                         slotProps={{
                           input: {
+                            size: "small",
+
                             startAdornment: (
                               <InputAdornment position="start">
-                                <AttachMoney />
+                                <Select
+                                  {...register("currency", {
+                                    required: "Currency is required",
+                                  })}
+                                  variant="standard"
+                                  disableUnderline
+                                  slotProps={{
+                                    input: {
+                                      className:
+                                        "text-neutral-800 text-base border-none no-underline",
+                                    },
+                                  }}
+                                  className="text-neutral-800 text-base border-none no-underline"
+                                  defaultValue="$"
+                                >
+                                  <MenuItem value="$">$</MenuItem>
+                                  <MenuItem value="€">€</MenuItem>
+                                  <MenuItem value="£">£</MenuItem>
+                                  <MenuItem value="¥">¥</MenuItem>
+                                  <MenuItem value="₫">₫</MenuItem>
+                                </Select>
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <Typography variant="body2">
+                                  {watch("currency", "$")} (
+                                  {watch("currency", "$") === "$"
+                                    ? "USD"
+                                    : watch("currency", "$") === "€"
+                                    ? "EUR"
+                                    : watch("currency", "$") === "£"
+                                    ? "GBP"
+                                    : watch("currency", "$") === "¥"
+                                    ? "JPY"
+                                    : watch("currency", "$") === "₫"
+                                    ? "VND"
+                                    : ""}
+                                  )
+                                </Typography>
                               </InputAdornment>
                             ),
                           },
                         }}
                         {...field}
-                        className="text-neutral-800 text-base border-none w-full h-full"
+                        className="text-neutral-800 text-base border-none w-full "
                         customInput={TextField}
                       />
                     )}
@@ -332,53 +257,147 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                   </FormHelperText>
                 )}
               </FormControl>
-
-              <FormControl fullWidth className="mb-2 w-full">
-                <FormLabel className="text-sm font-semibold text-neutral-700 uppercase">
-                  Note
-                </FormLabel>
-                <div className="border rounded-md p-2 w-full text-neutral-800  text-base border-none ">
+            </Stack>
+            <Stack className="grid grid-cols-2" direction="row" spacing={1}>
+              <Stack direction="column" spacing={2} className="w-full">
+                <FormControl fullWidth>
+                  <FormLabel className="text-sm font-semibold text-neutral-700 uppercase">
+                    Departed At
+                  </FormLabel>
+                  <Stack>
+                    <Controller
+                      name="departureDateTime"
+                      control={control}
+                      render={({ field }) => (
+                        <DateTimePicker
+                          {...field}
+                          slotProps={{
+                            field: {
+                              className: "text-neutral-800 text-sm border-none",
+                            },
+                          }}
+                          className="*:text-neutral-800 *:text-sm"
+                        />
+                      )}
+                    />
+                    {errors.departureDateTime && (
+                      <FormHelperText error>
+                        {errors.departureDateTime.message as string}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                </FormControl>
+                <FormControl fullWidth>
                   <Controller
-                    name="note"
+                    name="departureLocation"
                     control={control}
+                    rules={{ required: "Location required" }}
                     render={({ field }) => (
                       <TextField
                         {...field}
-                        multiline
+                        error={!!errors.departureLocation}
+                        variant="standard"
+                        placeholder="Location"
                         fullWidth
-                        rows={8}
-                        maxRows={8}
-                        slotProps={{
-                          input: {
-                            className:
-                              "text-neutral-800 text-base border-none w-full h-full",
-                          },
-                        }}
                       />
                     )}
                   />
-                </div>
-              </FormControl>
-            </Grid2>
-          </Grid2>
-
+                  {errors.departureLocation && (
+                    <FormHelperText error>
+                      {errors.departureLocation.message as string}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              </Stack>
+              <Stack direction={"column"} spacing={2}>
+                <FormControl fullWidth>
+                  <FormLabel className="text-sm font-semibold text-neutral-700 uppercase">
+                    Arrived At
+                  </FormLabel>
+                  <Controller
+                    name="arrivalDateTime"
+                    control={control}
+                    render={({ field }) => (
+                      <DateTimePicker
+                        {...field}
+                        slotProps={{
+                          field: {
+                            className: "text-neutral-800 text-sm border-none",
+                          },
+                        }}
+                        className="*:text-neutral-800 *:text-sm"
+                      />
+                    )}
+                  />
+                </FormControl>
+                <FormControl fullWidth>
+                  <Controller
+                    name="arrivalLocation"
+                    control={control}
+                    rules={{ required: "Location required" }}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        error={!!errors.arrivalLocation}
+                        variant="standard"
+                        placeholder="Location"
+                        fullWidth
+                      />
+                    )}
+                  />
+                  {errors.arrivalLocation && (
+                    <FormHelperText error>
+                      {errors.arrivalLocation.message as string}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              </Stack>
+            </Stack>
+          </Stack>
           <Stack
+            className="grid grid-cols-3"
             direction="row"
-            justifyContent="flex-end"
+            alignItems={"flex-end"}
             marginTop={2}
             gap={1}
           >
-            <Button
-              variant="outlined"
-              type="button"
-              color="error"
-              onClick={() => props.onToggleEdit(props.data._id)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" variant="contained">
-              Save
-            </Button>
+            <FormControl fullWidth className="lg:col-span-2 w-full">
+              <FormLabel className="text-sm font-semibold text-neutral-700 uppercase">
+                Note
+              </FormLabel>
+              <Controller
+                name="note"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    multiline
+                    fullWidth
+                    rows={2}
+                    maxRows={4}
+                    slotProps={{
+                      input: {
+                        className:
+                          "text-neutral-800 text-base border-none w-full h-full",
+                      },
+                    }}
+                  />
+                )}
+              />
+            </FormControl>
+            <ButtonGroup className="col-span-1 flex justify-end h-fit items-end">
+              <Button
+                variant="outlined"
+                type="button"
+                color="error"
+                onClick={() => props.onToggleEdit(props.data._id)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="contained">
+                Save
+              </Button>
+            </ButtonGroup>
           </Stack>
         </form>
       </CardContent>
@@ -458,11 +477,16 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
                   gap={1}
                   alignItems={"center"}
                 >
-                  <time>{dayjs(data.departure.date).format("ddd, D MMM")}</time>
+                  <time>
+                    {dayjs(data.departure.datetime).format("ddd, D MMM")} -{" "}
+                    {dayjs(data.departure.datetime, "HH:mm:ss").format(
+                      "h:mm A"
+                    )}
+                  </time>
                   <Circle className="text-xs" />
                   <span>
-                    {dayjs(data.departure.time, "HH:mm:ss").format("h:mm A")} -
-                    {dayjs(data.arrival.time, "HH:mm:ss").format("h:mm A")}
+                    {dayjs(data.arrival.datetime).format("ddd, D MMM")} -
+                    {dayjs(data.arrival.datetime, "HH:mm:ss").format("h:mm A")}
                   </span>
                 </Stack>
                 <div className="flex items-center gap-2">
@@ -549,13 +573,11 @@ const ReservationTransits: React.FC = () => {
       currency: "$",
       mode: "Flight",
       departure: {
-        date: dayjs().format("YYYY-MM-DD"),
-        time: dayjs().format("HH:mm:ss"),
+        datetime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         location: "",
       },
       arrival: {
-        date: dayjs().format("YYYY-MM-DD"),
-        time: dayjs().add(2, "hour").format("HH:mm:ss"),
+        datetime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         location: "",
       },
       isEditing: true,

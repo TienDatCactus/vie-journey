@@ -23,7 +23,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
-import { Delete, Edit } from "@mui/icons-material";
+import { Delete, Edit, Visibility } from "@mui/icons-material";
 
 export interface SimpleCardProps {
   imageSrc: string;
@@ -114,10 +114,7 @@ const AssetCard = ({
         className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-md"
         sx={{ maxWidth: 345 }}
       >
-        <div
-          className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden cursor-pointer"
-          onClick={imageSrc ? onClick : undefined}
-        >
+        <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden cursor-pointer">
           <CardMedia
             component="img"
             height="194"
@@ -129,17 +126,24 @@ const AssetCard = ({
             <CardActions className="flex gap-1">
               <IconButton
                 onClick={() => setOpenModal(true)}
-                className="bg-white"
+                className="bg-white text-neutral-900"
                 aria-label="add to favorites"
               >
                 <Edit />
               </IconButton>
               <IconButton
                 onClick={() => setOpenConfirm(true)}
-                className="bg-red-500 text-white"
+                className="bg-red-500 text-red-100"
                 aria-label="share"
               >
                 <Delete />
+              </IconButton>
+              <IconButton
+                onClick={imageSrc ? onClick : undefined}
+                className="bg-green-500 text-green-100"
+                aria-label="share"
+              >
+                <Visibility />
               </IconButton>
             </CardActions>
           </div>
@@ -354,7 +358,7 @@ const AssetCard = ({
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "cover",
+                    objectFit: "contain",
                   }}
                 />
               </Box>

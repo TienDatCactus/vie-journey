@@ -24,13 +24,11 @@ export interface TransitData {
     | "Bike"
     | "Others";
   departure: {
-    date: string; // ISO date string
-    time: string; // ISO time string
+    datetime: string; // ISO date string
     location: string;
   };
   arrival: {
-    date: string; // ISO date string
-    time: string; // ISO time string
+    datetime: string; // ISO date string
     location: string;
   };
   isEditing?: boolean;

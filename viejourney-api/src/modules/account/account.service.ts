@@ -134,6 +134,7 @@ export class AccountService {
         const updateData = {
           ...editProfile,
           ...(assetId ? { avatar: assetId } : {}),
+          updatedAt: new Date(),
         };
 
         await this.userInfosModel.updateOne(

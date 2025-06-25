@@ -1,19 +1,54 @@
-import { AddLocationAlt, Draw, Public } from "@mui/icons-material";
+import { AddLocationAlt, Draw, Public, Search } from "@mui/icons-material";
 import {
+  Autocomplete,
   Button,
   ButtonGroup,
   Chip,
-  FormControl,
+  CircularProgress,
+  InputAdornment,
   Stack,
   TextField,
 } from "@mui/material";
-import React from "react";
-import { Form, useForm } from "react-hook-form";
+import React, { useCallback, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../../../../layouts";
+import { useAutocompleteSuggestions } from "../../../../utils/hooks/use-autocomplete-suggestion";
 const CreateBlog: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [destination, setDestination] = useState<string>("");
+  const [selectedPlace, setSelectedPlace] = useState<{
+    placePrediction: google.maps.places.PlacePrediction;
+  } | null>(null);
+  const [open, setOpen] = useState(false);
+  const { suggestions, isLoading } = useAutocompleteSuggestions(destination, {
+    includedPrimaryTypes: ["(regions)"],
+  });
+  const handleInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = event.target.value;
+      setDestination(value);
+    },
+    []
+  );
+  const handlePlaceSelect = (
+    suggestion: {
+      placePrediction: google.maps.places.PlacePrediction | null;
+    } | null
+  ) => {
+    // Only set selected place if placePrediction is not null
+    if (suggestion?.placePrediction) {
+      setSelectedPlace({ placePrediction: suggestion.placePrediction });
+      setDestination(suggestion.placePrediction.mainText + "");
+      setOpen(false);
+    }
+  };
   const navigate = useNavigate();
-  const form = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       destination: "",
     },
@@ -39,7 +74,12 @@ const CreateBlog: React.FC = () => {
             experiences, tips, and unforgettable moments from your adventures.
           </p>
         </div>
-        <div className="shadow-md rounded-lg p-4 bg-white w-full max-w-xl mt-8">
+        <form
+          onSubmit={handleSubmit((data) => {
+            console.log("Form submitted with data:", data);
+          })}
+          className="shadow-md rounded-lg p-4 bg-white w-full max-w-xl mt-8"
+        >
           <Stack
             direction={"row"}
             spacing={1}
@@ -49,14 +89,70 @@ const CreateBlog: React.FC = () => {
             <AddLocationAlt />
             <h1>Where did you travel?</h1>
           </Stack>
-          <Form {...form}>
-            <FormControl fullWidth>
-              <TextField label="Destination" variant="filled" fullWidth />
-            </FormControl>
-          </Form>
+          <Autocomplete
+            id="destination-autocomplete"
+            open={open}
+            onOpen={() => {
+              if (destination.length >= 2) setOpen(true);
+            }}
+            onClose={() => setOpen(false)}
+            isOptionEqualToValue={(option, value) =>
+              option.placePrediction?.placeId === value.placePrediction?.placeId
+            }
+            getOptionLabel={(option) => option.placePrediction?.mainText + ""}
+            options={suggestions}
+            loading={isLoading}
+            value={selectedPlace}
+            onChange={(_, newValue) => handlePlaceSelect(newValue)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                value={destination}
+                className="rounded-lg"
+                variant="filled"
+                fullWidth
+                placeholder="e.g Ta xua, Sapa, Da Nang"
+                {...register("destination", {
+                  required: "Destination is required",
+                })}
+                error={!!errors.destination}
+                helperText={
+                  errors.destination ? errors.destination.message : ""
+                }
+                onChange={handleInputChange}
+                InputProps={{
+                  ...params.InputProps,
+                  className: "p-2",
+                  startAdornment: (
+                    <Search color={errors.destination ? "error" : "action"} />
+                  ),
+                  endAdornment: (
+                    <>
+                      {isLoading ? <CircularProgress color="inherit" /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <li {...props} key={option.placePrediction?.placeId}>
+                <Stack>
+                  <div className="font-medium">
+                    {option?.placePrediction?.mainText + ""}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {option.placePrediction?.secondaryText != null
+                      ? option.placePrediction?.secondaryText + ""
+                      : option.placePrediction?.text + ""}
+                  </div>
+                </Stack>
+              </li>
+            )}
+          />
           <div className="my-4">
             <p className="lg:text-sm text-gray-500">Popular destinations: </p>
-            <Stack direction="row" spacing={1} className="mt-2" flexWrap="wrap">
+            <Stack direction="row" spacing={1} className="" flexWrap="wrap">
               {["Paris", "New York", "Tokyo", "London", "Sydney"].map(
                 (destination, index) => (
                   <Chip key={index} label={destination} />
@@ -69,7 +165,7 @@ const CreateBlog: React.FC = () => {
               onClick={() => navigate("/blogs/edit/1231")}
               variant="contained"
               startIcon={<Draw />}
-              type="submit"
+              // type="submit"
             >
               Create Blog
             </Button>
@@ -80,7 +176,7 @@ const CreateBlog: React.FC = () => {
               Plan a trip instead
             </Button>
           </ButtonGroup>
-        </div>
+        </form>
       </div>
     </MainLayout>
   );
