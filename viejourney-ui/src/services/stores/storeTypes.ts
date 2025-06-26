@@ -40,6 +40,20 @@ export interface DayItinerary {
   date: string;
   places: Place[];
   notes: Note[];
+  routes: {
+    origin: string; // placeId
+    destination: string; // placeId
+    distance?: string;
+    duration?: string;
+    transportType: "car" | "walk" | "bus";
+    steps?:
+      | {
+          instructions?: string;
+          distance?: string;
+          duration?: string;
+        }[]
+      | undefined;
+  }[];
 }
 
 export interface Expense {

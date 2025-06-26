@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
-import { useTripDetailStore } from "../../services/stores/useTripDetailStore";
 
 export function useFetchPlaceDetails() {
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
   const placesLib = useMapsLibrary("places");
-  const { placeDetails, setPlaceDetails } = useTripDetailStore();
+  const [placeDetails, setPlaceDetails] = useState<
+    Record<string, google.maps.places.Place>
+  >({});
 
   const fetchPlaceDetail = useCallback(
     async (placeId: string): Promise<google.maps.places.Place | undefined> => {
@@ -52,7 +53,7 @@ export function useFetchPlaceDetails() {
         );
 
         // Store the place details in our state
-        setPlaceDetails(placeId, placeResult);
+        setPlaceDetails((prev) => ({ ...prev, [placeId]: placeResult }));
 
         // Clear loading state
         setIsLoading((prev) => {
@@ -81,5 +82,6 @@ export function useFetchPlaceDetails() {
   return {
     fetchPlaceDetail,
     isLoading: (placeId: string) => !!isLoading[placeId],
+    placeDetails,
   };
 }

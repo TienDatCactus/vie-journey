@@ -19,14 +19,12 @@ interface TripDetailStore {
   updateNote: (id: string, content: string) => void;
   toggleEditNote: (id: string) => void;
   deleteNote: (id: string) => void;
-  setNotes: (notes: NoteData[]) => void;
 
   transits: TransitData[];
   addTransit: (transit: TransitData) => void;
   updateTransit: (id: string, transit: Partial<TransitData>) => void;
   toggleEditTransit: (id: string) => void;
   deleteTransit: (id: string) => void;
-  setTransits: (transits: TransitData[]) => void;
 
   placeNotes: PlaceNote[];
   addPlaceNote: (note: PlaceNote) => void;
@@ -34,15 +32,12 @@ interface TripDetailStore {
   toggleEditPlaceNotes: (id: string) => void;
   deletePlaceNote: (id: string) => void;
   setPlaceNotes: (notes: PlaceNote[]) => void;
-  togglePlaceVisited: (id: string) => void;
-  setPlaceDetails: (placeId: string, detail: google.maps.places.Place) => void;
+  togglePlaceVisited: (id: string, visited: boolean) => void;
 
-  placeDetails: Record<string, google.maps.places.Place>;
   itineraries: Intinerary[];
   addItinerary: (itinerary: Intinerary) => void;
   updateItinerary: (id: string, itinerary: Partial<Intinerary>) => void;
   deleteItinerary: (id: string) => void;
-  setItineraries: (itineraries: Intinerary[]) => void;
   toggleEditItinerary: (id: string) => void;
 
   expenses: Expense[];
@@ -52,6 +47,7 @@ export const useTripDetailStore = create<TripDetailStore>()(
   devtools(
     (set, get) => ({
       notes: [],
+      placeNotes: [],
       addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
       updateNote: (id, content) =>
         set((state) => ({
@@ -67,7 +63,7 @@ export const useTripDetailStore = create<TripDetailStore>()(
         set((state) => ({
           notes: state.notes.filter((n) => n._id !== id),
         })),
-      setNotes: (notes) => set(() => ({ notes })),
+
       transits: [],
       addTransit: (transit) =>
         set((state) => ({ transits: [...state.transits, transit] })),
@@ -87,12 +83,8 @@ export const useTripDetailStore = create<TripDetailStore>()(
         set((state) => ({
           transits: state.transits.filter((t) => t._id !== id),
         })),
-      setTransits: (transits) => set(() => ({ transits })),
 
       // Place notes implementation
-      placeNotes: [],
-      placeDetails: {},
-
       addPlaceNote: (note) =>
         set((state) => ({
           placeNotes: [...state.placeNotes, note],
@@ -116,22 +108,35 @@ export const useTripDetailStore = create<TripDetailStore>()(
         set((state) => ({
           placeNotes: state.placeNotes.filter((n) => n._id !== id),
         })),
-      setPlaceNotes: (notes) => set(() => ({ placeNotes: notes })),
-      setPlaceDetails: (placeId, detail) =>
-        set((state) => ({
-          placeDetails: {
-            ...state.placeDetails,
-            [placeId]: detail,
-          },
-        })),
-      togglePlaceVisited: (id) =>
+
+      togglePlaceVisited: (id, visited) =>
         set((state) => ({
           placeNotes: state.placeNotes.map((n) =>
-            n._id === id ? { ...n, visited: !n.visited } : n
+            n._id === id ? { ...n, visited } : n
           ),
         })),
       trip: {} as Trip,
       setTrip: (trip) => set(() => ({ trip })),
+      addItinerary: (itinerary) =>
+        set((state) => ({
+          itineraries: [...state.itineraries, itinerary],
+        })),
+      updateItinerary: (id, updated) =>
+        set((state) => ({
+          itineraries: state.itineraries.map((i) =>
+            i._id === id ? { ...i, ...updated } : i
+          ),
+        })),
+      deleteItinerary: (id) =>
+        set((state) => ({
+          itineraries: state.itineraries.filter((i) => i._id !== id),
+        })),
+      toggleEditItinerary: (id) =>
+        set((state) => ({
+          itineraries: state.itineraries.map((i) =>
+            i._id === id ? { ...i, isEditing: !i.isEditing } : i
+          ),
+        })),
     }),
     { name: "trip-detail-storage" }
   )

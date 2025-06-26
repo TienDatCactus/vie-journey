@@ -68,6 +68,7 @@ export interface Intinerary {
   };
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
+  isEditing?: boolean;
 }
 
 export interface Expense {

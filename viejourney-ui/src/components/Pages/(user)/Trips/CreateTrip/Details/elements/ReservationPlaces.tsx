@@ -23,7 +23,6 @@ import {
   Button,
   ButtonGroup,
   Card,
-  CardActionArea,
   CardContent,
   CardMedia,
   Checkbox,
@@ -41,79 +40,24 @@ import {
   Typography,
 } from "@mui/material";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { motion, useAnimation } from "motion/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { PlaceNote } from "../../../../../../../services/stores/storeInterfaces";
+import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
+import { getPlacePhotoUrl } from "../../../../../../../utils/handlers/utils";
 import { useAutocompleteSuggestions } from "../../../../../../../utils/hooks/use-autocomplete-suggestion";
 import { useFetchPlaceDetails } from "../../../../../../../utils/hooks/use-fetch-place";
-import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
 import { UserInfo } from "../../../../../../../utils/interfaces";
-import { motion, useAnimation } from "motion/react";
-function getPlacePhotoUrl(photo: any): string {
-  const fallbackImage = "/images/placeholder-main.png";
-  if (!photo) return fallbackImage;
 
-  try {
-    // Method 1: Try getUrl() with maxWidth parameter (standard Google Maps JS API v3 approach)
-    if (typeof photo.getUrl === "function") {
-      try {
-        return photo.getUrl({ maxWidth: 800 });
-      } catch (e) {
-        console.log("getUrl with params failed", e);
-      }
-    }
-
-    // Method 2: Try getUrl() without parameters (some API versions)
-    if (typeof photo.getUrl === "function") {
-      try {
-        return photo.getUrl();
-      } catch (e) {
-        console.log("getUrl without params failed", e);
-      }
-    }
-
-    // Method 3: Try getURI method (older or custom implementations)
-    if (typeof photo.getURI === "function") {
-      try {
-        return photo.getURI();
-      } catch (e) {
-        console.log("getURI failed", e);
-      }
-    }
-
-    // Method 4: Check if photo is a string URL directly
-    if (typeof photo === "string") {
-      return photo;
-    }
-
-    // Method 5: Check for common URL properties
-    if (photo.url) return photo.url;
-
-    // Method 6: Check if there's a photo reference we can use with Places Photo API
-    if (photo.name || photo.photoReference || photo.photo_reference) {
-      const photoRef =
-        photo.name || photo.photoReference || photo.photo_reference;
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
-      if (photoRef && apiKey) {
-        return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoRef}&key=${apiKey}`;
-      }
-    }
-
-    // Return fallback if all methods fail
-    return fallbackImage;
-  } catch (error) {
-    console.error("Error getting photo URL:", error);
-    return fallbackImage;
-  }
-}
 interface PlaceCardProps {
   placeNote: PlaceNote;
   placeDetail?: google.maps.places.Place;
   onUpdateNote: (id: string, note: string, visited: boolean) => void;
   onToggleEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onToggleVisited: (id: string) => void;
+  onToggleVisited: (id: string, visited: boolean) => void;
   onFetchDetails: (
     placeId: string
   ) => Promise<google.maps.places.Place | undefined>;
@@ -315,6 +259,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   const handleSave = () => {
     onUpdateNote(placeNote._id, localContent.note, localContent.visited);
     onToggleEdit(placeNote._id);
+    onToggleVisited(placeNote._id, localContent.visited);
   };
 
   const handleCancel = () => {
@@ -589,14 +534,13 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 const ReservationPlaces: React.FC = () => {
   const placeNotes = useTripDetailStore((state) => state.placeNotes);
   const {
-    placeDetails,
     addPlaceNote,
     updatePlaceNote,
     toggleEditPlaceNotes,
     deletePlaceNote,
     togglePlaceVisited,
   } = useTripDetailStore();
-  const { fetchPlaceDetail } = useFetchPlaceDetails();
+  const { fetchPlaceDetail, placeDetails } = useFetchPlaceDetails();
   const { info } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const handleAddPlace = (placeId: string) => {
