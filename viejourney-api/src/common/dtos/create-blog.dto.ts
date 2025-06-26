@@ -50,7 +50,7 @@ export class CreateBlogDto {
   })
   coverImage?: string;
 
-  @IsOptional()
-  @IsMongoId({ message: 'tripId phải là một MongoId hợp lệ.' })
-  tripId?: string;
+  // @IsOptional()
+  // @IsMongoId({ message: 'tripId phải là một MongoId hợp lệ.' })
+  // tripId?: string;
 }

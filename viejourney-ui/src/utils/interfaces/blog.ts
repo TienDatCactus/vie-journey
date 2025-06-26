@@ -55,7 +55,7 @@ export interface IBlogQuery {
   content: string;
   summary: string;
   tags: string[];
-  tripId: string;
+  destination: string;
   file: File | null;
   userId: string;
 }

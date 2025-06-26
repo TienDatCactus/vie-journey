@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { Close, CloudUpload, Delete } from "@mui/icons-material"
+import { Close, CloudUpload, Delete } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -20,82 +20,91 @@ import {
   Select,
   TextField,
   Typography,
-} from "@mui/material"
-import { useState } from "react"
-import { useAuthStore } from "../../../../../services/stores/useAuthStore"
-import { TAG_BLOG } from "../../../../../utils/constants/common"
-import type { IBlogQuery } from "../../../../../utils/interfaces/blog"
+} from "@mui/material";
+import { useState } from "react";
+import { useAuthStore } from "../../../../../services/stores/useAuthStore";
+import { TAG_BLOG } from "../../../../../utils/constants/common";
+import type { IBlogQuery } from "../../../../../utils/interfaces/blog";
+import { SimpleEditor } from "../../../../../../@/components/tiptap-templates/simple/simple-editor";
 
 interface NewPostDialogProps {
-  open: boolean
-  onClose: () => void
-  onSubmit: (postData: IBlogQuery) => void
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (postData: IBlogQuery) => void;
 }
 
-export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialogProps) {
-  const { user } = useAuthStore()
+export default function NewPostDialog({
+  open,
+  onClose,
+  onSubmit,
+}: NewPostDialogProps) {
+  const { user } = useAuthStore();
 
   const [formData, setFormData] = useState({
     title: "",
     userId: user?._id || "",
-    tripId: "",
+    destination: "",
     content: "",
     slug: "",
     tags: [] as string[],
     summary: "",
-  })
+  });
 
-  const [coverImage, setCoverImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleInputChange = (field: string, value: string | string[]) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
-  }
+    }));
+  };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] ?? null;
 
     if (file) {
-      setCoverImage(file)
+      setCoverImage(file);
 
       // Create preview URL
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleRemoveImage = () => {
-    setCoverImage(null)
-    setImagePreview(null)
+    setCoverImage(null);
+    setImagePreview(null);
     // Reset the file input
-    const fileInput = document.getElementById("cover-image-upload") as HTMLInputElement
+    const fileInput = document.getElementById(
+      "cover-image-upload"
+    ) as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = ""
+      fileInput.value = "";
     }
-  }
+  };
 
   const handleRemoveTag = (tagToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
       tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     const postData = {
       ...formData,
       file: coverImage ?? null,
-    }
-    onSubmit(postData)
-    handleClose()
-  }
+    };
+    onSubmit(postData);
+    handleClose();
+  };
 
   const handleClose = () => {
     setFormData({
@@ -105,12 +114,12 @@ export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialog
       tags: [],
       slug: "",
       summary: "",
-      tripId: "",
-    })
-    setCoverImage(null)
-    setImagePreview(null)
-    onClose()
-  }
+      destination: "",
+    });
+    setCoverImage(null);
+    setImagePreview(null);
+    onClose();
+  };
 
   return (
     <Dialog
@@ -132,7 +141,10 @@ export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialog
               Add a new travel blog post to your dashboard
             </Typography>
           </div>
-          <IconButton onClick={handleClose} className="text-gray-400 hover:text-gray-600">
+          <IconButton
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
             <Close />
           </IconButton>
         </DialogTitle>
@@ -164,18 +176,22 @@ export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialog
               required
               slotProps={{
                 input: {
-                  startAdornment: <InputAdornment position="start">localhost:5173/blogs/</InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      localhost:5173/blogs/
+                    </InputAdornment>
+                  ),
                 },
               }}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <TextField
                 fullWidth
                 label="Destination "
                 variant="outlined"
-                value={formData.tripId}
-                onChange={(e) => handleInputChange("tripId", e.target.value)}
+                value={formData.destination}
+                onChange={(e) => handleInputChange("destination", e.target.value)}
                 placeholder="Destination"
                 // required
               />
@@ -216,7 +232,9 @@ export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialog
                 labelId="tag-select-label"
                 multiple
                 value={formData.tags}
-                onChange={(e) => handleInputChange("tags", e.target.value as string[])}
+                onChange={(e) =>
+                  handleInputChange("tags", e.target.value as string[])
+                }
                 MenuProps={{ disablePortal: true }}
                 renderValue={(selected) => (
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
@@ -269,11 +287,15 @@ export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialog
                 {/* File Info */}
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <Typography variant="body2" className="font-medium text-gray-700">
+                    <Typography
+                      variant="body2"
+                      className="font-medium text-gray-700"
+                    >
                       {coverImage?.name}
                     </Typography>
                     <Typography variant="caption" className="text-gray-500">
-                      {coverImage && `${(coverImage.size / 1024 / 1024).toFixed(2)} MB`}
+                      {coverImage &&
+                        `${(coverImage.size / 1024 / 1024).toFixed(2)} MB`}
                     </Typography>
                   </div>
                   <Button
@@ -297,7 +319,10 @@ export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialog
                   id="cover-image-upload"
                 />
                 <label htmlFor="cover-image-upload" className="cursor-pointer">
-                  <CloudUpload className="text-gray-400 mb-2" sx={{ fontSize: 48 }} />
+                  <CloudUpload
+                    className="text-gray-400 mb-2"
+                    sx={{ fontSize: 48 }}
+                  />
                   <Typography variant="body1" className="text-gray-600 mb-1">
                     Click to upload cover image
                   </Typography>
@@ -313,17 +338,8 @@ export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialog
             <Typography variant="h6" className="font-semibold text-gray-800">
               Content
             </Typography>
-
-            <TextField
-              fullWidth
-              label="Blog Content"
-              variant="outlined"
-              multiline
-              rows={6}
-              value={formData.content}
-              onChange={(e) => handleInputChange("content", e.target.value)}
-              placeholder="Write your blog post content here..."
-              required
+            <SimpleEditor
+              onContentChange={(html) => handleInputChange("content", html)}
             />
           </div>
         </DialogContent>
@@ -343,5 +359,5 @@ export default function NewPostDialog({ open, onClose, onSubmit }: NewPostDialog
         </DialogActions>
       </form>
     </Dialog>
-  )
+  );
 }

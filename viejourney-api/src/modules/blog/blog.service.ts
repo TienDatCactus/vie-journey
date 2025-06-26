@@ -41,7 +41,6 @@ export class BlogService {
         createdBy: blog.createdBy,
         avatarUser: blog.createdBy.avatar?.url || null,
         summary: blog.summary,
-        destination: blog.tripId?.destination || null,
         viewCount: blog.metrics?.viewCount || 0,
         likeCount: blog.metrics?.likeCount || 0,
         commentCount: blog.metrics?.commentCount || 0,
