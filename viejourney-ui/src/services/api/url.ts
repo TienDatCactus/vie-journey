@@ -57,5 +57,5 @@ export const ASSET = {
 
 export const BLOG = {
   LIST_BLOGS: "/blogs/manager",
-  DELETE_BLOGS: "/blogs",
+  BLOGS: "/blogs",
 };

@@ -23,23 +23,6 @@ export class BlogService {
   ) {}
 
   // list all blogs
-<<<<<<< HEAD
-  async findAll() {
-    const blogs = await this.blogModel
-      .find()
-      .populate('createdBy tripId')
-      .populate({
-        path: 'createdBy',
-        populate: {
-          path: 'avatar',
-          model: 'Asset',
-          select: 'url',
-        },
-      })
-      .exec();
-    if (!blogs || blogs.length === 0) {
-      throw new NotFoundException('No blogs found');
-=======
   async findAll(paginationDto: PaginationDto) {
     const page = paginationDto.page ?? 1;
     const pageSize = paginationDto.pageSize ?? 10;
@@ -58,7 +41,7 @@ export class BlogService {
         .find(filter)
         .skip(skip)
         .limit(pageSize)
-        .populate('createdBy tripId')
+        .populate('createdBy')
         .populate({
           path: 'createdBy',
           populate: {
@@ -95,7 +78,6 @@ export class BlogService {
         totalItems: 0,
         message: 'No blogs found in the system.',
       };
->>>>>>> 1a03bb964dc612a89f84e5c1b6495adbdab943ca
     }
     const listBlogs = blogs.map((blog) => {
       return {
@@ -104,10 +86,7 @@ export class BlogService {
         createdBy: blog?.createdBy,
         avatarUser: blog?.createdBy?.avatar?.url || null,
         summary: blog.summary,
-<<<<<<< HEAD
-=======
         destination: blog?.destination?.location || null,
->>>>>>> 1a03bb964dc612a89f84e5c1b6495adbdab943ca
         viewCount: blog.metrics?.viewCount || 0,
         likeCount: blog.metrics?.likeCount || 0,
         commentCount: blog.metrics?.commentCount || 0,
@@ -165,21 +144,12 @@ export class BlogService {
     return {
       title: blog.title,
       content: blog.content,
-<<<<<<< HEAD
-      createdBy: blog.createdBy,
-      summary: blog.summary,
-      coverImage: blog.coverImage,
-      status: blog.status,
-      tripId: blog.tripId,
-      destination: blog.tripId?.description,
-=======
       createdBy: blog?.createdBy,
       summary: blog.summary,
       coverImage: blog.coverImage,
       tripId: blog?.tripId,
       destination: blog?.destination?.location || null,
       status: blog.status,
->>>>>>> 1a03bb964dc612a89f84e5c1b6495adbdab943ca
       flags: blog.flags || [],
       createdAt: blog.createdAt,
     };

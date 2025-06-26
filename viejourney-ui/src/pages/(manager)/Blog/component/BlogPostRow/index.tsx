@@ -7,8 +7,10 @@ import {
   Edit,
   LocationOn,
   Schedule,
-  Visibility
+  Visibility,
+   
 } from "@mui/icons-material";
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Avatar,
   Button,
@@ -27,10 +29,10 @@ import { IBlogPost } from "../../../../../utils/interfaces/blog";
 
 export default function BlogPostRow({
   blog,
-  handleDeleteBlog, 
+  handleDeleteBlog,
 }: {
   blog: IBlogPost;
-  handleDeleteBlog: (id: string) => void; 
+  handleDeleteBlog: (id: string) => void;
 }) {
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedBlogId, setSelectedBlogId] = useState<string | null>(null);
@@ -51,6 +53,13 @@ export default function BlogPostRow({
           <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md w-fit">
             <Schedule sx={{ fontSize: 16 }} />
             <span>PENDING</span>
+          </div>
+        );
+      case "REJECTED":
+        return (
+          <div className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-md w-fit">
+            <CloseIcon  sx={{ fontSize: 16 }} />
+            <span>REJECTED</span>
           </div>
         );
     }

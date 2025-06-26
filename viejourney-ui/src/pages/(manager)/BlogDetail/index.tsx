@@ -7,36 +7,52 @@ import {
   Close,
   Flag,
   LocationOn,
-  Phone
+  Phone,
 } from "@mui/icons-material";
 import {
   Avatar,
   Button,
   Card,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   Paper,
-  Typography
+  TextField,
+  Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { useParams } from "react-router-dom";
 import useBlogDetail from "./container/hook";
+import { useState } from "react";
 
 export default function Blog() {
   const { id } = useParams<{ id: string }>();
 
-  const { blog } = useBlogDetail({ id: id ?? "" });
+  const { blog, handleUpdateStatus, handleBanAuthor } = useBlogDetail({
+    id: id ?? "",
+  });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<
+    null | "APPROVED" | "REJECTED"
+  >(null);
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [banReason, setBanReason] = useState("");
 
   const handleApprove = () => {
-    // console.log("Approving post:", post.id);
+    setConfirmAction("APPROVED");
+    setConfirmOpen(true);
   };
 
   const handleReject = () => {
-    // console.log("Rejecting post:", post.id);
+    setConfirmAction("REJECTED");
+    setConfirmOpen(true);
   };
 
-  const handleBanAuthor = () => {
-    // console.log("Banning author:", post.author.name);
+  const handleBanAuthorClick = () => {
+    setBanDialogOpen(true);
   };
 
   const handleClearFlags = () => {
@@ -95,7 +111,10 @@ export default function Blog() {
                     {blog?.summary}
                   </Typography>
 
-                  {blog?.content}
+                  <div
+                    className="prose max-w-none"
+                    dangerouslySetInnerHTML={{ __html: blog?.content || "" }}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -134,7 +153,6 @@ export default function Blog() {
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-gray-500" />
                     <Typography variant="body2">
-                  
                       {blog?.createdBy.phone}
                     </Typography>
                   </div>
@@ -147,7 +165,7 @@ export default function Blog() {
                 </div>
 
                 <Divider className="my-4" />
-{/* 
+                {/* 
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
                     <Typography variant="h6" className="font-semibold">
@@ -215,29 +233,30 @@ export default function Blog() {
                 </Typography>
 
                 <div className="space-y-3">
-              {blog?.status === "PENDING" ? ( 
+                  {blog?.status === "PENDING" ? (
                     <div className="flex gap-2">
-                    <Button
-                      variant="contained"
-                      color="success"
-                      startIcon={<Check />}
-                      onClick={handleApprove}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      startIcon={<Close />}
-                      onClick={handleReject}
-                      className="flex-1"
-                    >
-                      Reject
-                    </Button>
-                  </div>
-
-              ) : (<></>)}
+                      <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<Check />}
+                        onClick={handleApprove}
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<Close />}
+                        onClick={handleReject}
+                        className="flex-1"
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
                   <Button
                     variant="outlined"
                     startIcon={<ClearAll />}
@@ -253,7 +272,7 @@ export default function Blog() {
                     variant="contained"
                     color="error"
                     startIcon={<Block />}
-                    onClick={handleBanAuthor}
+                    onClick={handleBanAuthorClick}
                     className="w-full"
                   >
                     Ban Author
@@ -264,6 +283,71 @@ export default function Blog() {
           </div>
         </div>
       </div>
+      <Dialog open={banDialogOpen} onClose={() => setBanDialogOpen(false)}>
+        <DialogTitle>Ban Author</DialogTitle>
+        <DialogContent>
+          <Typography className="mb-2">
+            Please enter the reason for banning the author:
+          </Typography>
+          <TextField
+            fullWidth
+            multiline
+            minRows={3}
+            value={banReason}
+            onChange={(e) => setBanReason(e.target.value)}
+            placeholder="Reason for banning the author..."
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBanDialogOpen(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={async () => {
+              if (blog?.createdBy?._id && banReason.trim()) {
+                await handleBanAuthor(id ?? "", banReason);
+                setBanDialogOpen(false);
+                setBanReason("");
+              }
+            }}
+            color="error"
+            variant="contained"
+            disabled={!banReason.trim()}
+          >
+            Ban
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirm Moderation</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to{" "}
+            <strong>
+              {confirmAction === "APPROVED" ? "approve" : "reject"}
+            </strong>{" "}
+            this blog post?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              if (confirmAction && id) {
+                handleUpdateStatus(id, confirmAction);
+              }
+              setConfirmOpen(false);
+            }}
+            color={confirmAction === "APPROVED" ? "success" : "error"}
+            variant="contained"
+          >
+            {confirmAction === "APPROVED" ? "Approve" : "Reject"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

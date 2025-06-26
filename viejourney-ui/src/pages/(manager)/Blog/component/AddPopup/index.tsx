@@ -43,7 +43,7 @@ export default function NewPostDialog({
   const [formData, setFormData] = useState({
     title: "",
     userId: user?._id || "",
-    destination: "",
+    location: "",
     content: "",
     slug: "",
     tags: [] as string[],
@@ -114,7 +114,7 @@ export default function NewPostDialog({
       tags: [],
       slug: "",
       summary: "",
-      destination: "",
+      location: "",
     });
     setCoverImage(null);
     setImagePreview(null);
@@ -190,8 +190,8 @@ export default function NewPostDialog({
                 fullWidth
                 label="Destination "
                 variant="outlined"
-                value={formData.destination}
-                onChange={(e) => handleInputChange("destination", e.target.value)}
+                value={formData.location}
+                onChange={(e) => handleInputChange("location", e.target.value)}
                 placeholder="Destination"
                 // required
               />
