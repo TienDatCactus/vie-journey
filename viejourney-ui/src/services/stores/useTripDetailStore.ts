@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import {
   Expense,
-  Intinerary,
+  Itinerary,
   NoteData,
   PlaceNote,
   TransitData,
@@ -34,12 +34,11 @@ interface TripDetailStore {
   setPlaceNotes: (notes: PlaceNote[]) => void;
   togglePlaceVisited: (id: string, visited: boolean) => void;
 
-  itineraries: Intinerary[];
-  addItinerary: (itinerary: Intinerary) => void;
-  updateItinerary: (id: string, itinerary: Partial<Intinerary>) => void;
+  itineraries: Itinerary[];
+  addItinerary: (itinerary: Itinerary) => void;
+  updateItinerary: (id: string, itinerary: Partial<Itinerary>) => void;
   deleteItinerary: (id: string) => void;
   toggleEditItinerary: (id: string) => void;
-
   expenses: Expense[];
 }
 
@@ -47,6 +46,8 @@ export const useTripDetailStore = create<TripDetailStore>()(
   devtools(
     (set, get) => ({
       notes: [],
+      itineraries: [],
+      expenses: [],
       placeNotes: [],
       addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
       updateNote: (id, content) =>

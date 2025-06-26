@@ -18,7 +18,6 @@ const CreateTripDetails: React.FC = () => {
   const { user, info } = useAuthStore();
   const { setTrip } = useTripDetailStore();
   const { id } = useParams<{ id: string }>();
-  console.log(user, info);
   useEffect(() => {
     const socket = io("http://localhost:5000/trip", {
       transports: ["websocket"],
