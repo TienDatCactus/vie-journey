@@ -216,7 +216,7 @@ export class BlogService {
   ) {
     try {
       const user = await this.userInfosModel
-        .find({ userId: new Types.ObjectId(userId) })
+        .findOne({ userId: new Types.ObjectId(userId) })
         .exec();
       if (!user) throw new NotFoundException('User not found');
       let uploadResult: import('cloudinary').UploadApiResponse | null = null;
@@ -225,8 +225,9 @@ export class BlogService {
       });
       const newBlog = new this.blogModel({
         ...createBlogDto,
-        createdBy: new Types.ObjectId(user[0]._id), // Lấy userId từ userInfos
-        updatedBy: new Types.ObjectId(user[0]._id),
+        createdBy: new Types.ObjectId(user._id),
+        tripId: createBlogDto.tripId,
+        updatedBy: new Types.ObjectId(user._id),
         coverImage: uploadResult?.secure_url || '',
         status: 'APPROVED',
         metrics: {

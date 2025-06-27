@@ -23,7 +23,6 @@ import {
   Button,
   ButtonGroup,
   Card,
-  CardActionArea,
   CardContent,
   CardMedia,
   Checkbox,
@@ -41,82 +40,24 @@ import {
   Typography,
 } from "@mui/material";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { motion, useAnimation } from "motion/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { PlaceNote } from "../../../../../../../services/stores/storeInterfaces";
+import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
+import { getPlacePhotoUrl } from "../../../../../../../utils/handlers/utils";
 import { useAutocompleteSuggestions } from "../../../../../../../utils/hooks/use-autocomplete-suggestion";
 import { useFetchPlaceDetails } from "../../../../../../../utils/hooks/use-fetch-place";
-import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
 import { UserInfo } from "../../../../../../../utils/interfaces";
-import { motion, useAnimation } from "motion/react";
-function getPlacePhotoUrl(photo: any): string {
-  const fallbackImage = "/images/placeholder-main.png";
-  if (!photo) return fallbackImage;
 
-  try {
-    // Method 1: Try getUrl() with maxWidth parameter (standard Google Maps JS API v3 approach)
-    if (typeof photo.getUrl === "function") {
-      try {
-        return photo.getUrl({ maxWidth: 800 });
-      } catch (e) {
-        console.log("getUrl with params failed", e);
-      }
-    }
-
-    // Method 2: Try getUrl() without parameters (some API versions)
-    if (typeof photo.getUrl === "function") {
-      try {
-        return photo.getUrl();
-      } catch (e) {
-        console.log("getUrl without params failed", e);
-      }
-    }
-
-    // Method 3: Try getURI method (older or custom implementations)
-    if (typeof photo.getURI === "function") {
-      try {
-        return photo.getURI();
-      } catch (e) {
-        console.log("getURI failed", e);
-      }
-    }
-
-    // Method 4: Check if photo is a string URL directly
-    if (typeof photo === "string") {
-      return photo;
-    }
-
-    // Method 5: Check for common URL properties
-    if (photo.url) return photo.url;
-
-    // Method 6: Check if there's a photo reference we can use with Places Photo API
-    if (photo.name || photo.photoReference || photo.photo_reference) {
-      const photoRef =
-        photo.name || photo.photoReference || photo.photo_reference;
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
-      if (photoRef && apiKey) {
-        return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoRef}&key=${apiKey}`;
-      }
-    }
-
-    // Return fallback if all methods fail
-    return fallbackImage;
-  } catch (error) {
-    console.error("Error getting photo URL:", error);
-    return fallbackImage;
-  }
-}
 interface PlaceCardProps {
   placeNote: PlaceNote;
   placeDetail?: google.maps.places.Place;
   onUpdateNote: (id: string, note: string, visited: boolean) => void;
   onToggleEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onToggleVisited: (id: string) => void;
-  onFetchDetails: (
-    placeId: string
-  ) => Promise<google.maps.places.Place | undefined>;
+  onToggleVisited: (id: string, visited: boolean) => void;
   isLoading?: boolean;
 }
 
@@ -247,14 +188,10 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   onToggleEdit,
   onDelete,
   onToggleVisited,
-  onFetchDetails,
   isLoading,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [loading, setLoading] = useState<boolean>(isLoading || false);
-  const [details, setDetails] = useState<google.maps.places.Place | undefined>(
-    placeDetail
-  );
+
   const [localContent, setLocalContent] = useState({
     note: placeNote.note,
     visited: placeNote.visited,
@@ -276,25 +213,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       },
     });
   }, [controls, placeDetail?.types]);
-  useEffect(() => {
-    const fetchDetails = async () => {
-      if (!placeDetail && !loading) {
-        setLoading(true);
-        try {
-          const fetchedDetails = await onFetchDetails(placeNote.placeId);
-          setDetails(fetchedDetails);
-        } catch (err) {
-          console.error("Error fetching details:", err);
-        } finally {
-          setLoading(false);
-        }
-      } else if (placeDetail) {
-        setDetails(placeDetail);
-      }
-    };
-
-    fetchDetails();
-  }, [placeDetail, placeNote.placeId, onFetchDetails]);
 
   useEffect(() => {
     if (placeNote.isEditing) {
@@ -315,6 +233,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   const handleSave = () => {
     onUpdateNote(placeNote._id, localContent.note, localContent.visited);
     onToggleEdit(placeNote._id);
+    onToggleVisited(placeNote._id, localContent.visited);
   };
 
   const handleCancel = () => {
@@ -333,12 +252,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       elevation={0}
       className="w-full grid lg:grid-cols-3 rounded-xl lg:min-h-64 z-20 flex-col "
     >
-      {loading ? (
+      {isLoading ? (
         // Loading state rendering
         <CardContent className="col-span-3 flex justify-center items-center">
           <CircularProgress size={40} />
           <Typography variant="body1" sx={{ ml: 2 }}>
-            Loading place details...
+            Loading place placeDetail...
           </Typography>
         </CardContent>
       ) : (
@@ -349,11 +268,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               e.currentTarget.src = `https://placehold.co/300x500?text=Image+not+available`;
             }}
             component="img"
-            src={
-              details?.photos && details.photos.length > 0
-                ? getPlacePhotoUrl(details.photos[0]) // Use our helper function
-                : "/images/placeholder-main.png"
-            }
+            src={getPlacePhotoUrl(placeDetail?.photos?.[0])}
             className="object-cover col-span-1 w-full h-full rounded-s-lg"
           />
           <CardContent className="p-0 px-4 lg:py-1 flex flex-col col-span-2 justify-between z-20">
@@ -364,14 +279,14 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               justifyContent={"space-between"}
             >
               <Stack direction={"row"} alignItems={"center"} gap={1}>
-                <Tooltip title={details?.displayName}>
+                <Tooltip title={placeDetail?.displayName}>
                   <h1 className="text-2xl line-clamp-2 font-semibold">
-                    {details?.displayName}
+                    {placeDetail?.displayName}
                   </h1>
                 </Tooltip>
-                {details?.types && (
+                {placeDetail?.types && (
                   <Chip
-                    label={details?.types[0]
+                    label={placeDetail?.types[0]
                       .split("_")
                       .map(
                         (item) => item.charAt(0).toUpperCase() + item.slice(1)
@@ -408,19 +323,27 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               <Stack direction={"row"} alignItems={"baseline"}>
                 <Star className="text-yellow-500 text-base " />
                 <span className="text-base text-gray-600 font-semibold ml-1">
-                  {details?.rating ? details.rating : "None"}
+                  {placeDetail?.rating ? placeDetail.rating : "None"}
                 </span>
                 <span className="text-xs text-gray-600 ">
-                  ({details?.userRatingCount ? details.userRatingCount : "0"})
+                  (
+                  {placeDetail?.userRatingCount
+                    ? placeDetail.userRatingCount
+                    : "0"}
+                  )
                 </span>
               </Stack>
               <Stack direction={"row"} alignItems={"center"}>
                 <AccessTime className="text-gray-600 text-base mr-0.5" />
                 <span className="text-sm text-gray-600">
-                  {details?.regularOpeningHours?.periods[0]?.open?.hour ? (
+                  {placeDetail?.regularOpeningHours?.periods[0]?.open?.hour ? (
                     <div>
-                      {details?.regularOpeningHours?.periods[0]?.open?.hour}AM -{" "}
-                      {details?.regularOpeningHours?.periods[0]?.close?.minute}
+                      {placeDetail?.regularOpeningHours?.periods[0]?.open?.hour}
+                      AM -{" "}
+                      {
+                        placeDetail?.regularOpeningHours?.periods[0]?.close
+                          ?.minute
+                      }
                       PM
                     </div>
                   ) : (
@@ -431,7 +354,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               <Stack direction={"row"} alignItems={"center"}>
                 <AttachMoney className="text-green-600 text-base" />
                 <span className="text-sm text-gray-600 font-semibold">
-                  {details?.priceLevel ? details.priceLevel : "NO INFO"}
+                  {placeDetail?.priceLevel ? placeDetail.priceLevel : "NO INFO"}
                 </span>
               </Stack>
             </Stack>
@@ -460,9 +383,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 }}
               />
             )}
-            {details?.editorialSummary && (
+            {placeDetail?.editorialSummary && (
               <i className="text-sm text-gray-600">
-                {details?.editorialSummary}
+                {placeDetail?.editorialSummary}
               </i>
             )}
             <div className="max-w-full overflow-hidden">
@@ -470,9 +393,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 className="flex gap-2 z-10 whitespace-nowrap"
                 animate={controls}
               >
-                {!!details?.types?.length && (
+                {!!placeDetail?.types?.length && (
                   <>
-                    {details.types.map((type) => (
+                    {placeDetail.types.map((type) => (
                       <Chip
                         key={type}
                         label={type
@@ -539,8 +462,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                     className="text-gray-600 border-gray-300"
                     startIcon={<Directions />}
                     onClick={() => {
-                      if (details?.googleMapsURI) {
-                        window.open(details.googleMapsURI, "_blank");
+                      if (placeDetail?.googleMapsURI) {
+                        window.open(placeDetail.googleMapsURI, "_blank");
                       }
                     }}
                   >
@@ -551,8 +474,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                     className="bg-gray-800 text-white"
                     startIcon={<OpenInNew />}
                     onClick={() => {
-                      if (details?.websiteURI) {
-                        window.open(details.websiteURI, "_blank");
+                      if (placeDetail?.websiteURI) {
+                        window.open(placeDetail.websiteURI, "_blank");
                       }
                     }}
                   >
@@ -589,17 +512,16 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 const ReservationPlaces: React.FC = () => {
   const placeNotes = useTripDetailStore((state) => state.placeNotes);
   const {
-    placeDetails,
     addPlaceNote,
     updatePlaceNote,
     toggleEditPlaceNotes,
     deletePlaceNote,
     togglePlaceVisited,
   } = useTripDetailStore();
-  const { fetchPlaceDetail } = useFetchPlaceDetails();
+  const { fetchPlaceDetail, placeDetails } = useFetchPlaceDetails();
   const { info } = useAuthStore();
   const [loading, setLoading] = useState(false);
-  const handleAddPlace = (placeId: string) => {
+  const handleAddPlace = async (placeId: string) => {
     try {
       setLoading(true);
       const newPlaceNote: PlaceNote = {
@@ -612,7 +534,7 @@ const ReservationPlaces: React.FC = () => {
       };
 
       addPlaceNote(newPlaceNote);
-      fetchPlaceDetail(placeId);
+      await fetchPlaceDetail(placeId);
     } catch (error) {
       console.error(error);
     } finally {
@@ -662,7 +584,6 @@ const ReservationPlaces: React.FC = () => {
                   onToggleEdit={toggleEditPlaceNotes}
                   onDelete={deletePlaceNote}
                   onToggleVisited={togglePlaceVisited}
-                  onFetchDetails={fetchPlaceDetail}
                 />
               ))
             )}
