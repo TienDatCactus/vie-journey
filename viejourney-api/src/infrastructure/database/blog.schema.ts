@@ -47,7 +47,7 @@ export class Blog extends Document {
   @Prop({
     type: String,
     enum: ['DRAFT', 'PENDING', 'APPROVED', 'REJECTED'],
-    default: 'APPROVED',
+    default: 'DRAFT',
   })
   status: string;
 
