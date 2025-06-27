@@ -12,7 +12,10 @@ export class AssetsService {
     });
   }
 
-  async uploadImage(file: any, options?: any): Promise<UploadApiResponse> {
+  async uploadImage(
+    file: any,
+    options?: { public_id?: string; folder?: string },
+  ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(

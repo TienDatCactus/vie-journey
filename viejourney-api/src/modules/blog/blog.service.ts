@@ -23,11 +23,13 @@ export class BlogService {
   ) {}
 
   // list all blogs
-<<<<<<< HEAD
   async findAll(paginationDto: PaginationDto) {
     const page = paginationDto.page ?? 1;
     const pageSize = paginationDto.pageSize ?? 10;
+    const status = paginationDto.status?.trim();
+    const viewCountRange = paginationDto.viewCountRange;
     const search = paginationDto.search?.trim();
+    const sort = paginationDto.sort || 'desc';
 
     const skip = (page - 1) * pageSize;
 
@@ -36,13 +38,27 @@ export class BlogService {
     if (search) {
       filter.title = { $regex: search, $options: 'i' }; // tìm kiếm không phân biệt hoa thường
     }
+    if (status) {
+      filter.status = status;
+    }
+    if (viewCountRange) {
+      if (viewCountRange === 'lt100') {
+        filter['metrics.viewCount'] = { $lt: 100 };
+      } else if (viewCountRange === '100to1000') {
+        filter['metrics.viewCount'] = { $gte: 100, $lte: 1000 };
+      } else if (viewCountRange === 'gt1000') {
+        filter['metrics.viewCount'] = { $gt: 1000 };
+      }
+    }
+    const sortOption = sort === 'asc' ? 1 : -1;
 
     const [blogs, totalItems] = await Promise.all([
       this.blogModel
         .find(filter)
+        .sort({ updatedAt: sortOption })
         .skip(skip)
         .limit(pageSize)
-        .populate('createdBy tripId')
+        .populate('createdBy')
         .populate({
           path: 'createdBy',
           populate: {
@@ -79,23 +95,6 @@ export class BlogService {
         totalItems: 0,
         message: 'No blogs found in the system.',
       };
-=======
-  async findAll() {
-    const blogs = await this.blogModel
-      .find()
-      .populate('createdBy tripId')
-      .populate({
-        path: 'createdBy',
-        populate: {
-          path: 'avatar',
-          model: 'Asset',
-          select: 'url',
-        },
-      })
-      .exec();
-    if (!blogs || blogs.length === 0) {
-      throw new NotFoundException('No blogs found');
->>>>>>> 4778ed27451d64c20d8c851022513e6e8d36794a
     }
     const listBlogs = blogs.map((blog) => {
       return {
@@ -290,7 +289,8 @@ export class BlogService {
       if (!user) throw new NotFoundException('User not found');
       let uploadResult: import('cloudinary').UploadApiResponse | null = null;
       uploadResult = await this.assetsService.uploadImage(file, {
-        public_id: `users/${userId}/IMAGE_BLOG/${file.filename || uuidv4()}`,
+        public_id: `manager/${userId}/${uuidv4()}`,
+        folder: `vie-journey/blogs`,
       });
       const newBlog = new this.blogModel({
         ...createBlogDto,

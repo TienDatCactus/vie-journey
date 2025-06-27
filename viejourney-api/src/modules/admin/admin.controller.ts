@@ -24,7 +24,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 import { UpdateUserInfoDto } from 'src/common/dtos/update-userinfo.dto';
 import { FilterUserDto } from 'src/common/dtos/filter-userinfo.dto';
-@UseGuards(RolesGuard, JwtAuthGuard)
+// @UseGuards(RolesGuard, JwtAuthGuard)
 // @Roles(Role.Admin)
 @Controller('admin')
 export class AdminController {
@@ -33,9 +33,17 @@ export class AdminController {
     private readonly userService: UserService,
   ) {}
 
+  @Get('banner/subsection')
+  async getSubsection() {
+    return this.adminService.getSubsection();
+  }
+
   @Get('assets')
-  async getAssetsByType(@Query('type') type: string) {
-    return this.adminService.getAssetsByType(type);
+  async getAssetsByType(
+    @Query('type') type: string,
+    @Query('subsection') subsection?: string,
+  ) {
+    return this.adminService.getAssetsByType(type, subsection);
   }
   @Delete('assets/delete')
   async deleteAssetById(@Query('id') id: string) {
@@ -81,8 +89,10 @@ export class AdminController {
   addAssetBanner(
     @UploadedFile() file: Express.Multer.File,
     @Body('userId') userId: string,
+    @Body('type') type: string,
+    @Body('subsection') subsection: string,
   ) {
-    return this.adminService.addAssetBanner(file, userId);
+    return this.adminService.addAssetSystem(file, userId, type, subsection);
   }
 
   @Get('accounts')

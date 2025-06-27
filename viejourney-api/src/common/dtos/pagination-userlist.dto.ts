@@ -23,6 +23,18 @@ export class PaginationDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  viewCountRange?: 'lt100' | '100to1000' | 'gt1000';
+
+  @IsOptional()
+  @IsString()
+  sort?: 'asc' | 'desc';
 }
 
 export interface PaginationResponseDto<T> {

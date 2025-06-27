@@ -9,6 +9,12 @@ export class Asset extends Document {
   @Prop({ enum: ['AVATAR', 'BANNER', 'CONTENT'], required: true })
   type: string;
 
+  @Prop({ required: false })
+  subsection: string;
+
+  @Prop({ enum: ['SYSTEM', 'USER'], required: true, default: 'USER' })
+  assetOwner: string;
+
   @Prop({ required: true })
   url: string;
 

@@ -51,10 +51,6 @@ export class CreateBlogDto {
   coverImage?: string;
 
   @IsOptional()
-  @IsMongoId({ message: 'tripId phải là một MongoId hợp lệ.' })
-  tripId?: string;
-
-  @IsOptional()
   @IsString({ message: 'Địa điểm phải là một chuỗi.' })
   location?: string | null;
 }
