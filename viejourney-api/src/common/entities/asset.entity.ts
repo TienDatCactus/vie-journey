@@ -5,6 +5,8 @@ export class Asset {
   _id: ObjectId;
   userId: ObjectId;
   type: AssetType;
+  subsection?: string;
+  assetOwner: String;
   url: string;
   publicId: string;
   location: string;

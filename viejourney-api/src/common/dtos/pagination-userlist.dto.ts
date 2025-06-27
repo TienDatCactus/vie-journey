@@ -1,21 +1,46 @@
-import { IsNumber, IsNotEmpty, Min } from 'class-validator';
+import {
+  IsNumber,
+  IsNotEmpty,
+  Min,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class PaginationDto {
-    @IsNotEmpty()
-    @IsNumber()
-    @Min(1)
-    page: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  page: number = 1; // Giá trị mặc định
 
-    @IsNotEmpty()
-    @IsNumber()
-    @Min(1)
-    pageSize: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  pageSize: number = 10; // Giá trị mặc định
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  viewCountRange?: 'lt100' | '100to1000' | 'gt1000';
+
+  @IsOptional()
+  @IsString()
+  sort?: 'asc' | 'desc';
 }
 
 export interface PaginationResponseDto<T> {
-    data: T[];
-    totalPages: number;
-    currentPage: number;
-    pageSize: number;
-    totalItems: number;
+  data: T[];
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  totalItems: number;
 }

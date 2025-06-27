@@ -25,17 +25,25 @@ export class AdminService {
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
     private readonly assetsService: AssetsService,
   ) {}
+  // get subsection
+  async getSubsection() {
+    const assets = await this.assetModel.find({ type: 'BANNER' });
+    // Lấy unique subsection
+    const subsection = [...new Set(assets.map((asset) => asset.subsection))];
+    return subsection;
+  }
 
   // getAssetsByType
-  async getAssetsByType(type) {
+  async getAssetsByType(type: string, subsection?: string) {
     try {
-      const assets = await this.assetModel
-        .find({ type: type })
-        .catch((error) => {
-          throw new Error(
-            `Error fetching assets of type ${type}: ${error.message}`,
-          );
-        });
+      const filter: any = {};
+      if (type) {
+        filter.type = { $regex: new RegExp(`^${type}$`, 'i') }; // không phân biệt hoa thường
+      }
+      if (subsection) {
+        filter.subsection = { $regex: new RegExp(`^${subsection}$`, 'i') }; // không phân biệt hoa thường
+      }
+      const assets = await this.assetModel.find(filter).exec();
       return assets;
     } catch (error) {
       throw new Error(
@@ -100,7 +108,8 @@ export class AdminService {
     await this.assetsService.deleteImage(publicId);
 
     const uploadResult = await this.assetsService.uploadImage(file, {
-      public_id: `users/${asset.userId}/AVATAR/${file.filename || uuidv4()}`,
+      public_id: `${asset.assetOwner.toLocaleLowerCase()}/${asset.userId}/${uuidv4()}`,
+      folder: `vie-journey/${asset.type.toLocaleLowerCase()}/${asset?.subsection?.toLocaleLowerCase() || ''}`,
     });
     if (!uploadResult || !uploadResult.secure_url) {
       throw new BadRequestException('Failed to upload image to Cloudinary');
@@ -120,23 +129,48 @@ export class AdminService {
     return asset;
   }
 
-  // addAsset/banner
-  async addAssetBanner(file: Express.Multer.File, userId: string) {
+  // addAsset/system
+  async addAssetSystem(
+    file: Express.Multer.File,
+    userId: string,
+    type: string,
+    subsection: string,
+  ) {
     if (!file) {
       throw new BadRequestException('File upload is required');
+    }
+    if (!subsection) {
+      throw new BadRequestException('Subsection is required');
+    }
+    // Đếm số lượng asset theo subsection (không phân biệt hoa thường)
+    const count = await this.assetModel.countDocuments({
+      subsection: { $regex: new RegExp(`^${subsection}$`, 'i') },
+    });
+
+    if (
+      (['hero', 'intro'].includes(subsection.toLowerCase()) && count >= 3) ||
+      (['destination', 'hotel', 'creator'].includes(subsection.toLowerCase()) &&
+        count >= 6)
+    ) {
+      throw new BadRequestException(
+        `Số lượng asset cho subsection ${subsection} đã vượt quá giới hạn!`,
+      );
     }
 
     // 1. Upload ảnh mới
     const uploadResult = await this.assetsService.uploadImage(file, {
-      public_id: `users/${userId}/BANNER/${uuidv4()}`,
+      public_id: `system/${userId}/${uuidv4()}`,
+      folder: `vie-journey/${type.toLocaleLowerCase()}/${subsection.toLocaleLowerCase()}`,
     });
 
     // 2. Tạo mới asset với ảnh đã upload
     const newAsset = new this.assetModel({
       userId: new Types.ObjectId(userId),
+      type: type.toLocaleUpperCase(),
+      assetOwner: 'SYSTEM',
+      subsection: subsection.toLocaleUpperCase(),
       url: uploadResult.secure_url,
       publicId: uploadResult.public_id,
-      type: 'BANNER',
       location: uploadResult.public_id.split('/')[0],
       format: uploadResult.format.toLocaleUpperCase(),
       file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,

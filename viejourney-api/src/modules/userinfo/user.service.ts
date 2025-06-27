@@ -154,12 +154,14 @@ export class UserService {
     let uploadResult: import('cloudinary').UploadApiResponse | null = null;
     let assetId;
     uploadResult = await this.assetsService.uploadImage(file, {
-      public_id: `users/${userInfo._id}/AVATAR/google-avatar`,
+      public_id: `users/${userInfo._id}/google-avatar`,
       folder: 'vie-journey/avatars',
     });
     const assetData = {
       userId: new Types.ObjectId(id),
       type: 'AVATAR',
+      assetOwner: 'USER',
+      subsection: null,
       url: uploadResult?.secure_url,
       publicId: uploadResult?.public_id,
       location: uploadResult.public_id.split('/')[0],

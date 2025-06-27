@@ -1,3 +1,11 @@
+
+export interface IQueryParam {
+  search: string;
+  page: number;
+  pageSize: number;
+  status: string;
+  sort: string;
+}
 export interface PostData {
   title: string;
   author: string;
@@ -33,6 +41,13 @@ export interface IUser {
   updatedAt: string;
 }
 
+export interface BlogResponse {
+  data: IBlogPost[];
+  Total_Blogs: number;
+  currentPage: string;
+  pageSize: string;
+  totalPages: number;
+}
 export interface IBlogPost {
   _id: string;
   title: string;
@@ -55,7 +70,7 @@ export interface IBlogQuery {
   content: string;
   summary: string;
   tags: string[];
-  tripId: string;
+  location: string;
   file: File | null;
   userId: string;
 }

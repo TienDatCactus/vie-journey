@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   BadRequestException,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { Request } from 'express';
@@ -20,6 +21,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { CreateBlogDto } from 'src/common/dtos/create-blog.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 
 // @Roles(Role.Admin)
 // @UseGuards(JwtAuthGuard, RolesGuard)
@@ -29,8 +31,13 @@ export class BlogController {
 
   // list all blogs
   @Get('manager')
-  async findAll() {
-    return this.blogService.findAll();
+  async getAllBlogs(@Query() paginationDto: PaginationDto) {
+    return this.blogService.findAll(paginationDto);
+  }
+
+  @Get('statistics')
+  async getBlogStatistics() {
+    return this.blogService.getBlogStatistics();
   }
 
   // Lấy chi tiết blog và cập nhật metrics
@@ -40,7 +47,7 @@ export class BlogController {
   }
   @Get('manager/:id')
   async findOneBlogById(@Param('id') blogId: string) {
-    return this.blogService.findOneBlogById(blogId);
+    return this.blogService.findBlogById(blogId);
   }
 
   // update status of blog by id

@@ -181,7 +181,11 @@ const MobileToolbarContent = ({
   </>
 );
 
-export function SimpleEditor() {
+export function SimpleEditor({
+  onContentChange,
+}: {
+  onContentChange?: (html: string) => void;
+}) {
   const isMobile = useMobile();
   const windowSize = useWindowSize();
   const [mobileView, setMobileView] = React.useState<
@@ -196,7 +200,11 @@ export function SimpleEditor() {
         autocorrect: "off",
         autocapitalize: "off",
         "aria-label": "Main content area, start typing to enter text.",
+
+        
       },
+      
+      
     },
     extensions: [
       StarterKit,
@@ -223,6 +231,10 @@ export function SimpleEditor() {
       Link.configure({ openOnClick: false }),
       PlaceAutocomplete,
     ],
+     onUpdate({ editor }) {
+      const html = editor.getHTML();
+      onContentChange?.(html);
+    },
     content: content,
   });
 
@@ -270,6 +282,7 @@ export function SimpleEditor() {
           editor={editor}
           role="presentation"
           className="simple-editor-content"
+          
         />
       </div>
     </EditorContext.Provider>
