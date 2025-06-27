@@ -482,6 +482,8 @@ export class AuthService {
           const assetData = {
             userId: new Types.ObjectId(user._id),
             type: 'AVATAR',
+            assetOwner: 'USER',
+            subsection: null,
             url: uploadResult?.secure_url,
             publicId: uploadResult?.public_id,
             location: uploadResult.public_id.split('/')[0],
