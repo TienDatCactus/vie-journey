@@ -13,15 +13,14 @@ import {
   ViewList,
 } from "@mui/icons-material";
 import {
+  Button,
   Card,
   Checkbox,
-  Switch,
   FormControl,
   InputLabel,
-  Select,
   MenuItem,
+  Select,
   type SelectChangeEvent,
-  Button,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import ManagerLayout from "../../../layouts/ManagerLayout";
@@ -41,28 +40,21 @@ export default function BlogManagementList() {
     totalBlog,
     handleChangePage,
     handleSearchChange,
+    handleChangeStatus,
+    handleSort
   } = useBlog();
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [searchQuery, setSearchQuery] = useState("");
-  const [checked, setChecked] = useState(false);
   const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
 
-  // Filter states
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [authorFilter, setAuthorFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("lastModified");
 
   const handleStatusFilterChange = (event: SelectChangeEvent) => {
-    setStatusFilter(event.target.value);
-  };
-
-  const handleAuthorFilterChange = (event: SelectChangeEvent) => {
-    setAuthorFilter(event.target.value);
+    handleChangeStatus(event.target.value);
   };
 
   const handleSortByChange = (event: SelectChangeEvent) => {
-    setSortBy(event.target.value);
+    handleSort(event.target.value);
   };
 
   const handleNewPostSubmit = (postData: IBlogQuery) => {
@@ -168,56 +160,28 @@ export default function BlogManagementList() {
                   <InputLabel id="status-filter-label">Status</InputLabel>
                   <Select
                     labelId="status-filter-label"
-                    value={statusFilter}
+                    value={params.status}
                     label="Status"
                     onChange={handleStatusFilterChange}
                   >
-                    <MenuItem value="all">All Status</MenuItem>
-                    <MenuItem value="published">Published</MenuItem>
-                    <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="flagged">Flagged</MenuItem>
+                    <MenuItem value="">All Status</MenuItem>
+                    <MenuItem value="PENDING">Pending</MenuItem>
+                    <MenuItem value="REJECTED">Rejected</MenuItem>
+                    <MenuItem value="APPROVED">Approved</MenuItem>
                   </Select>
                 </FormControl>
-
-                <FormControl size="small" sx={{ minWidth: 140 }}>
-                  <InputLabel id="author-filter-label">Author</InputLabel>
-                  <Select
-                    labelId="author-filter-label"
-                    value={authorFilter}
-                    label="Author"
-                    onChange={handleAuthorFilterChange}
-                  >
-                    <MenuItem value="all">All Authors</MenuItem>
-                    <MenuItem value="sarah">Sarah Chen</MenuItem>
-                    <MenuItem value="mike">Mike Rodriguez</MenuItem>
-                    <MenuItem value="emma">Emma Thompson</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <Switch
-                    size="small"
-                    color="primary"
-                    checked={checked}
-                    onChange={() => {
-                      setChecked(!checked);
-                    }}
-                  />
-                  Flagged only
-                </label>
 
                 <FormControl size="small" sx={{ minWidth: 140 }}>
                   <InputLabel id="sort-by-label">Sort By</InputLabel>
                   <Select
                     labelId="sort-by-label"
-                    value={sortBy}
+                    value={params.sort}
                     label="Sort By"
                     onChange={handleSortByChange}
                   >
-                    <MenuItem value="lastModified">Last Modified</MenuItem>
-                    <MenuItem value="datePublished">Date Published</MenuItem>
-                    <MenuItem value="title">Title</MenuItem>
-                    <MenuItem value="author">Author</MenuItem>
+                    <MenuItem value="asc">Ascending</MenuItem>
+                    <MenuItem value="desc">Descending</MenuItem>
+                   
                   </Select>
                 </FormControl>
               </div>

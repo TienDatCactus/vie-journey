@@ -3,6 +3,8 @@ export interface IQueryParam {
   search: string;
   page: number;
   pageSize: number;
+  status: string;
+  sort: string;
 }
 export interface PostData {
   title: string;

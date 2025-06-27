@@ -16,10 +16,12 @@ function useBlog() {
   const [blogs, setBlogs] = useState<IBlogPost[]>();
   const [totalPage, setTotoalPage] = useState<number>();
   const [totalBlog, setTotalBlog] = useState<number>();
-  const [params, setParams] = useState({
+  const [params, setParams] = useState<IQueryParam>({
     search: "",
     page: 1,
     pageSize: SIZE,
+    status: "",
+    sort: "asc",
   });
   const getBlogs = async (params: IQueryParam) => {
     try {
@@ -78,6 +80,23 @@ function useBlog() {
     getBlogs(newParams);
   };
 
+  const handleChangeStatus = (status: string) => {
+    const newParams = {
+      ...params,
+      status,
+    };
+    setParams(newParams);
+    getBlogs(newParams);
+  };
+  const handleSort = (sort: string) => {
+    const newParams = {
+      ...params,
+      sort,
+    };
+    setParams(newParams);
+    getBlogs(newParams);
+  };
+
   useEffect(() => {
     getBlogs(params);
   }, []);
@@ -90,6 +109,8 @@ function useBlog() {
     totalBlog,
     handleChangePage,
     handleSearchChange,
+    handleChangeStatus,
+    handleSort
   };
 }
 
