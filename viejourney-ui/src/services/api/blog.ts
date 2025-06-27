@@ -1,15 +1,18 @@
 import {
+  BlogResponse,
   IBlogDetail,
-  IBlogPost,
   IBlogQuery,
   IBlogRes,
+  IQueryParam,
 } from "../../utils/interfaces/blog";
 import http from "../axios/index";
 import { BLOG } from "./url";
 
-export const getListBlogs = async (): Promise<IBlogPost[]> => {
-  const res = await http.get(BLOG.LIST_BLOGS);
-  return res.data.data;
+export const getListBlogs = async (params: IQueryParam): Promise<BlogResponse> => {
+  const res = await http.get(BLOG.LIST_BLOGS, {
+    params
+  });
+  return res.data;
 };
 
 export const createBlog = async (data: IBlogQuery): Promise<IBlogRes> => {
