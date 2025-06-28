@@ -20,11 +20,12 @@ const OauthSuccess: React.FC = () => {
     useAuthStore();
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = React.useState<number>(5);
-  const params = useSearchParams();
+  const [params] = useSearchParams();
+
   const navigate = useNavigate();
   useEffect(() => {
     const handleCallback = async () => {
-      const token = params[0].get("accessToken");
+      const token = params.get("accessToken");
       if (token) {
         try {
           setLoading(true);
@@ -39,8 +40,6 @@ const OauthSuccess: React.FC = () => {
               userId: tokenData.userId,
             });
             setCredential({ userId: tokenData.userId, token });
-            await loadUserFromToken();
-            await loadUserInfo();
           }
         } catch (error) {
           console.error("Error processing OAuth callback:", error);

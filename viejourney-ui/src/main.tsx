@@ -20,6 +20,7 @@ import { AuthLayout } from "./layouts";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
 import TypebotChat from "./components/TypeBotChat";
+import { SocketProvider } from "./services/context/socketContext";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
@@ -66,9 +67,11 @@ root.render(
                 libraries={["places", "marker", "geometry"]}
               >
                 <AuthLayout>
-                  <HelmetProvider>
-                    <RouterProvider router={router} />
-                  </HelmetProvider>
+                  <SocketProvider>
+                    <HelmetProvider>
+                      <RouterProvider router={router} />
+                    </HelmetProvider>
+                  </SocketProvider>
                 </AuthLayout>
               </APIProvider>
               <TypebotChat />

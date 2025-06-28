@@ -16,7 +16,8 @@ import CurrentLocationControl from "./controls/CurrentLocationControl";
 import POIDetails from "./controls/POIDetails";
 import { MapProps, POIData } from "./types";
 import GeneralFilter from "./controls/GeneralFilter";
-import { MarkerCluster } from "./controls";
+import { MarkerCluster, PlaceMarker } from "./controls";
+import { useMapPan } from "../../services/stores/useMapPan";
 
 // Map configuration component with POI click disabling
 const MapConfiguration: React.FC<{
@@ -27,7 +28,6 @@ const MapConfiguration: React.FC<{
   const mapInstance = useMap();
   const coreLib = useMapsLibrary("core");
   const placesLib = useMapsLibrary("places");
-
   useEffect(() => {
     if (!mapInstance || !coreLib || !placesLib) return; // Disable Google Maps analytics collection to prevent CSP errors
     if (window.google && window.google.maps) {
@@ -109,6 +109,8 @@ const Map: React.FC<MapProps> = ({
   position = "relative",
   ...mapProps
 }) => {
+  const { selected } = useMapPan();
+
   const isApiLoaded = useApiIsLoaded();
   const {
     selectedCategories,
@@ -126,10 +128,18 @@ const Map: React.FC<MapProps> = ({
     handleCloseDrawer,
     handlePOIClick,
   } = usePOI();
-
+  const mapInstance = useMap();
   const { locationError, error, handleLocationFound, handleLocationError } =
     useMapLoader({ onLoad, onError });
-
+  useEffect(() => {
+    if (selected && mapInstance && selected.location) {
+      mapInstance.panTo({
+        lat: selected.location.lat(),
+        lng: selected.location.lng(),
+      });
+      mapInstance.setZoom(14);
+    }
+  }, [selected, mapInstance]);
   return (
     <Box sx={{ position: position, width: "100%", height: "100%" }}>
       {locationError && (
@@ -156,6 +166,9 @@ const Map: React.FC<MapProps> = ({
           mapId={import.meta.env.VITE_GOOGLE_MAPS_ID}
           center={initialCenter}
         >
+          {selected && (
+            <PlaceMarker place={selected} onClick={handlePOIClick} />
+          )}
           <CurrentLocationControl
             onLocationFound={handleLocationFound}
             onLocationError={handleLocationError}

@@ -19,6 +19,7 @@ interface TripDetailStore {
   updateNote: (id: string, content: string) => void;
   toggleEditNote: (id: string) => void;
   deleteNote: (id: string) => void;
+  setNotes: (note: NoteData) => void;
 
   transits: TransitData[];
   addTransit: (transit: TransitData) => void;
@@ -52,37 +53,36 @@ export const useTripDetailStore = create<TripDetailStore>()(
       addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
       updateNote: (id, content) =>
         set((state) => ({
-          notes: state.notes.map((n) => (n._id === id ? { ...n, content } : n)),
+          notes: state.notes.map((n) => (n.id === id ? { ...n, content } : n)),
         })),
       toggleEditNote: (id) =>
         set((state) => ({
           notes: state.notes.map((n) =>
-            n._id === id ? { ...n, isEditing: !n.isEditing } : n
+            n.id === id ? { ...n, isEditing: !n.isEditing } : n
           ),
         })),
       deleteNote: (id) =>
         set((state) => ({
-          notes: state.notes.filter((n) => n._id !== id),
+          notes: state.notes.filter((n) => n.id !== id),
         })),
-
       transits: [],
       addTransit: (transit) =>
         set((state) => ({ transits: [...state.transits, transit] })),
       updateTransit: (id, updated) =>
         set((state) => ({
           transits: state.transits.map((t) =>
-            t._id === id ? { ...t, ...updated } : t
+            t.id === id ? { ...t, ...updated } : t
           ),
         })),
       toggleEditTransit: (id) =>
         set((state) => ({
           transits: state.transits.map((t) =>
-            t._id === id ? { ...t, isEditing: !t.isEditing } : t
+            t.id === id ? { ...t, isEditing: !t.isEditing } : t
           ),
         })),
       deleteTransit: (id) =>
         set((state) => ({
-          transits: state.transits.filter((t) => t._id !== id),
+          transits: state.transits.filter((t) => t.id !== id),
         })),
 
       // Place notes implementation
@@ -94,26 +94,26 @@ export const useTripDetailStore = create<TripDetailStore>()(
       updatePlaceNote: (id, note, visited) =>
         set((state) => ({
           placeNotes: state.placeNotes.map((n) =>
-            n._id === id ? { ...n, note, visited } : n
+            n.id === id ? { ...n, note, visited } : n
           ),
         })),
 
       toggleEditPlaceNotes: (id) =>
         set((state) => ({
           placeNotes: state.placeNotes.map((n) =>
-            n._id === id ? { ...n, isEditing: !n.isEditing } : n
+            n.id === id ? { ...n, isEditing: !n.isEditing } : n
           ),
         })),
 
       deletePlaceNote: (id) =>
         set((state) => ({
-          placeNotes: state.placeNotes.filter((n) => n._id !== id),
+          placeNotes: state.placeNotes.filter((n) => n.id !== id),
         })),
 
       togglePlaceVisited: (id, visited) =>
         set((state) => ({
           placeNotes: state.placeNotes.map((n) =>
-            n._id === id ? { ...n, visited } : n
+            n.id === id ? { ...n, visited } : n
           ),
         })),
       trip: {} as Trip,
@@ -125,17 +125,17 @@ export const useTripDetailStore = create<TripDetailStore>()(
       updateItinerary: (id, updated) =>
         set((state) => ({
           itineraries: state.itineraries.map((i) =>
-            i._id === id ? { ...i, ...updated } : i
+            i.id === id ? { ...i, ...updated } : i
           ),
         })),
       deleteItinerary: (id) =>
         set((state) => ({
-          itineraries: state.itineraries.filter((i) => i._id !== id),
+          itineraries: state.itineraries.filter((i) => i.id !== id),
         })),
       toggleEditItinerary: (id) =>
         set((state) => ({
           itineraries: state.itineraries.map((i) =>
-            i._id === id ? { ...i, isEditing: !i.isEditing } : i
+            i.id === id ? { ...i, isEditing: !i.isEditing } : i
           ),
         })),
     }),

@@ -7,8 +7,46 @@ export interface Note {
   text: string;
 }
 
+export interface Transit {
+  id: string;
+  note: string;
+  cost: number;
+  currency: string;
+  mode:
+    | 'Train'
+    | 'Flight'
+    | 'Car'
+    | 'Bus'
+    | 'Boat'
+    | 'Walk'
+    | 'Bike'
+    | 'Others';
+  departure: {
+    datetime: string;
+    location: string;
+  };
+  arrival: {
+    datetime: string;
+    location: string;
+  };
+}
+export interface Place {
+  id: string;
+  name: string;
+  placeId?: string;
+  note?: string;
+}
+export interface Itinerary {
+  id: string;
+  date: string;
+  activities: string[];
+  location: string;
+}
 export interface Plan {
   notes: Note[];
+  transits: Transit[];
+  places: Place[];
+  itineraries: Itinerary[];
   expenses: { placeholder1: string; placeholder2: string };
 }
 
@@ -103,13 +141,16 @@ export class PlanStateService {
     itemId: DeletePayload<T>,
   ) {
     const plan = this.getOrCreatePlan(tripId);
+
     if (Array.isArray(plan[section])) {
       type Item = WithId<Plan[T], string>;
       const index = (plan[section] as Item[]).findIndex(
         (i) => i.id === (itemId as string),
       );
       if (index !== -1) {
+        console.log('first', plan);
         (plan[section] as Item[]).splice(index, 1);
+        console.log('then', plan);
       }
       this.scheduleSave(tripId);
     }
@@ -118,6 +159,7 @@ export class PlanStateService {
   savePlan(tripId: string) {
     const plan = this.planStates.get(tripId);
     if (!plan) return;
+
     // NOTE: Persist plan state in db
   }
 
@@ -135,7 +177,13 @@ export class PlanStateService {
     let state = this.planStates.get(tripId);
     if (!state) {
       state = {
-        plan: { notes: [], expenses: { placeholder1: '', placeholder2: '' } },
+        plan: {
+          notes: [],
+          places: [],
+          transits: [],
+          itineraries: [],
+          expenses: { placeholder1: '', placeholder2: '' },
+        },
       };
       this.planStates.set(tripId, state);
     }

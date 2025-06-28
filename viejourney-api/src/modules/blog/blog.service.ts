@@ -295,10 +295,8 @@ export class BlogService {
       const newBlog = new this.blogModel({
         ...createBlogDto,
         createdBy: new Types.ObjectId(user._id),
-        tripId: createBlogDto.tripId,
         updatedBy: new Types.ObjectId(user._id),
         coverImage: uploadResult?.secure_url || '',
-        tripId: null,
         destination: {
           location: createBlogDto?.location || null,
           placeId: null,

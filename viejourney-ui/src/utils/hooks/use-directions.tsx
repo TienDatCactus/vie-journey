@@ -33,7 +33,7 @@ export function useDirections(
         travelMode: travelMode,
       })
       .then((response) => {
-        if (response.status === google.maps.DirectionsStatus.OK) {
+        if (response) {
           const route = response.routes[0];
           const leg = route.legs[0];
 

@@ -16,7 +16,6 @@ import {
   ReservationTransits,
 } from "./elements";
 const Reservation: React.FC = () => {
-
   const reservationItems = [
     { icon: <TransferWithinAStation />, label: "Transit" },
     { icon: <Hotel />, label: "Lodging" },

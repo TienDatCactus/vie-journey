@@ -1,15 +1,15 @@
-import React from "react";
 import {
   AdvancedMarker,
   Pin,
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps";
+import React from "react";
 import { POIData } from "../types";
-import { PLACE_CATEGORIES, CategoryType } from "./GeneralFilter";
+import { CategoryType, PLACE_CATEGORIES } from "./GeneralFilter";
 
 interface PlaceMarkerProps {
   place?: POIData;
-  onClick: (place?: POIData) => void;
+  onClick?: (place?: POIData) => void;
   isSelected?: boolean;
 }
 
@@ -34,7 +34,7 @@ const PlaceMarker: React.FC<PlaceMarkerProps> = ({
   const markerColor = category?.color || "#9e9e9e";
 
   const handleClick = () => {
-    onClick(place);
+    onClick?.(place);
   };
 
   return (

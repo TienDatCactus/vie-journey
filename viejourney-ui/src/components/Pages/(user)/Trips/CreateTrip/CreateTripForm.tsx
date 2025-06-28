@@ -62,7 +62,6 @@ export const CreateTripForm: React.FC = () => {
       placePrediction: google.maps.places.PlacePrediction | null;
     } | null
   ) => {
-    // Only set selected place if placePrediction is not null
     if (suggestion?.placePrediction) {
       setSelectedPlace({ placePrediction: suggestion.placePrediction });
       setDestination(suggestion.placePrediction.mainText + "");

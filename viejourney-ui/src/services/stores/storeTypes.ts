@@ -23,8 +23,7 @@ export interface Note {
 export interface Place {
   id: string;
   name: string;
-  placeId?: string; // Optional for places not in Google Places
-  location: { lat: number; lng: number };
+  placeId?: string;
   note?: string;
 }
 

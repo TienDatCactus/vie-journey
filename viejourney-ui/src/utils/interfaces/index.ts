@@ -1,6 +1,6 @@
 export interface Account {
   _id: string;
- 
+
   email: string;
   role: "USER" | "ADMIN" | "MANAGER";
   status: "ACTIVE" | "INACTIVE" | "BANNED";
@@ -19,8 +19,7 @@ export interface Trip {
   visibility: boolean;
 }
 
-export interface UserInfo {
-  _id?: string;
+export interface UserInfo extends Account {
   fullName: string;
   dob: Date | null;
   userId: string;
