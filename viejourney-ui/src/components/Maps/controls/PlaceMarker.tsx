@@ -17,7 +17,6 @@ const getCategoryForPlace = (place?: POIData): CategoryType | undefined => {
   if (!place?.types || place.types.length === 0) {
     return undefined;
   }
-  // Find the first matching category
   return PLACE_CATEGORIES.find((category) =>
     category.placeTypes.some((type) => place.types?.includes(type))
   );
@@ -31,7 +30,7 @@ const PlaceMarker: React.FC<PlaceMarkerProps> = ({
   const [markerRef, marker] = useAdvancedMarkerRef();
   const category = getCategoryForPlace(place);
 
-  const markerColor = category?.color || "#9e9e9e";
+  const markerColor = category?.color || "#5e71f6";
 
   const handleClick = () => {
     onClick?.(place);
@@ -44,7 +43,7 @@ const PlaceMarker: React.FC<PlaceMarkerProps> = ({
       title={place?.displayName}
       onClick={handleClick}
       zIndex={isSelected ? 1000 : undefined}
-      className={`transition-transform duration-200 transform ${
+      className={`transition-transform duration-200  transform ${
         isSelected ? "scale-125" : "hover:scale-110"
       }`}
     >

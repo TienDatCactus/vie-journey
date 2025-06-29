@@ -207,3 +207,39 @@ input:-webkit-autofill:active {
 button {
   text-transform: none !important;
 }
+/* Hide the default close "X" button */
+.gm-ui-hover-effect {
+  display: none !important;
+}
+
+/* Main content wrapper inside InfoWindow */
+.gm-style-iw-d {
+  padding: 16px !important; /* Use MUI spacing (4 * 4px) */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Outer container – remove padding and apply elevation */
+.gm-style-iw-c {
+  padding: 0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.15) !important; /* MUI elevation 2 */
+  background-color: #fff !important;
+  overflow: hidden;
+}
+
+/* Remove unnecessary default padding */
+.gm-style-iw-ch {
+  padding: 0 !important;
+}
+
+/* Custom class for date or label */
+.date-view {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}

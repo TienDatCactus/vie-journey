@@ -43,7 +43,7 @@ export function useDirections(
             polyline: google.maps.geometry.encoding.decodePath(
               route.overview_polyline
             ),
-            url: `https://www.google.com/maps/dir/?api=1&origin=place_id:${originPlaceId}&destination=place_id:${destinationPlaceId}&travelmode=${travelMode.toLowerCase()}`,
+            url: `https://www.google.com/maps/dir/?api=1&origin=${leg.start_location.lat()},${leg.start_location.lng()}&destination=${leg.end_location.lat()},${leg.end_location.lng()}&travelmode=${travelMode.toLowerCase()}`,
           });
         } else {
           setError("Error calculating directions");

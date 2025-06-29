@@ -105,7 +105,6 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
           const placeDetails = await fetchPlaceDetail(
             suggestion.placePrediction.placeId
           );
-          console.log("Fetched place details:", placeDetails);
           updateAttributes({
             place: placeDetails,
           });
@@ -130,7 +129,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
         try {
           return photo.getUrl({ maxWidth: 800 });
         } catch (e) {
-          console.log("getUrl with params failed", e);
+          console.error("getUrl with params failed", e);
         }
       }
 
@@ -139,7 +138,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
         try {
           return photo.getUrl();
         } catch (e) {
-          console.log("getUrl without params failed", e);
+          console.error("getUrl without params failed", e);
         }
       }
 
@@ -148,7 +147,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
         try {
           return photo.getURI();
         } catch (e) {
-          console.log("getURI failed", e);
+          console.error("getURI failed", e);
         }
       }
 
@@ -194,7 +193,6 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
   const renderPlaceDetails = () => {
     const { place } = node.attrs;
 
-    console.log(place);
     if (loading) {
       return (
         <Card className="mt-2">
