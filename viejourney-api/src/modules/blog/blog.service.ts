@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from 'src/common/entities/blog.entity';
@@ -335,25 +331,92 @@ export class BlogService {
     return { message: 'Flag added successfully', flags: blog.flags };
   }
 
-  async getBlogStatistics() {
-    const blogs = await this.blogModel.find().exec();
+  // Start writing a blog with location
+  async startBlog(location: string, userId: string) {
+    try {
+      const user = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
 
-    let totalPosts = blogs.length;
-    let approvedPosts = 0;
-    let pendingPosts = 0;
-    let flaggedPosts = 0;
+      // Generate title with format: Location + Guide
+      const title = `${location} Guide`;
 
-    blogs.forEach((blog) => {
-      if (blog.status === 'APPROVED') approvedPosts++;
-      if (blog.status === 'PENDING') pendingPosts++;
-      if (blog.flags && blog.flags.length >= 1) flaggedPosts++;
-    });
+      const newBlog = new this.blogModel({
+        title,
+        content: 'Write your content', // Empty content initially
+        summary: '',
+        tags: [],
+        coverImage: '',
+        tripId: null,
+        destination: {
+          location,
+          placeId: null,
+        },
+        createdBy: user._id,
+        updatedBy: user._id,
+        likes: [],
+        status: 'DRAFT', // Default status for user-created blogs
+        metrics: {
+          likeCount: 0,
+          commentCount: 0,
+          viewCount: 0,
+        },
+        flags: [],
+        comments: [],
+      });
 
-    return {
-      total_Blogs: totalPosts,
-      Count_Approved: approvedPosts,
-      Count_Pending: pendingPosts,
-      Count_Flags: flaggedPosts,
-    };
+      const createdBlog = await newBlog.save();
+      
+      return {
+        blogId: createdBlog._id,
+        title: createdBlog.title,
+        location: createdBlog.destination?.location,
+        status: createdBlog.status,
+        message: 'Blog draft created successfully. You can now start writing.',
+      };
+    } catch (error) {
+      throw new NotFoundException('Error starting blog: ' + error.message);
+    }
   }
+
+  // Get draft blog for editing
+  async getDraftBlog(blogId: string, userId: string) {
+    try {
+      const user = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
+
+      const blog = await this.blogModel
+        .findOne({ 
+          _id: blogId, 
+          createdBy: user._id,
+          status: 'DRAFT' 
+        })
+        .populate('createdBy')
+        .exec();
+
+      if (!blog) {
+        throw new NotFoundException('Draft blog not found or you do not have permission to edit this blog');
+      }
+
+      return {
+        _id: blog._id,
+        title: blog.title,
+        content: blog.content,
+        summary: blog.summary,
+        tags: blog.tags,
+        coverImage: blog.coverImage,
+        location: blog.destination?.location,
+        status: blog.status,
+        createdAt: blog.createdAt,
+        updatedAt: blog.updatedAt,
+      };
+    } catch (error) {
+      throw new NotFoundException('Error retrieving draft blog: ' + error.message);
+    }
+  }
+
+  // update a blog by id
 }
