@@ -183,8 +183,10 @@ const MobileToolbarContent = ({
 
 export function SimpleEditor({
   onContentChange,
+  content,
 }: {
   onContentChange?: (html: string) => void;
+  content?: string;
 }) {
   const isMobile = useMobile();
   const windowSize = useWindowSize();
@@ -200,11 +202,7 @@ export function SimpleEditor({
         autocorrect: "off",
         autocapitalize: "off",
         "aria-label": "Main content area, start typing to enter text.",
-
-        
       },
-      
-      
     },
     extensions: [
       StarterKit,
@@ -231,11 +229,12 @@ export function SimpleEditor({
       Link.configure({ openOnClick: false }),
       PlaceAutocomplete,
     ],
-     onUpdate({ editor }) {
+    onUpdate({ editor }) {
       const html = editor.getHTML();
       onContentChange?.(html);
     },
-    content: content,
+
+    content: content || "<p></p>",
   });
 
   const bodyRect = useCursorVisibility({
@@ -282,7 +281,6 @@ export function SimpleEditor({
           editor={editor}
           role="presentation"
           className="simple-editor-content"
-          
         />
       </div>
     </EditorContext.Provider>

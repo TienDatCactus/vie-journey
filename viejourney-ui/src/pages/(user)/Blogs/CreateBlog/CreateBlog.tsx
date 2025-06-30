@@ -14,7 +14,9 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../../../../layouts";
 import { useAutocompleteSuggestions } from "../../../../utils/hooks/use-autocomplete-suggestion";
+import useBlogUser from "../../../../utils/hooks/user-blog-user";
 const CreateBlog: React.FC = () => {
+  const { handleStartBlog } = useBlogUser();
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState<string>("");
   const [selectedPlace, setSelectedPlace] = useState<{
@@ -162,13 +164,24 @@ const CreateBlog: React.FC = () => {
           </div>
           <ButtonGroup fullWidth className="flex justify-end mt-4">
             <Button
-              onClick={() => navigate("/blogs/edit/1231")}
+              onClick={async () => {
+                if (!destination.trim()) return;
+                setLoading(true);
+                const newBlogId = await handleStartBlog(destination);
+                setLoading(false);
+                if (newBlogId) {
+                  navigate(`/blogs/edit/${newBlogId}`); 
+                } else {
+                  console.error("Failed to create blog.");
+                }
+              }}
               variant="contained"
               startIcon={<Draw />}
-              // type="submit"
+              disabled={loading}
             >
-              Create Blog
+              {loading ? "Creating..." : "Create Blog"}
             </Button>
+
             <Button
               onClick={() => navigate("/trip/create")}
               startIcon={<AddLocationAlt />}

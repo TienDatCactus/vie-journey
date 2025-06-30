@@ -114,3 +114,25 @@ export interface IBlogDetail {
   tripId: string | null;
   flags: IFlag[];
 }
+
+export interface IBlogDraft {
+  blogId: string;
+  title: string;
+  location: string;
+  status:  string;
+  message: string;
+}
+
+export interface IContentItem {
+  _id: string;
+  title: string;
+  content: string;
+  summary: string;
+  tags: string[];
+  coverImage: string;
+  location: string;
+  status: string;
+  slug?: string;
+  createdAt: string; 
+  updatedAt: string; 
+}

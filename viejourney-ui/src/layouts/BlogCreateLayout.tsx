@@ -1,23 +1,35 @@
-import {
-  Button,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
+import { Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, } from "@mui/material";
 import { ReactNode, useCallback, useRef, useState } from "react";
 import { useBlocker } from "react-router-dom";
 import BlogCreateHeader from "../components/Layout/Blog/BlogCreateHeader";
 import BlogCreateToolbar from "../components/Layout/Blog/BlogCreateToolbar";
+import { IContentItem } from "../utils/interfaces/blog";
 
-const BlogCreateLayout = ({ children }: { children: ReactNode }) => {
+const BlogCreateLayout = ({ 
+  children, 
+  blog, 
+  onSaveDraft,
+  onPublic,
+  formData,
+  onFormDataChange 
+}: { 
+  children: ReactNode;
+  blog: IContentItem;
+  onSaveDraft: () => void;
+  onPublic: () => void;
+  formData: {
+    title: string;
+    summary: string;
+    slug: string;
+    tags: string[];
+  };
+  onFormDataChange: (field: string, value: any) => void;
+}) => {
   const [isDirty, setIsDirty] = useState(true);
   const [open, setOpen] = useState(true);
   const [hasProceeded, setHasProceeded] = useState(false);
-
   const blockerRef = useRef<ReturnType<typeof useBlocker> | null>(null);
+
   blockerRef.current = useBlocker(useCallback(() => isDirty, [isDirty]));
 
   const handleClose = () => {
@@ -44,8 +56,7 @@ const BlogCreateLayout = ({ children }: { children: ReactNode }) => {
           <DialogTitle id="alert-dialog-title">{"Unsaved Changes"}</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              You have unsaved changes. Are you sure you want to leave this
-              page? If you leave, your changes will be lost.
+              You have unsaved changes. Are you sure you want to leave this page? If you leave, your changes will be lost.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -56,9 +67,13 @@ const BlogCreateLayout = ({ children }: { children: ReactNode }) => {
           </DialogActions>
         </Dialog>
       )}
-      <BlogCreateHeader />
+      <BlogCreateHeader onSaveDraft={onSaveDraft} onPublic={onPublic} />
       <Container className="grid grid-cols-12 gap-4 p-4 ">
-        <BlogCreateToolbar />
+        <BlogCreateToolbar 
+          blog={blog} 
+          formData={formData} 
+          onFormDataChange={onFormDataChange} 
+        />
         <main className="h-screen lg:col-span-9">{children}</main>
       </Container>
     </>
