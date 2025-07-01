@@ -16,6 +16,7 @@ import { RolesGuard } from 'src/common/guards/role.guard';
 import { UserService } from './user.service';
 import { ObjectId } from 'mongoose';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 // @UseGuards(JwtAuthGuard)
 @Controller('user')

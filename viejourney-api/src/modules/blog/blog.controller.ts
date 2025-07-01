@@ -20,6 +20,8 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { CreateBlogDto } from 'src/common/dtos/create-blog.dto';
+import { StartBlogDto } from 'src/common/dtos/start-blog.dto';
+import { UpdateBlogDraftDto } from 'src/common/dtos/update-blog-draft.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 
@@ -48,6 +50,79 @@ export class BlogController {
   @Get('manager/:id')
   async findOneBlogById(@Param('id') blogId: string) {
     return this.blogService.findBlogById(blogId);
+  }
+
+  // USER BLOG CREATION WORKFLOW ENDPOINTS
+
+  // Start writing a blog - creates a draft with location and auto-generated title
+  @Post('start-blog')
+  @UseGuards(JwtAuthGuard)
+  async startBlog(
+    @Body() startBlogDto: StartBlogDto,
+    @Req() req: Request,
+  ) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.blogService.startBlog(startBlogDto.location, userId);
+  }
+
+  // Get draft blog for editing
+  @Get('draft/:id')
+  @UseGuards(JwtAuthGuard)
+  async getDraftBlog(
+    @Param('id') blogId: string,
+    @Req() req: Request,
+  ) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.blogService.getDraftBlog(blogId, userId);
+  }
+
+  // Update draft blog
+  @Patch('draft/:id')
+  @UseGuards(JwtAuthGuard)
+  async updateBlogDraft(
+    @Param('id') blogId: string,
+    @Body() updateBlogDraftDto: UpdateBlogDraftDto,
+    @Req() req: Request,
+  ) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.blogService.updateBlogDraft(blogId, updateBlogDraftDto, userId);
+  }
+
+  // Publish blog (change from DRAFT to PENDING)
+  @Post('publish/:id')
+  @UseGuards(JwtAuthGuard)
+  async publishBlog(
+    @Param('id') blogId: string,
+    @Req() req: Request,
+  ) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.blogService.publishBlog(blogId, userId);
+  }
+
+  // Get user's blogs
+  @Get('my-blogs')
+  @UseGuards(JwtAuthGuard)
+  async getUserBlogs(
+    @Req() req: Request,
+    @Body('status') status?: string,
+  ) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.blogService.getUserBlogs(userId, status);
   }
 
   // update status of blog by id

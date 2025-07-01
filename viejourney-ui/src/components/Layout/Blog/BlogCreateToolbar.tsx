@@ -1,41 +1,32 @@
-import {
-  Add,
-  AddAPhoto,
-  AddCard,
-  AddLocation,
-  Delete,
-  MoreTime,
-} from "@mui/icons-material";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import {
-  Autocomplete,
-  Button,
-  Chip,
-  Divider,
-  IconButton,
-  Stack,
-  TextField,
-} from "@mui/material";
-import { autocompleteClasses } from "@mui/material/Autocomplete";
-import { styled } from "@mui/material/styles";
-import useAutocomplete, {
-  AutocompleteGetTagProps,
-} from "@mui/material/useAutocomplete";
-import React from "react";
+"use client"
+import CheckIcon from "@mui/icons-material/Check"
+import CloseIcon from "@mui/icons-material/Close"
+import { Chip, Divider, Stack, TextField } from "@mui/material"
+import { autocompleteClasses } from "@mui/material/Autocomplete"
+import { styled } from "@mui/material/styles"
+import useAutocomplete, { type AutocompleteGetTagProps } from "@mui/material/useAutocomplete"
+import dayjs from "dayjs"
+import type { IContentItem } from "../../../utils/interfaces/blog"
+
+interface FilmOptionType {
+  title: string
+  year: number
+}
+
+// Your existing styled components
 const Root = styled("div")(({ theme }) => ({
   color: "rgba(0,0,0,0.85)",
   fontSize: "14px",
   ...theme.applyStyles("dark", {
     color: "rgba(255,255,255,0.65)",
   }),
-}));
+}))
 
 const Label = styled("label")`
   padding: 0 0 4px;
   line-height: 1.5;
   display: block;
-`;
+`
 
 const InputWrapper = styled("div")(({ theme }) => ({
   width: "300px",
@@ -79,20 +70,22 @@ const InputWrapper = styled("div")(({ theme }) => ({
       backgroundColor: "#141414",
     }),
   },
-}));
+}))
+
+
 
 interface TagProps extends ReturnType<AutocompleteGetTagProps> {
-  label: string;
+  label: string
 }
 
 function Tag(props: TagProps) {
-  const { label, onDelete, ...other } = props;
+  const { label, onDelete, ...other } = props
   return (
     <div {...other}>
       <span>{label}</span>
       <CloseIcon onClick={onDelete} />
     </div>
-  );
+  )
 }
 
 const StyledTag = styled(Tag)<TagProps>(({ theme }) => ({
@@ -102,7 +95,7 @@ const StyledTag = styled(Tag)<TagProps>(({ theme }) => ({
   margin: "2px",
   lineHeight: "22px",
   backgroundColor: "#fafafa",
-  border: `1px solid #e8e8e8`,
+  border: "1px solid #e8e8e8",
   borderRadius: "2px",
   boxSizing: "content-box",
   padding: "0 4px 0 10px",
@@ -130,7 +123,7 @@ const StyledTag = styled(Tag)<TagProps>(({ theme }) => ({
     cursor: "pointer",
     padding: "4px",
   },
-}));
+}))
 
 const Listbox = styled("ul")(({ theme }) => ({
   width: "300px",
@@ -177,64 +170,7 @@ const Listbox = styled("ul")(({ theme }) => ({
       color: "currentColor",
     },
   },
-}));
-
-function CustomAutocomplete() {
-  const {
-    getRootProps,
-    getInputLabelProps,
-    getInputProps,
-    getTagProps,
-    getListboxProps,
-    getOptionProps,
-    groupedOptions,
-    value,
-    focused,
-    setAnchorEl,
-  } = useAutocomplete({
-    id: "customized-hook-demo",
-    defaultValue: [topTravelBlogTags[1]],
-    multiple: true,
-    options: topTravelBlogTags,
-    getOptionLabel: (option) => option.title,
-  });
-
-  return (
-    <Root>
-      <div {...getRootProps()}>
-        <Label {...getInputLabelProps()}>Tags</Label>
-        <InputWrapper
-          ref={setAnchorEl}
-          className={`${focused ? "focused" : ""} w-full`}
-        >
-          {value.map((option: FilmOptionType, index: number) => {
-            const { key, ...tagProps } = getTagProps({ index });
-            return <StyledTag key={key} {...tagProps} label={option.title} />;
-          })}
-          <input {...getInputProps()} />
-        </InputWrapper>
-      </div>
-      {groupedOptions.length > 0 ? (
-        <Listbox className="z-10" {...getListboxProps()}>
-          {groupedOptions.map((option, index) => {
-            const { key, ...optionProps } = getOptionProps({ option, index });
-            return (
-              <li key={key} {...optionProps}>
-                <span>{option.title}</span>
-                <CheckIcon fontSize="small" />
-              </li>
-            );
-          })}
-        </Listbox>
-      ) : null}
-    </Root>
-  );
-}
-
-interface FilmOptionType {
-  title: string;
-  year: number;
-}
+}))
 
 const topTravelBlogTags = [
   { title: "Adventure", year: 2020 },
@@ -267,87 +203,118 @@ const topTravelBlogTags = [
   { title: "Sustainability", year: 2047 },
   { title: "Travel Photography", year: 2048 },
   { title: "Culinary Adventures", year: 2049 },
-  { title: "Exploring Cities", year: 2050 },
-  { title: "Hidden Gems", year: 2051 },
-  { title: "Road Trips", year: 2052 },
-  { title: "Cultural Experiences", year: 2053 },
-  { title: "Wildlife Encounters", year: 2054 },
-  { title: "Beach Escapes", year: 2055 },
-  { title: "Mountain Adventures", year: 2056 },
-  { title: "Urban Exploration", year: 2057 },
-  { title: "Historical Sites", year: 2058 },
-  { title: "Festivals and Events", year: 2059 },
-  { title: "Local Cuisine", year: 2060 },
-  { title: "Travel Gear", year: 2061 },
-  { title: "Budget Travel", year: 2062 },
-  { title: "Luxury Travel", year: 2063 },
-  { title: "Solo Travel", year: 2064 },
-  { title: "Family Travel", year: 2065 },
-  { title: "Couples Travel", year: 2066 },
-  { title: "Adventure Sports", year: 2067 },
-  { title: "Eco-Tourism", year: 2068 },
-  { title: "Volunteer Travel", year: 2069 },
-  { title: "Travel Safety", year: 2070 },
-  { title: "Packing Tips", year: 2071 },
-  { title: "Travel Apps", year: 2072 },
-  { title: "Travel Insurance", year: 2073 },
-  { title: "Travel Blogs", year: 2074 },
-  { title: "Travel Vlogs", year: 2075 },
-  { title: "Travel Podcasts", year: 2076 },
-];
-const BlogCreateToolbar: React.FC = () => {
+]
+
+function CustomAutocomplete({
+  tags,
+  onTagsChange,
+}: {
+  tags: string[]
+  onTagsChange: (tags: string[]) => void
+}) {
+  const selectedValues = topTravelBlogTags.filter((tag) => tags?.includes(tag.title))
+
+  const {
+    getRootProps,
+    getInputLabelProps,
+    getInputProps,
+    getTagProps,
+    getListboxProps,
+    getOptionProps,
+    groupedOptions,
+    value,
+    focused,
+    setAnchorEl,
+  } = useAutocomplete({
+    id: "customized-hook-demo",
+    defaultValue: selectedValues,
+    multiple: true,
+    options: topTravelBlogTags,
+    getOptionLabel: (option) => option.title,
+    onChange: (event, newValue) => {
+      const newTags = newValue.map((option) => option.title)
+      onTagsChange(newTags)
+    },
+  })
+
+  return (
+    <Root>
+      <div {...getRootProps()}>
+        <Label {...getInputLabelProps()}>Tags</Label>
+        <InputWrapper ref={setAnchorEl} className={`${focused ? "focused" : ""} w-full`}>
+          {value.map((option: FilmOptionType, index: number) => {
+            const { key, ...tagProps } = getTagProps({ index })
+            return <StyledTag key={key} {...tagProps} label={option.title} />
+          })}
+          <input {...getInputProps()} />
+        </InputWrapper>
+      </div>
+      {groupedOptions.length > 0 && (
+        <Listbox className="z-10" {...getListboxProps()}>
+          {(groupedOptions as FilmOptionType[]).map((option, index) => {
+            const { key, ...optionProps } = getOptionProps({ option, index })
+            return (
+              <li key={key} {...optionProps}>
+                <span>{option.title}</span>
+                <CheckIcon fontSize="small" />
+              </li>
+            )
+          })}
+        </Listbox>
+      )}
+    </Root>
+  )
+}
+
+const BlogCreateToolbar = ({
+  blog,
+  formData,
+  onFormDataChange,
+}: {
+  blog: IContentItem
+  formData: {
+    title: string
+    summary: string
+    slug: string
+    tags: string[]
+    coverImage: File | null
+  }
+  onFormDataChange: (field: string, value: any) => void
+}) => {
   return (
     <aside className="col-span-3 rounded-lg border border-neutral-300 bg-white shadow-md p-4 h-fit space-y-4">
       <div>
-        <h1 className="font-semibold">Blog Sections</h1>
-        <ul className="space-y-2 py-2">
-          <li className="p-2 rounded-sm hover:bg-neutral-200 duration-200 transition-all cursor-pointer flex itemce justify-between">
-            <Stack
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              className="text-sm"
-            >
-              <span className="text-green-500">&#x2022;</span>
-              <p>Introduction</p>
-            </Stack>
-            <IconButton
-              size="small"
-              className="group hover:bg-red-500 transition-all duration-200"
-            >
-              <Delete className="size-5 group-hover:text-white" />
-            </IconButton>
-          </li>
-        </ul>
-        <Button startIcon={<Add />} className="w-full">
-          Add Section
-        </Button>
-      </div>
-      <Divider />
-      <div>
         <h1 className="font-semibold">Current Settings</h1>
         <Stack direction="column" spacing={2} className="py-2">
-          <TextField label="Title" variant="outlined" size="small" fullWidth />
+          <Label>Title</Label>
           <TextField
-            label="Description"
             variant="outlined"
             size="small"
             fullWidth
-            multiline
-            rows={4}
+            value={formData.title}
+            onChange={(e) => onFormDataChange("title", e.target.value)}
           />
-          <CustomAutocomplete />
-
+          <Label>Summary</Label>
+          <TextField
+            variant="outlined"
+            size="medium"
+            fullWidth
+            multiline
+            rows={3}
+            value={formData.summary}
+            onChange={(e) => onFormDataChange("summary", e.target.value)}
+          />
+          <CustomAutocomplete tags={formData.tags} onTagsChange={(tags) => onFormDataChange("tags", tags)} />
           <TextField
             label="Slug"
             variant="outlined"
             size="small"
+            value={formData.slug}
+            onChange={(e) => onFormDataChange("slug", e.target.value)}
             fullWidth
             slotProps={{
               input: {
-                startAdornment: (
-                  <span className="bg-gray-300 text-gray-500">/blogs/</span>
-                ),
+                startAdornment: <span className="bg-gray-300 text-gray-500">/blogs/</span>,
               },
             }}
           />
@@ -364,11 +331,7 @@ const BlogCreateToolbar: React.FC = () => {
           >
             <dt>Status</dt>
             <dd>
-              <Chip
-                size="small"
-                className="bg-green-500 text-white"
-                label="Draft"
-              />
+              <Chip size="small" className="bg-green-500 text-white" label={blog?.status} />
             </dd>
           </Stack>
           <Stack
@@ -377,7 +340,7 @@ const BlogCreateToolbar: React.FC = () => {
             alignItems={{ xs: "flex-start", sm: "center" }}
           >
             <dt>Created at</dt>
-            <dd className="text-sm text-gray-500">12 minutes ago</dd>
+            <dd className="text-sm text-gray-500">{dayjs(blog.createdAt).format("YYYY-MM-DD HH:mm")}</dd>
           </Stack>
           <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -385,12 +348,12 @@ const BlogCreateToolbar: React.FC = () => {
             alignItems={{ xs: "flex-start", sm: "center" }}
           >
             <dt>Last saved</dt>
-            <dd className="text-sm text-gray-500">9 minutes ago</dd>
+            <dd className="text-sm text-gray-500">{dayjs(blog.updatedAt).format("YYYY-MM-DD HH:mm")}</dd>
           </Stack>
         </dl>
       </div>
     </aside>
-  );
-};
+  )
+}
 
-export default BlogCreateToolbar;
+export default BlogCreateToolbar

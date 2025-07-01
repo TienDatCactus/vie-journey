@@ -1,16 +1,20 @@
 import {
   BlogResponse,
   IBlogDetail,
+  IBlogDraft,
   IBlogQuery,
   IBlogRes,
+  IContentItem,
   IQueryParam,
 } from "../../utils/interfaces/blog";
 import http from "../axios/index";
 import { BLOG } from "./url";
 
-export const getListBlogs = async (params: IQueryParam): Promise<BlogResponse> => {
+export const getListBlogs = async (
+  params: IQueryParam
+): Promise<BlogResponse> => {
   const res = await http.get(BLOG.LIST_BLOGS, {
-    params
+    params,
   });
   return res.data;
 };
@@ -66,5 +70,29 @@ export const banAuthor = async (id: string, reason: string) => {
   const res = await http.post(`${BLOG.BLOGS}/ban-author/${id}`, {
     reason,
   });
+  return res.data;
+};
+
+// blog user
+export const startBlog = async (location: string): Promise<IBlogDraft> => {
+  const res = await http.post(`${BLOG.BLOGS}/start-blog`, {
+    location,
+  });
+  return res.data;
+};
+
+export const getBlogDraft = async (id: string): Promise<IContentItem> => {
+  const res = await http.get(`${BLOG.BLOGS}/draft/${id}`);
+  return res.data;
+};
+
+export const editBlogDraft = async (id: string, data: any) => {
+  const res = await http.patch(`${BLOG.BLOGS}/draft/${id}`, data);
+  return res.data;
+};
+
+
+export const publicBlog = async (id: string) => {
+  const res = await http.post(`${BLOG.BLOGS}/publish/${id}`);
   return res.data;
 };

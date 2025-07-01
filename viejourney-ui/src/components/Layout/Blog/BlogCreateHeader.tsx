@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ArrowBack,
   EditLocationAlt,
@@ -6,18 +8,33 @@ import {
   Visibility,
 } from "@mui/icons-material";
 import { AppBar, Button, Divider, Stack, Toolbar } from "@mui/material";
-import React from "react";
-const BlogCreateHeader: React.FC = () => {
+import type React from "react";
+
+const BlogCreateHeader: React.FC<{ onSaveDraft: () => void, onPublic: () => void }> = ({
+  onSaveDraft,
+  onPublic,
+}) => {
+  const handleSaveDraft = () => {
+    onSaveDraft();
+    // You can add additional UI feedback here
+    // For example, show a toast notification
+  };
+
+   const handlePublicBlog = () => {
+    onPublic();
+   
+  };
+
   return (
-    <AppBar position="static" className=" bg-white w-full">
-      <Toolbar className="flex justify-between items-center ">
+    <AppBar position="static" className="bg-white w-full">
+      <Toolbar className="flex justify-between items-center">
         <Stack
           direction="row"
           alignItems="center"
           spacing={2}
           className="h-full px-4"
         >
-          <Button className="text-dark-800 " startIcon={<ArrowBack />}>
+          <Button className="text-dark-800" startIcon={<ArrowBack />} href="/">
             Back to Home
           </Button>
           <Divider flexItem orientation="vertical" />
@@ -40,6 +57,7 @@ const BlogCreateHeader: React.FC = () => {
           <Button
             startIcon={<SaveAs />}
             className="border border-gray-300 text-gray-800 px-4"
+            onClick={handleSaveDraft}
           >
             Save Draft
           </Button>
@@ -47,6 +65,7 @@ const BlogCreateHeader: React.FC = () => {
             variant="contained"
             startIcon={<EmergencyShare />}
             className="bg-blue-600"
+            onClick={handlePublicBlog}
           >
             Publish
           </Button>

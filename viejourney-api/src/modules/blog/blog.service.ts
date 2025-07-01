@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from 'src/common/entities/blog.entity';
@@ -354,5 +350,226 @@ export class BlogService {
       Count_Pending: pendingPosts,
       Count_Flags: flaggedPosts,
     };
+    }
+    
+    async startBlog(location: string, userId: string) {
+    try {
+      const user = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
+
+      // Generate title with format: Location + Guide
+      const title = `${location} Guide`;
+
+      const newBlog = new this.blogModel({
+        title,
+        content: 'Write your content', // Empty content initially
+        summary: '',
+        tags: [],
+        coverImage: '',
+        tripId: null,
+        destination: {
+          location,
+          placeId: null,
+        },
+        createdBy: user._id,
+        updatedBy: user._id,
+        likes: [],
+        status: 'DRAFT', // Default status for user-created blogs
+        metrics: {
+          likeCount: 0,
+          commentCount: 0,
+          viewCount: 0,
+        },
+        flags: [],
+        comments: [],
+      });
+
+      const createdBlog = await newBlog.save();
+      
+      return {
+        blogId: createdBlog._id,
+        title: createdBlog.title,
+        location: createdBlog.destination?.location,
+        status: createdBlog.status,
+        message: 'Blog draft created successfully. You can now start writing.',
+      };
+    } catch (error) {
+      throw new NotFoundException('Error starting blog: ' + error.message);
+    }
+  }
+
+  // Get draft blog for editing
+  async getDraftBlog(blogId: string, userId: string) {
+    try {
+      const user = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
+
+      const blog = await this.blogModel
+        .findOne({ 
+          _id: blogId, 
+          createdBy: user._id,
+          status: 'DRAFT' 
+        })
+        .populate('createdBy')
+        .exec();
+
+      if (!blog) {
+        throw new NotFoundException('Draft blog not found or you do not have permission to edit this blog');
+      }
+
+      return {
+        _id: blog._id,
+        title: blog.title,
+        content: blog.content,
+        summary: blog.summary,
+        tags: blog.tags,
+        coverImage: blog.coverImage,
+        location: blog.destination?.location,
+        status: blog.status,
+        createdAt: blog.createdAt,
+        updatedAt: blog.updatedAt,
+      };
+    } catch (error) {
+      throw new NotFoundException('Error retrieving draft blog: ' + error.message);
+    }
+  }
+
+  // update a blog by id
+  async updateBlogDraft(blogId: string, updateData: any, userId: string) {
+    try {
+      const user = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
+
+      const blog = await this.blogModel
+        .findOne({ 
+          _id: blogId, 
+          createdBy: user._id,
+          status: 'DRAFT' 
+        })
+        .exec();
+
+      if (!blog) {
+        throw new NotFoundException('Draft blog not found or you do not have permission to edit this blog');
+      }
+
+      // Update only provided fields
+      if (updateData.title !== undefined) blog.title = updateData.title;
+      if (updateData.content !== undefined) blog.content = updateData.content;
+      if (updateData.summary !== undefined) blog.summary = updateData.summary;
+      if (updateData.tags !== undefined) blog.tags = updateData.tags;
+      if (updateData.coverImage !== undefined) blog.coverImage = updateData.coverImage;
+      
+      blog.updatedBy = user._id;
+      blog.updatedAt = new Date();
+
+      const updatedBlog = await blog.save();
+      
+      return {
+        _id: updatedBlog._id,
+        title: updatedBlog.title,
+        content: updatedBlog.content,
+        summary: updatedBlog.summary,
+        tags: updatedBlog.tags,
+        coverImage: updatedBlog.coverImage,
+        location: updatedBlog.destination?.location,
+        status: updatedBlog.status,
+        updatedAt: updatedBlog.updatedAt,
+        message: 'Blog draft updated successfully',
+      };
+    } catch (error) {
+      throw new NotFoundException('Error updating blog draft: ' + error.message);
+    }
+  }
+
+  // Publish blog (change status from DRAFT to PENDING)
+  async publishBlog(blogId: string, userId: string) {
+    try {
+      const user = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
+
+      const blog = await this.blogModel
+        .findOne({ 
+          _id: new Types.ObjectId(blogId), 
+          createdBy: user._id,
+          status: 'DRAFT' 
+        })
+        .exec();
+
+      if (!blog) {
+        throw new NotFoundException('Draft blog not found or you do not have permission to publish this blog');
+      }
+
+      // Validate required fields before publishing
+      if (!blog.title || blog.title.trim().length === 0) {
+        throw new BadRequestException('Title is required to publish the blog');
+      }
+      if (!blog.content || blog.content.trim().length < 20) {
+        throw new BadRequestException('Content must be at least 20 characters to publish the blog');
+      }
+
+      blog.status = 'PENDING';
+      blog.updatedBy = user._id;
+      blog.updatedAt = new Date();
+
+      const publishedBlog = await blog.save();
+      
+      return {
+        blogId: publishedBlog._id,
+        title: publishedBlog.title,
+        status: publishedBlog.status,
+        publishedAt: publishedBlog.updatedAt,
+        message: 'Blog published successfully and is now pending admin approval',
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new NotFoundException('Error publishing blog: ' + error.message);
+    }
+  }
+
+  // Get user's blogs (all statuses)
+  async getUserBlogs(userId: string, status?: string) {
+    try {
+      const user = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
+
+      const filter: any = { createdBy: user._id };
+      if (status) {
+        filter.status = status;
+      }
+
+      const blogs = await this.blogModel
+        .find(filter)
+        .sort({ updatedAt: -1 })
+        .exec();
+
+      return {
+        blogs: blogs.map(blog => ({
+          _id: blog._id,
+          title: blog.title,
+          summary: blog.summary,
+          coverImage: blog.coverImage,
+          location: blog.destination?.location,
+          status: blog.status,
+          createdAt: blog.createdAt,
+          updatedAt: blog.updatedAt,
+          metrics: blog.metrics,
+        })),
+        total: blogs.length,
+      };
+    } catch (error) {
+      throw new NotFoundException('Error retrieving user blogs: ' + error.message);
+    }
   }
 }

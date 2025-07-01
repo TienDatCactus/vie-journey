@@ -262,4 +262,108 @@ export class AdminService {
     }
     return account;
   }
+
+  async banUser(userId: string, reason: string): Promise<{
+    userId: string;
+    accountId: string;
+    role: string;
+    email: string;
+    userName: string;
+    status: string;
+    banReason: string;
+    flaggedCount: number;
+    bannedAt: Date;
+  }> {
+    const userInfo = await this.userInfosModel.findById(userId);
+    if (!userInfo) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const account = await this.accountModel.findById(userInfo.userId);
+    if (!account) {
+      throw new NotFoundException(`Account not found for user ${userId}`);
+    }
+
+    // Check if user role is "USER" - only allow banning regular users
+    if (account.role !== 'USER') {
+      throw new BadRequestException(`Cannot ban user with role '${account.role}'. Only users with role 'USER' can be banned.`);
+    }    if (account.status === Status.banned) {
+      throw new BadRequestException(`Account is already banned. Ban reason: ${userInfo.banReason}, Banned at: ${userInfo.bannedAt}`);
+    }try {
+      // Update account status first
+      account.status = Status.banned;
+      await account.save();
+
+      // If account update successful, update user info
+      userInfo.banReason = reason;
+      userInfo.bannedAt = new Date();
+      userInfo.flaggedCount += 1;
+      await userInfo.save();
+
+      return {
+        userId: userInfo._id.toString(),
+        accountId: account._id.toString(),
+        role: account.role,
+        email: account.email,
+        userName: userInfo.fullName,
+        status: account.status,
+        banReason: userInfo.banReason,
+        flaggedCount: userInfo.flaggedCount,
+        bannedAt: userInfo.bannedAt
+      };
+    } catch (error) {
+      throw new BadRequestException('Failed to ban user: ' + error.message);
+    }
+  }
+
+  async unbanUser(userId: string): Promise<{
+    userId: string;
+    accountId: string;
+    role: string;
+    email: string;
+    userName: string;
+    status: string;
+    banReason: string | null;
+    flaggedCount: number;
+    bannedAt: Date | null;
+  }> {
+    const userInfo = await this.userInfosModel.findById(userId);
+    if (!userInfo) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const account = await this.accountModel.findById(userInfo.userId);
+    if (!account) {
+      throw new NotFoundException(`Account not found for user ${userId}`);
+    }
+
+    if (account.status !== Status.banned) {
+      throw new BadRequestException(`Account is not banned. Current status: ${account.status}`);
+    }
+
+    try {
+      // Update account status to active
+      account.status = Status.active;
+      await account.save();
+
+      // Clear ban information
+      userInfo.banReason = null;
+      userInfo.bannedAt = null;
+      await userInfo.save();
+
+      return {
+        userId: userInfo._id.toString(),
+        accountId: account._id.toString(),
+        role: account.role,
+        email: account.email,
+        userName: userInfo.fullName,
+        status: account.status,
+        banReason: userInfo.banReason,
+        flaggedCount: userInfo.flaggedCount,
+        bannedAt: userInfo.bannedAt
+      };
+    } catch (error) {
+      throw new BadRequestException('Failed to unban user: ' + error.message);
+    }
+  }
 }
