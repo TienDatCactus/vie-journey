@@ -33,12 +33,23 @@ export class AdminController {
     private readonly userService: UserService,
   ) {}
 
+  @Get('assets/landing')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async getAllBannersBySubsection() {
+    return this.adminService.fetchAllBannersBySubsection();
+  }
+
   @Get('banner/subsection')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   async getSubsection() {
     return this.adminService.getSubsection();
   }
 
   @Get('assets')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   async getAssetsByType(
     @Query('type') type: string,
     @Query('subsection') subsection?: string,
@@ -46,6 +57,8 @@ export class AdminController {
     return this.adminService.getAssetsByType(type, subsection);
   }
   @Delete('assets/delete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   async deleteAssetById(@Query('id') id: string) {
     return this.adminService.deleteAssetById(id);
   }
@@ -73,6 +86,8 @@ export class AdminController {
 
   // addAsset/banner
   @Post('assets')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -90,7 +105,7 @@ export class AdminController {
     @UploadedFile() file: Express.Multer.File,
     @Body('userId') userId: string,
     @Body('type') type: string,
-    @Body('subsection') subsection: string,
+    @Body('subsection') subsection?: string,
   ) {
     return this.adminService.addAssetSystem(file, userId, type, subsection);
   }

@@ -13,6 +13,7 @@ import { CreateBlogDto } from 'src/common/dtos/create-blog.dto';
 import { AssetsService } from '../assets/assets.service';
 import { v4 as uuidv4 } from 'uuid';
 import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
+import { Request } from 'express';
 @Injectable()
 export class BlogService {
   constructor(
@@ -122,7 +123,8 @@ export class BlogService {
     };
   }
 
-  async updateMetrics(blogId: string, reqUserId?: string) {
+  async updateMetrics(blogId: string, req: Request) {
+    const reqUserId = req.user?.['userId'] as string;
     const blog = await this.blogModel.findById(blogId).exec();
 
     if (!blog) throw new NotFoundException('Blog not found');
@@ -319,7 +321,8 @@ export class BlogService {
   }
 
   // create a flag for a blog
-  async createFlag(blogId: string, reason: string, userId: string) {
+  async createFlag(blogId: string, reason: string, req: Request) {
+    const userId = req.user?.['userId'] as string;
     const blog = await this.blogModel.findById(blogId).exec();
     if (!blog) throw new NotFoundException('Blog not found');
 
