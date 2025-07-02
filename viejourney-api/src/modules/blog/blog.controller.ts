@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Body,
   Patch,
   Param,
@@ -31,44 +32,41 @@ import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
-  // list all blogs
+  // Put specific routes BEFORE parameterized routes
   @Get('manager')
-  async getAllBlogs(@Query() paginationDto: PaginationDto) {
-    return this.blogService.findAll(paginationDto);
+  async getManagerBlogs() {
+    return this.blogService.findAll();
   }
 
-  @Get('statistics')
-  async getBlogStatistics() {
-    return this.blogService.getBlogStatistics();
+  // Get user's blogs - MOVE THIS BEFORE @Get(':id')
+  @Get('my-blogs')
+  @UseGuards(JwtAuthGuard)
+  async getUserBlogs(
+    @Req() req: Request,
+    @Query('status') status?: string,
+  ) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.blogService.getUserBlogs(userId, status);
   }
 
-  // Lấy chi tiết blog và cập nhật metrics
-  @Get(':id')
-  async findOne(@Param('id') blogId: string, @Body() userId: string) {
-    return this.blogService.updateMetrics(blogId, userId);
-  }
-  @Get('manager/:id')
-  async findOneBlogById(@Param('id') blogId: string) {
-    return this.blogService.findBlogById(blogId);
-  }
-
-  // USER BLOG CREATION WORKFLOW ENDPOINTS
-
-  // Start writing a blog - creates a draft with location and auto-generated title
+  // Start blog creation - MOVE THIS BEFORE @Get(':id')
   @Post('start-blog')
   @UseGuards(JwtAuthGuard)
   async startBlog(
-    @Body() startBlogDto: StartBlogDto,
+    @Body('location') location: string,
     @Req() req: Request,
   ) {
     const userId = req.user?.['userId'];
     if (!userId) {
       throw new BadRequestException('User ID not found in request');
     }
-    return this.blogService.startBlog(startBlogDto.location, userId);
+    return this.blogService.startBlog(location, userId);
   }
 
-  // Get draft blog for editing
+  // Get draft blog - MOVE THIS BEFORE @Get(':id')
   @Get('draft/:id')
   @UseGuards(JwtAuthGuard)
   async getDraftBlog(
@@ -80,6 +78,31 @@ export class BlogController {
       throw new BadRequestException('User ID not found in request');
     }
     return this.blogService.getDraftBlog(blogId, userId);
+  }
+
+  // Publish blog - MOVE THIS BEFORE @Get(':id')
+  @Post('publish/:id')
+  @UseGuards(JwtAuthGuard)
+  async publishBlog(
+    @Param('id') blogId: string,
+    @Req() req: Request,
+  ) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.blogService.publishBlog(blogId, userId);
+  }
+
+  // NOW put the parameterized routes AFTER specific routes
+  @Get(':id')
+  async getBlogById(@Param('id') id: string) {
+    return this.blogService.findOneBlogById(id);
+  }
+
+  @Get('manager/:id')
+  async getManagerBlogById(@Param('id') id: string) {
+    return this.blogService.findOneBlogById(id);
   }
 
   // Update draft blog
@@ -97,35 +120,7 @@ export class BlogController {
     return this.blogService.updateBlogDraft(blogId, updateBlogDraftDto, userId);
   }
 
-  // Publish blog (change from DRAFT to PENDING)
-  @Post('publish/:id')
-  @UseGuards(JwtAuthGuard)
-  async publishBlog(
-    @Param('id') blogId: string,
-    @Req() req: Request,
-  ) {
-    const userId = req.user?.['userId'];
-    if (!userId) {
-      throw new BadRequestException('User ID not found in request');
-    }
-    return this.blogService.publishBlog(blogId, userId);
-  }
-
-  // Get user's blogs
-  @Get('my-blogs')
-  @UseGuards(JwtAuthGuard)
-  async getUserBlogs(
-    @Req() req: Request,
-    @Body('status') status?: string,
-  ) {
-    const userId = req.user?.['userId'];
-    if (!userId) {
-      throw new BadRequestException('User ID not found in request');
-    }
-    return this.blogService.getUserBlogs(userId, status);
-  }
-
-  // update status of blog by id
+  // Other routes...
   @Post(':id/status')
   async updateStatus(
     @Param('id') blogId: string,
@@ -134,25 +129,21 @@ export class BlogController {
     return this.blogService.updateStatus(blogId, status);
   }
 
-  // clean flags of blog by id
   @Patch(':id/flags')
   async cleanFlags(@Param('id') blogId: string) {
     return this.blogService.cleanFlags(blogId);
   }
 
-  // /blogs/ban-author/:id
   @Post('ban-author/:id')
   async banAuthor(@Param('id') blogId: string, @Body('reason') reason: string) {
     return this.blogService.banAuthor(blogId, reason);
   }
 
-  // delete blog by id
   @Delete(':id')
-  async deleteBlog(@Param('id') blogId: string) {
-    return this.blogService.deleteBlogById(blogId);
+  async deleteBlog(@Param('id') id: string) {
+    return this.blogService.deleteBlogById(id);
   }
 
-  // create new blog
   @Post('manager')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -160,31 +151,29 @@ export class BlogController {
         fileSize: 5 * 1024 * 1024,
       },
       fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(new BadRequestException('Only accept pictures!'), false);
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|avif)$/)) {
+          return cb(new BadRequestException('Only image files are allowed!'), false);
         }
         cb(null, true);
       },
     }),
   )
   async createBlog(
+    @UploadedFile() file: Express.Multer.File,
     @Body() createBlogDto: CreateBlogDto,
-    @UploadedFile('file') file: Express.Multer.File,
-    @Body('userId') userId: string,
+    @Req() req: Request,
   ) {
+    const userId = req.user?.['userId'];
     return this.blogService.createBlog(createBlogDto, file, userId);
   }
 
-  // create flag for blog
   @Post(':id/flag')
   async createFlag(
     @Param('id') blogId: string,
     @Body('reason') reason: string,
-    @Body('userId') userId: string,
+    @Req() req: Request,
   ) {
-    if (!reason || reason.trim().length === 0) {
-      throw new BadRequestException('Reason is required');
-    }
+    const userId = req.user?.['userId'];
     return this.blogService.createFlag(blogId, reason, userId);
   }
 }
