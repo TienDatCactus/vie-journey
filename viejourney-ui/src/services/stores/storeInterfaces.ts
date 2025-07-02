@@ -60,8 +60,17 @@ export interface PlaceNote {
 export interface Itinerary {
   id: string;
   date: string; // ISO date string
-  place?: google.maps.places.Place;
-  placeId?: string; // Google Place ID
+  place?: {
+    placeId?: string | null; // Google Place ID
+    displayName: string;
+    types: string[];
+    photo: string;
+    editorialSummary?: string;
+    location?: {
+      lat: number;
+      lng: number;
+    }; // Location coordinates
+  };
   note: string;
   time: {
     startTime: string; // ISO time string

@@ -9,8 +9,15 @@ export class Trip extends Document {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: true })
-  destination: string;
+  @Prop({ required: true, type: Object })
+  destination: {
+    id: string;
+    name: string;
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
 
   @Prop({ required: true })
   startDate: Date;

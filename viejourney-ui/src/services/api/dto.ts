@@ -43,7 +43,14 @@ export interface GetUserReqDTO {
 }
 
 export interface CreateTripDto {
-  destination: string;
+  destination: {
+    id: string;
+    name: string;
+    location?: {
+      lat: number;
+      lng: number;
+    };
+  };
   dates: DateConstructor[];
   travelers:
     | "Solo traveler"

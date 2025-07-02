@@ -30,7 +30,7 @@ export class TripService {
         ? [createTripDto.dates[0], createTripDto.dates[1]]
         : [createTripDto.dates[1], createTripDto.dates[0]];
     const newTrip = new this.tripModel({
-      title: `Trip to ${createTripDto.destination}`,
+      title: `Trip to ${createTripDto.destination.name}`,
       destination: createTripDto.destination,
       startDate: startDate,
       endDate: endDate,

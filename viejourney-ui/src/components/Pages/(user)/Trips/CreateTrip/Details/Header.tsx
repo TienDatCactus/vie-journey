@@ -70,6 +70,7 @@ const Header: React.FC = () => {
   };
 
   const trip = useTripDetailStore((state) => state.trip);
+  console.log(trip);
   return (
     <section>
       <div className="z-10 relative w-full lg:h-[17.5rem]">

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog } from 'src/common/entities/blog.entity';
@@ -350,9 +354,9 @@ export class BlogService {
       Count_Pending: pendingPosts,
       Count_Flags: flaggedPosts,
     };
-    }
-    
-    async startBlog(location: string, userId: string) {
+  }
+
+  async startBlog(location: string, userId: string) {
     try {
       const user = await this.userInfosModel
         .findOne({ userId: new Types.ObjectId(userId) })
@@ -387,7 +391,7 @@ export class BlogService {
       });
 
       const createdBlog = await newBlog.save();
-      
+
       return {
         blogId: createdBlog._id,
         title: createdBlog.title,
@@ -409,16 +413,18 @@ export class BlogService {
       if (!user) throw new NotFoundException('User not found');
 
       const blog = await this.blogModel
-        .findOne({ 
-          _id: blogId, 
+        .findOne({
+          _id: blogId,
           createdBy: user._id,
-          status: 'DRAFT' 
+          status: 'DRAFT',
         })
         .populate('createdBy')
         .exec();
 
       if (!blog) {
-        throw new NotFoundException('Draft blog not found or you do not have permission to edit this blog');
+        throw new NotFoundException(
+          'Draft blog not found or you do not have permission to edit this blog',
+        );
       }
 
       return {
@@ -434,7 +440,9 @@ export class BlogService {
         updatedAt: blog.updatedAt,
       };
     } catch (error) {
-      throw new NotFoundException('Error retrieving draft blog: ' + error.message);
+      throw new NotFoundException(
+        'Error retrieving draft blog: ' + error.message,
+      );
     }
   }
 
@@ -447,15 +455,17 @@ export class BlogService {
       if (!user) throw new NotFoundException('User not found');
 
       const blog = await this.blogModel
-        .findOne({ 
-          _id: blogId, 
+        .findOne({
+          _id: blogId,
           createdBy: user._id,
-          status: 'DRAFT' 
+          status: 'DRAFT',
         })
         .exec();
 
       if (!blog) {
-        throw new NotFoundException('Draft blog not found or you do not have permission to edit this blog');
+        throw new NotFoundException(
+          'Draft blog not found or you do not have permission to edit this blog',
+        );
       }
 
       // Update only provided fields
@@ -463,13 +473,14 @@ export class BlogService {
       if (updateData.content !== undefined) blog.content = updateData.content;
       if (updateData.summary !== undefined) blog.summary = updateData.summary;
       if (updateData.tags !== undefined) blog.tags = updateData.tags;
-      if (updateData.coverImage !== undefined) blog.coverImage = updateData.coverImage;
-      
+      if (updateData.coverImage !== undefined)
+        blog.coverImage = updateData.coverImage;
+
       blog.updatedBy = user._id;
       blog.updatedAt = new Date();
 
       const updatedBlog = await blog.save();
-      
+
       return {
         _id: updatedBlog._id,
         title: updatedBlog.title,
@@ -483,7 +494,9 @@ export class BlogService {
         message: 'Blog draft updated successfully',
       };
     } catch (error) {
-      throw new NotFoundException('Error updating blog draft: ' + error.message);
+      throw new NotFoundException(
+        'Error updating blog draft: ' + error.message,
+      );
     }
   }
 
@@ -496,15 +509,17 @@ export class BlogService {
       if (!user) throw new NotFoundException('User not found');
 
       const blog = await this.blogModel
-        .findOne({ 
-          _id: new Types.ObjectId(blogId), 
+        .findOne({
+          _id: new Types.ObjectId(blogId),
           createdBy: user._id,
-          status: 'DRAFT' 
+          status: 'DRAFT',
         })
         .exec();
 
       if (!blog) {
-        throw new NotFoundException('Draft blog not found or you do not have permission to publish this blog');
+        throw new NotFoundException(
+          'Draft blog not found or you do not have permission to publish this blog',
+        );
       }
 
       // Validate required fields before publishing
@@ -512,7 +527,9 @@ export class BlogService {
         throw new BadRequestException('Title is required to publish the blog');
       }
       if (!blog.content || blog.content.trim().length < 20) {
-        throw new BadRequestException('Content must be at least 20 characters to publish the blog');
+        throw new BadRequestException(
+          'Content must be at least 20 characters to publish the blog',
+        );
       }
 
       blog.status = 'PENDING';
@@ -520,16 +537,20 @@ export class BlogService {
       blog.updatedAt = new Date();
 
       const publishedBlog = await blog.save();
-      
+
       return {
         blogId: publishedBlog._id,
         title: publishedBlog.title,
         status: publishedBlog.status,
         publishedAt: publishedBlog.updatedAt,
-        message: 'Blog published successfully and is now pending admin approval',
+        message:
+          'Blog published successfully and is now pending admin approval',
       };
     } catch (error) {
-      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
         throw error;
       }
       throw new NotFoundException('Error publishing blog: ' + error.message);
@@ -555,21 +576,13 @@ export class BlogService {
         .exec();
 
       return {
-        blogs: blogs.map(blog => ({
-          _id: blog._id,
-          title: blog.title,
-          summary: blog.summary,
-          coverImage: blog.coverImage,
-          location: blog.destination?.location,
-          status: blog.status,
-          createdAt: blog.createdAt,
-          updatedAt: blog.updatedAt,
-          metrics: blog.metrics,
-        })),
+        blogs: blogs,
         total: blogs.length,
       };
     } catch (error) {
-      throw new NotFoundException('Error retrieving user blogs: ' + error.message);
+      throw new NotFoundException(
+        'Error retrieving user blogs: ' + error.message,
+      );
     }
   }
 }

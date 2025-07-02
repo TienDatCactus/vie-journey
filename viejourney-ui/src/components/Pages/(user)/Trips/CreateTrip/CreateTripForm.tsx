@@ -37,12 +37,22 @@ import React, { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useAutocompleteSuggestions } from "../../../../../utils/hooks/use-autocomplete-suggestion";
 import { doCreateTrip } from "../../../../../services/api";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
 
 export const CreateTripForm: React.FC = () => {
+  const placesLib = useMapsLibrary("places");
+  if (!placesLib) {
+    return <div>Loading Google Maps library...</div>;
+  }
   const [modalOpen, setModalOpen] = React.useState(false);
   const [inviteEmails, setInviteEmails] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState<string>("");
+  const [destinationId, setDestinationId] = useState<string | null>(null);
+  const [destinationLocation, setDestinationLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<{
     placePrediction: google.maps.places.PlacePrediction;
   } | null>(null);
@@ -65,9 +75,25 @@ export const CreateTripForm: React.FC = () => {
     if (suggestion?.placePrediction) {
       setSelectedPlace({ placePrediction: suggestion.placePrediction });
       setDestination(suggestion.placePrediction.mainText + "");
+      setDestinationId(suggestion.placePrediction.placeId || null);
+
+      const placeInstance = new placesLib.Place({
+        id: suggestion.placePrediction.placeId,
+      });
+      placeInstance.fetchFields({ fields: ["location"] }).then((res: any) => {
+        const location = res.place?.location;
+        if (!location) {
+          throw new Error("No location found for placeId");
+        }
+        setDestinationLocation({
+          lat: location.lat(),
+          lng: location.lng(),
+        });
+      });
       setOpen(false);
     }
   };
+  console.log(destinationId, destinationLocation);
   const {
     handleSubmit,
     register,
@@ -104,12 +130,19 @@ export const CreateTripForm: React.FC = () => {
     setModalOpen(false);
   };
   const onSubmit = async (data: any) => {
-    console.log("Form submitted with data:", { ...data, inviteEmails });
     try {
       setLoading(true);
       await doCreateTrip({
         ...data,
         inviteEmails,
+        destination: {
+          name: data.destination,
+          id: destinationId,
+          location: {
+            lat: destinationLocation?.lat || 0,
+            lng: destinationLocation?.lng || 0,
+          },
+        },
         dates: data.dates.map(
           (date: Dayjs | null) => date?.toISOString() || null
         ),
