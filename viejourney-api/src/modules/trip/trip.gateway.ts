@@ -88,8 +88,8 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const tripId = client.handshake.auth?.tripId as string;
     const user = client.handshake.auth?.user as WSUser;
-    const itemId = this.planService.addItem(tripId, data.section, data.item);
     console.log(`Added item in section ${data.section}:`, data.item);
+    const itemId = this.planService.addItem(tripId, data.section, data.item);
     console.log(`Added by user:`, user);
 
     this.server.to(tripId).emit('onPlanItemAdded', {
@@ -123,8 +123,8 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const tripId = client.handshake.auth?.tripId as string;
     const user = client.handshake.auth?.user as WSUser;
-    this.planService.updateItem(tripId, data.section, data.item);
     console.log(`Updated item in section ${data.section}:`, data.item);
+    this.planService.updateItem(tripId, data.section, data.item);
     console.log(`Updated by user:`, user);
     this.server.to(tripId).emit('onPlanItemUpdated', {
       section: data.section,

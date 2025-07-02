@@ -135,9 +135,6 @@ const PlaceSuggestion: React.FC<{
                       className="h-full w-full object-cover"
                       image={getPlacePhotoUrl(nearbyPlace.photos[0].getUrl())}
                       alt={nearbyPlace.name}
-                      onError={(e: any) => {
-                        e.target.src = "/images/place-placeholder.png";
-                      }}
                     />
                   ) : (
                     <div className="h-full w-full bg-gray-200 flex items-center justify-center">
@@ -192,13 +189,13 @@ const PlaceSuggestion: React.FC<{
                   )}
                 </CardContent>
               </div>
-              <CardActionArea className="w-fit h-fit my-auto rounded-full">
+              <div className="w-fit h-fit my-auto rounded-full">
                 <IconButton
                   onClick={() => onAddPlace(nearbyPlace.place_id || "")}
                 >
                   <Add />
                 </IconButton>
-              </CardActionArea>
+              </div>
             </Card>
           </SwiperSlide>
         ))}

@@ -46,7 +46,7 @@ export interface CreateTripDto {
   destination: {
     id: string;
     name: string;
-    location?: {
+    location: {
       lat: number;
       lng: number;
     };

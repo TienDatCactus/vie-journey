@@ -70,15 +70,11 @@ const Header: React.FC = () => {
   };
 
   const trip = useTripDetailStore((state) => state.trip);
-  console.log(trip);
   return (
     <section>
       <div className="z-10 relative w-full lg:h-[17.5rem]">
         <img
           src="/images/placeholders/main-placeholder.jpg"
-          onError={(e) =>
-            (e.currentTarget.src = "/images/placeholders/main-placeholder.jpg")
-          }
           alt=""
           className="w-full h-[17.5rem] object-cover"
         />

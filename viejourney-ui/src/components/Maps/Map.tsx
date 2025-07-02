@@ -20,6 +20,7 @@ import { DirectionsRender } from "./controls/DirectionRender";
 import GeneralFilter from "./controls/GeneralFilter";
 import POIDetails from "./controls/POIDetails";
 import { MapProps, POIData } from "./types";
+import { useFetchPlaceDetails } from "../../utils/hooks/use-fetch-place";
 
 // Map configuration component with POI click disabling
 const MapConfiguration: React.FC<{
@@ -109,7 +110,10 @@ const Map: React.FC<MapProps> = ({
   position = "relative",
   ...mapProps
 }) => {
+  const { fetchPlaceDetail } = useFetchPlaceDetails();
   const { selected } = useMapPan();
+  const [place, setPlace] = React.useState<POIData | null>(null);
+
   const isApiLoaded = useApiIsLoaded();
   const {
     selectedCategories,
@@ -136,9 +140,7 @@ const Map: React.FC<MapProps> = ({
 
   const originPlaceId = places[0]?.id;
   const destinationPlaceId = places[places.length - 1]?.id;
-  const waypointsPlaceIds = places.slice(1, -1).map((place) => place.id);
 
-  console.log("Map component loaded with places:", places);
   const groupedByDate = places.reduce((acc, place) => {
     const date = place.fromDate;
     if (!acc[date]) acc[date] = [];
@@ -146,14 +148,23 @@ const Map: React.FC<MapProps> = ({
     return acc;
   }, {} as Record<string, { id: string; fromDate: string }[]>);
 
-  console.log(groupedByDate);
+  useEffect(() => {
+    const fetchPlace = async () => {
+      if (selected) {
+        const res = await fetchPlaceDetail(selected?.placeId || "");
+        setPlace(res || null);
+      }
+    };
+    fetchPlace();
+  }, [selected, fetchPlaceDetail]);
+
   useEffect(() => {
     if (selected && mapInstance && selected.location) {
       mapInstance.panTo({
-        lat: selected.location.lat(),
-        lng: selected.location.lng(),
+        lat: selected.location.lat || 0,
+        lng: selected.location.lng || 0,
       });
-      mapInstance.setZoom(14);
+      mapInstance.setZoom(20);
     }
   }, [selected, mapInstance]);
 
@@ -205,7 +216,7 @@ const Map: React.FC<MapProps> = ({
             })}
 
           {selected && (
-            <PlaceMarker place={selected} onClick={handlePOIClick} />
+            <PlaceMarker place={place || undefined} onClick={handlePOIClick} />
           )}
           <CurrentLocationControl
             onLocationFound={handleLocationFound}

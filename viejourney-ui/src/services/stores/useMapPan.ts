@@ -1,7 +1,8 @@
 // stores/selectedLocationStore.ts
 import { create } from "zustand";
+import { Itinerary } from "./storeInterfaces";
 
-export type SelectedLocation = google.maps.places.Place;
+export type SelectedLocation = Itinerary["place"];
 
 interface State {
   selected?: SelectedLocation | null;

@@ -79,9 +79,6 @@ const OauthSuccess: React.FC = () => {
           <img
             className="col-span-3 w-full p-1 rounded-full object-center object-contain"
             alt="User Avatar"
-            onError={(e) => {
-              e.currentTarget.src = "/images/placeholders/icons8-avatar-50.png";
-            }}
             src={info?.avatar}
           />
           <div className="col-span-9 flex flex-col justify-center gap-1">

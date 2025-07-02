@@ -263,9 +263,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         <>
           <CardMedia
             loading="lazy"
-            onError={(e) => {
-              e.currentTarget.src = `https://placehold.co/300x500?text=Image+not+available`;
-            }}
             component="img"
             src={getPlacePhotoUrl(placeDetail?.photos?.[0])}
             className="object-cover col-span-1 w-full h-full rounded-s-lg"

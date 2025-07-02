@@ -284,10 +284,6 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
                     src={getPlacePhotoUrl(place.photos[0])}
                     alt={`${place.displayName} - Photo 1`}
                     className="w-full h-auto object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/images/placeholder-main.png"; // Fallback
-                    }}
                   />
                 </div>
               </div>

@@ -23,7 +23,6 @@ export function IndexedMarkers({ route }: IndexedMarkersProps) {
       });
     }
   });
-  console.log(markers);
 
   return (
     <>

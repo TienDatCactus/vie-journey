@@ -17,6 +17,7 @@ import { doGetTrip } from "../../../../services/api";
 import { useSocket } from "../../../../services/context/socketContext";
 import { useAuthStore } from "../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
+import { useDirectionStore } from "../../../../services/stores/useDirectionStore";
 
 const CreateTripDetails: React.FC = () => {
   const { user, info } = useAuthStore();
@@ -32,7 +33,13 @@ const CreateTripDetails: React.FC = () => {
     updateNote,
     addTransit,
     deleteTransit,
+    addItinerary,
+    updateItinerary,
+    toggleEditItinerary,
+    deleteItinerary,
   } = useTripDetailStore();
+  const { addPlaceId } = useDirectionStore();
+
   useEffect(() => {
     setSocketLoading(true);
 
@@ -80,6 +87,10 @@ const CreateTripDetails: React.FC = () => {
           ...data.item.content,
           id: data.item.id,
         });
+      } else if (data.section == "itineraries") {
+        console.log("first itinerary added:", data);
+        addPlaceId(data.item.place.placeId, data.item.date);
+        addItinerary(data.item);
       }
     });
 
@@ -88,8 +99,10 @@ const CreateTripDetails: React.FC = () => {
       if (data.section == "notes") {
         updateNote(data.item.id, data.item.text);
       } else if (data.section == "transits") {
-        console.log("Transit updated:", data);
         updateTransit(data.item.id, data.item);
+      } else if (data.section == "itineraries") {
+        updateItinerary(data.item.id, { note: data.item.note });
+        toggleEditItinerary(data.item.id);
       }
     });
 
@@ -98,6 +111,8 @@ const CreateTripDetails: React.FC = () => {
         deleteNote(data.itemId);
       } else if (data.section == "transits") {
         deleteTransit(data.itemId);
+      } else if (data.section == "itineraries") {
+        deleteItinerary(data.itemId);
       }
     });
 

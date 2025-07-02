@@ -38,9 +38,27 @@ export interface Place {
 }
 export interface Itinerary {
   id: string;
-  date: string;
-  activities: string[];
-  location: string;
+  date: string; // ISO date string
+  place?: {
+    placeId?: string | null; // Google Place ID
+    displayName: string;
+    types: string[];
+    photo: string;
+    editorialSummary?: string;
+    location?: {
+      lat: number;
+      lng: number;
+    }; // Location coordinates
+  };
+  note: string;
+  time: {
+    startTime: string; // ISO time string
+    endTime: string; // ISO time string
+  };
+  cost?: string;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
+  isEditing?: boolean;
 }
 export interface Plan {
   notes: Note[];

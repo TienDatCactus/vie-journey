@@ -20,7 +20,6 @@ export function DirectionsRender({
   fromDate = "",
   onRouteResult,
 }: Props) {
-  console.log(waypointsPlaceIds);
   const map = useMap();
   const polylineRef = useRef<google.maps.Polyline | null>(null);
 

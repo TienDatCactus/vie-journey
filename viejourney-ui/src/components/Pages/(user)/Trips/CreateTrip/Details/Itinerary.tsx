@@ -26,7 +26,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { DateRangePicker, TimeRangePicker } from "@mui/x-date-pickers-pro";
+import {
+  DateRangePicker,
+  MobileTimeRangePicker,
+} from "@mui/x-date-pickers-pro";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "motion/react";
@@ -45,6 +48,7 @@ import { useFetchPlaceDetails } from "../../../../../../utils/hooks/use-fetch-pl
 import { useMapPan } from "../../../../../../services/stores/useMapPan";
 import { useDirectionStore } from "../../../../../../services/stores/useDirectionStore";
 import PlaceSuggestion from "./elements/PlaceSuggestion";
+import { useSocket } from "../../../../../../services/context/socketContext";
 interface DaySectionProps {
   date: string;
 }
@@ -56,11 +60,11 @@ interface DaySectionProps {
   date: string;
 }
 const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
-  const { updateItinerary, toggleEditItinerary, deleteItinerary } =
-    useTripDetailStore();
+  const { toggleEditItinerary } = useTripDetailStore();
   const [localNote, setLocalNote] = useState(itinerary.note);
   const { setSelected } = useMapPan();
   const { removePlaceId } = useDirectionStore();
+  const { socket } = useSocket();
   const [edit, setEdit] = useState({
     cost: {
       isEditing: false,
@@ -74,19 +78,27 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
       },
     },
   });
-  const handleUpdateItinerary = (e: any) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      updateItinerary(itinerary.id, { note: localNote });
-      toggleEditItinerary(itinerary.id);
-    }
+  const handleUpdateItinerary = () => {
+    socket?.emit("planItemUpdated", {
+      section: "itineraries",
+      item: {
+        id: itinerary.id,
+        note: localNote,
+        time: {
+          startTime: edit.time.value.startTime,
+          endTime: edit.time.value.endTime,
+        },
+      },
+    });
   };
 
   const handleDeleteItinerary = (id: string) => {
-    deleteItinerary(id);
+    socket?.emit("planItemDeleted", {
+      section: "itineraries",
+      itemId: id,
+    });
     removePlaceId(itinerary.place?.placeId || "");
   };
-
   return (
     <>
       <Card
@@ -170,9 +182,6 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
         <div className="relative col-span-1 w-full h-full rounded-lg group items-center flex">
           <CardMedia
             component="img"
-            onError={(e) => {
-              e.currentTarget.src = "/images/place-placeholder.png";
-            }}
             src={
               (itinerary.place?.photo &&
                 getPlacePhotoUrl(itinerary.place?.photo)) ||
@@ -185,9 +194,7 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
             className="cursor-pointer group-hover:opacity-80 rounded-lg opacity-0 bg-black/30 inset-0 absolute transition-all duration-200 flex items-center justify-center"
             onClick={() => {
               if (itinerary.place) {
-                setSelected(
-                  itinerary.place as unknown as google.maps.places.Place
-                );
+                setSelected(itinerary.place);
               }
             }}
           >
@@ -211,7 +218,6 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
               setLocalNote(e.target.value);
             }}
             value={localNote}
-            onKeyDownCapture={(e) => handleUpdateItinerary(e)}
           />
           <Stack
             direction="row"
@@ -220,7 +226,7 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
             spacing={1}
           >
             <Stack direction="row" alignItems="center" spacing={1}>
-              <TimeRangePicker
+              <MobileTimeRangePicker
                 slotProps={{
                   textField: {
                     variant: "standard",
@@ -278,14 +284,7 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
                 color="primary"
                 variant="text"
                 className="h-fit"
-                onClick={() => {
-                  updateItinerary(itinerary.id, {
-                    note: localNote,
-                    time: edit.time.value,
-                    cost: edit.cost.value,
-                  });
-                  toggleEditItinerary(itinerary.id);
-                }}
+                onClick={handleUpdateItinerary}
               >
                 Save
               </Button>
@@ -525,13 +524,12 @@ const DaySectionPlaceFinder = ({
 };
 
 const DaySection: React.FC<DaySectionProps> = (props) => {
-  const { addItinerary, itineraries, trip } = useTripDetailStore();
+  const { itineraries } = useTripDetailStore();
   const { fetchPlaceDetail } = useFetchPlaceDetails();
   const placesForDay = itineraries.filter((item) => item.date === props.date);
-  const { addPlaceId } = useDirectionStore();
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
-
+  const { socket } = useSocket();
   const toggleExpand = () => {
     setExpanded((prev) => !prev);
   };
@@ -541,7 +539,7 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
       setLoading(true);
       const placeDetails = await fetchPlaceDetail(placeId);
       const itinerary = {
-        id: `place-note-${Date.now()}`,
+        id: `itinerary-note-${Date.now()}`,
         note: "",
         date: props.date,
         place: {
@@ -563,8 +561,10 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
         },
         isEditing: true,
       };
-      addPlaceId(placeId, props.date);
-      addItinerary(itinerary);
+      socket?.emit("planItemAdded", {
+        section: "itineraries",
+        item: itinerary,
+      });
     } catch (error) {
       console.error(error);
     } finally {

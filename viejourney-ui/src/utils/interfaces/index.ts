@@ -9,7 +9,14 @@ export interface Account {
 export interface Trip {
   _id: string;
   title: string;
-  destination: string;
+  destination: {
+    id: string;
+    name: string;
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
   startDate: Date;
   endDate: Date;
   budgetRange?: string;
