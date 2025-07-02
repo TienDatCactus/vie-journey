@@ -28,12 +28,30 @@ import { FileInterceptor } from '@nestjs/platform-express';
 // @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('blogs')
 export class BlogController {
-  constructor(private readonly blogService: BlogService) {}
+  constructor(private readonly blogService: BlogService) { }
 
   // Put specific routes BEFORE parameterized routes
   @Get('manager')
   async getManagerBlogs() {
     return this.blogService.findAll();
+  }
+
+  // Get all approved blogs for home page (public access)
+  @Get('home')
+  async getAllApprovedBlogs(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+  ) {
+    const pageNum = page ? parseInt(page) : 1;
+    const limitNum = limit ? parseInt(limit) : 10;
+
+    // Validate pagination parameters
+    if (pageNum < 1 || limitNum < 1 || limitNum > 50) {
+      throw new BadRequestException('Invalid pagination parameters. Page must be >= 1, limit must be 1-50');
+    }
+
+    return this.blogService.getAllApprovedBlogs(pageNum, limitNum, search);
   }
 
   // Get user's blogs - MOVE THIS BEFORE @Get(':id')
@@ -53,15 +71,29 @@ export class BlogController {
   // Start blog creation - MOVE THIS BEFORE @Get(':id')
   @Post('start-blog')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('coverImage', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|avif)$/)) {
+          return cb(new BadRequestException('Only image files are allowed for cover image!'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
   async startBlog(
-    @Body('location') location: string,
+    @Body() startBlogDto: StartBlogDto,
+    @UploadedFile() coverImage: Express.Multer.File,
     @Req() req: Request,
   ) {
     const userId = req.user?.['userId'];
     if (!userId) {
       throw new BadRequestException('User ID not found in request');
     }
-    return this.blogService.startBlog(location, userId);
+    return this.blogService.startBlog(startBlogDto.location, userId, coverImage);
   }
 
   // Get draft blog - MOVE THIS BEFORE @Get(':id')
@@ -106,17 +138,75 @@ export class BlogController {
   // Update draft blog
   @Patch('draft/:id')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('coverImage', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|avif)$/)) {
+          return cb(new BadRequestException('Only image files are allowed for cover image!'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
   async updateBlogDraft(
     @Param('id') blogId: string,
     @Body() updateBlogDraftDto: UpdateBlogDraftDto,
+    @UploadedFile() coverImage: Express.Multer.File,
     @Req() req: Request,
   ) {
     const userId = req.user?.['userId'];
     if (!userId) {
       throw new BadRequestException('User ID not found in request');
     }
-    return this.blogService.updateBlogDraft(blogId, updateBlogDraftDto, userId);
+    return this.blogService.updateBlogDraft(blogId, updateBlogDraftDto, userId, coverImage);
   }
+
+  // Get published blog for viewing/editing
+  @Get('published/:id')
+  @UseGuards(JwtAuthGuard)
+  async getPublishedBlog(
+    @Param('id') blogId: string,
+    @Req() req: Request,
+  ) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.blogService.getPublishedBlog(blogId, userId);
+  }
+
+  // Edit published blog - convert back to DRAFT
+  @Patch('edit/:id')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('coverImage', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|avif)$/)) {
+          return cb(new BadRequestException('Only image files are allowed for cover image!'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  async editPublishedBlog(
+    @Param('id') blogId: string,
+    @Body() updateBlogDraftDto: UpdateBlogDraftDto,
+    @UploadedFile() coverImage: Express.Multer.File,
+    @Req() req: Request,
+  ) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.blogService.editPublishedBlog(blogId, updateBlogDraftDto, userId, coverImage);
+  }
+
 
   // Other routes...
   @Post(':id/status')

@@ -36,11 +36,4 @@ export class UpdateBlogDraftDto {
   })
   @IsString({ each: true, message: 'Mỗi tag phải là một chuỗi.' })
   tags?: string[];
-
-  @IsOptional()
-  @IsString({ message: 'Ảnh bìa phải là một chuỗi URL.' })
-  @MaxLength(500, {
-    message: 'Đường dẫn ảnh bìa không được vượt quá 500 ký tự.',
-  })
-  coverImage?: string;
 }
