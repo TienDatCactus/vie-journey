@@ -35,6 +35,11 @@ export class BlogController {
   async getManagerBlogs() {
     return this.blogService.findAll();
   }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
+  async getAllBlogs(@Query() paginationDto: PaginationDto) {
+    return this.blogService.findAll(paginationDto);
+  }
 
   // Get all approved blogs for home page (public access)
   @Get('home')
@@ -130,6 +135,17 @@ export class BlogController {
   @Get(':id')
   async getBlogById(@Param('id') id: string) {
     return this.blogService.findOneBlogById(id);
+  }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
+  async findOne(@Param('id') blogId: string, @Req() req: Request) {
+    return this.blogService.updateMetrics(blogId, req);
+  }
+  @Get('manager/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
+  async findOneBlogById(@Param('id') blogId: string) {
+    return this.blogService.findBlogById(blogId);
   }
 
   @Get('manager/:id')
@@ -228,6 +244,8 @@ export class BlogController {
 
   // Other routes...
   @Post(':id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
   async updateStatus(
     @Param('id') blogId: string,
     @Body('status') status: 'APPROVED' | 'REJECTED',
@@ -236,21 +254,29 @@ export class BlogController {
   }
 
   @Patch(':id/flags')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
   async cleanFlags(@Param('id') blogId: string) {
     return this.blogService.cleanFlags(blogId);
   }
 
   @Post('ban-author/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
   async banAuthor(@Param('id') blogId: string, @Body('reason') reason: string) {
     return this.blogService.banAuthor(blogId, reason);
   }
 
   @Delete(':id')
-  async deleteBlog(@Param('id') id: string) {
-    return this.blogService.deleteBlogById(id);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
+  async deleteBlog(@Param('id') blogId: string) {
+    return this.blogService.deleteBlogById(blogId);
   }
 
   @Post('manager')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -277,12 +303,16 @@ export class BlogController {
   }
 
   @Post(':id/flag')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
   async createFlag(
     @Param('id') blogId: string,
     @Body('reason') reason: string,
     @Req() req: Request,
   ) {
-    const userId = req.user?.['userId'];
-    return this.blogService.createFlag(blogId, reason, userId);
+    if (!reason || reason.trim().length === 0) {
+      throw new BadRequestException('Reason is required');
+    }
+    return this.blogService.createFlag(blogId, reason, req);
   }
 }

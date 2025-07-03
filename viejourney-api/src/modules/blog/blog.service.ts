@@ -8,6 +8,8 @@ import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { CreateBlogDto } from 'src/common/dtos/create-blog.dto';
 import { AssetsService } from '../assets/assets.service';
 import { v4 as uuidv4 } from 'uuid';
+import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
+import { Request } from 'express';
 @Injectable()
 export class BlogService {
   constructor(
@@ -54,86 +56,8 @@ export class BlogService {
     return listBlogs;
   }
 
-  // Get all approved blogs for home page (public access)
-async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
-  try {
-    const pageNum = page || 1;
-    const limitNum = limit || 10;
-    const skip = (pageNum - 1) * limitNum;
-
-    // Build query for approved blogs only
-    let query: any = { status: 'APPROVED' };
-    
-    // Add search functionality if provided
-    if (search && search.trim() !== '') {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { summary: { $regex: search, $options: 'i' } },
-        { tags: { $regex: search, $options: 'i' } },
-        { 'destination.location': { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    // Get total count for pagination
-    const totalBlogs = await this.blogModel.countDocuments(query);
-    const totalPages = Math.ceil(totalBlogs / limitNum);
-
-    // Get blogs with pagination and populate author info
-    const blogs = await this.blogModel
-      .find(query)
-      .populate({
-        path: 'createdBy',
-        populate: {
-          path: 'userId',
-          select: 'email'
-        },
-        select: 'fullName userId'
-      })
-      .select('title summary coverImage location tags status metrics createdAt updatedAt')
-      .sort({ updatedAt: -1, createdAt: -1 }) // Show latest first
-      .skip(skip)
-      .limit(limitNum)
-      .exec();
-
-    return {
-      status: 'success',
-      message: blogs.length > 0 ? 'Blogs retrieved successfully' : 'No approved blogs found',
-      data: {
-        blogs: blogs.map(blog => ({
-          _id: blog._id,
-          title: blog.title,
-          summary: blog.summary,
-          coverImage: blog.coverImage,
-          location: blog.destination?.location,
-          tags: blog.tags,
-          author: {
-            name: blog.createdBy?.fullName || 'Unknown',
-            email: blog.createdBy?.userId?.email || ''
-          },
-          metrics: {
-            viewCount: blog.metrics?.viewCount || 0,
-            likeCount: blog.metrics?.likeCount || 0,
-            commentCount: blog.metrics?.commentCount || 0,
-          },
-          createdAt: blog.createdAt,
-          updatedAt: blog.updatedAt,
-        })),
-        pagination: {
-          currentPage: pageNum,
-          totalPages: totalPages,
-          totalItems: totalBlogs,
-          itemsPerPage: limitNum,
-          hasNext: pageNum < totalPages,
-          hasPrev: pageNum > 1
-        }
-      }
-    };
-  } catch (error) {
-    throw new NotFoundException('Error retrieving approved blogs: ' + error.message);
-  }
-}
-
-  async updateMetrics(blogId: string, reqUserId?: string) {
+  async updateMetrics(blogId: string, req: Request) {
+    const reqUserId = req.user?.['userId'] as string;
     const blog = await this.blogModel.findById(blogId).exec();
 
     if (!blog) throw new NotFoundException('Blog not found');
@@ -325,7 +249,8 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
   }
 
   // create a flag for a blog
-  async createFlag(blogId: string, reason: string, userId: string) {
+  async createFlag(blogId: string, reason: string, req: Request) {
+    const userId = req.user?.['userId'] as string;
     const blog = await this.blogModel.findById(blogId).exec();
     if (!blog) throw new NotFoundException('Blog not found');
 
