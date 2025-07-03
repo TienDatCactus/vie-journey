@@ -12,11 +12,11 @@ import React, { useEffect } from "react";
 import useCategorySearch from "../../utils/hooks/use-category-search";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
 import usePOI from "../../utils/hooks/use-poi";
-import { MarkerCluster } from "./controls";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
-import GeneralFilter from "./controls/GeneralFilter";
 import POIDetails from "./controls/POIDetails";
 import { MapProps, POIData } from "./types";
+import GeneralFilter from "./controls/GeneralFilter";
+import { MarkerCluster } from "./controls";
 
 // Map configuration component with POI click disabling
 const MapConfiguration: React.FC<{
@@ -165,6 +165,7 @@ const Map: React.FC<MapProps> = ({
             onClick={onMapClick}
             onPOIClick={handlePOIClick}
           />
+
           {/* Add category search UI when enabled */}
           {selectedCategories.length > 0 && (
             <Button
@@ -180,7 +181,7 @@ const Map: React.FC<MapProps> = ({
               {isSearching ? "Searching..." : "Search This Area"}
             </Button>
           )}
-          {/* {detailed && (
+          {detailed && (
             <>
               <GeneralFilter
                 selectedCategories={selectedCategories}
@@ -192,7 +193,7 @@ const Map: React.FC<MapProps> = ({
                 selectedPlace={selectedPOI}
               />
             </>
-          )} */}
+          )}
 
           {/* If we have a highlighted POI, show a custom marker */}
           {highlightedPOI && selectedPOI?.location && (

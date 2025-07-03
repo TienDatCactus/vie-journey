@@ -57,17 +57,20 @@ export interface PlaceNote {
   updatedAt?: string; // ISO date string
 }
 
-export interface Intinerary {
+export interface Itinerary {
   _id: string;
   date: string; // ISO date string
-  placeId: string;
+  place?: google.maps.places.Place;
+  placeId?: string; // Google Place ID
   note: string;
   time: {
     startTime: string; // ISO time string
     endTime: string; // ISO time string
   };
+  cost?: string;
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
+  isEditing?: boolean;
 }
 
 export interface Expense {

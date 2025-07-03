@@ -142,8 +142,25 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
     const placeInstance = new placesLib.Place({
       id: suggestion.placePrediction.placeId,
     });
-    handlePOIClick(placeInstance);
+    const location = placeInstance
+      .fetchFields({
+        fields: ["location"],
+      })
+      .then(
+        (response) => {
+          mapInstance.panTo({
+            lat: response.place.location?.lat() || 0,
+            lng: response.place.location?.lng() || 0,
+          });
+        },
+        (error) => console.log(error)
+      );
+    if (!location) {
+      console.error("Failed to fetch place details");
+      return;
+    }
 
+    handlePOIClick(placeInstance);
     setHighlightedPOI(placeInstance.id);
     setDestination(suggestion.placePrediction.mainText + "");
     setOpen(false);
