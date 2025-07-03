@@ -87,10 +87,29 @@ export const getBlogDraft = async (id: string): Promise<IContentItem> => {
 };
 
 export const editBlogDraft = async (id: string, data: any) => {
-  const res = await http.patch(`${BLOG.BLOGS}/draft/${id}`, data);
+  const formData = new FormData();
+
+  formData.append("title", data.title);
+  formData.append("content", data.content);
+  formData.append("summary", data.summary);
+  formData.append("slug", data.slug);
+
+  if (data.coverImage) {
+    formData.append("coverImage", data.coverImage); 
+  }
+
+  data.tags.forEach((tag: string) => {
+    formData.append("tags", tag);
+  });
+
+  const res = await http.patch(`${BLOG.BLOGS}/draft/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
   return res.data;
 };
-
 
 export const publicBlog = async (id: string) => {
   const res = await http.post(`${BLOG.BLOGS}/publish/${id}`);
