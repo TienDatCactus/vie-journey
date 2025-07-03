@@ -20,7 +20,7 @@ export class BlogService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     private readonly assetsService: AssetsService,
-  ) {}
+  ) { }
 
   // list all blogs
   async findAll(paginationDto: PaginationDto) {
@@ -121,6 +121,85 @@ export class BlogService {
       totalPages,
     };
   }
+
+  // Get all approved blogs for home page (public access)
+async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
+  try {
+    const pageNum = page || 1;
+    const limitNum = limit || 10;
+    const skip = (pageNum - 1) * limitNum;
+
+    // Build query for approved blogs only
+    let query: any = { status: 'APPROVED' };
+    
+    // Add search functionality if provided
+    if (search && search.trim() !== '') {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { summary: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } },
+        { 'destination.location': { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Get total count for pagination
+    const totalBlogs = await this.blogModel.countDocuments(query);
+    const totalPages = Math.ceil(totalBlogs / limitNum);
+
+    // Get blogs with pagination and populate author info
+    const blogs = await this.blogModel
+      .find(query)
+      .populate({
+        path: 'createdBy',
+        populate: {
+          path: 'userId',
+          select: 'email'
+        },
+        select: 'fullName userId'
+      })
+      .select('title summary coverImage location tags status metrics createdAt updatedAt')
+      .sort({ updatedAt: -1, createdAt: -1 }) // Show latest first
+      .skip(skip)
+      .limit(limitNum)
+      .exec();
+
+    return {
+      status: 'success',
+      message: blogs.length > 0 ? 'Blogs retrieved successfully' : 'No approved blogs found',
+      data: {
+        blogs: blogs.map(blog => ({
+          _id: blog._id,
+          title: blog.title,
+          summary: blog.summary,
+          coverImage: blog.coverImage,
+          location: blog.destination?.location,
+          tags: blog.tags,
+          author: {
+            name: blog.createdBy?.fullName || 'Unknown',
+            email: blog.createdBy?.userId?.email || ''
+          },
+          metrics: {
+            viewCount: blog.metrics?.viewCount || 0,
+            likeCount: blog.metrics?.likeCount || 0,
+            commentCount: blog.metrics?.commentCount || 0,
+          },
+          createdAt: blog.createdAt,
+          updatedAt: blog.updatedAt,
+        })),
+        pagination: {
+          currentPage: pageNum,
+          totalPages: totalPages,
+          totalItems: totalBlogs,
+          itemsPerPage: limitNum,
+          hasNext: pageNum < totalPages,
+          hasPrev: pageNum > 1
+        }
+      }
+    };
+  } catch (error) {
+    throw new NotFoundException('Error retrieving approved blogs: ' + error.message);
+  }
+}
 
   async updateMetrics(blogId: string, reqUserId?: string) {
     const blog = await this.blogModel.findById(blogId).exec();
@@ -356,7 +435,8 @@ export class BlogService {
     };
   }
 
-  async startBlog(location: string, userId: string) {
+  // Start writing a blog with location
+  async startBlog(location: string, userId: string, file?: Express.Multer.File) {
     try {
       const user = await this.userInfosModel
         .findOne({ userId: new Types.ObjectId(userId) })
@@ -366,12 +446,21 @@ export class BlogService {
       // Generate title with format: Location + Guide
       const title = `${location} Guide`;
 
+      let coverImageUrl = '';
+      // Handle file upload for cover image if provided
+      if (file) {
+        const uploadResult = await this.assetsService.uploadImage(file, {
+          public_id: `users/${userId}/BLOG_COVERS/${uuidv4()}`,
+        });
+        coverImageUrl = uploadResult?.secure_url || '';
+      }
+
       const newBlog = new this.blogModel({
         title,
         content: 'Write your content', // Empty content initially
         summary: '',
         tags: [],
-        coverImage: '',
+        coverImage: coverImageUrl,
         tripId: null,
         destination: {
           location,
@@ -396,6 +485,7 @@ export class BlogService {
         blogId: createdBlog._id,
         title: createdBlog.title,
         location: createdBlog.destination?.location,
+        coverImage: createdBlog.coverImage,
         status: createdBlog.status,
         message: 'Blog draft created successfully. You can now start writing.',
       };
@@ -416,7 +506,7 @@ export class BlogService {
         .findOne({
           _id: blogId,
           createdBy: user._id,
-          status: 'DRAFT',
+          status: 'DRAFT'
         })
         .populate('createdBy')
         .exec();
@@ -446,8 +536,8 @@ export class BlogService {
     }
   }
 
-  // update a blog by id
-  async updateBlogDraft(blogId: string, updateData: any, userId: string) {
+  // Get published blog for viewing/editing (PENDING, APPROVED, REJECTED)
+  async getPublishedBlog(blogId: string, userId: string) {
     try {
       const user = await this.userInfosModel
         .findOne({ userId: new Types.ObjectId(userId) })
@@ -458,7 +548,51 @@ export class BlogService {
         .findOne({
           _id: blogId,
           createdBy: user._id,
-          status: 'DRAFT',
+          status: { $in: ['PENDING', 'APPROVED', 'REJECTED'] } // Only published/reviewed blogs
+        })
+        .populate('createdBy')
+        .exec();
+
+      if (!blog) {
+        throw new NotFoundException('Published blog not found or you do not have permission to view this blog');
+      }
+
+      return {
+        _id: blog._id,
+        title: blog.title,
+        content: blog.content,
+        summary: blog.summary,
+        tags: blog.tags,
+        coverImage: blog.coverImage,
+        location: blog.destination?.location,
+        status: blog.status,
+        metrics: {
+          viewCount: blog.metrics?.viewCount || 0,
+          likeCount: blog.metrics?.likeCount || 0,
+          commentCount: blog.metrics?.commentCount || 0,
+        },
+        createdAt: blog.createdAt,
+        updatedAt: blog.updatedAt,
+        message: `Blog is currently ${blog.status}. You can edit this blog if needed.`,
+      };
+    } catch (error) {
+      throw new NotFoundException('Error retrieving published blog: ' + error.message);
+    }
+  }
+
+  // update a blog by id
+  async updateBlogDraft(blogId: string, updateData: any, userId: string, file?: Express.Multer.File) {
+    try {
+      const user = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
+
+      const blog = await this.blogModel
+        .findOne({
+          _id: blogId,
+          createdBy: user._id,
+          status: 'DRAFT'
         })
         .exec();
 
@@ -466,6 +600,23 @@ export class BlogService {
         throw new NotFoundException(
           'Draft blog not found or you do not have permission to edit this blog',
         );
+      }
+
+      // Handle file upload for cover image
+      if (file) {
+        // Delete old cover image if exists
+        if (blog.coverImage) {
+          const publicId = this.assetsService.getPublicIdFromUrl(blog.coverImage);
+          if (publicId) {
+            await this.assetsService.deleteImage(publicId);
+          }
+        }
+
+        // Upload new cover image
+        const uploadResult = await this.assetsService.uploadImage(file, {
+          public_id: `users/${userId}/BLOG_COVERS/${blogId}_${uuidv4()}`,
+        });
+        blog.coverImage = uploadResult?.secure_url || '';
       }
 
       // Update only provided fields
@@ -554,6 +705,73 @@ export class BlogService {
         throw error;
       }
       throw new NotFoundException('Error publishing blog: ' + error.message);
+    }
+  }
+
+  // Edit published blog - convert back to DRAFT for re-editing
+  async editPublishedBlog(blogId: string, updateData: any, userId: string, file?: Express.Multer.File) {
+    try {
+      const user = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+      if (!user) throw new NotFoundException('User not found');
+
+      const blog = await this.blogModel
+        .findOne({
+          _id: blogId,
+          createdBy: user._id,
+          status: { $in: ['PENDING', 'APPROVED', 'REJECTED'] } // Allow editing published/reviewed blogs
+        })
+        .exec();
+
+      if (!blog) {
+        throw new NotFoundException('Blog not found or you do not have permission to edit this blog');
+      }
+
+      // Handle file upload for cover image
+      if (file) {
+        // Delete old cover image if exists
+        if (blog.coverImage) {
+          const publicId = this.assetsService.getPublicIdFromUrl(blog.coverImage);
+          if (publicId) {
+            await this.assetsService.deleteImage(publicId);
+          }
+        }
+
+        // Upload new cover image
+        const uploadResult = await this.assetsService.uploadImage(file, {
+          public_id: `users/${userId}/BLOG_COVERS/${blogId}_${uuidv4()}`,
+        });
+        blog.coverImage = uploadResult?.secure_url || '';
+      }
+
+      // Update only provided fields
+      if (updateData.title !== undefined) blog.title = updateData.title;
+      if (updateData.content !== undefined) blog.content = updateData.content;
+      if (updateData.summary !== undefined) blog.summary = updateData.summary;
+      if (updateData.tags !== undefined) blog.tags = updateData.tags;
+
+      // Convert back to DRAFT status for re-review
+      blog.status = 'DRAFT';
+      blog.updatedBy = user._id;
+      blog.updatedAt = new Date();
+
+      const updatedBlog = await blog.save();
+
+      return {
+        _id: updatedBlog._id,
+        title: updatedBlog.title,
+        content: updatedBlog.content,
+        summary: updatedBlog.summary,
+        tags: updatedBlog.tags,
+        coverImage: updatedBlog.coverImage,
+        location: updatedBlog.destination?.location,
+        status: updatedBlog.status,
+        updatedAt: updatedBlog.updatedAt,
+        message: 'Blog has been edited and converted back to DRAFT status. You can publish it again after review.',
+      };
+    } catch (error) {
+      throw new NotFoundException('Error editing published blog: ' + error.message);
     }
   }
 
