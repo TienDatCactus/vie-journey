@@ -136,3 +136,21 @@ export interface IContentItem {
   createdAt: string; 
   updatedAt: string; 
 }
+
+interface BlogMetrics {
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+}
+
+export interface IMyBlog {
+  _id: string;
+  title: string;
+  summary: string;
+  coverImage: string;
+  location: string;
+  status: string
+  createdAt: string; 
+  updatedAt: string;
+  metrics: BlogMetrics;
+}

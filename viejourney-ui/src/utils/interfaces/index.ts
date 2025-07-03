@@ -38,7 +38,7 @@ export interface UserInfo {
 export interface IUserInfoUpdate {
   _id?: string;
   fullName?: string;
-  dob?: Date | null;
+  dob?: string;
   phone?: string;
   address?: string;
   avatar?: string;

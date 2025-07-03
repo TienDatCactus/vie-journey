@@ -5,6 +5,7 @@ import {
   IBlogQuery,
   IBlogRes,
   IContentItem,
+  IMyBlog,
   IQueryParam,
 } from "../../utils/interfaces/blog";
 import http from "../axios/index";
@@ -115,3 +116,9 @@ export const publicBlog = async (id: string) => {
   const res = await http.post(`${BLOG.BLOGS}/publish/${id}`);
   return res.data;
 };
+
+export const getMyBlog = async () : Promise<IMyBlog[]> => {
+  const res = await http.get(`${BLOG.BLOGS}/my-blogs`);
+  return res.data?.blogs;
+};
+

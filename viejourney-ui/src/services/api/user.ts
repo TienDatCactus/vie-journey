@@ -8,9 +8,9 @@ export const updateUserInfo = async (id: string, data: IUserInfoUpdate) => {
 };
 
 export const editUserAvatar = async (id: string, file: File) => {
-  var formData = new FormData();
+  const formData = new FormData();
   formData.append("id", id);
-  formData.append("file", file);
+  formData.append("avatar", file);
   const res = await http.post(USER.EDIT_AVATAR, formData, {
     headers: {
       "Content-Type": "multipart/form-data",

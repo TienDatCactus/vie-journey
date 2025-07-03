@@ -2,6 +2,7 @@
 import {
   editBlogDraft,
   getBlogDraft,
+  getMyBlog,
   publicBlog,
   startBlog,
 } from "../../services/api/blog";
@@ -39,16 +40,26 @@ function useBlogUser() {
     try {
       const res = await publicBlog(id);
       return res;
-     
     } catch (err) {
       console.log(err);
     }
   };
+  const handleGetMyBlogs = async () => {
+    try {
+      const res = await getMyBlog();
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return {
     handleStartBlog,
     handleGetBlogDetail,
     handleEditBlog,
     handlePublish,
+    handleGetMyBlogs,
+  
   };
 }
 
