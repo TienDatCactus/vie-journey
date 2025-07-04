@@ -182,11 +182,11 @@ export class AdminService {
       });
 
       if (
-        (['hero', 'intro'].includes(subsection.toLowerCase()) && count >= 3) ||
-        (['destination', 'hotel', 'creator'].includes(
-          subsection.toLowerCase(),
-        ) &&
-          count >= 6)
+        (subsection.toLowerCase() === 'hero' && count >= 1) ||
+        (subsection.toLowerCase() === 'intro' && count >= 4) ||
+        (subsection.toLowerCase() === 'destination' && count >= 3) ||
+        (subsection.toLowerCase() === 'hotel' && count >= 4) ||
+        (subsection.toLowerCase() === 'creator' && count >= 3)
       ) {
         throw new BadRequestException(
           `Số lượng asset cho subsection ${subsection} đã vượt quá giới hạn!`,
