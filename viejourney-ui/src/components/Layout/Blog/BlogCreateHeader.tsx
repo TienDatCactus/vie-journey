@@ -10,19 +10,19 @@ import {
 import { AppBar, Button, Divider, Stack, Toolbar } from "@mui/material";
 import type React from "react";
 
-const BlogCreateHeader: React.FC<{ onSaveDraft: () => void, onPublic: () => void }> = ({
-  onSaveDraft,
-  onPublic,
-}) => {
+const BlogCreateHeader: React.FC<{
+  onSaveDraft: () => void;
+  onPublic: () => void;
+  type: string;
+}> = ({ onSaveDraft, onPublic, type }) => {
   const handleSaveDraft = () => {
     onSaveDraft();
     // You can add additional UI feedback here
     // For example, show a toast notification
   };
 
-   const handlePublicBlog = () => {
+  const handlePublicBlog = () => {
     onPublic();
-   
   };
 
   return (
@@ -54,21 +54,36 @@ const BlogCreateHeader: React.FC<{ onSaveDraft: () => void, onPublic: () => void
           <Button startIcon={<Visibility />} className="text-dark-800">
             Preview
           </Button>
-          <Button
-            startIcon={<SaveAs />}
-            className="border border-gray-300 text-gray-800 px-4"
-            onClick={handleSaveDraft}
-          >
-            Save Draft
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<EmergencyShare />}
-            className="bg-blue-600"
-            onClick={handlePublicBlog}
-          >
-            Publish
-          </Button>
+          {type === "draft" ? (
+            <>
+              <Button
+                startIcon={<SaveAs />}
+                className="border border-gray-300 text-gray-800 px-4"
+                onClick={handleSaveDraft}
+              >
+                Save Draft
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<EmergencyShare />}
+                className="bg-blue-600"
+                onClick={handlePublicBlog}
+              >
+                Publish
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="contained"
+                startIcon={<SaveAs />}
+                className="bg-blue-600"
+                onClick={handleSaveDraft}
+              >
+                Save
+              </Button>
+            </>
+          )}
         </Stack>
       </Toolbar>
     </AppBar>

@@ -19,8 +19,8 @@ import {
   useScrollTrigger,
 } from "@mui/material";
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../../../services/stores/useAuthStore";
-import { useNavigate } from "react-router-dom";
 interface Props {
   window?: () => Window;
   children?: React.ReactElement<unknown>;
@@ -183,6 +183,12 @@ const Header = () => {
               </MenuItem>
               <MenuItem onClick={handleClose}>
                 <Avatar /> My account
+              </MenuItem>
+              <MenuItem>
+                <Link to={"/12"} style={{display: "flex"}}>
+                  <Avatar />
+                  My blog
+                </Link>
               </MenuItem>
               <Divider />
               <MenuItem onClick={handleClose}>

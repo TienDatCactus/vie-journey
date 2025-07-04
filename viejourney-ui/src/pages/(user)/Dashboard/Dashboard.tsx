@@ -28,10 +28,10 @@ import { enqueueSnackbar } from "notistack";
 import React from "react";
 import Map from "../../../components/Maps/Map";
 import { MainLayout } from "../../../layouts";
-import { editUserAvatar, updateUserInfo } from "../../../services/api/user";
+import { editUserAvatar, } from "../../../services/api/user";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 import ProfileSettings from "./component/Setting";
-import TravelGuides from "./component/TravelGuides";
+import TravelBlog from "./component/TravelBlog";
 import TripPlans from "./component/TripPlan";
 
 const Dashboard: React.FC = () => {
@@ -44,7 +44,7 @@ const Dashboard: React.FC = () => {
   const menuItems = [
     { id: 0, label: "Overview" },
     { id: 1, label: "Trip Plans" },
-    { id: 2, label: "Guides" },
+    { id: 2, label: "Blogs" },
     { id: 3, label: "Settings" },
   ];
   const handleEditClick = () => {
@@ -82,8 +82,7 @@ const Dashboard: React.FC = () => {
           });
           return;
         }
-        console.log(selectedFile);
-        await editUserAvatar(info?._id, selectedFile);
+        await editUserAvatar(info?.userId, selectedFile);
 
         loadUserInfo();
         enqueueSnackbar("Updated image successful", {
@@ -107,7 +106,7 @@ const Dashboard: React.FC = () => {
               hidden: {},
               show: {
                 transition: {
-                  staggerChildren: 0.05, // delay từng item
+                  staggerChildren: 0.05, 
                 },
               },
             }}
@@ -322,7 +321,7 @@ const Dashboard: React.FC = () => {
 
           {value === 1 && <TripPlans />}
 
-          {value === 2 && <TravelGuides />}
+          {value === 2 && <TravelBlog />}
 
           {value === 3 && info && <ProfileSettings userInfo={info} />}
         </div>

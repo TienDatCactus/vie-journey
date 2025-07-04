@@ -1,38 +1,71 @@
 import React, { useEffect, useState } from "react";
 import { BlogCreateLayout } from "../../../../layouts";
 import { SimpleEditor } from "./../../../../../@/components/tiptap-templates/simple/simple-editor";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import useBlogUser from "../../../../utils/hooks/user-blog-user";
 import { IContentItem } from "../../../../utils/interfaces/blog";
 import { enqueueSnackbar } from "notistack";
 
 const CreateBlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { handleGetBlogDetail, handleEditBlog, handlePublish } = useBlogUser();
+  const {
+    handleGetBlogDetail,
+    handleEditBlog,
+    handlePublish,
+    handleGetBlogPublicDetail,
+    handleEditPublicBlog
+  } = useBlogUser();
   const [blog, setBlog] = useState<IContentItem>();
   const [editorContent, setEditorContent] = useState<string>("");
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const location = useLocation();
+  const { type } = location.state || {};
+
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
     slug: "",
     tags: [] as string[],
+    coverImage: null as File | null,
   });
 
+  const fetchBlogDraftDetail = async () => {
+    const res = await handleGetBlogDetail(id ?? "");
+    if (res) {
+      setBlog(res);
+      setEditorContent(res.content || "");
+      setFormData({
+        title: res.title || "",
+        summary: res.summary || "",
+        slug: res.slug || "",
+        tags: res.tags || [],
+        coverImage: null,
+      });
+      setCoverImageUrl(res.coverImage || null);
+    }
+  };
+
+  const fetchBlogPublicDetail = async () => {
+    const res = await handleGetBlogPublicDetail(id ?? "");
+    if (res) {
+      setBlog(res);
+      setEditorContent(res.content || "");
+      setFormData({
+        title: res.title || "",
+        summary: res.summary || "",
+        slug: res.slug || "",
+        tags: res.tags || [],
+        coverImage: null,
+      });
+      setCoverImageUrl(res.coverImage || null);
+    }
+  };
   useEffect(() => {
-    const fetchBlogDetail = async () => {
-      const res = await handleGetBlogDetail(id ?? "");
-      if (res) {
-        setBlog(res);
-        setEditorContent(res.content || "");
-        setFormData({
-          title: res.title || "",
-          summary: res.summary || "",
-          slug: res.slug || "",
-          tags: res.tags || [],
-        });
-      }
-    };
-    fetchBlogDetail();
+    if (type == "public") {
+      fetchBlogPublicDetail();
+    } else {
+      fetchBlogDraftDetail();
+    }
   }, [id]);
 
   const handleContentChange = (html: string) => {
@@ -47,34 +80,27 @@ const CreateBlogDetail: React.FC = () => {
   };
 
   const handleSaveDraft = async () => {
-    const blogData = {
-      ...formData,
-      content: editorContent,
-      status: blog?.status || "draft",
-      createdAt: blog?.createdAt,
-      updatedAt: new Date().toISOString(),
-    };
-
     const data = {
       title: formData.title,
       content: editorContent,
       summary: formData.summary,
       slug: formData.slug,
       tags: formData.tags,
+      coverImage: formData.coverImage,
     };
 
-    const res = await handleEditBlog(id ?? "", data);
+    let res 
+    if(type === "draft") {
+
+      res = await handleEditBlog(id ?? "", data);
+    } else {
+      res = await handleEditPublicBlog(id ?? "", data);
+    }
     if (res) {
       enqueueSnackbar("Edit blog successful", { variant: "success" });
     } else {
       enqueueSnackbar("Edit blog error", { variant: "error" });
     }
-    // console.log("=== SAVING DRAFT ===");
-    // console.log("Blog Data:", blogData);
-    // console.log("Editor Content:", editorContent);
-    // console.log("Form Data:", formData);
-    // console.log("Cover Image:", formData.coverImage);
-    // console.log("==================");
   };
 
   const handlePublicBlog = async () => {
@@ -84,6 +110,7 @@ const CreateBlogDetail: React.FC = () => {
         variant: "success",
       });
   };
+
   if (!blog) return null;
 
   return (
@@ -93,6 +120,9 @@ const CreateBlogDetail: React.FC = () => {
       formData={formData}
       onPublic={handlePublicBlog}
       onFormDataChange={handleFormDataChange}
+      coverImageUrl={coverImageUrl}
+      setCoverImageUrl={setCoverImageUrl}
+      type={type}
     >
       <SimpleEditor
         content={editorContent}

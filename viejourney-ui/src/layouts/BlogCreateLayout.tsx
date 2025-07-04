@@ -1,18 +1,29 @@
-import { Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, } from "@mui/material";
+import {
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 import { ReactNode, useCallback, useRef, useState } from "react";
 import { useBlocker } from "react-router-dom";
 import BlogCreateHeader from "../components/Layout/Blog/BlogCreateHeader";
 import BlogCreateToolbar from "../components/Layout/Blog/BlogCreateToolbar";
 import { IContentItem } from "../utils/interfaces/blog";
 
-const BlogCreateLayout = ({ 
-  children, 
-  blog, 
+const BlogCreateLayout = ({
+  children,
+  blog,
   onSaveDraft,
   onPublic,
   formData,
-  onFormDataChange 
-}: { 
+  onFormDataChange,
+  coverImageUrl,
+  setCoverImageUrl, 
+  type
+}: {
   children: ReactNode;
   blog: IContentItem;
   onSaveDraft: () => void;
@@ -22,8 +33,12 @@ const BlogCreateLayout = ({
     summary: string;
     slug: string;
     tags: string[];
+    coverImage: File | null;
   };
+  type: string;
   onFormDataChange: (field: string, value: any) => void;
+  coverImageUrl: string | null; // ✅ thêm vào
+  setCoverImageUrl: React.Dispatch<React.SetStateAction<string | null>>; // ✅ thêm vào
 }) => {
   const [isDirty, setIsDirty] = useState(true);
   const [open, setOpen] = useState(true);
@@ -56,7 +71,8 @@ const BlogCreateLayout = ({
           <DialogTitle id="alert-dialog-title">{"Unsaved Changes"}</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              You have unsaved changes. Are you sure you want to leave this page? If you leave, your changes will be lost.
+              You have unsaved changes. Are you sure you want to leave this
+              page? If you leave, your changes will be lost.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -67,12 +83,14 @@ const BlogCreateLayout = ({
           </DialogActions>
         </Dialog>
       )}
-      <BlogCreateHeader onSaveDraft={onSaveDraft} onPublic={onPublic} />
+      <BlogCreateHeader onSaveDraft={onSaveDraft} onPublic={onPublic} type={type}/>
       <Container className="grid grid-cols-12 gap-4 p-4 ">
-        <BlogCreateToolbar 
-          blog={blog} 
-          formData={formData} 
-          onFormDataChange={onFormDataChange} 
+        <BlogCreateToolbar
+          blog={blog}
+          formData={formData}
+          onFormDataChange={onFormDataChange}
+          coverImageUrl={coverImageUrl}
+          setCoverImageUrl={setCoverImageUrl}
         />
         <main className="h-screen lg:col-span-9">{children}</main>
       </Container>

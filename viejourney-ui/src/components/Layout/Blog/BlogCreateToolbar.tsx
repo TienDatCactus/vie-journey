@@ -1,16 +1,32 @@
-"use client"
-import CheckIcon from "@mui/icons-material/Check"
-import CloseIcon from "@mui/icons-material/Close"
-import { Chip, Divider, Stack, TextField } from "@mui/material"
-import { autocompleteClasses } from "@mui/material/Autocomplete"
-import { styled } from "@mui/material/styles"
-import useAutocomplete, { type AutocompleteGetTagProps } from "@mui/material/useAutocomplete"
-import dayjs from "dayjs"
-import type { IContentItem } from "../../../utils/interfaces/blog"
+"use client";
+
+import type React from "react";
+
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
+import ImageIcon from "@mui/icons-material/Image";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Chip,
+  Divider,
+  Stack,
+  TextField,
+  Box,
+  Typography,
+  IconButton,
+} from "@mui/material";
+import { autocompleteClasses } from "@mui/material/Autocomplete";
+import { styled } from "@mui/material/styles";
+import useAutocomplete, {
+  type AutocompleteGetTagProps,
+} from "@mui/material/useAutocomplete";
+import dayjs from "dayjs";
+import { useState, useRef, useEffect } from "react";
+import type { IContentItem } from "../../../utils/interfaces/blog";
 
 interface FilmOptionType {
-  title: string
-  year: number
+  title: string;
+  year: number;
 }
 
 // Your existing styled components
@@ -20,13 +36,13 @@ const Root = styled("div")(({ theme }) => ({
   ...theme.applyStyles("dark", {
     color: "rgba(255,255,255,0.65)",
   }),
-}))
+}));
 
 const Label = styled("label")`
   padding: 0 0 4px;
   line-height: 1.5;
   display: block;
-`
+`;
 
 const InputWrapper = styled("div")(({ theme }) => ({
   width: "300px",
@@ -70,22 +86,20 @@ const InputWrapper = styled("div")(({ theme }) => ({
       backgroundColor: "#141414",
     }),
   },
-}))
-
-
+}));
 
 interface TagProps extends ReturnType<AutocompleteGetTagProps> {
-  label: string
+  label: string;
 }
 
 function Tag(props: TagProps) {
-  const { label, onDelete, ...other } = props
+  const { label, onDelete, ...other } = props;
   return (
     <div {...other}>
       <span>{label}</span>
       <CloseIcon onClick={onDelete} />
     </div>
-  )
+  );
 }
 
 const StyledTag = styled(Tag)<TagProps>(({ theme }) => ({
@@ -123,7 +137,7 @@ const StyledTag = styled(Tag)<TagProps>(({ theme }) => ({
     cursor: "pointer",
     padding: "4px",
   },
-}))
+}));
 
 const Listbox = styled("ul")(({ theme }) => ({
   width: "300px",
@@ -170,7 +184,7 @@ const Listbox = styled("ul")(({ theme }) => ({
       color: "currentColor",
     },
   },
-}))
+}));
 
 const topTravelBlogTags = [
   { title: "Adventure", year: 2020 },
@@ -203,16 +217,18 @@ const topTravelBlogTags = [
   { title: "Sustainability", year: 2047 },
   { title: "Travel Photography", year: 2048 },
   { title: "Culinary Adventures", year: 2049 },
-]
+];
 
 function CustomAutocomplete({
   tags,
   onTagsChange,
 }: {
-  tags: string[]
-  onTagsChange: (tags: string[]) => void
+  tags: string[];
+  onTagsChange: (tags: string[]) => void;
 }) {
-  const selectedValues = topTravelBlogTags.filter((tag) => tags?.includes(tag.title))
+  const selectedValues = topTravelBlogTags.filter((tag) =>
+    tags?.includes(tag.title)
+  );
 
   const {
     getRootProps,
@@ -232,19 +248,22 @@ function CustomAutocomplete({
     options: topTravelBlogTags,
     getOptionLabel: (option) => option.title,
     onChange: (event, newValue) => {
-      const newTags = newValue.map((option) => option.title)
-      onTagsChange(newTags)
+      const newTags = newValue.map((option) => option.title);
+      onTagsChange(newTags);
     },
-  })
+  });
 
   return (
     <Root>
       <div {...getRootProps()}>
         <Label {...getInputLabelProps()}>Tags</Label>
-        <InputWrapper ref={setAnchorEl} className={`${focused ? "focused" : ""} w-full`}>
+        <InputWrapper
+          ref={setAnchorEl}
+          className={`${focused ? "focused" : ""} w-full`}
+        >
           {value.map((option: FilmOptionType, index: number) => {
-            const { key, ...tagProps } = getTagProps({ index })
-            return <StyledTag key={key} {...tagProps} label={option.title} />
+            const { key, ...tagProps } = getTagProps({ index });
+            return <StyledTag key={key} {...tagProps} label={option.title} />;
           })}
           <input {...getInputProps()} />
         </InputWrapper>
@@ -252,34 +271,189 @@ function CustomAutocomplete({
       {groupedOptions.length > 0 && (
         <Listbox className="z-10" {...getListboxProps()}>
           {(groupedOptions as FilmOptionType[]).map((option, index) => {
-            const { key, ...optionProps } = getOptionProps({ option, index })
+            const { key, ...optionProps } = getOptionProps({ option, index });
             return (
               <li key={key} {...optionProps}>
                 <span>{option.title}</span>
                 <CheckIcon fontSize="small" />
               </li>
-            )
+            );
           })}
         </Listbox>
       )}
     </Root>
-  )
+  );
+}
+
+// New ImageUpload component
+function ImageUpload({
+  coverImage,
+  coverImageUrl,
+  onImageChange,
+}: {
+  coverImage: File | null;
+  coverImageUrl: string | null;
+  onImageChange: (file: File | null) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(coverImageUrl);
+
+  useEffect(() => {
+    setPreviewUrl(coverImageUrl);
+  }, [coverImageUrl]);
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file");
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB");
+        return;
+      }
+
+      onImageChange(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    onImageChange(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  return (
+    <Box>
+      <Label>Cover Image</Label>
+      {previewUrl ? (
+        <Box sx={{ mt: 1 }}>
+          <Box
+            sx={{
+              position: "relative",
+              "&:hover .delete-overlay": {
+                opacity: 1,
+              },
+            }}
+          >
+            <Box
+              component="img"
+              src={previewUrl}
+              alt="Cover preview"
+              sx={{
+                width: "100%",
+                height: 200,
+                objectFit: "cover",
+                borderRadius: 1,
+                border: "1px solid #d9d9d9",
+              }}
+            />
+            <Box
+              className="delete-overlay"
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: 0,
+                transition: "opacity 0.2s",
+                borderRadius: 1,
+              }}
+            >
+              <IconButton
+                onClick={handleRemoveImage}
+                sx={{
+                  backgroundColor: "rgba(255,255,255,0.9)",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,1)",
+                  },
+                }}
+              >
+                <DeleteIcon color="error" />
+              </IconButton>
+            </Box>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            <strong>{coverImage?.name}</strong>
+            <br />
+            {coverImage
+              ? `${(coverImage.size / 1024 / 1024).toFixed(2)} MB`
+              : ""}
+          </Typography>
+        </Box>
+      ) : (
+        <Box
+          onClick={handleUploadClick}
+          sx={{
+            mt: 1,
+            border: "2px dashed #d9d9d9",
+            borderRadius: 1,
+            p: 4,
+            textAlign: "center",
+            cursor: "pointer",
+            "&:hover": {
+              borderColor: "#40a9ff",
+              backgroundColor: "#fafafa",
+            },
+            transition: "all 0.2s",
+          }}
+        >
+          <ImageIcon sx={{ fontSize: 48, color: "#d9d9d9", mb: 2 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Click to upload cover image
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            PNG, JPG, GIF up to 5MB
+          </Typography>
+        </Box>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        style={{ display: "none" }}
+      />
+    </Box>
+  );
 }
 
 const BlogCreateToolbar = ({
   blog,
   formData,
   onFormDataChange,
+  coverImageUrl,
+  setCoverImageUrl, 
 }: {
-  blog: IContentItem
+  blog: IContentItem;
   formData: {
-    title: string
-    summary: string
-    slug: string
-    tags: string[]
-    coverImage: File | null
-  }
-  onFormDataChange: (field: string, value: any) => void
+    title: string;
+    summary: string;
+    slug: string;
+    tags: string[];
+    coverImage: File | null;
+  };
+  onFormDataChange: (field: string, value: any) => void;
+  coverImageUrl: string | null; 
+  setCoverImageUrl: React.Dispatch<React.SetStateAction<string | null>>; 
 }) => {
   return (
     <aside className="col-span-3 rounded-lg border border-neutral-300 bg-white shadow-md p-4 h-fit space-y-4">
@@ -294,6 +468,7 @@ const BlogCreateToolbar = ({
             value={formData.title}
             onChange={(e) => onFormDataChange("title", e.target.value)}
           />
+
           <Label>Summary</Label>
           <TextField
             variant="outlined"
@@ -304,7 +479,26 @@ const BlogCreateToolbar = ({
             value={formData.summary}
             onChange={(e) => onFormDataChange("summary", e.target.value)}
           />
-          <CustomAutocomplete tags={formData.tags} onTagsChange={(tags) => onFormDataChange("tags", tags)} />
+
+          <CustomAutocomplete
+            tags={formData.tags}
+            onTagsChange={(tags) => onFormDataChange("tags", tags)}
+          />
+
+          <ImageUpload
+            coverImage={formData.coverImage}
+            coverImageUrl={coverImageUrl}
+            onImageChange={(file) => {
+              onFormDataChange("coverImage", file);
+              if (file) {
+                const objectUrl = URL.createObjectURL(file);
+                setCoverImageUrl(objectUrl);
+              } else {
+                setCoverImageUrl(null);
+              }
+            }}
+          />
+
           <TextField
             label="Slug"
             variant="outlined"
@@ -314,13 +508,17 @@ const BlogCreateToolbar = ({
             fullWidth
             slotProps={{
               input: {
-                startAdornment: <span className="bg-gray-300 text-gray-500">/blogs/</span>,
+                startAdornment: (
+                  <span className="bg-gray-300 text-gray-500">/blogs/</span>
+                ),
               },
             }}
           />
         </Stack>
       </div>
+
       <Divider />
+
       <div>
         <h1 className="font-semibold">Blog info</h1>
         <dl className="py-2 space-y-2">
@@ -331,29 +529,39 @@ const BlogCreateToolbar = ({
           >
             <dt>Status</dt>
             <dd>
-              <Chip size="small" className="bg-green-500 text-white" label={blog?.status} />
+              <Chip
+                size="small"
+                className="bg-green-500 text-white"
+                label={blog?.status}
+              />
             </dd>
           </Stack>
+
           <Stack
             direction={{ xs: "column", sm: "row" }}
             justifyContent={"space-between"}
             alignItems={{ xs: "flex-start", sm: "center" }}
           >
             <dt>Created at</dt>
-            <dd className="text-sm text-gray-500">{dayjs(blog.createdAt).format("YYYY-MM-DD HH:mm")}</dd>
+            <dd className="text-sm text-gray-500">
+              {dayjs(blog.createdAt).format("YYYY-MM-DD HH:mm")}
+            </dd>
           </Stack>
+
           <Stack
             direction={{ xs: "column", sm: "row" }}
             justifyContent={"space-between"}
             alignItems={{ xs: "flex-start", sm: "center" }}
           >
             <dt>Last saved</dt>
-            <dd className="text-sm text-gray-500">{dayjs(blog.updatedAt).format("YYYY-MM-DD HH:mm")}</dd>
+            <dd className="text-sm text-gray-500">
+              {dayjs(blog.updatedAt).format("YYYY-MM-DD HH:mm")}
+            </dd>
           </Stack>
         </dl>
       </div>
     </aside>
-  )
-}
+  );
+};
 
-export default BlogCreateToolbar
+export default BlogCreateToolbar;

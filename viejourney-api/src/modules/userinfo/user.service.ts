@@ -25,9 +25,10 @@ export class UserService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
     private readonly assetsService: AssetsService,
-  ) {}  async getAllUser(
+  ) {}
+  async getAllUser(
     filter?: FilterUserDto,
-    pagination?: PaginationDto
+    pagination?: PaginationDto,
   ): Promise<{
     status: string;
     message: string;
@@ -81,7 +82,9 @@ export class UserService {
     }
 
     // Get total count for pagination
-    const totalItems = await this.userInfosModel.countDocuments(query.getQuery());
+    const totalItems = await this.userInfosModel.countDocuments(
+      query.getQuery(),
+    );
 
     // Apply pagination if provided
     if (pagination?.page && pagination?.pageSize) {
@@ -154,7 +157,7 @@ export class UserService {
       avatar: user.avatar ? user.avatar.url?.toString() : null,
     };
   }
-  
+
   async updateUserAvatar(id: string, file: Express.Multer.File) {
     const userInfo = await this.userInfosModel
       .findOne({ userId: new Types.ObjectId(id) })
@@ -231,7 +234,10 @@ export class UserService {
 
     return HttpStatus.OK;
   }
-  async updateUserRole(userInfoId: string, role: string): Promise<{
+  async updateUserRole(
+    userInfoId: string,
+    role: string,
+  ): Promise<{
     status: string;
     message: string;
     data: {
@@ -269,11 +275,13 @@ export class UserService {
           email: account.email,
           userName: userInfo.fullName,
           role: account.role,
-          status: account.status
-        }
+          status: account.status,
+        },
       };
     } catch (error) {
-      throw new BadRequestException(`Failed to update user role: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to update user role: ${error.message}`,
+      );
     }
   }
 }

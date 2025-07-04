@@ -24,87 +24,30 @@ export class BlogService {
   ) { }
 
   // list all blogs
-  async findAll(paginationDto: PaginationDto) {
-    const page = paginationDto.page ?? 1;
-    const pageSize = paginationDto.pageSize ?? 10;
-    const status = paginationDto.status?.trim();
-    const viewCountRange = paginationDto.viewCountRange;
-    const search = paginationDto.search?.trim();
-    const sort = paginationDto.sort || 'desc';
-
-    const skip = (page - 1) * pageSize;
-
-    // Tạo query filter
-    const filter: any = {};
-    if (search) {
-      filter.title = { $regex: search, $options: 'i' }; // tìm kiếm không phân biệt hoa thường
-    }
-    if (status) {
-      filter.status = status;
-    }
-    if (viewCountRange) {
-      if (viewCountRange === 'lt100') {
-        filter['metrics.viewCount'] = { $lt: 100 };
-      } else if (viewCountRange === '100to1000') {
-        filter['metrics.viewCount'] = { $gte: 100, $lte: 1000 };
-      } else if (viewCountRange === 'gt1000') {
-        filter['metrics.viewCount'] = { $gt: 1000 };
-      }
-    }
-    const sortOption = sort === 'asc' ? 1 : -1;
-
-    const [blogs, totalItems] = await Promise.all([
-      this.blogModel
-        .find(filter)
-        .sort({ updatedAt: sortOption })
-        .skip(skip)
-        .limit(pageSize)
-        .populate('createdBy')
-        .populate({
-          path: 'createdBy',
-          populate: {
-            path: 'avatar',
-            model: 'Asset',
-            select: 'url',
-          },
-        })
-        .exec(),
-      this.blogModel.countDocuments(filter).exec(),
-    ]);
-    const totalPages = Math.ceil(totalItems / pageSize);
-
-    // Nếu vượt quá số trang, trả về mảng rỗng và thông báo hợp lý
-    if (page > totalPages && totalItems > 0) {
-      return {
-        data: [],
-        totalPages,
-        currentPage: page,
-        pageSize: pageSize,
-        totalItems,
-        message:
-          'Page exceeds total number of pages, no blogs found for this page.',
-      };
-    }
-
-    // Nếu không có blog nào trong hệ thống
-    if (totalItems === 0) {
-      return {
-        data: [],
-        totalPages: 0,
-        currentPage: page,
-        pageSize: pageSize,
-        totalItems: 0,
-        message: 'No blogs found in the system.',
-      };
+  async findAll() {
+    const blogs = await this.blogModel
+      .find()
+      .populate('createdBy tripId')
+      .populate({
+        path: 'createdBy',
+        populate: {
+          path: 'avatar',
+          model: 'Asset',
+          select: 'url',
+        },
+      })
+      .exec();
+    if (!blogs || blogs.length === 0) {
+      throw new NotFoundException('No blogs found');
     }
     const listBlogs = blogs.map((blog) => {
       return {
         _id: blog._id,
         title: blog.title,
-        createdBy: blog?.createdBy,
-        avatarUser: blog?.createdBy?.avatar?.url || null,
+        createdBy: blog.createdBy,
+        avatarUser: blog.createdBy.avatar?.url || null,
         summary: blog.summary,
-        destination: blog?.destination?.location || null,
+        destination: blog.tripId?.destination || null,
         viewCount: blog.metrics?.viewCount || 0,
         likeCount: blog.metrics?.likeCount || 0,
         commentCount: blog.metrics?.commentCount || 0,
@@ -114,93 +57,93 @@ export class BlogService {
         updatedAt: blog.updatedAt,
       };
     });
-    return {
-      data: listBlogs,
-      Total_Blogs: totalItems,
-      currentPage: page,
-      pageSize: pageSize,
-      totalPages,
-    };
+    return listBlogs;
   }
 
-  // Get all approved blogs for home page (public access)
-async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
-  try {
-    const pageNum = page || 1;
-    const limitNum = limit || 10;
-    const skip = (pageNum - 1) * limitNum;
+  async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
+    try {
+      const pageNum = page || 1;
+      const limitNum = limit || 10;
+      const skip = (pageNum - 1) * limitNum;
 
-    // Build query for approved blogs only
-    let query: any = { status: 'APPROVED' };
-    
-    // Add search functionality if provided
-    if (search && search.trim() !== '') {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { summary: { $regex: search, $options: 'i' } },
-        { tags: { $regex: search, $options: 'i' } },
-        { 'destination.location': { $regex: search, $options: 'i' } }
-      ];
-    }
+      // Build query for approved blogs only
+      let query: any = { status: 'APPROVED' };
 
-    // Get total count for pagination
-    const totalBlogs = await this.blogModel.countDocuments(query);
-    const totalPages = Math.ceil(totalBlogs / limitNum);
-
-    // Get blogs with pagination and populate author info
-    const blogs = await this.blogModel
-      .find(query)
-      .populate({
-        path: 'createdBy',
-        populate: {
-          path: 'userId',
-          select: 'email'
-        },
-        select: 'fullName userId'
-      })
-      .select('title summary coverImage location tags status metrics createdAt updatedAt')
-      .sort({ updatedAt: -1, createdAt: -1 }) // Show latest first
-      .skip(skip)
-      .limit(limitNum)
-      .exec();
-
-    return {
-      status: 'success',
-      message: blogs.length > 0 ? 'Blogs retrieved successfully' : 'No approved blogs found',
-      data: {
-        blogs: blogs.map(blog => ({
-          _id: blog._id,
-          title: blog.title,
-          summary: blog.summary,
-          coverImage: blog.coverImage,
-          location: blog.destination?.location,
-          tags: blog.tags,
-          author: {
-            name: blog.createdBy?.fullName || 'Unknown',
-            email: blog.createdBy?.userId?.email || ''
-          },
-          metrics: {
-            viewCount: blog.metrics?.viewCount || 0,
-            likeCount: blog.metrics?.likeCount || 0,
-            commentCount: blog.metrics?.commentCount || 0,
-          },
-          createdAt: blog.createdAt,
-          updatedAt: blog.updatedAt,
-        })),
-        pagination: {
-          currentPage: pageNum,
-          totalPages: totalPages,
-          totalItems: totalBlogs,
-          itemsPerPage: limitNum,
-          hasNext: pageNum < totalPages,
-          hasPrev: pageNum > 1
-        }
+      // Add search functionality if provided
+      if (search && search.trim() !== '') {
+        query.$or = [
+          { title: { $regex: search, $options: 'i' } },
+          { summary: { $regex: search, $options: 'i' } },
+          { tags: { $regex: search, $options: 'i' } },
+          { 'destination.location': { $regex: search, $options: 'i' } },
+        ];
       }
-    };
-  } catch (error) {
-    throw new NotFoundException('Error retrieving approved blogs: ' + error.message);
+
+      // Get total count for pagination
+      const totalBlogs = await this.blogModel.countDocuments(query);
+      const totalPages = Math.ceil(totalBlogs / limitNum);
+
+      // Get blogs with pagination and populate author info
+      const blogs = await this.blogModel
+        .find(query)
+        .populate({
+          path: 'createdBy',
+          populate: {
+            path: 'userId',
+            select: 'email',
+          },
+          select: 'fullName userId',
+        })
+        .select(
+          'title summary coverImage location tags status metrics createdAt updatedAt',
+        )
+        .sort({ updatedAt: -1, createdAt: -1 }) // Show latest first
+        .skip(skip)
+        .limit(limitNum)
+        .exec();
+
+      return {
+        status: 'success',
+        message:
+          blogs.length > 0
+            ? 'Blogs retrieved successfully'
+            : 'No approved blogs found',
+        data: {
+          blogs: blogs.map((blog) => ({
+            _id: blog._id,
+            title: blog.title,
+            summary: blog.summary,
+            coverImage: blog.coverImage,
+            location: blog.destination?.location,
+            tags: blog.tags,
+            author: {
+              name: blog.createdBy?.fullName || 'Unknown',
+              email: blog.createdBy?.userId?.email || '',
+            },
+            metrics: {
+              viewCount: blog.metrics?.viewCount || 0,
+              likeCount: blog.metrics?.likeCount || 0,
+              commentCount: blog.metrics?.commentCount || 0,
+            },
+            createdAt: blog.createdAt,
+            updatedAt: blog.updatedAt,
+          })),
+          pagination: {
+            currentPage: pageNum,
+            totalPages: totalPages,
+            totalItems: totalBlogs,
+            itemsPerPage: limitNum,
+            hasNext: pageNum < totalPages,
+            hasPrev: pageNum > 1,
+          },
+        },
+      };
+    } catch (error) {
+      throw new NotFoundException(
+        'Error retrieving approved blogs: ' + error.message,
+      );
+    }
   }
-}
 
   async updateMetrics(blogId: string, req: Request) {
     const reqUserId = req.user?.['userId'] as string;
@@ -231,7 +174,7 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
   }
 
   // view blog detail by id
-  async findBlogById(blogId: string) {
+  async findOneBlogById(blogId: string) {
     const blog = await this.blogModel
       .findById(blogId)
       .populate('createdBy updatedBy')
@@ -242,12 +185,12 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
     return {
       title: blog.title,
       content: blog.content,
-      createdBy: blog?.createdBy,
+      createdBy: blog.createdBy,
       summary: blog.summary,
       coverImage: blog.coverImage,
-      tripId: blog?.tripId,
-      destination: blog?.destination?.location || null,
       status: blog.status,
+      tripId: blog.tripId,
+      destination: blog.tripId?.description,
       flags: blog.flags || [],
       createdAt: blog.createdAt,
     };
@@ -365,7 +308,7 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
   ) {
     try {
       const user = await this.userInfosModel
-        .findOne({ userId: new Types.ObjectId(userId) })
+        .find({ userId: new Types.ObjectId(userId) })
         .exec();
       if (!user) throw new NotFoundException('User not found');
       let uploadResult: import('cloudinary').UploadApiResponse | null = null;
@@ -375,8 +318,8 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
       });
       const newBlog = new this.blogModel({
         ...createBlogDto,
-        createdBy: new Types.ObjectId(user._id),
-        updatedBy: new Types.ObjectId(user._id),
+        createdBy: new Types.ObjectId(user[0]._id), // Lấy userId từ userInfos
+        updatedBy: new Types.ObjectId(user[0]._id),
         coverImage: uploadResult?.secure_url || '',
         destination: {
           location: createBlogDto?.location || null,
@@ -416,30 +359,12 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
     return { message: 'Flag added successfully', flags: blog.flags };
   }
 
-  async getBlogStatistics() {
-    const blogs = await this.blogModel.find().exec();
-
-    let totalPosts = blogs.length;
-    let approvedPosts = 0;
-    let pendingPosts = 0;
-    let flaggedPosts = 0;
-
-    blogs.forEach((blog) => {
-      if (blog.status === 'APPROVED') approvedPosts++;
-      if (blog.status === 'PENDING') pendingPosts++;
-      if (blog.flags && blog.flags.length >= 1) flaggedPosts++;
-    });
-
-    return {
-      total_Blogs: totalPosts,
-      Count_Approved: approvedPosts,
-      Count_Pending: pendingPosts,
-      Count_Flags: flaggedPosts,
-    };
-  }
-
   // Start writing a blog with location
-  async startBlog(location: string, userId: string, file?: Express.Multer.File) {
+  async startBlog(
+    location: string,
+    userId: string,
+    file?: Express.Multer.File,
+  ) {
     try {
       const user = await this.userInfosModel
         .findOne({ userId: new Types.ObjectId(userId) })
@@ -509,7 +434,7 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
         .findOne({
           _id: blogId,
           createdBy: user._id,
-          status: 'DRAFT'
+          status: 'DRAFT',
         })
         .populate('createdBy')
         .exec();
@@ -551,13 +476,15 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
         .findOne({
           _id: blogId,
           createdBy: user._id,
-          status: { $in: ['PENDING', 'APPROVED', 'REJECTED'] } // Only published/reviewed blogs
+          status: { $in: ['PENDING', 'APPROVED', 'REJECTED'] }, // Only published/reviewed blogs
         })
         .populate('createdBy')
         .exec();
 
       if (!blog) {
-        throw new NotFoundException('Published blog not found or you do not have permission to view this blog');
+        throw new NotFoundException(
+          'Published blog not found or you do not have permission to view this blog',
+        );
       }
 
       return {
@@ -579,12 +506,19 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
         message: `Blog is currently ${blog.status}. You can edit this blog if needed.`,
       };
     } catch (error) {
-      throw new NotFoundException('Error retrieving published blog: ' + error.message);
+      throw new NotFoundException(
+        'Error retrieving published blog: ' + error.message,
+      );
     }
   }
 
   // update a blog by id
-  async updateBlogDraft(blogId: string, updateData: any, userId: string, file?: Express.Multer.File) {
+  async updateBlogDraft(
+    blogId: string,
+    updateData: any,
+    userId: string,
+    file?: Express.Multer.File,
+  ) {
     try {
       const user = await this.userInfosModel
         .findOne({ userId: new Types.ObjectId(userId) })
@@ -595,7 +529,7 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
         .findOne({
           _id: blogId,
           createdBy: user._id,
-          status: 'DRAFT'
+          status: 'DRAFT',
         })
         .exec();
 
@@ -609,7 +543,9 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
       if (file) {
         // Delete old cover image if exists
         if (blog.coverImage) {
-          const publicId = this.assetsService.getPublicIdFromUrl(blog.coverImage);
+          const publicId = this.assetsService.getPublicIdFromUrl(
+            blog.coverImage,
+          );
           if (publicId) {
             await this.assetsService.deleteImage(publicId);
           }
@@ -627,8 +563,6 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
       if (updateData.content !== undefined) blog.content = updateData.content;
       if (updateData.summary !== undefined) blog.summary = updateData.summary;
       if (updateData.tags !== undefined) blog.tags = updateData.tags;
-      if (updateData.coverImage !== undefined)
-        blog.coverImage = updateData.coverImage;
 
       blog.updatedBy = user._id;
       blog.updatedAt = new Date();
@@ -664,7 +598,7 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
 
       const blog = await this.blogModel
         .findOne({
-          _id: new Types.ObjectId(blogId),
+          _id: blogId,
           createdBy: user._id,
           status: 'DRAFT',
         })
@@ -712,7 +646,12 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
   }
 
   // Edit published blog - convert back to DRAFT for re-editing
-  async editPublishedBlog(blogId: string, updateData: any, userId: string, file?: Express.Multer.File) {
+  async editPublishedBlog(
+    blogId: string,
+    updateData: any,
+    userId: string,
+    file?: Express.Multer.File,
+  ) {
     try {
       const user = await this.userInfosModel
         .findOne({ userId: new Types.ObjectId(userId) })
@@ -723,19 +662,23 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
         .findOne({
           _id: blogId,
           createdBy: user._id,
-          status: { $in: ['PENDING', 'APPROVED', 'REJECTED'] } // Allow editing published/reviewed blogs
+          status: { $in: ['PENDING', 'APPROVED', 'REJECTED'] }, // Allow editing published/reviewed blogs
         })
         .exec();
 
       if (!blog) {
-        throw new NotFoundException('Blog not found or you do not have permission to edit this blog');
+        throw new NotFoundException(
+          'Blog not found or you do not have permission to edit this blog',
+        );
       }
 
       // Handle file upload for cover image
       if (file) {
         // Delete old cover image if exists
         if (blog.coverImage) {
-          const publicId = this.assetsService.getPublicIdFromUrl(blog.coverImage);
+          const publicId = this.assetsService.getPublicIdFromUrl(
+            blog.coverImage,
+          );
           if (publicId) {
             await this.assetsService.deleteImage(publicId);
           }
@@ -771,15 +714,18 @@ async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
         location: updatedBlog.destination?.location,
         status: updatedBlog.status,
         updatedAt: updatedBlog.updatedAt,
-        message: 'Blog has been edited and converted back to DRAFT status. You can publish it again after review.',
+        message:
+          'Blog has been edited and converted back to DRAFT status. You can publish it again after review.',
       };
     } catch (error) {
-      throw new NotFoundException('Error editing published blog: ' + error.message);
+      throw new NotFoundException(
+        'Error editing published blog: ' + error.message,
+      );
     }
   }
 
   // Get user's blogs (all statuses)
-  async getUserBlogs(userId: string, status?: string) {
+   async getUserBlogs(userId: string, status?: string) {
     try {
       const user = await this.userInfosModel
         .findOne({ userId: new Types.ObjectId(userId) })

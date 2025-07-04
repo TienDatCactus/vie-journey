@@ -71,7 +71,6 @@ import { handleImageUpload, MAX_FILE_SIZE } from "../../..//lib/tiptap-utils";
 import "../../..//components/tiptap-templates/simple/simple-editor.scss";
 
 import { Place } from "@mui/icons-material";
-import content from "../../..//components/tiptap-templates/simple/data/content.json";
 import { ThemeToggle } from "./theme-toggle";
 
 const MainToolbarContent = ({
