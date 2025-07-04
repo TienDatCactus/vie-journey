@@ -1,7 +1,11 @@
 // import { enqueueSnackbar } from "notistack";
 import {
   editBlogDraft,
+  editBlogPublic,
   getBlogDraft,
+  getBlogList,
+  getBlogPublic,
+  getBlogUserDetail,
   getMyBlog,
   publicBlog,
   startBlog,
@@ -28,9 +32,26 @@ function useBlogUser() {
       console.log(error);
     }
   };
+
+  const handleGetBlogPublicDetail = async (id: string) => {
+    try {
+      const res = await getBlogPublic(id);
+      if (res) return res;
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const handleEditBlog = async (id: string, data: any) => {
     try {
       const res = await editBlogDraft(id, data);
+      if (res) return res;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+   const handleEditPublicBlog = async (id: string, data: any) => {
+    try {
+      const res = await editBlogPublic(id, data);
       if (res) return res;
     } catch (error) {
       console.log(error);
@@ -53,13 +74,34 @@ function useBlogUser() {
     }
   };
 
+  const handleGetBlogUserDetail = async (id: string) => {
+    try {
+      const res = await getBlogUserDetail(id);
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  
+  const handleGetBlogList = async () => {
+    try {
+      const res = await getBlogList();
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return {
     handleStartBlog,
     handleGetBlogDetail,
     handleEditBlog,
     handlePublish,
     handleGetMyBlogs,
-  
+    handleGetBlogUserDetail,
+    handleGetBlogPublicDetail,
+    handleEditPublicBlog,
+    getBlogList
   };
 }
 

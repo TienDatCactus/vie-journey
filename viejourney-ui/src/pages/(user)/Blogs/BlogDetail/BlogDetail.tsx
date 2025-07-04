@@ -1,7 +1,10 @@
-import { BlogLayout, MainLayout } from "../../../../layouts";
+import { useParams } from "react-router-dom";
+import { BlogLayout } from "../../../../layouts";
 
 const BlogDetail = () => {
-  return <BlogLayout>dat</BlogLayout>;
+  const { id } = useParams();
+  if (!id) return <div>Blog ID not found.</div>;
+  return <BlogLayout id={id}>dat</BlogLayout>;
 };
 
 export default BlogDetail;

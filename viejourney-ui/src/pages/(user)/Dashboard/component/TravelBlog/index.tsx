@@ -11,6 +11,7 @@ import {
   Skeleton,
   IconButton,
   Tooltip,
+  Button,
 } from "@mui/material";
 import {
   LocationOn,
@@ -22,7 +23,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { IMyBlog } from "../../../../../utils/interfaces/blog";
 import useBlogUser from "../../../../../utils/hooks/user-blog-user";
-
+import { ImagePlusIcon } from "../../../../../../@/components/tiptap-icons/image-plus-icon";
 
 export default function TravelBlog() {
   const [myBlogs, setMyBlogs] = useState<IMyBlog[]>([]);
@@ -75,8 +76,18 @@ export default function TravelBlog() {
             <Skeleton variant="rectangular" height={200} />
             <CardContent>
               <Skeleton variant="text" height={32} width="80%" />
-              <Skeleton variant="text" height={20} width="60%" className="mt-2" />
-              <Skeleton variant="text" height={16} width="100%" className="mt-2" />
+              <Skeleton
+                variant="text"
+                height={20}
+                width="60%"
+                className="mt-2"
+              />
+              <Skeleton
+                variant="text"
+                height={16}
+                width="100%"
+                className="mt-2"
+              />
               <Skeleton variant="text" height={16} width="90%" />
               <Box className="flex justify-between items-center mt-4">
                 <Skeleton variant="rectangular" width={80} height={24} />
@@ -92,7 +103,11 @@ export default function TravelBlog() {
   if (loading) {
     return (
       <Container maxWidth="lg" className="py-8">
-        <Typography variant="h4" component="h1" className="mb-6 font-bold text-gray-800">
+        <Typography
+          variant="h4"
+          component="h1"
+          className="mb-6 font-bold text-gray-800"
+        >
           My Travel Blogs
         </Typography>
         <LoadingSkeleton />
@@ -103,7 +118,11 @@ export default function TravelBlog() {
   if (myBlogs.length === 0) {
     return (
       <Container maxWidth="lg" className="py-8">
-        <Typography variant="h4" component="h1" className="mb-6 font-bold text-gray-800">
+        <Typography
+          variant="h4"
+          component="h1"
+          className="mb-6 font-bold text-gray-800"
+        >
           My Travel Blogs
         </Typography>
         <Box className="text-center py-12">
@@ -121,12 +140,20 @@ export default function TravelBlog() {
   return (
     <Container maxWidth="lg" className="py-8">
       <Box className="mb-8">
-        <Typography variant="h4" component="h1" className="mb-2 font-bold text-gray-800">
-          My Travel Blogs
-        </Typography>
-        <Typography variant="body1" className="text-gray-600">
-          {myBlogs.length} {myBlogs.length === 1 ? "blog" : "blogs"} found
-        </Typography>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              My Travel Blogs
+            </h1>
+            <p className="text-gray-600">
+              {myBlogs.length} {myBlogs.length === 1 ? "blog" : "blogs"} found
+            </p>
+          </div>
+          <Button href="/blogs/create">
+            <ImagePlusIcon className="w-4 h-4 mr-2" />
+            Create Blog
+          </Button>
+        </div>
       </Box>
 
       <Grid container spacing={3}>
@@ -134,7 +161,7 @@ export default function TravelBlog() {
           <Grid item xs={12} sm={6} md={4} key={blog._id}>
             <Card
               className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-              onClick={() => navigate(`/blogs/${blog._id}`)} // ✅ chuyển trang khi click
+              onClick={() => navigate(`/blogs/${blog._id}`)}
             >
               <CardMedia
                 component="img"
@@ -158,7 +185,15 @@ export default function TravelBlog() {
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // TODO: handle edit logic
+                          if (blog.status === "DRAFT") {
+                            navigate(`/blogs/edit/${blog._id}`, {
+                              state: { type: "draft" },
+                            });
+                          } else {
+                            navigate(`/blogs/edit/${blog._id}`, {
+                              state: { type: "public" },
+                            });
+                          }
                         }}
                         className="text-gray-500 hover:text-blue-600"
                       >
@@ -170,7 +205,6 @@ export default function TravelBlog() {
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // TODO: handle share logic
                         }}
                         className="text-gray-500 hover:text-green-600"
                       >
@@ -192,11 +226,18 @@ export default function TravelBlog() {
                   </Box>
                 </Box>
 
-                <Typography variant="h6" component="h2" className="mb-2 font-semibold line-clamp-2">
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  className="mb-2 font-semibold line-clamp-2"
+                >
                   {blog.title}
                 </Typography>
 
-                <Typography variant="body2" className="text-gray-600 mb-3 line-clamp-3 flex-1">
+                <Typography
+                  variant="body2"
+                  className="text-gray-600 mb-3 line-clamp-3 flex-1"
+                >
                   {blog.summary}
                 </Typography>
 
@@ -210,7 +251,9 @@ export default function TravelBlog() {
                 <Box className="flex items-center justify-between text-gray-500 text-sm">
                   <Box className="flex items-center">
                     <CalendarToday fontSize="small" className="mr-1" />
-                    <Typography variant="caption">{formatDate(blog.createdAt)}</Typography>
+                    <Typography variant="caption">
+                      {formatDate(blog.createdAt)}
+                    </Typography>
                   </Box>
                 </Box>
               </CardContent>

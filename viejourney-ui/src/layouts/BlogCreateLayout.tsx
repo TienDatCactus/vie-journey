@@ -21,7 +21,8 @@ const BlogCreateLayout = ({
   formData,
   onFormDataChange,
   coverImageUrl,
-  setCoverImageUrl, // ✅ thêm vào
+  setCoverImageUrl, 
+  type
 }: {
   children: ReactNode;
   blog: IContentItem;
@@ -34,6 +35,7 @@ const BlogCreateLayout = ({
     tags: string[];
     coverImage: File | null;
   };
+  type: string;
   onFormDataChange: (field: string, value: any) => void;
   coverImageUrl: string | null; // ✅ thêm vào
   setCoverImageUrl: React.Dispatch<React.SetStateAction<string | null>>; // ✅ thêm vào
@@ -81,7 +83,7 @@ const BlogCreateLayout = ({
           </DialogActions>
         </Dialog>
       )}
-      <BlogCreateHeader onSaveDraft={onSaveDraft} onPublic={onPublic} />
+      <BlogCreateHeader onSaveDraft={onSaveDraft} onPublic={onPublic} type={type}/>
       <Container className="grid grid-cols-12 gap-4 p-4 ">
         <BlogCreateToolbar
           blog={blog}

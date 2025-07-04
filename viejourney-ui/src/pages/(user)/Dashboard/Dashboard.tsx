@@ -31,7 +31,7 @@ import { MainLayout } from "../../../layouts";
 import { editUserAvatar, } from "../../../services/api/user";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 import ProfileSettings from "./component/Setting";
-import TravelBlog from "./component/TravelGuides";
+import TravelBlog from "./component/TravelBlog";
 import TripPlans from "./component/TripPlan";
 
 const Dashboard: React.FC = () => {

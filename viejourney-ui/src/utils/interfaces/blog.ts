@@ -113,6 +113,7 @@ export interface IBlogDetail {
   coverImage: string;
   tripId: string | null;
   flags: IFlag[];
+  createdAt?: string;
 }
 
 export interface IBlogDraft {
@@ -153,4 +154,20 @@ export interface IMyBlog {
   createdAt: string; 
   updatedAt: string;
   metrics: BlogMetrics;
+}
+
+interface Author {
+  name: string;
+  email: string;
+}
+export interface IBlog {
+  _id: string;
+  title: string;
+  summary: string;
+  coverImage: string;
+  tags: string[]; // array of strings
+  author: Author;
+  metrics: BlogMetrics;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
 }
