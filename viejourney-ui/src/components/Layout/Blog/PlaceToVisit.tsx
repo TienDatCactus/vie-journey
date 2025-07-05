@@ -37,7 +37,7 @@ const PlaceToVisit = () => {
               <img
                 src="https://itin-dev.wanderlogstatic.com/freeImage/85HuNZ0LG2pRL6M9I6D75BW3xdqq3war"
                 alt="airport image"
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover "
               />
             </div>
           </div>

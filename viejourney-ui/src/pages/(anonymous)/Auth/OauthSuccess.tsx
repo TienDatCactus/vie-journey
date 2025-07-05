@@ -16,8 +16,7 @@ import { doValidateAccessToken } from "../../../services/api";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 import { setToken } from "../../../services/api/token";
 const OauthSuccess: React.FC = () => {
-  const { loadUserFromToken, setCredential, user, loadUserInfo, info } =
-    useAuthStore();
+  const { setCredential, user, info } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = React.useState<number>(5);
   const [params] = useSearchParams();
@@ -32,9 +31,6 @@ const OauthSuccess: React.FC = () => {
           const tokenData = await doValidateAccessToken(token);
           if (tokenData?.userId) {
             setLoading(false);
-            enqueueSnackbar("Authentication successful!", {
-              variant: "success",
-            });
             setToken({
               accessToken: token,
               userId: tokenData.userId,
@@ -51,7 +47,7 @@ const OauthSuccess: React.FC = () => {
       }
     };
     handleCallback();
-  }, []);
+  }, [params]);
   useEffect(() => {
     if (loading) return;
     if (timer <= 0) {
@@ -96,7 +92,7 @@ const OauthSuccess: React.FC = () => {
             )}
             <Button
               variant="contained"
-              className="gap-2 bg-white mt-1 rounded-lg text-dark-900 px-4 w-fit"
+              className="gap-2 bg-white mt-1  text-dark-900 px-4 w-fit"
               size="small"
             >
               <img src="/icons/icons8-google.svg" className="w-5 h-5" />

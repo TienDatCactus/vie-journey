@@ -1,17 +1,16 @@
 import { CalendarMonth, NavigateNext } from "@mui/icons-material";
-import { Chip, Grid2, IconButton, Stack } from "@mui/material";
+import { Grid2, IconButton, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import dayjs from "dayjs";
 
 interface TripTagProps {
-  places: number;
+  img: string;
   title: string;
   from: string;
   to: string;
-  img: string;
 }
 
-const TripTag = ({ title, places, to, from, img }: TripTagProps) => {
+const TripTag = ({ img, title, from, to }: TripTagProps) => {
   return (
     <Stack className="w-full  shadow-none bg-inherit h-20">
       <Stack
@@ -37,7 +36,7 @@ const TripTag = ({ title, places, to, from, img }: TripTagProps) => {
               }
             />
           </Grid2>
-          <Grid2 size={6} className="p-0 flex-grow">
+          <Grid2 size={8} className="p-0 flex-grow">
             <Typography
               gutterBottom
               variant="h5"
@@ -58,17 +57,7 @@ const TripTag = ({ title, places, to, from, img }: TripTagProps) => {
               </Typography>
             </Stack>
           </Grid2>
-          <Grid2
-            size={3}
-            gap={2}
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"space-between"}
-          >
-            <Chip
-              label={`${places} places`}
-              className="border border-dark-700 bg-white"
-            />
+          <Grid2 size={1} direction={"row"} alignItems={"center"}>
             <IconButton>
               <NavigateNext className="text-base" />
             </IconButton>

@@ -196,7 +196,7 @@ export const CreateTripForm: React.FC = () => {
               <TextField
                 {...params}
                 value={destination}
-                className="rounded-lg"
+                className=""
                 size="small"
                 fullWidth
                 placeholder="e.g Ta xua, Sapa, Da Nang"
@@ -272,7 +272,7 @@ export const CreateTripForm: React.FC = () => {
                       variant: "outlined",
                       InputProps: {
                         disableUnderline: true,
-                        className: "rounded-lg",
+                        className: "",
                       },
                     },
                   }}
@@ -288,7 +288,7 @@ export const CreateTripForm: React.FC = () => {
             <Select
               defaultValue={"Solo traveler"}
               {...register("travelers")}
-              className="w-full rounded-lg"
+              className="w-full "
             >
               <MenuItem value={"Solo traveler"}>Solo traveler</MenuItem>
               <MenuItem value={"2 travelers"}>2 travelers</MenuItem>
@@ -308,7 +308,7 @@ export const CreateTripForm: React.FC = () => {
               required: "Budget is required",
             })}
             defaultValue={"Budget ($0 - $500)"}
-            className="w-full rounded-lg"
+            className="w-full "
           >
             <MenuItem value={"Budget ($0 - $500)"}>Budget ($0 - $500)</MenuItem>
             <MenuItem value={"Mid-range ($500 - $1500)"}>
@@ -334,7 +334,7 @@ export const CreateTripForm: React.FC = () => {
             {...register("description")}
             placeholder="Describe your trip, activities, and preferences"
             variant="outlined"
-            className="w-full rounded-lg"
+            className="w-full "
           />
         </FormControl>
         <Divider className="my-4" />

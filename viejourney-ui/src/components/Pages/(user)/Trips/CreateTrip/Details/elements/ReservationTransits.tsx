@@ -371,7 +371,7 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                             {...params}
                             {...field}
                             value={departureValue}
-                            className="rounded-lg"
+                            className=""
                             size="small"
                             fullWidth
                             placeholder="Enter departure location"
@@ -482,7 +482,7 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                             {...params}
                             {...field}
                             value={arrivalValue}
-                            className="rounded-lg"
+                            className=""
                             size="small"
                             fullWidth
                             placeholder="e.g Ta xua, Sapa, Da Nang"
@@ -753,6 +753,7 @@ const ReservationTransits: React.FC = () => {
   const { socket } = useSocket();
   const handleAddTransit = () => {
     const newTransit: TransitData = {
+      id: "",
       note: "",
       cost: 0,
       currency: "$",
@@ -777,7 +778,7 @@ const ReservationTransits: React.FC = () => {
   console.log("Transits:", transits);
 
   return (
-    <div className="bg-white py-4 rounded">
+    <div className="bg-white py-4 rounded" id="transits">
       <div
         className="flex items-center justify-between cursor-pointer p-4"
         onClick={() => setExpanded((prev) => !prev)}

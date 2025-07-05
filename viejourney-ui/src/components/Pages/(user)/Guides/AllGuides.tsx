@@ -15,8 +15,8 @@ const AllGuides: React.FC = () => {
     fetchBlog();
   }, []);
   return (
-    <div className="w-full max-w-[1200px]">
-      <h1 className="mb-4 text-[1.25rem] font-bold">Recent guides</h1>
+    <div className="w-full max-w-[1200px] ">
+      <h1 className="mb-4 text-2xl font-bold ">Recent blogs</h1>
       <Grid2 container spacing={2}>
         {!!(blogs?.length) &&
           blogs?.map((guide) => (
@@ -25,7 +25,7 @@ const AllGuides: React.FC = () => {
             </Grid2>
           ))}
       </Grid2>
-      {/* <Stack direction={"row"} justifyContent={"center"}>
+      <div className="flex justify-center mt-6">
         <Button
           variant="outlined"
           color="primary"
@@ -33,7 +33,7 @@ const AllGuides: React.FC = () => {
         >
           See more
         </Button>
-      </Stack> */}
+      </div>
     </div>
   );
 };

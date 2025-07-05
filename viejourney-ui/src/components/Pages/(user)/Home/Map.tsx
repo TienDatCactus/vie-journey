@@ -5,12 +5,12 @@ const HomeMap = () => {
   return (
     <div className="w-full max-w-[1200px] pb-10">
       <h1 className="text-[1.875rem] font-bold">Map</h1>
-      <div className="w-full h-[300px] mb-4 rounded-lg relative">
+      <div className="w-full h-[300px] mb-4  relative">
         <Map
           position="relative"
           defaultZoom={20}
           detailed={false}
-          className="w-full h-full rounded-lg"
+          className="w-full h-full "
         />
         {/* Stats overlay */}
         <div className="z-20 absolute top-2 right-2 p-2 flex items-center gap-2 bg-gray-400/10 rounded-md bg-clip-padding backdrop-blur-sm border border-gray-100">

@@ -195,7 +195,7 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
             renderInput={(params) => (
               <TextField
                 {...params}
-                className="rounded-lg "
+                className=" "
                 size="small"
                 fullWidth
                 placeholder="e.g Ta xua, Sapa, Da Nang"
@@ -204,7 +204,7 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
                 onChange={handleInputChange}
                 InputProps={{
                   ...params.InputProps,
-                  className: "rounded-lg bg-white ",
+                  className: " bg-white ",
                   startAdornment: (
                     <InputAdornment position="start">
                       <Search color="action" />
@@ -236,7 +236,7 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
               </li>
             )}
           />
-          <div className=" relative bg-white rounded-lg py-2">
+          <div className=" relative bg-white  py-2">
             <div className="grid grid-cols-1 overflow-auto max-h-40 ">
               {PLACE_CATEGORIES.map((category) => (
                 <Tooltip key={category.id} title={category.label}>

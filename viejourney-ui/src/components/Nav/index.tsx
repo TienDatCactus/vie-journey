@@ -1,33 +1,30 @@
 import {
-    ChevronLeft,
-    Logout,
-    Menu as MenuIcon,
-    Settings
+  ChevronLeft,
+  Logout,
+  Menu as MenuIcon,
+  Settings,
 } from "@mui/icons-material";
 import { Avatar, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../services/stores/useAuthStore";
 
- interface NavProps {
-    collapsed: boolean;
-    setCollapsed: (collapsed: boolean) => void;
-    menuItems: MenuItem[];
-  }
+interface NavProps {
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
+  menuItems: MenuItem[];
+}
 
-  
 interface MenuItem {
   icon: React.ReactNode;
   label: string;
   path: string;
 }
 
-
-
 export const Nav: React.FC<NavProps> = ({
   collapsed,
   setCollapsed,
-  menuItems
+  menuItems,
 }) => {
   const { info, user, handleLogout } = useAuthStore();
   const navigate = useNavigate();
@@ -43,7 +40,7 @@ export const Nav: React.FC<NavProps> = ({
       <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600  flex items-center justify-center">
               <span className="text-white font-bold text-sm">VJ</span>
             </div>
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -70,7 +67,7 @@ export const Nav: React.FC<NavProps> = ({
           >
             <div
               onClick={() => navigate(item.path)}
-              className={`flex items-center px-3 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition-all group ${
+              className={`flex items-center px-3 py-3  hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition-all group ${
                 collapsed ? "justify-center" : ""
               }`}
             >
@@ -105,7 +102,9 @@ export const Nav: React.FC<NavProps> = ({
                   {info?.fullName}
                 </p>
                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                <p className="text-xs text-blue-600 font-medium">{user?.role}</p>
+                <p className="text-xs text-blue-600 font-medium">
+                  {user?.role}
+                </p>
               </div>
             </div>
 
@@ -113,7 +112,7 @@ export const Nav: React.FC<NavProps> = ({
               <Tooltip title="Profile Settings">
                 <button
                   onClick={handleProfile}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50  transition-all"
                 >
                   <Settings sx={{ fontSize: 16 }} />
                   Profile
@@ -123,7 +122,7 @@ export const Nav: React.FC<NavProps> = ({
               <Tooltip title="Sign Out">
                 <button
                   onClick={handleLogout}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50  transition-all"
                 >
                   <Logout sx={{ fontSize: 16 }} />
                   Logout

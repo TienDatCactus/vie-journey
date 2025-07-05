@@ -106,7 +106,7 @@ const Header = () => {
         <ButtonGroup variant="contained" aria-label="Disabled button group">
           <Button
             size="small"
-            className="bg-white"
+            className="bg-white "
             variant="outlined"
             href="/auth/login"
           >

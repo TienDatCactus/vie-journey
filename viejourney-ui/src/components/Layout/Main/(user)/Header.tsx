@@ -31,8 +31,8 @@ const headerNav: Array<{ name: string; link: string }> = [
     link: "/home",
   },
   {
-    name: "Travel guides",
-    link: "/guides",
+    name: "Travel blogs",
+    link: "/blogs",
   },
   {
     name: "Hotels",

@@ -40,7 +40,12 @@ interface TripDetailStore {
   updateItinerary: (id: string, itinerary: Partial<Itinerary>) => void;
   deleteItinerary: (id: string) => void;
   toggleEditItinerary: (id: string) => void;
+
+  totalBudget: number;
   expenses: Expense[];
+  addExpense: (expense: Expense) => void;
+  updateExpense: (id: string, expense: Partial<Expense>) => void;
+  deleteExpense: (id: string) => void;
 }
 
 export const useTripDetailStore = create<TripDetailStore>()(
@@ -50,6 +55,7 @@ export const useTripDetailStore = create<TripDetailStore>()(
       itineraries: [],
       expenses: [],
       placeNotes: [],
+      totalBudget: 0,
       addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
       updateNote: (id, content) =>
         set((state) => ({
@@ -137,6 +143,28 @@ export const useTripDetailStore = create<TripDetailStore>()(
           itineraries: state.itineraries.map((i) =>
             i.id === id ? { ...i, isEditing: !i.isEditing } : i
           ),
+        })),
+      addExpense: (expense) =>
+        set((state) => ({
+          expenses: [...state.expenses, expense],
+          totalBudget: state.totalBudget + expense.amount,
+        })),
+      updateExpense: (id, updated) =>
+        set((state) => ({
+          expenses: state.expenses.map((e) =>
+            e.id === id ? { ...e, ...updated } : e
+          ),
+          totalBudget: state.expenses.reduce(
+            (total, expense) => total + expense.amount,
+            0
+          ),
+        })),
+      deleteExpense: (id) =>
+        set((state) => ({
+          expenses: state.expenses.filter((e) => e.id !== id),
+          totalBudget:
+            state.totalBudget -
+            (state.expenses.find((e) => e.id === id)?.amount || 0),
         })),
     }),
     { name: "trip-detail-storage" }

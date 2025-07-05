@@ -1,24 +1,14 @@
 import { Add, Place } from "@mui/icons-material";
-import {
-  Typography,
-  CircularProgress,
-  Card,
-  CardMedia,
-  CardContent,
-  Chip,
-  Button,
-  CardActionArea,
-  IconButton,
-} from "@mui/material";
+import { Button, CircularProgress, Typography } from "@mui/material";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
-import { getPlacePhotoUrl } from "../../../../../../../utils/handlers/utils";
+import { Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { Itinerary } from "../../../../../../../services/stores/storeInterfaces";
+import { getPlacePhotoUrl } from "../../../../../../../utils/handlers/utils";
 const PlaceSuggestion: React.FC<{
   place: Itinerary["place"] | null;
   onAddPlace: (placeId: string) => void;
@@ -94,7 +84,10 @@ const PlaceSuggestion: React.FC<{
 
   return (
     <div className="mt-4">
-      <Typography variant="subtitle1" className="font-medium mb-2">
+      <Typography
+        variant="subtitle1"
+        className="font-medium mb-2 text-gray-500"
+      >
         {place?.displayName
           ? `Places to visit near ${place.displayName}`
           : "Suggested nearby places"}
@@ -126,14 +119,13 @@ const PlaceSuggestion: React.FC<{
       >
         {nearbyPlaces.map((nearbyPlace) => (
           <SwiperSlide key={nearbyPlace.place_id}>
-            <Card className="flex">
-              <div className="grid lg:grid-cols-3 grid-cols-1 max-h-36 h-32">
-                <div className="lg:col-span-1 col-span-3 h-full">
+            <div className="flex border-2  rounded-lg border-gray-200  bg-gray-50 gap-2 items-center">
+              <div className="grid grid-cols-12 space-x-2 max-h-36 h-32">
+                <div className="col-span-4 h-full">
                   {nearbyPlace.photos?.[0] ? (
-                    <CardMedia
-                      component="img"
-                      className="h-full w-full object-cover"
-                      image={getPlacePhotoUrl(nearbyPlace.photos[0].getUrl())}
+                    <img
+                      className="h-full w-full rounded-s-lg text-black text-sm font-light object-cover"
+                      src={getPlacePhotoUrl(nearbyPlace.photos[0].getUrl())}
                       alt={nearbyPlace.name}
                     />
                   ) : (
@@ -143,60 +135,61 @@ const PlaceSuggestion: React.FC<{
                   )}
                 </div>
 
-                <CardContent className="lg:col-span-2 col-span-3 ">
-                  <Typography
-                    variant="subtitle2"
-                    className="font-medium line-clamp-1"
-                  >
-                    {nearbyPlace.name}
-                  </Typography>
+                <div className="col-span-8 flex flex-col justify-between p-2">
+                  <div>
+                    <h2 className="text-sm text-black font-medium line-clamp-1">
+                      {nearbyPlace.name}
+                    </h2>
 
-                  <div className="flex items-center mt-1">
-                    {nearbyPlace.rating && (
-                      <div className="flex items-center text-sm">
-                        <span className="font-medium mr-1">
-                          {nearbyPlace.rating}
-                        </span>
-                        <span className="text-yellow-500">★</span>
-                        {nearbyPlace.user_ratings_total && (
-                          <span className="text-xs text-gray-500 ml-1">
-                            ({nearbyPlace.user_ratings_total})
+                    <div className="flex items-center mt-1">
+                      {nearbyPlace.rating && (
+                        <div className="flex items-center text-sm">
+                          <span className="font-medium mr-1 text-black">
+                            {nearbyPlace.rating}
                           </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  {nearbyPlace.types && (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {nearbyPlace.types
-                        .filter(
-                          (type) =>
-                            !["establishment", "point_of_interest"].includes(
-                              type
-                            )
-                        )
-                        .slice(0, 2)
-                        .map((type, i) => (
-                          <Chip
-                            key={i}
-                            label={type.replace("_", " ")}
-                            size="small"
-                            variant="outlined"
-                            className="text-xs py-0 px-1 h-5"
-                          />
-                        ))}
+                          <span className="text-yellow-500">★</span>
+                          {nearbyPlace.user_ratings_total && (
+                            <span className="text-xs text-gray-500 ml-1">
+                              ({nearbyPlace.user_ratings_total})
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </CardContent>
+                    {/* {nearbyPlace.types && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {nearbyPlace.types
+                          .filter(
+                            (type) =>
+                              !["establishment", "point_of_interest"].includes(
+                                type
+                              )
+                          )
+                          .slice(0, 2)
+                          .map((type, i) => (
+                            <Chip
+                              key={i}
+                              label={type.replace("_", " ")}
+                              size="small"
+                              variant="outlined"
+                              className="text-xs py-0 px-1 h-5"
+                            />
+                          ))}
+                      </div>
+                    )} */}
+                  </div>
+                  <div>
+                    <Button
+                      className="p-0 text-black"
+                      onClick={() => onAddPlace(nearbyPlace.place_id || "")}
+                      startIcon={<Add />}
+                    >
+                      Add to trip
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div className="w-fit h-fit my-auto rounded-full">
-                <IconButton
-                  onClick={() => onAddPlace(nearbyPlace.place_id || "")}
-                >
-                  <Add />
-                </IconButton>
-              </div>
-            </Card>
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>

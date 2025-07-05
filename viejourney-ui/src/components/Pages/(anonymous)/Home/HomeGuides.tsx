@@ -59,12 +59,12 @@ const HomeGuides: React.FC = () => {
         {guideCards.map((card, index) => (
           <li
             key={index}
-            className="flex flex-col gap-2 min-h-80 relative border-neutral-300 rounded-lg "
+            className="flex flex-col gap-2 min-h-80 relative border-neutral-300  "
           >
             <img
               src={card.img}
               alt={card.title}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-full object-cover "
             />
             <h3 className="text-xl absolute lg:bottom-4 lg:left-4  text-white ">
               {card.title}

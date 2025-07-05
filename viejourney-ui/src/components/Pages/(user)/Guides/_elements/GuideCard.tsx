@@ -8,8 +8,6 @@ import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
 import { IBlog } from "../../../../../utils/interfaces/blog";
 
-
-
 const GuideCard = (props: IBlog) => {
   const navigate = useNavigate();
 
@@ -18,23 +16,17 @@ const GuideCard = (props: IBlog) => {
   };
 
   return (
-    <Card
-      sx={{ maxWidth: 345 }}
-      elevation={0}
-      key={props._id}
-      className="rounded-lg"
-    >
-      <div className="overflow-hidden rounded-lg">
+    <Card sx={{ maxWidth: 345 }} elevation={0} key={props._id} className="">
+      <div className="overflow-hidden ">
         <CardMedia
           component="img"
-        
           image={props.coverImage || "https://placehold.co/600x400"}
           alt="green iguana"
-          className="duration-200 ease-in-out rounded-lg hover:scale-115 cursor-pointer w-full h-[200px]"
+          className="duration-200 ease-in-out  hover:scale-115 cursor-pointer  transition-all"
           onClick={handleNavigate}
         />
       </div>
-      <CardContent>
+      <CardContent className="p-2">
         <Typography
           gutterBottom
           variant="h5"

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { useAuthStore } from "../services/stores/useAuthStore";
 import StatusDialog from "../components/Auth/elements/StatusDialog";
+import { useAuthStore } from "../services/stores/useAuthStore";
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, loadUserFromToken, credential, loadUserInfo, info } =

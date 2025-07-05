@@ -80,7 +80,7 @@ const CreateBlog: React.FC = () => {
           onSubmit={handleSubmit((data) => {
             console.log("Form submitted with data:", data);
           })}
-          className="shadow-md rounded-lg p-4 bg-white w-full max-w-xl mt-8"
+          className="shadow-md  p-4 bg-white w-full max-w-xl mt-8"
         >
           <Stack
             direction={"row"}
@@ -110,7 +110,7 @@ const CreateBlog: React.FC = () => {
               <TextField
                 {...params}
                 value={destination}
-                className="rounded-lg"
+                className=""
                 variant="filled"
                 fullWidth
                 placeholder="e.g Ta xua, Sapa, Da Nang"
@@ -170,7 +170,7 @@ const CreateBlog: React.FC = () => {
                 const newBlogId = await handleStartBlog(destination);
                 setLoading(false);
                 if (newBlogId) {
-                  navigate(`/blogs/edit/${newBlogId}`); 
+                  navigate(`/blogs/edit/${newBlogId}`);
                 } else {
                   console.error("Failed to create blog.");
                 }

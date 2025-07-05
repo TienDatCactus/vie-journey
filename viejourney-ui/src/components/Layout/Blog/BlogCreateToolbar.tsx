@@ -441,7 +441,7 @@ const BlogCreateToolbar = ({
   formData,
   onFormDataChange,
   coverImageUrl,
-  setCoverImageUrl, 
+  setCoverImageUrl,
 }: {
   blog: IContentItem;
   formData: {
@@ -452,11 +452,11 @@ const BlogCreateToolbar = ({
     coverImage: File | null;
   };
   onFormDataChange: (field: string, value: any) => void;
-  coverImageUrl: string | null; 
-  setCoverImageUrl: React.Dispatch<React.SetStateAction<string | null>>; 
+  coverImageUrl: string | null;
+  setCoverImageUrl: React.Dispatch<React.SetStateAction<string | null>>;
 }) => {
   return (
-    <aside className="col-span-3 rounded-lg border border-neutral-300 bg-white shadow-md p-4 h-fit space-y-4">
+    <aside className="col-span-3  border border-neutral-300 bg-white shadow-md p-4 h-fit space-y-4">
       <div>
         <h1 className="font-semibold">Current Settings</h1>
         <Stack direction="column" spacing={2} className="py-2">

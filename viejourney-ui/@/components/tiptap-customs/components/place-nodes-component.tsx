@@ -208,7 +208,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
     if (!place) return null;
 
     return (
-      <div className="mt-2 border border-gray-200 shadow-sm rounded-lg bg-white">
+      <div className="mt-2 border border-gray-200 shadow-sm bg-white">
         <div className="grid lg:grid-cols-3 items-start justify-between">
           <div className="lg:col-span-2 p-4 space-y-4">
             <h1 className="text-xl font-semibold">{place.displayName}</h1>
@@ -279,7 +279,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
             </div>
             {place.photos && (
               <div className="flex gap-2 overflow-x-auto pb-2">
-                <div className=" rounded-lg overflow-hidden">
+                <div className="  overflow-hidden">
                   <img
                     src={getPlacePhotoUrl(place.photos[0])}
                     alt={`${place.displayName} - Photo 1`}
@@ -318,7 +318,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
               <TextField
                 {...params}
                 value={inputValue}
-                className="rounded-lg"
+                className=""
                 size="small"
                 fullWidth
                 placeholder="e.g Ta xua, Sapa, Da Nang"
@@ -372,7 +372,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
           {node.attrs.place ? (
             renderPlaceDetails()
           ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="bg-gray-50 border border-gray-200  p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <LocationOn className="text-gray-600" />
