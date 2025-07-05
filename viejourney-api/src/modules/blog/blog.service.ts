@@ -21,7 +21,7 @@ export class BlogService {
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     private readonly assetsService: AssetsService,
-  ) { }
+  ) {}
 
   // list all blogs
   async findAll() {
@@ -60,6 +60,7 @@ export class BlogService {
     return listBlogs;
   }
 
+  // Get all approved blogs for home page (public access)
   async getAllApprovedBlogs(page?: number, limit?: number, search?: string) {
     try {
       const pageNum = page || 1;
@@ -725,7 +726,7 @@ export class BlogService {
   }
 
   // Get user's blogs (all statuses)
-   async getUserBlogs(userId: string, status?: string) {
+  async getUserBlogs(userId: string, status?: string) {
     try {
       const user = await this.userInfosModel
         .findOne({ userId: new Types.ObjectId(userId) })

@@ -165,7 +165,7 @@ const Header: React.FC = () => {
               <Card elevation={0} className="max-w-[240px] flex flex-col">
                 <CardMedia
                   component="img"
-                  className="w-full rounded-lg object-cover"
+                  className="w-full  object-cover"
                   image="/images/ocean-beach-mountains-ud.jpg"
                   alt="name"
                 />
@@ -188,7 +188,7 @@ const Header: React.FC = () => {
               <Card elevation={0} className="max-w-[240px] flex flex-col">
                 <CardMedia
                   component="img"
-                  className="w-full rounded-lg object-cover"
+                  className="w-full  object-cover"
                   image="/images/ocean-beach-mountains-ud.jpg"
                   alt="name"
                 />
@@ -211,7 +211,7 @@ const Header: React.FC = () => {
               <Card elevation={0} className="max-w-[240px] flex flex-col">
                 <CardMedia
                   component="img"
-                  className="w-full rounded-lg object-cover"
+                  className="w-full  object-cover"
                   image="/images/ocean-beach-mountains-ud.jpg"
                   alt="name"
                 />
@@ -249,7 +249,7 @@ const Header: React.FC = () => {
         slotProps={{
           transition: { unmountOnExit: true },
           paper: {
-            className: "bg-white rounded-lg shadow-lg min-w-200",
+            className: "bg-white  shadow-lg min-w-200",
           },
         }}
         open={open}
@@ -307,7 +307,7 @@ const Header: React.FC = () => {
                   key={index}
                   src="/images/placeholders/main-placeholder.jpg"
                   alt={`placeholder-${index}`}
-                  className="w-full h-auto object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity duration-200"
+                  className="w-full h-auto object-cover  cursor-pointer hover:opacity-80 transition-opacity duration-200"
                 />
               ))}
             </Stack>

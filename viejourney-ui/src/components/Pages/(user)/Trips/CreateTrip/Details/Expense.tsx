@@ -1,162 +1,56 @@
 import {
+  AttachMoney,
   BorderColor,
+  CameraAlt,
   Delete,
   Description,
   DirectionsCar,
   Edit,
   Flight,
+  FlightTakeoff,
   GroupAdd,
   Hotel,
   Insights,
+  LocalBar,
+  LocalGasStation,
+  LocalGroceryStore,
   MoreHoriz,
   PriceCheck,
   ReceiptLong,
   Restaurant,
   SettingsEthernet,
   ShoppingCart,
+  SportsEsports,
+  Train,
 } from "@mui/icons-material";
 import {
+  Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControl,
   IconButton,
+  InputAdornment,
+  InputLabel,
+  LinearProgress,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  Select,
   Stack,
+  TextField,
+  Tooltip,
 } from "@mui/material";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
 import React from "react";
-const expenseColumns: GridColDef[] = [
-  {
-    field: "type",
-    headerName: "Type",
-    width: 80,
-    renderCell: (params) => {
-      const iconMap = {
-        flight: <Flight className="text-blue-500" />,
-        hotel: <Hotel className="text-indigo-500" />,
-        restaurant: <Restaurant className="text-amber-500" />,
-        car: <DirectionsCar className="text-green-500" />,
-        shopping: <ShoppingCart className="text-purple-500" />,
-        other: <MoreHoriz className="text-gray-500" />,
-      };
-
-      return (
-        <div className="flex items-center justify-start h-full">
-          {iconMap[params.value as keyof typeof iconMap] || iconMap.other}
-        </div>
-      );
-    },
-  },
-  {
-    field: "title",
-    headerName: "Expense",
-    flex: 1,
-    minWidth: 250,
-    renderCell: (params) => (
-      <div className="flex flex-col">
-        <div className="font-semibold">{params.value}</div>
-        {params.row.code && (
-          <div className="text-xs text-gray-500 font-mono">
-            {params.row.code}
-          </div>
-        )}
-      </div>
-    ),
-  },
-  {
-    field: "date",
-    headerName: "Date",
-    width: 100,
-    renderCell: (params) => (
-      <div className="flex items-center">
-        <span>{params.value}</span>
-      </div>
-    ),
-  },
-  {
-    field: "amount",
-    headerName: "Amount",
-    width: 150,
-    align: "right",
-    headerAlign: "right",
-    renderCell: (params) => (
-      <div className="font-medium text-right">
-        {new Intl.NumberFormat("en-US", {
-          style: "decimal",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(params.value)}
-        <span className="ml-1 text-green-600">{params.row.currency}</span>
-      </div>
-    ),
-  },
-  {
-    field: "actions",
-    headerName: "",
-    width: 100,
-    sortable: false,
-    renderCell: () => (
-      <div className="flex h-full items-center justify-center gap-2">
-        <IconButton size="small">
-          <Edit fontSize="small" className="text-gray-500" />
-        </IconButton>
-        <IconButton size="small">
-          <Delete fontSize="small" className="text-gray-500" />
-        </IconButton>
-      </div>
-    ),
-  },
-];
-
-const expenseRows = [
-  {
-    id: 1,
-    type: "flight",
-    code: "21 Air 12312",
-    title: "Round-trip flights to Da Nang",
-    date: "24 Jun",
-    amount: 123123.0,
-    currency: "US$",
-  },
-  {
-    id: 2,
-    type: "hotel",
-    code: "Booking #A129312",
-    title: "Intercontinental Da Nang (3 nights)",
-    date: "25 Jun",
-    amount: 4500.0,
-    currency: "US$",
-  },
-  {
-    id: 3,
-    type: "restaurant",
-    code: "",
-    title: "Dinner at Seafood Restaurant",
-    date: "26 Jun",
-    amount: 345.5,
-    currency: "US$",
-  },
-  {
-    id: 4,
-    type: "car",
-    code: "Hertz #92123",
-    title: "Car rental (4 days)",
-    date: "25 Jun",
-    amount: 1200.0,
-    currency: "US$",
-  },
-  {
-    id: 5,
-    type: "shopping",
-    code: "",
-    title: "Souvenirs and local crafts",
-    date: "27 Jun",
-    amount: 678.9,
-    currency: "US$",
-  },
-];
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
+import { Expense } from "../../../../../../services/stores/storeInterfaces";
+import { formatCurrency } from "../../../../../../utils/handlers/utils";
 
 const InsightsDialog = () => {
   const [open, setOpen] = React.useState(false);
@@ -246,7 +140,6 @@ const AddTripmateDialog = () => {
     </React.Fragment>
   );
 };
-
 const SettingsDialog = () => {
   const [open, setOpen] = React.useState(false);
 
@@ -282,9 +175,7 @@ const SettingsDialog = () => {
         <DialogContent className=" items-center lg:grid-cols-3 grid grid-cols-1 justify-between">
           <div className="lg:col-span-2">
             <h1 className="text-lg font-semibold">Export as CSV</h1>
-            <p className=" text-gray-600">
-              Download your trip expenses as a CSV file.
-            </p>
+            <p className=" text-gray-600">Download your trip as a CSV file.</p>
           </div>
           <div className="lg:col-span-1 flex justify-end">
             <Button
@@ -303,11 +194,493 @@ const SettingsDialog = () => {
     </React.Fragment>
   );
 };
-const Expense: React.FC = () => {
-  const paginationModel = { page: 0, pageSize: 5 };
+
+const expenseColumns: GridColDef[] = [
+  {
+    field: "type",
+    headerName: "Type",
+    width: 70,
+    align: "center",
+    headerAlign: "center",
+    renderCell: (params) => {
+      const iconMap = {
+        Flights: <FlightTakeoff />,
+        Lodging: <Hotel />,
+        "Car rental": <DirectionsCar />,
+        Transit: <Train />,
+        Food: <Restaurant />,
+        Drinks: <LocalBar />,
+        Sightseeing: <CameraAlt />,
+        Activities: <SportsEsports />,
+        Shopping: <ShoppingCart />,
+        Gas: <LocalGasStation />,
+        Groceries: <LocalGroceryStore />,
+        Other: <MoreHoriz />,
+      };
+
+      return (
+        <Tooltip title={params.value || "Other"}>
+          <div className="flex w-full items-center justify-center h-full">
+            {iconMap[params.value as keyof typeof iconMap] || iconMap.Other}
+          </div>
+        </Tooltip>
+      );
+    },
+  },
+  {
+    field: "desc",
+    headerName: "Description",
+    flex: 1,
+    renderCell: (params) => (
+      <Tooltip title={params.value || ""}>
+        <div className="truncate font-semibold ">{params.value}</div>
+      </Tooltip>
+    ),
+  },
+  {
+    field: "amount",
+    headerName: "Amount",
+    flex: 1,
+    renderCell: (params) => (
+      <div className="font-mono">{formatCurrency(params.value, "en-US")}</div>
+    ),
+  },
+  {
+    field: "splits",
+    headerName: "Split",
+    flex: 1,
+    cellClassName: "flex items-center",
+    sortable: false,
+    renderCell: (params) => {
+      const splitWith = params.row.splits?.splitWith || [];
+      const totalPeople = splitWith.length;
+
+      const content = `${totalPeople} person${
+        totalPeople > 1 ? "s" : ""
+      } split`;
+
+      return (
+        <Tooltip title={splitWith.join(", ") || "No splits"}>
+          <p className="truncate max-w-full text-sm text-gray-700">{content}</p>
+        </Tooltip>
+      );
+    },
+  },
+  {
+    field: "actions",
+    headerName: "Actions",
+    width: 80,
+    sortable: false,
+    renderCell: (params) => {
+      const handleEdit = () => {
+        console.log("Edit expense:", params.row.id);
+      };
+
+      const handleDelete = () => {
+        console.log("Delete expense:", params.row.id);
+      };
+
+      return (
+        <div className="flex h-full items-center justify-center gap-2">
+          <Tooltip title="Edit">
+            <IconButton size="small" onClick={handleEdit}>
+              <Edit fontSize="small" className="text-gray-500" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton size="small" onClick={handleDelete}>
+              <Delete fontSize="small" className="text-gray-500" />
+            </IconButton>
+          </Tooltip>
+        </div>
+      );
+    },
+  },
+];
+
+const expenseTypes = [
+  {
+    label: "Flights",
+    value: "Flights",
+    icon: <FlightTakeoff />,
+  },
+  {
+    label: "Lodging",
+    value: "Lodging",
+    icon: <Hotel />,
+  },
+  {
+    label: "Car rental",
+    value: "Car rental",
+    icon: <DirectionsCar />,
+  },
+  {
+    label: "Transit",
+    value: "Transit",
+    icon: <Train />,
+  },
+  {
+    label: "Food",
+    value: "Food",
+    icon: <Restaurant />,
+  },
+  {
+    label: "Drinks",
+    value: "Drinks",
+    icon: <LocalBar />,
+  },
+  {
+    label: "Sightseeing",
+    value: "Sightseeing",
+    icon: <CameraAlt />,
+  },
+  {
+    label: "Activities",
+    value: "Activities",
+    icon: <SportsEsports />,
+  },
+  {
+    label: "Shopping",
+    value: "Shopping",
+    icon: <ShoppingCart />,
+  },
+  {
+    label: "Gas",
+    value: "Gas",
+    icon: <LocalGasStation />,
+  },
+  {
+    label: "Groceries",
+    value: "Groceries",
+    icon: <LocalGroceryStore />,
+  },
+  {
+    label: "Other",
+    value: "Other",
+    icon: <MoreHoriz />,
+  },
+];
+
+const SetBudgetDialog = () => {
+  const [open, setOpen] = React.useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<{ budget: number }>();
+  const { setTotalBudget } = useTripDetailStore();
+
+  const onSubmit = (data: { budget: number }) => {
+    setTotalBudget(data.budget);
+    setOpen(false);
+  };
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   return (
-    <section className="pt-10">
+    <React.Fragment>
+      <Button
+        variant="outlined"
+        className="text-neutral-800 border-neutral-300 bg-neutral-300 rounded-xl"
+        startIcon={<BorderColor />}
+        onClick={handleClickOpen}
+      >
+        Set budget
+      </Button>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="set-budget-dialog-title"
+      >
+        <DialogTitle id="set-budget-dialog-title">Set Budget</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <FormControl fullWidth>
+              <TextField
+                variant="outlined"
+                type="number"
+                label="Budget Amount"
+                {...register("budget", {
+                  required: "Budget is required",
+                  min: {
+                    value: 0,
+                    message: "Budget must be a positive number",
+                  },
+                })}
+                error={!!errors?.budget}
+                helperText={errors?.budget ? errors.budget.message : ""}
+              />
+            </FormControl>
+            <Button type="submit" variant="contained" color="primary">
+              Save
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </React.Fragment>
+  );
+};
+
+const AddExpenseDialog = () => {
+  const [open, setOpen] = React.useState(false);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<Expense>();
+  const { trip, addExpense, expenses } = useTripDetailStore();
+  const onSubmit: SubmitHandler<Expense> = (data) => {
+    const description =
+      data.desc && data.desc.length > 0 ? data.desc : `${data.type} expense`;
+    addExpense({
+      id: "",
+      ...data,
+      desc: description,
+    });
+    setOpen(false);
+    // Reset form fields after submission
+    reset();
+  };
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <React.Fragment>
+      <Button
+        variant="contained"
+        className="bg-dark-800"
+        onClick={handleClickOpen}
+        startIcon={<PriceCheck />}
+      >
+        Add expense
+      </Button>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        fullWidth
+        slotProps={{
+          paper: {
+            className: "rounded-2xl p-4",
+          },
+        }}
+        aria-labelledby="add-expense-dialog-title"
+      >
+        <DialogTitle
+          id="add-expense-dialog-title "
+          className="text-2xl font-semibold"
+        >
+          Add New Expense
+        </DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
+            <FormControl fullWidth>
+              <TextField
+                variant="outlined"
+                id="amount"
+                type="number"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AttachMoney />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+                label="Amount"
+                value={watch("amount")}
+                {...register("amount", {
+                  required: "Amount is required",
+                  min: {
+                    value: 0,
+                    message: "Amount must be a positive number",
+                  },
+                })}
+                error={!!errors?.amount}
+                helperText={errors?.amount ? errors.amount.message : ""}
+              />
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="type">Type</InputLabel>
+              <Controller
+                control={control}
+                name="type"
+                defaultValue="Other"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    labelId="type"
+                    label="Type"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    error={!!errors?.type}
+                    MenuProps={{
+                      className: "max-h-80 ",
+                      container: () => document.body,
+                      disablePortal: true,
+                    }}
+                    slotProps={{
+                      input: {
+                        className: "flex items-center space-x-2 ",
+                      },
+                    }}
+                  >
+                    {expenseTypes.map((type) => (
+                      <MenuItem
+                        className="space-x-2 flex items-center"
+                        key={type.value}
+                        value={type.value}
+                      >
+                        {type.icon}
+                        <p>{type.label}</p>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+                rules={{ required: "Expense type is required" }}
+              />
+            </FormControl>
+            {watch("type") && (
+              <FormControl fullWidth>
+                <TextField
+                  rows={3}
+                  multiline
+                  variant="outlined"
+                  id="desc"
+                  label="Description"
+                  value={watch("desc")}
+                />
+              </FormControl>
+            )}
+            <FormControl
+              fullWidth
+              className="border border-dashed rounded-lg border-gray-500 p-4 bg-gray-50"
+            >
+              <div className="flex items-center justify-between">
+                <h2 id="payer" className="font-bold text-sm">
+                  Paid by
+                </h2>
+                <Controller
+                  control={control}
+                  name="payer"
+                  rules={{ required: "Payer is required" }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        const selected = trip.tripmates.find(
+                          (m) => m === e.target.value
+                        );
+                        field.onChange(selected);
+                      }}
+                      variant="standard"
+                      error={!!errors?.payer}
+                      MenuProps={{
+                        container: () => document.body,
+                        disablePortal: true,
+                      }}
+                    >
+                      {trip.tripmates.map((mate) => (
+                        <MenuItem key={mate} value={mate}>
+                          {mate}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+              </div>
+            </FormControl>
+            <FormControl
+              fullWidth
+              className="border border-dashed rounded-lg border-gray-500 p-4 bg-gray-50"
+            >
+              <div className="flex items-center justify-between">
+                <h2 id="split" className="font-bold text-sm">
+                  Split
+                </h2>
+                <Controller
+                  control={control}
+                  name="splits.splitWith"
+                  defaultValue={[]}
+                  rules={{ required: "At least one split is required" }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      slotProps={{
+                        input: {
+                          className: "truncate",
+                        },
+                      }}
+                      labelId="demo-multiple-checkbox-label"
+                      id="demo-multiple-checkbox"
+                      multiple
+                      className="max-w-60"
+                      value={field.value || []} // Use field.value instead of watch
+                      renderValue={(selected) => selected.join(", ")}
+                      MenuProps={{
+                        container: () => document.body,
+                        disablePortal: true,
+                      }}
+                      variant="standard"
+                    >
+                      {Array.isArray(trip.tripmates) &&
+                        trip.tripmates.map((name) => (
+                          <MenuItem key={name} value={name}>
+                            <ListItemIcon className="min-w-[32px]">
+                              <Checkbox
+                                edge="start"
+                                checked={
+                                  Array.isArray(field.value) &&
+                                  field.value.includes(name)
+                                } // Use field.value and ensure it's an array
+                                tabIndex={-1}
+                                disableRipple
+                                size="small"
+                              />
+                            </ListItemIcon>
+                            <ListItemText primary={name} />
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  )}
+                />
+              </div>
+            </FormControl>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              className="w-full bg-dark-800"
+            >
+              Save
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </React.Fragment>
+  );
+};
+const ExpenseSection: React.FC = () => {
+  const paginationModel = { page: 0, pageSize: 5 };
+  const { expenses, totalBudget } = useTripDetailStore();
+  return (
+    <section className="pt-10" id="budget">
       <div className="bg-white lg:p-10 lg:px-12">
         <Stack
           direction={"row"}
@@ -316,13 +689,7 @@ const Expense: React.FC = () => {
           marginBottom={4}
         >
           <h1 className="text-3xl font-bold">Budgeting</h1>
-          <Button
-            className="bg-dark-800"
-            variant="contained"
-            startIcon={<PriceCheck />}
-          >
-            Add expense
-          </Button>
+          <AddExpenseDialog />
         </Stack>
         <div className="flex justify-between gap-4 pt-4 bg-neutral-200 rounded-xl p-4">
           <div>
@@ -332,8 +699,28 @@ const Expense: React.FC = () => {
               className="*:text-3xl"
               gap={1}
             >
-              <data>123.123,00</data>
-              <span className="font-semibold text-green-500">US$</span>
+              <span className="font-semibold text-green-500">Total : </span>
+              <data>{formatCurrency(totalBudget, "en-US")}</data>
+            </Stack>
+            <Stack
+              direction={"column"}
+              className="text-sm text-gray-600"
+              gap={1}
+            >
+              <span className="font-semibold">Current usage : </span>
+              <Tooltip title={<span>50%</span>}>
+                <LinearProgress
+                  variant="determinate"
+                  className="rounded-xl h-2 "
+                  sx={{
+                    backgroundColor: "#e0e0e0",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#00c951",
+                    },
+                  }}
+                  value={50}
+                />
+              </Tooltip>
             </Stack>
             <Stack
               direction={"row"}
@@ -367,41 +754,47 @@ const Expense: React.FC = () => {
             <SettingsDialog />
           </Stack>
         </div>
-        <DataGridPremium
-          rows={expenseRows}
-          columns={expenseColumns}
-          initialState={{
-            pagination: { paginationModel: { page: 0, pageSize: 5 } },
-            sorting: {
-              sortModel: [{ field: "date", sort: "desc" }],
-            },
-          }}
-          paginationModel={paginationModel}
-          pageSizeOptions={[5, 10, 25]}
-          checkboxSelection
-          sx={{
-            border: 0,
-            "& .MuiDataGrid-cell:focus": {
-              outline: "none",
-            },
-            "& .MuiDataGrid-columnHeader:focus": {
-              outline: "none",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: "1px solid #f0f0f0",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f9fafb",
-              borderRadius: "8px 8px 0 0",
-            },
-            "& .MuiCheckbox-root": {
-              color: "#9ca3af",
-            },
-          }}
-        />
+        <Box sx={{ width: "100%" }}>
+          <Box sx={{ height: 360, width: "100%", marginTop: 2 }}>
+            <DataGridPremium
+              rows={expenses}
+              columns={expenseColumns}
+              initialState={{
+                pagination: { paginationModel: { page: 0, pageSize: 5 } },
+                sorting: {
+                  sortModel: [{ field: "date", sort: "desc" }],
+                },
+              }}
+              paginationModel={paginationModel}
+              pageSizeOptions={[5, 10, 25]}
+              checkboxSelection
+              density="comfortable"
+              sx={{
+                overflowY: "scroll",
+                border: 0,
+                "& .MuiDataGrid-cell:focus": {
+                  outline: "none",
+                },
+                "& .MuiDataGrid-columnHeader:focus": {
+                  outline: "none",
+                },
+                "& .MuiDataGrid-cell": {
+                  borderBottom: "1px solid #f0f0f0",
+                },
+                "& .MuiDataGrid-columnHeaders": {
+                  backgroundColor: "#f9fafb",
+                  borderRadius: "8px 8px 0 0",
+                },
+                "& .MuiCheckbox-root": {
+                  color: "#9ca3af",
+                },
+              }}
+            />
+          </Box>
+        </Box>
       </div>
     </section>
   );
 };
 
-export default Expense;
+export default ExpenseSection;

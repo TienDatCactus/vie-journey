@@ -135,7 +135,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
       animate={{ opacity: 1, height: "auto", y: 0 }}
       exit={{ opacity: 0, height: 0, y: -20 }}
       transition={{ duration: 0.3 }}
-      className="w-full h-full flex flex-col bg-white rounded-lg shadow-lg overflow-hidden"
+      className="w-full h-full flex flex-col bg-white  shadow-lg overflow-hidden"
     >
       {/* Header with image */}
       <div className="relative lg:h-64">

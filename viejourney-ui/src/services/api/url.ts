@@ -53,6 +53,7 @@ export const TRIP = {
 
 export const ASSET = {
   UPLOAD: "/assets/image",
+  LANDING: "/assets/landing",
 };
 
 export const BLOG = {

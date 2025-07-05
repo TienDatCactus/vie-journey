@@ -1,17 +1,17 @@
 import {
   AccessTime,
   AttachMoney,
+  Clear,
   DirectionsBus,
   DirectionsCar,
   DirectionsWalk,
   Edit,
   Place,
+  Save,
   Settings,
 } from "@mui/icons-material";
 import {
   Autocomplete,
-  Button,
-  ButtonGroup,
   Card,
   CardContent,
   CardMedia,
@@ -26,17 +26,17 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import {
-  DateRangePicker,
-  MobileTimeRangePicker,
-} from "@mui/x-date-pickers-pro";
+import { DateRangePicker, TimePicker } from "@mui/x-date-pickers-pro";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "motion/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { useSocket } from "../../../../../../services/context/socketContext";
 import { Itinerary } from "../../../../../../services/stores/storeInterfaces";
+import { useDirectionStore } from "../../../../../../services/stores/useDirectionStore";
+import { useMapPan } from "../../../../../../services/stores/useMapPan";
 import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
 import {
   getDatesBetween,
@@ -45,10 +45,7 @@ import {
 import { useAutocompleteSuggestions } from "../../../../../../utils/hooks/use-autocomplete-suggestion";
 import { useDirections } from "../../../../../../utils/hooks/use-directions";
 import { useFetchPlaceDetails } from "../../../../../../utils/hooks/use-fetch-place";
-import { useMapPan } from "../../../../../../services/stores/useMapPan";
-import { useDirectionStore } from "../../../../../../services/stores/useDirectionStore";
 import PlaceSuggestion from "./elements/PlaceSuggestion";
-import { useSocket } from "../../../../../../services/context/socketContext";
 interface DaySectionProps {
   date: string;
 }
@@ -64,34 +61,28 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
   const [localNote, setLocalNote] = useState(itinerary.note);
   const { setSelected } = useMapPan();
   const { removePlaceId } = useDirectionStore();
+  const [isOpen, setIsOpen] = useState(false);
   const { socket } = useSocket();
-  const [edit, setEdit] = useState({
-    cost: {
-      isEditing: false,
-      value: itinerary.cost || "",
-    },
-    time: {
-      isEditing: false,
-      value: {
-        startTime: itinerary.time.startTime || "",
-        endTime: itinerary.time.endTime || "",
-      },
-    },
+  const [edit, setEdit] = useState<{ cost?: number; time?: string }>({
+    cost: itinerary.place?.cost || undefined,
+    time: itinerary.place?.time || "",
   });
+
   const handleUpdateItinerary = () => {
     socket?.emit("planItemUpdated", {
       section: "itineraries",
       item: {
         id: itinerary.id,
         note: localNote,
-        time: {
-          startTime: edit.time.value.startTime,
-          endTime: edit.time.value.endTime,
+        place: {
+          ...itinerary.place,
+          time: edit.time,
+          cost: edit.cost,
         },
       },
     });
   };
-
+  console.log(itinerary.place);
   const handleDeleteItinerary = (id: string) => {
     socket?.emit("planItemDeleted", {
       section: "itineraries",
@@ -101,204 +92,208 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
   };
   return (
     <>
-      <Card
-        elevation={0}
-        className="w-full z-20 grid lg:grid-cols-3 rounded-xl min-h-48 max-h-fit lg:min-h-52 flex-col space-x-4 relative "
-      >
-        <CardContent className="lg:py-4 justify-between flex min-h-48 max-h-fit lg:min-h-56 flex-col bg-neutral-200 rounded-xl col-span-2 ">
-          <div className="space-y-2">
+      <div className="relative">
+        <IconButton
+          className="absolute -top-4 -left-4 z-10"
+          onClick={() => handleDeleteItinerary(itinerary.id)}
+        >
+          <Clear />
+        </IconButton>
+        <Card
+          elevation={0}
+          className="z-20 bg-neutral-50 border border-dashed border-neutral-500 w-full  rounded-xl min-h-42 max-h-fit lg:min-h-48 flex-col space-x-4 grid lg:grid-cols-6 "
+        >
+          <CardContent className="lg:py-4 lg:col-span-4 flex  flex-col  rounded-xl col-span-2 relative justify-between">
+            <div
+              className="inset-0 w-full h-full absolute"
+              onClick={() => setIsOpen(!isOpen)}
+            />
+            {/* Notes */}
             <h1 className="text-2xl font-semibold">
               {itinerary.place?.displayName}
             </h1>
-            {itinerary.place?.types && (
-              <Stack
-                direction="row"
-                alignItems="center"
-                flexWrap={"wrap"}
-                className="text-xs space-x-2 text-gray-600 font-medium line-clamp-1"
-              >
-                {itinerary.place?.types
-                  .filter((e) => e != "point_of_interest")
-                  .map((type, index) => (
-                    <Chip key={index} label={type} className="p-0" />
-                  ))}
-              </Stack>
+            {!itinerary.isEditing && (
+              <div className="flex justify-between  items-center  w-full flex-wrap gap-2">
+                <p className="text-sm text-gray-700 flex-1 min-w-0 break-words">
+                  <i className="text-neutral-700">Notes*: </i>
+                  {itinerary.note || (
+                    <span className="italic text-gray-400">No notes</span>
+                  )}
+                </p>
+                <IconButton
+                  className="hover:text-yellow-500"
+                  size="small"
+                  onClick={() => toggleEditItinerary(itinerary.id)}
+                >
+                  <Edit />
+                </IconButton>
+              </div>
             )}
-          </div>
+            {itinerary.isEditing && (
+              <div className="flex flex-col justify-between h-full text-sm">
+                <TextField
+                  variant="standard"
+                  placeholder="Add a note"
+                  fullWidth
+                  multiline
+                  maxRows={3}
+                  slotProps={{
+                    input: {
+                      disableUnderline: true,
+                      className: "text-base bg-transparent",
+                    },
+                  }}
+                  onChange={(e) => setLocalNote(e.target.value)}
+                  value={localNote}
+                />
 
-          {/* Notes */}
-          {!itinerary.isEditing && (
-            <div className="flex justify-between  items-center my-2 w-full flex-wrap gap-2">
-              <p className="text-sm text-gray-700 flex-1 min-w-0 break-words">
-                <i className="text-neutral-700">Notes*: </i>
-                {itinerary.note || (
-                  <span className="italic text-gray-400">No notes</span>
-                )}
-              </p>
-              <IconButton onClick={() => toggleEditItinerary(itinerary.id)}>
-                <Edit />
-              </IconButton>
-            </div>
-          )}
+                <div className="flex items-center gap-4">
+                  <TimePicker
+                    defaultValue={dayjs(itinerary.place?.time, "HH:mm")}
+                    slotProps={{
+                      textField: {
+                        variant: "standard",
+                        size: "small",
+                        className: "p-0 w-32",
+                        InputProps: { disableUnderline: true },
+                      },
+                    }}
+                    value={dayjs(edit.time, "HH:mm")}
+                    onChange={(newValue) => {
+                      setEdit((prev) => ({
+                        ...prev,
+                        time: newValue ? dayjs(newValue).format("HH:mm") : "",
+                      }));
+                    }}
+                  />
 
-          {itinerary.place?.editorialSummary && (
-            <p className="italic text-xs text-gray-600 font-semibold">
-              {itinerary.place?.editorialSummary}
-            </p>
-          )}
+                  <TextField
+                    type="number"
+                    variant="standard"
+                    size="small"
+                    placeholder="Cost"
+                    className="w-24"
+                    value={edit.cost}
+                    onChange={(e) =>
+                      setEdit((prev) => ({
+                        ...prev,
+                        cost: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
+                      }))
+                    }
+                    defaultValue={itinerary.place?.cost}
+                    slotProps={{
+                      htmlInput: {
+                        className: "p-0",
+                      },
 
-          {/* Time and Cost */}
-          {(itinerary.time.startTime || itinerary.cost) &&
-            !itinerary.isEditing && (
+                      input: {
+                        disableUnderline: true,
+                        className: "p-0",
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AttachMoney fontSize="small" />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    className="hover:text-blue-500"
+                    onClick={() => handleUpdateItinerary()}
+                  >
+                    <Save />
+                  </IconButton>
+                </div>
+              </div>
+            )}
+
+            {/* Time and Cost */}
+            {(itinerary.place?.time || itinerary.place?.cost) && (
               <div className="flex flex-col gap-2 mt-2">
-                {/* Display current time and cost if they exist */}
                 <div className="flex flex-wrap gap-2 text-sm text-gray-700">
-                  {itinerary.time.startTime && (
+                  {itinerary.place?.time && (
                     <Chip
                       icon={<AccessTime className="text-sm" />}
-                      label={`${itinerary.time.startTime}${
-                        itinerary.time.endTime
-                          ? ` - ${itinerary.time.endTime}`
-                          : ""
-                      }`}
-                      variant="outlined"
+                      label={itinerary.place?.time}
+                      variant="filled"
                       size="small"
                     />
                   )}
-                  {itinerary.cost && (
+                  {itinerary.place?.cost && (
                     <Chip
                       icon={<AttachMoney className="text-sm" />}
-                      label={itinerary.cost}
-                      variant="outlined"
+                      label={itinerary.place?.cost}
+                      variant="filled"
                       size="small"
                     />
                   )}
                 </div>
               </div>
             )}
-        </CardContent>
+          </CardContent>
 
-        {/* Place Image */}
-        <div className="relative col-span-1 w-full h-full rounded-lg group items-center flex">
-          <CardMedia
-            component="img"
-            src={
-              (itinerary.place?.photo &&
-                getPlacePhotoUrl(itinerary.place?.photo)) ||
-              "/images/place-placeholder.png"
-            }
-            alt={itinerary.place?.displayName || "Place image"}
-            className="object-cover  w-full h-full max-h-56 rounded-lg cursor-pointer"
-          />
-          <div
-            className="cursor-pointer group-hover:opacity-80 rounded-lg opacity-0 bg-black/30 inset-0 absolute transition-all duration-200 flex items-center justify-center"
-            onClick={() => {
-              if (itinerary.place) {
-                setSelected(itinerary.place);
-              }
-            }}
-          >
-            <p className="text-white">View</p>
-          </div>
-        </div>
-      </Card>
-      {itinerary.isEditing && (
-        <>
-          <TextField
-            variant="filled"
-            placeholder="Add a note"
-            multiline
-            fullWidth
-            slotProps={{
-              input: {
-                className: " py-4",
-              },
-            }}
-            onChange={(e) => {
-              setLocalNote(e.target.value);
-            }}
-            value={localNote}
-          />
-          <Stack
-            direction="row"
-            alignItems={"center"}
-            justifyContent={"space-between"}
-            spacing={1}
-          >
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <MobileTimeRangePicker
-                slotProps={{
-                  textField: {
-                    variant: "standard",
-                    size: "small",
-                    className: "w-48",
-                  },
-                }}
-                className="my-2"
-                value={[
-                  dayjs(edit.time.value.startTime, "HH:mm"),
-                  dayjs(edit.time.value.endTime, "HH:mm"),
-                ]}
-                onChange={(newValue) => {
-                  setEdit((prev) => ({
-                    ...prev,
-                    time: {
-                      ...prev.time,
-                      value: {
-                        startTime:
-                          (newValue && newValue[0]?.format("HH:mm")) || "",
-                        endTime:
-                          (newValue && newValue[1]?.format("HH:mm")) || "",
-                      },
-                    },
-                  }));
-                }}
-              />
-              <TextField
-                type="number"
-                variant="standard"
-                placeholder="Add cost"
-                size="small"
-                className="w-48 my-2"
-                value={edit.cost.value}
-                onChange={(e) =>
-                  setEdit((prev) => ({
-                    ...prev,
-                    cost: {
-                      ...prev.cost,
-                      value: e.target.value,
-                    },
-                  }))
+          {/* Place Image */}
+          <div className=" lg:col-span-2 relative">
+            <div className="w-full absolute lg:top-2 lg:right-2 group  items-center flex">
+              <CardMedia
+                component="img"
+                src={
+                  (itinerary.place?.photo &&
+                    getPlacePhotoUrl(itinerary.place?.photo)) ||
+                  "/images/place-placeholder.png"
                 }
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AttachMoney />
-                    </InputAdornment>
-                  ),
-                }}
+                alt={itinerary.place?.displayName || "Place image"}
+                className="object-cover w-full h-40 rounded-lg cursor-pointer"
               />
-            </Stack>
-            <ButtonGroup>
-              <Button
-                color="primary"
-                variant="text"
-                className="h-fit"
-                onClick={handleUpdateItinerary}
+              <div
+                className="cursor-pointer group-hover:opacity-80  opacity-0 bg-black/30 inset-0 absolute transition-all w-full h-auto duration-200 flex items-center justify-center"
+                onClick={() => {
+                  if (itinerary.place) {
+                    setSelected(itinerary.place);
+                  }
+                }}
               >
-                Save
-              </Button>
-              <Button
-                color="error"
-                variant="text"
-                className="h-fit"
-                onClick={() => handleDeleteItinerary(itinerary.id)}
-              >
-                Delete
-              </Button>
-            </ButtonGroup>
-          </Stack>
-        </>
+                <p className="text-white">View</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {isOpen && (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            className="flex flex-col gap-2 mt-2"
+          >
+            <div className="space-y-2">
+              {itinerary.place?.types && (
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  flexWrap={"wrap"}
+                  className="text-xs space-x-2 text-gray-600 font-medium line-clamp-1"
+                >
+                  {itinerary.place?.types
+                    .filter((e) => e != "point_of_interest")
+                    .map((type, index) => (
+                      <Chip key={index} label={type} className="p-0" />
+                    ))}
+                </Stack>
+              )}
+            </div>
+            {itinerary.place?.editorialSummary && (
+              <p className="italic text-xs text-gray-600 font-semibold line-clamp-2">
+                {itinerary.place?.editorialSummary}
+              </p>
+            )}
+          </motion.div>
+        </AnimatePresence>
       )}
     </>
   );
@@ -475,7 +470,7 @@ const DaySectionPlaceFinder = ({
         <TextField
           {...params}
           value={destination}
-          className="rounded-lg"
+          className=""
           size="small"
           fullWidth
           placeholder="Add a place to visit..."
@@ -488,7 +483,7 @@ const DaySectionPlaceFinder = ({
           onChange={handleInputChange}
           InputProps={{
             ...params.InputProps,
-            className: "rounded-lg py-2 border-gray-300",
+            className: " py-2 border-gray-300",
             startAdornment: (
               <InputAdornment position="start">
                 <Place color={errors.place ? "error" : "action"} />
@@ -549,15 +544,15 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
           photo: placeDetails?.photos
             ? getPlacePhotoUrl(placeDetails?.photos[0])
             : "",
-          editorialSummary: placeDetails?.editorialSummary || "",
+          editorialSummary:
+            placeDetails?.editorialSummary ||
+            "No summary available, please refer to the location details.",
           location: {
             lat: placeDetails?.location?.lat() || 0,
             lng: placeDetails?.location?.lng() || 0,
           },
-        },
-        time: {
-          startTime: "",
-          endTime: "",
+          time: "",
+          cost: "",
         },
         isEditing: true,
       };
@@ -632,9 +627,10 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
 
 const ItinerarySection: React.FC<ItineraryProps> = () => {
   const trip = useTripDetailStore((state) => state.trip);
-  const generatedDates = getDatesBetween(trip.startDate, trip.endDate);
+  console.log(trip);
+  const generatedDates = getDatesBetween(trip?.startDate, trip?.endDate);
   return (
-    <section className="pt-10">
+    <section className="pt-10" id="itinerary">
       <div className="bg-white lg:p-10 lg:px-12">
         <Stack
           direction={"row"}
@@ -665,7 +661,7 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
                 },
               },
             }}
-            defaultValue={[dayjs(trip.startDate), dayjs(trip.endDate)]}
+            defaultValue={[dayjs(trip?.startDate), dayjs(trip?.endDate)]}
           />
         </Stack>
         <ul className="list-none py-2 ">

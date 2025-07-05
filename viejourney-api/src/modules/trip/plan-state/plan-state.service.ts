@@ -49,23 +49,50 @@ export interface Itinerary {
       lat: number;
       lng: number;
     }; // Location coordinates
+    time?: string; // ISO time string
+    cost?: number;
   };
   note: string;
-  time: {
-    startTime: string; // ISO time string
-    endTime: string; // ISO time string
-  };
-  cost?: string;
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
   isEditing?: boolean;
+}
+
+export interface Expense {
+  id: string;
+  amount: number;
+  currency: string;
+  type:
+    | 'Flights'
+    | 'Lodging'
+    | 'Car rental'
+    | 'Transit'
+    | 'Food'
+    | 'Drinks'
+    | 'Sightseeing'
+    | 'Activities'
+    | 'Shopping'
+    | 'Gas'
+    | 'Groceries'
+    | 'Other';
+  desc: string;
+  payer: string;
+  splits: {
+    splitWith: string[];
+    amount: number;
+    isSettled: boolean;
+  };
+}
+export interface Budgeting {
+  budget: number;
+  expenses: Expense[];
 }
 export interface Plan {
   notes: Note[];
   transits: Transit[];
   places: Place[];
   itineraries: Itinerary[];
-  expenses: { placeholder1: string; placeholder2: string };
+  budgeting: Budgeting;
 }
 
 export type PlanSection = keyof Plan;
@@ -174,14 +201,18 @@ export class PlanStateService {
     }
   }
 
-  savePlan(tripId: string) {
-    const plan = this.planStates.get(tripId);
-    if (!plan) return;
-
-    // NOTE: Persist plan state in db
+  async savePlan(tripId: string) {
+    const state = this.planStates.get(tripId);
+    if (!state) return;
+    try {
+      await this.tripService.updatePlan(tripId, state.plan);
+      console.log(`Plan saved for trip: ${tripId}`);
+    } catch (error) {
+      console.error(`Failed to save plan for trip: ${tripId}`, error);
+    }
   }
 
-  private scheduleSave(tripId: string) {
+  scheduleSave(tripId: string) {
     const state = this.planStates.get(tripId);
     if (!state) return;
     if (state.timeout) clearTimeout(state.timeout);
@@ -191,7 +222,7 @@ export class PlanStateService {
     );
   }
 
-  private getOrCreatePlan(tripId: string): Plan {
+  getOrCreatePlan(tripId: string): Plan {
     let state = this.planStates.get(tripId);
     if (!state) {
       state = {
@@ -200,11 +231,20 @@ export class PlanStateService {
           places: [],
           transits: [],
           itineraries: [],
-          expenses: { placeholder1: '', placeholder2: '' },
+          budgeting: {
+            budget: 0,
+            expenses: [],
+          },
         },
       };
       this.planStates.set(tripId, state);
     }
     return state.plan;
+  }
+  public initializePlan(tripId: string, plan: Plan): void {
+    this.planStates.set(tripId, {
+      plan,
+      timeout: undefined,
+    });
   }
 }

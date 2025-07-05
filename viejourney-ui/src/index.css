@@ -86,6 +86,7 @@ html.dark {
 
 * {
   font-family: "Mona Sans", sans-serif;
+  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   font-optical-sizing: auto;
   -moz-osx-font-smoothing: antialiased;
@@ -99,9 +100,22 @@ input:-webkit-autofill:active {
 }
 
 *::-webkit-scrollbar {
-  display: none;
-}
+  border-radius: 0;
+  background-color: transparent;
+  border-color: black;
 
+  width: 8px;
+  height: 8px;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+}
+::-webkit-scrollbar-thumb {
+  background: #888;
+  width: 8px;
+  height: 8px;
+}
 .swiper {
   width: 240px;
   height: 320px;

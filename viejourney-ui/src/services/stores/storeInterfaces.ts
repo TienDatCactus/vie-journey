@@ -1,4 +1,4 @@
-import { UserInfo } from "../../utils/interfaces";
+import { Account, UserInfo } from "../../utils/interfaces";
 
 export interface NoteData {
   id: string;
@@ -10,7 +10,7 @@ export interface NoteData {
 }
 
 export interface TransitData {
-  id?: string;
+  id: string;
   note: string;
   cost: number;
   currency: string;
@@ -70,26 +70,38 @@ export interface Itinerary {
       lat: number;
       lng: number;
     }; // Location coordinates
+    time?: string;
+    cost?: number;
   };
   note: string;
-  time: {
-    startTime: string; // ISO time string
-    endTime: string; // ISO time string
-  };
-  cost?: string;
+
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
   isEditing?: boolean;
 }
 
 export interface Expense {
-  _id: string;
-  paidAt: string; // place title
-  paidBy: UserInfo;
-  paidOn: string; // ISO date string
+  id?: string;
   amount: number;
-  type: string;
   currency: string;
-  createdAt?: string; // ISO date string
-  updatedAt?: string; // ISO date string
+  type:
+    | "Flights"
+    | "Lodging"
+    | "Car rental"
+    | "Transit"
+    | "Food"
+    | "Drinks"
+    | "Sightseeing"
+    | "Activities"
+    | "Shopping"
+    | "Gas"
+    | "Groceries"
+    | "Other";
+  desc: string;
+  payer: string;
+  splits: {
+    splitWith: string[];
+    amount: number;
+    isSettled: boolean;
+  };
 }

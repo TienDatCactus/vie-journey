@@ -134,7 +134,7 @@ const PlacesFinder = ({
         <TextField
           {...params}
           value={destination}
-          className="rounded-lg"
+          className=""
           size="small"
           fullWidth
           placeholder="Add a place to visit..."
@@ -147,7 +147,7 @@ const PlacesFinder = ({
           onChange={handleInputChange}
           InputProps={{
             ...params.InputProps,
-            className: "rounded-lg py-2 border-gray-300",
+            className: " py-2 border-gray-300",
             startAdornment: (
               <InputAdornment position="start">
                 <Place color={errors.place ? "error" : "action"} />
@@ -540,7 +540,7 @@ const ReservationPlaces: React.FC = () => {
   };
 
   return (
-    <div className="bg-white py-4 rounded">
+    <div className="bg-white py-4 rounded" id="places">
       <div
         className="flex items-center justify-between px-4 cursor-pointer"
         onClick={() => setExpanded((prev) => !prev)}
@@ -565,7 +565,7 @@ const ReservationPlaces: React.FC = () => {
 
               {/* Place notes list */}
               {placeNotes.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                <div className="text-center py-8 bg-gray-50  border border-dashed border-gray-300">
                   <p className="text-gray-500 mb-2">No places added yet</p>
                   <p className="text-sm text-gray-400">
                     Search for places using the search box below

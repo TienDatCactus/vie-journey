@@ -101,7 +101,13 @@ const CreateTripDetails: React.FC = () => {
       } else if (data.section == "transits") {
         updateTransit(data.item.id, data.item);
       } else if (data.section == "itineraries") {
-        updateItinerary(data.item.id, { note: data.item.note });
+        console.log("itinerary updated:", data);
+        updateItinerary(data.item.id, {
+          note: data.item.note,
+          place: {
+            ...data.item.place,
+          },
+        });
         toggleEditItinerary(data.item.id);
       }
     });

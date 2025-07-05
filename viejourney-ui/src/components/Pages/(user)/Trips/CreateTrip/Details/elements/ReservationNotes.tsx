@@ -161,6 +161,11 @@ const NotesCard: React.FC<NotesCardProps> = ({
           <TextField
             className="border-none py-2"
             variant="standard"
+            slotProps={{
+              input: {
+                disableUnderline: true,
+              },
+            }}
             defaultValue={localContent}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -197,7 +202,7 @@ const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
   const notes = useTripDetailStore((state) => state.notes);
   const [expanded, setExpanded] = useState(false);
 
-  const { updateNote, toggleEditNote, deleteNote } = useTripDetailStore();
+  const { updateNote, toggleEditNote } = useTripDetailStore();
   const { socket } = useSocket();
   const handleAddNote = () => {
     socket?.emit("planItemAdded", {
@@ -225,7 +230,7 @@ const ReservationNotes: React.FC<ReservationNotesProps> = (props) => {
   };
 
   return (
-    <div className="bg-white py-4 rounded">
+    <div className="bg-white py-4 rounded" id="notes">
       <div
         className="flex items-center justify-between cursor-pointer p-4"
         onClick={() => setExpanded((prev) => !prev)}

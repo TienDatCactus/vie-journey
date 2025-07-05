@@ -106,7 +106,6 @@ const Map: React.FC<MapProps> = ({
   children,
   showDetailsControl = true,
   detailed = true,
-  initialCenter,
   position = "relative",
   ...mapProps
 }) => {
@@ -192,7 +191,6 @@ const Map: React.FC<MapProps> = ({
           {...mapProps}
           style={containerStyle}
           mapId={import.meta.env.VITE_GOOGLE_MAPS_ID}
-          center={initialCenter}
         >
           {originPlaceId &&
             destinationPlaceId &&

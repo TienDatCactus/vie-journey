@@ -9,10 +9,17 @@ import { JwtModule } from '@nestjs/jwt';
 import { TripSchema } from 'src/infrastructure/database/trip.schema';
 import { Trip } from 'src/common/entities/trip.entity';
 import { PlanStateService } from './plan-state/plan-state.service';
+import { TripPlanSchema } from 'src/infrastructure/database/plan.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Trip.name, schema: TripSchema }]),
+    MongooseModule.forFeature([
+      { name: Trip.name, schema: TripSchema },
+      {
+        name: 'Plan',
+        schema: TripPlanSchema,
+      },
+    ]),
     JwtModule,
     AccountModule,
     forwardRef(() => AuthModule),

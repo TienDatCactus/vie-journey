@@ -128,7 +128,7 @@ export default function NewPostDialog({
       maxWidth="md"
       fullWidth
       PaperProps={{
-        className: "rounded-lg",
+        className: "",
       }}
     >
       <form onSubmit={handleSubmit}>
@@ -273,7 +273,7 @@ export default function NewPostDialog({
                   <img
                     src={imagePreview || "/placeholder.svg"}
                     alt="Cover preview"
-                    className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                    className="w-full h-48 object-cover  border border-gray-200"
                   />
                   <IconButton
                     onClick={handleRemoveImage}
@@ -285,7 +285,7 @@ export default function NewPostDialog({
                 </div>
 
                 {/* File Info */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-gray-50 ">
                   <div>
                     <Typography
                       variant="body2"
@@ -310,7 +310,7 @@ export default function NewPostDialog({
                 </div>
               </div>
             ) : (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition-colors">
+              <div className="border-2 border-dashed border-gray-300  p-6 text-center hover:border-indigo-400 transition-colors">
                 <input
                   type="file"
                   accept="image/*"

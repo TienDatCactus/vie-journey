@@ -27,7 +27,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('blogs')
 export class BlogController {
-  constructor(private readonly blogService: BlogService) { }
+  constructor(private readonly blogService: BlogService) {}
 
   @Get('home')
   async getAllApprovedBlogs(
@@ -56,7 +56,6 @@ export class BlogController {
       throw new BadRequestException('User ID not found in request');
     }
     return this.blogService.getUserBlogs(userId, status);
-  }
   }
 
   @Get(':id')
