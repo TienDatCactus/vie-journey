@@ -10,7 +10,7 @@ const carouselData = [
   {
     id: 1,
     number: "01",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/welcome-banner.jpg",
     title: "We don't just plan vacations; we create journeys",
     description:
       "tailored to your dreams, ensuring every moment is unforgettable.",
@@ -19,7 +19,7 @@ const carouselData = [
   {
     id: 2,
     number: "02",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/welcome-banner.jpg",
     title: "With our trusted local partners, you'll discover",
     description:
       "hidden spots and cultural experiences that most travelers never get to see.",
@@ -28,7 +28,7 @@ const carouselData = [
   {
     id: 3,
     number: "03",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/welcome-banner.jpg",
     title: "Experience authentic adventures beyond",
     description:
       "the typical tourist path with our carefully curated local experiences.",
@@ -37,7 +37,7 @@ const carouselData = [
   {
     id: 4,
     number: "04",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/welcome-banner.jpg",
     title: "Create memories that last a lifetime",
     description:
       "with personalized itineraries designed just for you and your loved ones.",

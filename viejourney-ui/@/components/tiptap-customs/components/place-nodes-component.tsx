@@ -105,7 +105,6 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
           const placeDetails = await fetchPlaceDetail(
             suggestion.placePrediction.placeId
           );
-          console.log("Fetched place details:", placeDetails);
           updateAttributes({
             place: placeDetails,
           });
@@ -130,7 +129,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
         try {
           return photo.getUrl({ maxWidth: 800 });
         } catch (e) {
-          console.log("getUrl with params failed", e);
+          console.error("getUrl with params failed", e);
         }
       }
 
@@ -139,7 +138,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
         try {
           return photo.getUrl();
         } catch (e) {
-          console.log("getUrl without params failed", e);
+          console.error("getUrl without params failed", e);
         }
       }
 
@@ -148,7 +147,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
         try {
           return photo.getURI();
         } catch (e) {
-          console.log("getURI failed", e);
+          console.error("getURI failed", e);
         }
       }
 
@@ -194,7 +193,6 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
   const renderPlaceDetails = () => {
     const { place } = node.attrs;
 
-    console.log(place);
     if (loading) {
       return (
         <Card className="mt-2">
@@ -210,7 +208,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
     if (!place) return null;
 
     return (
-      <div className="mt-2 border border-gray-200 shadow-sm rounded-lg bg-white">
+      <div className="mt-2 border border-gray-200 shadow-sm bg-white">
         <div className="grid lg:grid-cols-3 items-start justify-between">
           <div className="lg:col-span-2 p-4 space-y-4">
             <h1 className="text-xl font-semibold">{place.displayName}</h1>
@@ -281,15 +279,11 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
             </div>
             {place.photos && (
               <div className="flex gap-2 overflow-x-auto pb-2">
-                <div className=" rounded-lg overflow-hidden">
+                <div className="  overflow-hidden">
                   <img
                     src={getPlacePhotoUrl(place.photos[0])}
                     alt={`${place.displayName} - Photo 1`}
                     className="w-full h-auto object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/images/placeholder-main.png"; // Fallback
-                    }}
                   />
                 </div>
               </div>
@@ -324,7 +318,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
               <TextField
                 {...params}
                 value={inputValue}
-                className="rounded-lg"
+                className=""
                 size="small"
                 fullWidth
                 placeholder="e.g Ta xua, Sapa, Da Nang"
@@ -378,7 +372,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
           {node.attrs.place ? (
             renderPlaceDetails()
           ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="bg-gray-50 border border-gray-200  p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <LocationOn className="text-gray-600" />

@@ -9,14 +9,18 @@ import {
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
 import React, { useEffect } from "react";
+import { useDirectionStore } from "../../services/stores/useDirectionStore";
+import { useMapPan } from "../../services/stores/useMapPan";
 import useCategorySearch from "../../utils/hooks/use-category-search";
 import { useMapLoader } from "../../utils/hooks/use-map-loader";
 import usePOI from "../../utils/hooks/use-poi";
+import { MarkerCluster, PlaceMarker } from "./controls";
 import CurrentLocationControl from "./controls/CurrentLocationControl";
+import { DirectionsRender } from "./controls/DirectionRender";
+import GeneralFilter from "./controls/GeneralFilter";
 import POIDetails from "./controls/POIDetails";
 import { MapProps, POIData } from "./types";
-import GeneralFilter from "./controls/GeneralFilter";
-import { MarkerCluster } from "./controls";
+import { useFetchPlaceDetails } from "../../utils/hooks/use-fetch-place";
 
 // Map configuration component with POI click disabling
 const MapConfiguration: React.FC<{
@@ -27,7 +31,6 @@ const MapConfiguration: React.FC<{
   const mapInstance = useMap();
   const coreLib = useMapsLibrary("core");
   const placesLib = useMapsLibrary("places");
-
   useEffect(() => {
     if (!mapInstance || !coreLib || !placesLib) return; // Disable Google Maps analytics collection to prevent CSP errors
     if (window.google && window.google.maps) {
@@ -93,8 +96,6 @@ const MapConfiguration: React.FC<{
   return null;
 };
 
-// Props for our custom Map component
-
 // Main Map component
 const Map: React.FC<MapProps> = ({
   containerStyle = { width: "100vw", height: "100vh" },
@@ -105,10 +106,13 @@ const Map: React.FC<MapProps> = ({
   children,
   showDetailsControl = true,
   detailed = true,
-  initialCenter,
   position = "relative",
   ...mapProps
 }) => {
+  const { fetchPlaceDetail } = useFetchPlaceDetails();
+  const { selected } = useMapPan();
+  const [place, setPlace] = React.useState<POIData | null>(null);
+
   const isApiLoaded = useApiIsLoaded();
   const {
     selectedCategories,
@@ -127,8 +131,41 @@ const Map: React.FC<MapProps> = ({
     handlePOIClick,
   } = usePOI();
 
+  const mapInstance = useMap();
   const { locationError, error, handleLocationFound, handleLocationError } =
     useMapLoader({ onLoad, onError });
+
+  const { places, travelMode } = useDirectionStore();
+
+  const originPlaceId = places[0]?.id;
+  const destinationPlaceId = places[places.length - 1]?.id;
+
+  const groupedByDate = places.reduce((acc, place) => {
+    const date = place.fromDate;
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(place);
+    return acc;
+  }, {} as Record<string, { id: string; fromDate: string }[]>);
+
+  useEffect(() => {
+    const fetchPlace = async () => {
+      if (selected) {
+        const res = await fetchPlaceDetail(selected?.placeId || "");
+        setPlace(res || null);
+      }
+    };
+    fetchPlace();
+  }, [selected, fetchPlaceDetail]);
+
+  useEffect(() => {
+    if (selected && mapInstance && selected.location) {
+      mapInstance.panTo({
+        lat: selected.location.lat || 0,
+        lng: selected.location.lng || 0,
+      });
+      mapInstance.setZoom(20);
+    }
+  }, [selected, mapInstance]);
 
   return (
     <Box sx={{ position: position, width: "100%", height: "100%" }}>
@@ -154,8 +191,31 @@ const Map: React.FC<MapProps> = ({
           {...mapProps}
           style={containerStyle}
           mapId={import.meta.env.VITE_GOOGLE_MAPS_ID}
-          center={initialCenter}
         >
+          {originPlaceId &&
+            destinationPlaceId &&
+            Object.entries(groupedByDate).map(([date, groupedPlaces]) => {
+              if (groupedPlaces.length < 2) return null;
+
+              const origin = groupedPlaces[0].id;
+              const destination = groupedPlaces[groupedPlaces.length - 1].id;
+              const waypoints = groupedPlaces.slice(1, -1).map((p) => p.id);
+
+              return (
+                <DirectionsRender
+                  key={date}
+                  originPlaceId={origin}
+                  destinationPlaceId={destination}
+                  waypointsPlaceIds={waypoints}
+                  travelMode={travelMode || google.maps.TravelMode.DRIVING}
+                  fromDate={date}
+                />
+              );
+            })}
+
+          {selected && (
+            <PlaceMarker place={place || undefined} onClick={handlePOIClick} />
+          )}
           <CurrentLocationControl
             onLocationFound={handleLocationFound}
             onLocationError={handleLocationError}

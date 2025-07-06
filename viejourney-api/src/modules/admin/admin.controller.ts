@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,25 +8,21 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
-  Req,
-  UseInterceptors,
-  BadRequestException,
   UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { AdminService } from './admin.service';
-import { UserService } from '../userinfo/user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateAccountDto } from 'src/common/dtos/create-account.dto';
-import { RolesGuard } from 'src/common/guards/role.guard';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
+import { CreateAccountDto } from 'src/common/dtos/create-account.dto';
 import { UpdateUserInfoDto } from 'src/common/dtos/update-userinfo.dto';
-import { FilterUserDto } from 'src/common/dtos/filter-userinfo.dto';
-@UseGuards(RolesGuard, JwtAuthGuard)
-// @Roles(Role.Admin)
+import { Role } from 'src/common/enums/role.enum';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/role.guard';
+import { UserService } from '../userinfo/user.service';
+import { AdminService } from './admin.service';
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.Admin)
 @Controller('admin')
 export class AdminController {
   constructor(
@@ -33,11 +30,31 @@ export class AdminController {
     private readonly userService: UserService,
   ) {}
 
+  @Get('assets/landing')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async getAllBannersBySubsection() {
+    return this.adminService.fetchAllBannersBySubsection();
+  }
+
+  @Get('banner/subsection')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async getSubsection() {
+    return this.adminService.getSubsection();
+  }
+
   @Get('assets')
-  async getAssetsByType(@Query('type') type: string) {
-    return this.adminService.getAssetsByType(type);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async getAssetsByType(
+    @Query('type') type: string,
+    @Query('subsection') subsection?: string,
+  ) {
+    return this.adminService.getAssetsByType(type, subsection);
   }
   @Delete('assets/delete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   async deleteAssetById(@Query('id') id: string) {
     return this.adminService.deleteAssetById(id);
   }
@@ -65,6 +82,8 @@ export class AdminController {
 
   // addAsset/banner
   @Post('assets')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -81,8 +100,10 @@ export class AdminController {
   addAssetBanner(
     @UploadedFile() file: Express.Multer.File,
     @Body('userId') userId: string,
+    @Body('type') type: string,
+    @Body('subsection') subsection?: string,
   ) {
-    return this.adminService.addAssetBanner(file, userId);
+    return this.adminService.addAssetSystem(file, userId, type, subsection);
   }
 
   @Get('accounts')
@@ -122,20 +143,49 @@ export class AdminController {
   async getCommentsReport() {
     return this.adminService.getCommentsReport();
   }
-
   @Get('users')
-  async getAllUsers() {
-    return this.userService.getAllUser();
+  async getAllUsers(@Query() query: any) {
+    const filter = {
+      role: query.role,
+      status: query.status,
+      username: query.username,
+      userId: query.userId,
+      email: query.email,
+    };
+
+    const pagination =
+      query.page && query.pageSize
+        ? {
+            page: parseInt(query.page),
+            pageSize: parseInt(query.pageSize),
+          }
+        : undefined;
+
+    return this.userService.getAllUser(filter, pagination);
   }
 
   @Get('users/filter')
-  async getFilterUsers(@Query() filter: FilterUserDto) {
-    return this.userService.getAllUsers(filter);
+  async getFilterUsers(@Query() query: any) {
+    const filter = {
+      role: query.role,
+      status: query.status,
+      username: query.username,
+      userId: query.userId,
+      email: query.email,
+    };
+
+    return this.userService.getAllUser(filter);
   }
 
   @Post('users/paginate')
-  async getPaginatedUsers(@Body() paginationDto: PaginationDto) {
-    return this.userService.getPaginatedUsers(paginationDto);
+  async getPaginatedUsers(@Body() body: any) {
+    const filter = body.filter || {};
+    const pagination = {
+      page: body.page,
+      pageSize: body.pageSize,
+    };
+
+    return this.userService.getAllUser(filter, pagination);
   }
 
   @Get('users/:id')
@@ -154,5 +204,31 @@ export class AdminController {
   @Delete('userInfo/:id')
   async deleteUserInfo(@Param('id') id: string) {
     return this.userService.deleteUserInfo(id);
+  }
+
+  @Patch('users/:id/role')
+  async updateUserRole(@Param('id') id: string, @Body('role') role: string) {
+    const validRoles = ['USER', 'ADMIN', 'MANAGER'];
+    if (!validRoles.includes(role)) {
+      throw new BadRequestException(
+        `Invalid role. Must be one of: ${validRoles.join(', ')}`,
+      );
+    }
+
+    return this.userService.updateUserRole(id, role);
+  }
+
+  @Patch('users/:id/ban')
+  async banUser(@Param('id') id: string, @Body('reason') reason: string) {
+    if (!reason || reason.trim().length === 0) {
+      throw new BadRequestException('Ban reason is required');
+    }
+
+    return this.adminService.banUser(id, reason);
+  }
+
+  @Patch('users/:id/unban')
+  async unbanUser(@Param('id') id: string) {
+    return this.adminService.unbanUser(id);
   }
 }

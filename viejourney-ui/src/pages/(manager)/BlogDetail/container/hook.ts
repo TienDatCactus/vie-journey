@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { getBlogDetail } from "../../../../services/api/blog";
+import { banAuthor, getBlogDetail, updateStatusBlog } from "../../../../services/api/blog";
 import { IBlogDetail } from "../../../../utils/interfaces/blog";
+import { enqueueSnackbar } from "notistack";
 
 function useBlogDetail({ id }: { id: string }) {
   const [blog, setBlog] = useState<IBlogDetail>();
@@ -16,10 +17,40 @@ function useBlogDetail({ id }: { id: string }) {
     }
   };
 
+  const handleUpdateStatus = async (
+    id: string,
+    status: "APPROVED" | "REJECTED"
+  ) => {
+    try {
+      const res = await updateStatusBlog(id, status);
+      if (res) {
+        enqueueSnackbar("Update status blog successful", {
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleBanAuthor = async(id: string, reason: string) => {
+    try {
+      const res = await banAuthor(id, reason);
+      if (res) {
+        enqueueSnackbar("Ban author successful", {
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
   useEffect(() => {
     handleGetBlogDetail();
+    
   }, []);
-  return { blog };
+  return { blog, handleUpdateStatus, handleBanAuthor};
 }
 
 export default useBlogDetail;

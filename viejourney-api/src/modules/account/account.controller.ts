@@ -23,7 +23,7 @@ import { RolesGuard } from 'src/common/guards/role.guard';
 import { Role } from 'src/common/enums/role.enum';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.Admin, Role.User)
+@Roles(Role.Admin, Role.User, Role.Manager)
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}

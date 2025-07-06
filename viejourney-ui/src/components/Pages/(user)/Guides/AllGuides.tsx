@@ -1,52 +1,31 @@
-import { Button, Grid2, Stack } from "@mui/material";
-import React from "react";
+import { Grid2 } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import GuideCard from "./_elements/GuideCard";
+import { IBlog } from "../../../../utils/interfaces/blog";
+import useBlogUser from "../../../../utils/hooks/user-blog-user";
 const AllGuides: React.FC = () => {
-  const fakeGuides: Array<{
-    img: string;
-    title: string;
-    description: string;
-    author: string;
-    likes: number;
-    views: number;
-  }> = [
-    {
-      img: "https://via.placeholder.com/150",
-      title: "Guide to the Mountains",
-      description: "A comprehensive guide to exploring the mountains.",
-      author: "John Doe",
-      likes: 120,
-      views: 3000,
-    },
-    {
-      img: "https://via.placeholder.com/150",
-      title: "City Adventures",
-      description: "Discover the hidden gems in the city.",
-      author: "Jane Smith",
-      likes: 95,
-      views: 2500,
-    },
-    {
-      img: "https://via.placeholder.com/150",
-      title: "Beach Escapes",
-      description: "Find the best beaches for your next vacation.",
-      author: "Emily Johnson",
-      likes: 150,
-      views: 4000,
-    },
-  ];
+  const [blogs, setBlogs] = useState<IBlog[]>();
+  const { getBlogList } = useBlogUser();
+
+  const fetchBlog = async () => {
+    const res = await getBlogList();
+    if (res) setBlogs(res);
+  };
+  useEffect(() => {
+    fetchBlog();
+  }, []);
   return (
-    <div className="w-full max-w-[1200px]">
-      <h1 className="mb-4 text-[1.25rem] font-bold">Recent guides</h1>
+    <div className="w-full max-w-[1200px] ">
+      <h1 className="mb-4 text-2xl font-bold ">Recent blogs</h1>
       <Grid2 container spacing={2}>
-        {!!fakeGuides.length &&
-          fakeGuides?.map((guide, index) => (
-            <Grid2 size={3}>
-              <GuideCard {...guide} index={index} />
+        {!!(blogs?.length) &&
+          blogs?.map((guide) => (
+            <Grid2 size={3} key={guide._id}>
+              <GuideCard {...guide}  />
             </Grid2>
           ))}
       </Grid2>
-      <Stack direction={"row"} justifyContent={"center"}>
+      <div className="flex justify-center mt-6">
         <Button
           variant="outlined"
           color="primary"
@@ -54,7 +33,7 @@ const AllGuides: React.FC = () => {
         >
           See more
         </Button>
-      </Stack>
+      </div>
     </div>
   );
 };

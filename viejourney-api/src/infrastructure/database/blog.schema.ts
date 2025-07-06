@@ -29,10 +29,18 @@ export class Blog extends Document {
   @Prop({ type: mongoose.Types.ObjectId, ref: 'Trip', required: false })
   tripId: Trip | null;
 
-  @Prop({ type: Object, required: false })
+  @Prop({
+    type: {
+      location: { type: String, default: null },
+      placeId: { type: String, default: null },
+    },
+    default: null,
+    required: false,
+    _id: false,
+  })
   destination: {
-    location: string | null; // Location of the blog, e.g., "Tokyo, Japan"
-    placeId: string | null; // Google Place ID or similar identifier
+    location: string | null;
+    placeId: string | null;
   };
 
   @Prop({ required: true, type: mongoose.Types.ObjectId, ref: 'UserInfos' })
@@ -47,7 +55,7 @@ export class Blog extends Document {
   @Prop({
     type: String,
     enum: ['DRAFT', 'PENDING', 'APPROVED', 'REJECTED'],
-    default: 'APPROVED',
+    default: 'DRAFT',
   })
   status: string;
 

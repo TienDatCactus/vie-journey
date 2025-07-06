@@ -1,21 +1,27 @@
 import React, { useEffect } from "react";
-import { useAuthStore } from "../services/stores/useAuthStore";
 import StatusDialog from "../components/Auth/elements/StatusDialog";
+import { useAuthStore } from "../services/stores/useAuthStore";
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, loadUserFromToken, credential, loadUserInfo, info } =
     useAuthStore();
   useEffect(() => {
-    if (credential?.userId && !user) {
-      loadUserFromToken();
-    }
-  }, [credential, user, loadUserFromToken]);
+    const initUser = async () => {
+      if (credential?.userId && !user) {
+        await loadUserFromToken();
+      }
+    };
+    initUser();
+  }, [credential?.userId != null, user == null, loadUserFromToken]);
 
   useEffect(() => {
-    if (user && !info) {
-      loadUserInfo();
-    }
-  }, [user, info, loadUserInfo]);
+    const fetchInfo = async () => {
+      if (user && !info) {
+        await loadUserInfo();
+      }
+    };
+    fetchInfo();
+  }, [user != null, info == null, loadUserInfo]);
 
   return (
     <>

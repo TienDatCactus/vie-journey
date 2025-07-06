@@ -15,7 +15,14 @@ import {
 export class CreateTripDto {
   @IsString({ message: 'Please enter valid destination' })
   @IsNotEmpty({ message: 'Please enter destination' })
-  destination: string;
+  destination: {
+    id: string;
+    name: string;
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
 
   @IsArray({ message: 'Please enter valid date range' })
   @ArrayMinSize(2, { message: 'Please enter valid date range' })

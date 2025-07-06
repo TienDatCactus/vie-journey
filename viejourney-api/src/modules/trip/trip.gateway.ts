@@ -48,10 +48,13 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     const trip = await this.tripService.findOne(tripId);
     if (!trip || !trip.tripmates.includes(user?.email)) {
+      client.emit('unauthorizedJoin', {
+        reason: 'You are not a participant in this trip plan.',
+      });
       client.disconnect();
       return;
     }
-    await client.join(trip._id);
+    await client.join(tripId);
     console.log(`Client connected: ${client.id}`);
     console.log(
       `Client: ${JSON.stringify(client.handshake.auth?.user, null, 2)}`,
@@ -85,8 +88,11 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const tripId = client.handshake.auth?.tripId as string;
     const user = client.handshake.auth?.user as WSUser;
+    console.log(`Added item in section ${data.section}:`, data.item);
     const itemId = this.planService.addItem(tripId, data.section, data.item);
-    this.server.emit('onPlanItemAdded', {
+    console.log(`Added by user:`, user);
+
+    this.server.to(tripId).emit('onPlanItemAdded', {
       section: data.section,
       item: { ...data.item, id: itemId },
       addedBy: user,
@@ -117,7 +123,9 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const tripId = client.handshake.auth?.tripId as string;
     const user = client.handshake.auth?.user as WSUser;
+    console.log(`Updated item in section ${data.section}:`, data.item);
     this.planService.updateItem(tripId, data.section, data.item);
+    console.log(`Updated by user:`, user);
     this.server.to(tripId).emit('onPlanItemUpdated', {
       section: data.section,
       item: data.item,
@@ -138,6 +146,8 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const tripId = client.handshake.auth?.tripId as string;
     const user = client.handshake.auth?.user as WSUser;
     this.planService.deleteItem(tripId, data.section, data.itemId);
+    console.log(`Deleted item in section ${data.section}:`, data.itemId);
+    console.log(`Deleted by user:`, user);
     this.server.to(tripId).emit('onPlanItemDeleted', {
       section: data.section,
       itemId: data.itemId,

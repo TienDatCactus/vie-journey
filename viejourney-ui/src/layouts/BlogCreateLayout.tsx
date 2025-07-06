@@ -11,13 +11,40 @@ import { ReactNode, useCallback, useRef, useState } from "react";
 import { useBlocker } from "react-router-dom";
 import BlogCreateHeader from "../components/Layout/Blog/BlogCreateHeader";
 import BlogCreateToolbar from "../components/Layout/Blog/BlogCreateToolbar";
+import { IContentItem } from "../utils/interfaces/blog";
 
-const BlogCreateLayout = ({ children }: { children: ReactNode }) => {
+const BlogCreateLayout = ({
+  children,
+  blog,
+  onSaveDraft,
+  onPublic,
+  formData,
+  onFormDataChange,
+  coverImageUrl,
+  setCoverImageUrl, 
+  type
+}: {
+  children: ReactNode;
+  blog: IContentItem;
+  onSaveDraft: () => void;
+  onPublic: () => void;
+  formData: {
+    title: string;
+    summary: string;
+    slug: string;
+    tags: string[];
+    coverImage: File | null;
+  };
+  type: string;
+  onFormDataChange: (field: string, value: any) => void;
+  coverImageUrl: string | null; // ✅ thêm vào
+  setCoverImageUrl: React.Dispatch<React.SetStateAction<string | null>>; // ✅ thêm vào
+}) => {
   const [isDirty, setIsDirty] = useState(true);
   const [open, setOpen] = useState(true);
   const [hasProceeded, setHasProceeded] = useState(false);
-
   const blockerRef = useRef<ReturnType<typeof useBlocker> | null>(null);
+
   blockerRef.current = useBlocker(useCallback(() => isDirty, [isDirty]));
 
   const handleClose = () => {
@@ -56,9 +83,15 @@ const BlogCreateLayout = ({ children }: { children: ReactNode }) => {
           </DialogActions>
         </Dialog>
       )}
-      <BlogCreateHeader />
+      <BlogCreateHeader onSaveDraft={onSaveDraft} onPublic={onPublic} type={type}/>
       <Container className="grid grid-cols-12 gap-4 p-4 ">
-        <BlogCreateToolbar />
+        <BlogCreateToolbar
+          blog={blog}
+          formData={formData}
+          onFormDataChange={onFormDataChange}
+          coverImageUrl={coverImageUrl}
+          setCoverImageUrl={setCoverImageUrl}
+        />
         <main className="h-screen lg:col-span-9">{children}</main>
       </Container>
     </>

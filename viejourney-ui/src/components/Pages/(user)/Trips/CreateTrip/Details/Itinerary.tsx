@@ -1,42 +1,42 @@
 import {
   AccessTime,
   AttachMoney,
+  Clear,
   DirectionsBus,
   DirectionsCar,
   DirectionsWalk,
   Edit,
   Place,
+  Save,
   Settings,
 } from "@mui/icons-material";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Autocomplete,
-  Button,
   Card,
   CardContent,
   CardMedia,
   Chip,
   CircularProgress,
+  Divider,
   IconButton,
   InputAdornment,
   MenuItem,
   Select,
   Stack,
   TextField,
+  Typography,
 } from "@mui/material";
-import {
-  DateRangePicker,
-  TimePicker,
-  TimeRangePicker,
-} from "@mui/x-date-pickers-pro";
+import { DateRangePicker, TimePicker } from "@mui/x-date-pickers-pro";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import dayjs from "dayjs";
-import React, { useCallback, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { useSocket } from "../../../../../../services/context/socketContext";
 import { Itinerary } from "../../../../../../services/stores/storeInterfaces";
+import { useDirectionStore } from "../../../../../../services/stores/useDirectionStore";
+import { useMapPan } from "../../../../../../services/stores/useMapPan";
 import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
 import {
   getDatesBetween,
@@ -45,6 +45,7 @@ import {
 import { useAutocompleteSuggestions } from "../../../../../../utils/hooks/use-autocomplete-suggestion";
 import { useDirections } from "../../../../../../utils/hooks/use-directions";
 import { useFetchPlaceDetails } from "../../../../../../utils/hooks/use-fetch-place";
+import PlaceSuggestion from "./elements/PlaceSuggestion";
 interface DaySectionProps {
   date: string;
 }
@@ -52,297 +53,249 @@ interface ItineraryProps {
   startDate?: Date;
   endDate?: Date;
 }
-
+interface DaySectionProps {
+  date: string;
+}
 const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
-  const { updateItinerary, toggleEditItinerary, deleteItinerary } =
-    useTripDetailStore();
+  const { toggleEditItinerary } = useTripDetailStore();
   const [localNote, setLocalNote] = useState(itinerary.note);
-  const [edit, setEdit] = useState({
-    cost: {
-      isEditing: false,
-      value: itinerary.cost || "",
-    },
-    time: {
-      isEditing: false,
-      value: {
-        startTime: itinerary.time.startTime || "",
-        endTime: itinerary.time.endTime || "",
-      },
-    },
+  const { setSelected } = useMapPan();
+  const { removePlaceId } = useDirectionStore();
+  const [isOpen, setIsOpen] = useState(false);
+  const { socket } = useSocket();
+  const [edit, setEdit] = useState<{ cost?: number; time?: string }>({
+    cost: itinerary.place?.cost || undefined,
+    time: itinerary.place?.time || "",
   });
-  const handleUpdateItinerary = (e: any) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      console.log(localNote);
-      updateItinerary(itinerary._id, { note: localNote });
-      console.log(itinerary);
-      toggleEditItinerary(itinerary._id);
-    }
-  };
-  const handleCostUpdate = () => {
-    updateItinerary(itinerary._id, { cost: edit.cost.value });
-    setEdit((prev) => ({
-      ...prev,
-      cost: { ...prev.cost, isEditing: false },
-    }));
-  };
 
-  // Handle time update
-  const handleTimeUpdate = () => {
-    updateItinerary(itinerary._id, {
-      time: {
-        startTime: edit.time.value.startTime,
-        endTime: edit.time.value.endTime,
+  const handleUpdateItinerary = () => {
+    socket?.emit("planItemUpdated", {
+      section: "itineraries",
+      item: {
+        id: itinerary.id,
+        note: localNote,
+        place: {
+          ...itinerary.place,
+          time: edit.time,
+          cost: edit.cost,
+        },
       },
     });
-    setEdit((prev) => ({
-      ...prev,
-      time: { ...prev.time, isEditing: false },
-    }));
   };
-
+  console.log(itinerary.place);
+  const handleDeleteItinerary = (id: string) => {
+    socket?.emit("planItemDeleted", {
+      section: "itineraries",
+      itemId: id,
+    });
+    removePlaceId(itinerary.place?.placeId || "");
+  };
   return (
-    <Card
-      elevation={0}
-      className="w-full grid lg:grid-cols-3 rounded-xl lg:min-h-42 flex-col space-x-4 relative"
-    >
-      <CardContent className="lg:py-4 justify-between gap-2 flex flex-col bg-neutral-200 rounded-xl col-span-2">
-        <h1 className="text-2xl font-semibold">
-          {itinerary.place?.displayName}
-        </h1>
-
-        {/* Types */}
-        {itinerary.place?.types && (
-          <Stack
-            direction="row"
-            alignItems="center"
-            flexWrap={"wrap"}
-            gap={1}
-            className="text-sm text-gray-600 font-semibold"
-          >
-            {itinerary.place?.types
-              .filter((e) => e != "point_of_interest")
-              .map((type, index) => (
-                <Chip key={index} label={type} />
-              ))}
-          </Stack>
-        )}
-
-        {/* Notes */}
-        {itinerary.isEditing ? (
-          <TextField
-            variant="standard"
-            placeholder="Add a note"
-            multiline
-            onChange={(e) => {
-              setLocalNote(e.target.value);
-            }}
-            className="my-2"
-            value={localNote}
-            onKeyDownCapture={(e) => handleUpdateItinerary(e)}
-          />
-        ) : (
-          <div className="flex items-center justify-between">
-            <p className="my-2">{itinerary.note}</p>
-            <IconButton onClick={() => toggleEditItinerary(itinerary._id)}>
-              <Edit />
-            </IconButton>
-          </div>
-        )}
-
-        <p className="italic text-xs text-gray-600 font-semibold">
-          {itinerary.place?.editorialSummary}
-        </p>
-
-        {/* Time and Cost */}
-        <div className="flex flex-col gap-2 mt-2">
-          {/* Display current time and cost if they exist */}
-          {(itinerary.time.startTime || itinerary.cost) && (
-            <div className="flex flex-wrap gap-2 text-sm text-gray-700">
-              {itinerary.time.startTime && (
-                <Chip
-                  icon={<AccessTime className="text-sm" />}
-                  label={`${dayjs(itinerary.time.startTime).format("HH:mm")}${
-                    itinerary.time.endTime
-                      ? ` - ${dayjs(itinerary.time.endTime).format("HH:mm")}`
-                      : ""
-                  }`}
-                  variant="outlined"
-                  size="small"
-                  onClick={() =>
-                    setEdit((prev) => ({
-                      ...prev,
-                      time: { ...prev.time, isEditing: true },
-                    }))
-                  }
-                />
-              )}
-              {itinerary.cost && (
-                <Chip
-                  icon={<AttachMoney className="text-sm" />}
-                  label={itinerary.cost}
-                  variant="outlined"
-                  size="small"
-                  onClick={() =>
-                    setEdit((prev) => ({
-                      ...prev,
-                      cost: { ...prev.cost, isEditing: true },
-                    }))
-                  }
-                />
-              )}
-            </div>
-          )}
-        </div>
-
-        <Stack
-          direction="row"
-          flexWrap={"wrap"}
-          className="*:not-last::py-0 *:not-last:text-dark-700 *:not-last:hover:text-dark-950 *:not-last:hover:bg-neutral-100"
-          spacing={1}
+    <>
+      <div className="relative">
+        <IconButton
+          className="absolute -top-4 -left-4 z-10"
+          onClick={() => handleDeleteItinerary(itinerary.id)}
         >
-          {/* Time Editor */}
-          {edit.time.isEditing ? (
-            <div className="flex items-center gap-2">
-              <TimeRangePicker
-                slotProps={{
-                  textField: {
-                    variant: "standard",
-                    size: "small",
-                    className: "w-48",
-                    InputProps: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <AccessTime />
-                        </InputAdornment>
-                      ),
+          <Clear />
+        </IconButton>
+        <Card
+          elevation={0}
+          className="z-20 bg-neutral-50 border border-dashed border-neutral-500 w-full  rounded-xl min-h-42 max-h-fit lg:min-h-48 flex-col space-x-4 grid lg:grid-cols-6 "
+        >
+          <CardContent className="lg:py-4 lg:col-span-4 flex  flex-col  rounded-xl col-span-2 relative justify-between">
+            <div
+              className="inset-0 w-full h-full absolute"
+              onClick={() => setIsOpen(!isOpen)}
+            />
+            {/* Notes */}
+            <h1 className="text-2xl font-semibold">
+              {itinerary.place?.displayName}
+            </h1>
+            {!itinerary.isEditing && (
+              <div className="flex justify-between  items-center  w-full flex-wrap gap-2">
+                <p className="text-sm text-gray-700 flex-1 min-w-0 break-words">
+                  <i className="text-neutral-700">Notes*: </i>
+                  {itinerary.note || (
+                    <span className="italic text-gray-400">No notes</span>
+                  )}
+                </p>
+                <IconButton
+                  className="hover:text-yellow-500"
+                  size="small"
+                  onClick={() => toggleEditItinerary(itinerary.id)}
+                >
+                  <Edit />
+                </IconButton>
+              </div>
+            )}
+            {itinerary.isEditing && (
+              <div className="flex flex-col justify-between h-full text-sm">
+                <TextField
+                  variant="standard"
+                  placeholder="Add a note"
+                  fullWidth
+                  multiline
+                  maxRows={3}
+                  slotProps={{
+                    input: {
+                      disableUnderline: true,
+                      className: "text-base bg-transparent",
                     },
-                  },
-                }}
-                value={[
-                  dayjs(edit.time.value.startTime, "HH:mm"),
-                  dayjs(edit.time.value.endTime, "HH:mm"),
-                ]}
-                onChange={(newValue) => {
-                  setEdit((prev) => ({
-                    ...prev,
-                    time: {
-                      ...prev.time,
-                      value: {
-                        startTime:
-                          (newValue && newValue[0]?.format("HH:mm")) || "",
-                        endTime:
-                          (newValue && newValue[1]?.format("HH:mm")) || "",
-                      },
-                    },
-                  }));
-                }}
-              />
-              <Button variant="text" size="small" onClick={handleTimeUpdate}>
-                Save
-              </Button>
-            </div>
-          ) : (
-            <Button
-              startIcon={<AccessTime className="text-xl" />}
-              variant="text"
-              onClick={() =>
-                setEdit((prev) => ({
-                  ...prev,
-                  time: {
-                    isEditing: true,
-                    value: {
-                      startTime: itinerary.time.startTime || "",
-                      endTime: itinerary.time.endTime || "",
-                    },
-                  },
-                }))
-              }
-            >
-              {itinerary.time.startTime ? "Edit time" : "Add time"}
-            </Button>
-          )}
+                  }}
+                  onChange={(e) => setLocalNote(e.target.value)}
+                  value={localNote}
+                />
 
-          {/* Cost Editor */}
-          {edit.cost.isEditing ? (
-            <div className="flex items-center gap-2">
-              <TextField
-                variant="standard"
-                placeholder="Add cost"
-                size="small"
-                className="w-32"
-                value={edit.cost.value}
-                onChange={(e) =>
-                  setEdit((prev) => ({
-                    ...prev,
-                    cost: {
-                      ...prev.cost,
-                      value: e.target.value,
-                    },
-                  }))
+                <div className="flex items-center gap-4">
+                  <TimePicker
+                    defaultValue={dayjs(itinerary.place?.time, "HH:mm")}
+                    slotProps={{
+                      textField: {
+                        variant: "standard",
+                        size: "small",
+                        className: "p-0 w-32",
+                        InputProps: { disableUnderline: true },
+                      },
+                    }}
+                    value={dayjs(edit.time, "HH:mm")}
+                    onChange={(newValue) => {
+                      setEdit((prev) => ({
+                        ...prev,
+                        time: newValue ? dayjs(newValue).format("HH:mm") : "",
+                      }));
+                    }}
+                  />
+
+                  <TextField
+                    type="number"
+                    variant="standard"
+                    size="small"
+                    placeholder="Cost"
+                    className="w-24"
+                    value={edit.cost}
+                    onChange={(e) =>
+                      setEdit((prev) => ({
+                        ...prev,
+                        cost: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
+                      }))
+                    }
+                    defaultValue={itinerary.place?.cost}
+                    slotProps={{
+                      htmlInput: {
+                        className: "p-0",
+                      },
+
+                      input: {
+                        disableUnderline: true,
+                        className: "p-0",
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AttachMoney fontSize="small" />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    className="hover:text-blue-500"
+                    onClick={() => handleUpdateItinerary()}
+                  >
+                    <Save />
+                  </IconButton>
+                </div>
+              </div>
+            )}
+
+            {/* Time and Cost */}
+            {(itinerary.place?.time || itinerary.place?.cost) && (
+              <div className="flex flex-col gap-2 mt-2">
+                <div className="flex flex-wrap gap-2 text-sm text-gray-700">
+                  {itinerary.place?.time && (
+                    <Chip
+                      icon={<AccessTime className="text-sm" />}
+                      label={itinerary.place?.time}
+                      variant="filled"
+                      size="small"
+                    />
+                  )}
+                  {itinerary.place?.cost && (
+                    <Chip
+                      icon={<AttachMoney className="text-sm" />}
+                      label={itinerary.place?.cost}
+                      variant="filled"
+                      size="small"
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+
+          {/* Place Image */}
+          <div className=" lg:col-span-2 relative">
+            <div className="w-full absolute lg:top-2 lg:right-2 group  items-center flex">
+              <CardMedia
+                component="img"
+                src={
+                  (itinerary.place?.photo &&
+                    getPlacePhotoUrl(itinerary.place?.photo)) ||
+                  "/images/place-placeholder.png"
                 }
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AttachMoney />
-                    </InputAdornment>
-                  ),
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleCostUpdate();
+                alt={itinerary.place?.displayName || "Place image"}
+                className="object-cover w-full h-40 rounded-lg cursor-pointer"
+              />
+              <div
+                className="cursor-pointer group-hover:opacity-80  opacity-0 bg-black/30 inset-0 absolute transition-all w-full h-auto duration-200 flex items-center justify-center"
+                onClick={() => {
+                  if (itinerary.place) {
+                    setSelected(itinerary.place);
                   }
                 }}
-              />
-              <Button variant="text" size="small" onClick={handleCostUpdate}>
-                Save
-              </Button>
+              >
+                <p className="text-white">View</p>
+              </div>
             </div>
-          ) : (
-            <Button
-              startIcon={<AttachMoney className="text-xl" />}
-              variant="text"
-              onClick={() =>
-                setEdit((prev) => ({
-                  ...prev,
-                  cost: {
-                    isEditing: true,
-                    value: itinerary.cost || "",
-                  },
-                }))
-              }
-            >
-              {itinerary.cost ? "Edit cost" : "Add cost"}
-            </Button>
-          )}
+          </div>
+        </Card>
+      </div>
 
-          {/* Delete Button */}
-          <Button
-            color="error"
-            variant="text"
-            className="del-btn"
-            onClick={() => deleteItinerary(itinerary._id)}
+      {isOpen && (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            className="flex flex-col gap-2 mt-2"
           >
-            Delete
-          </Button>
-        </Stack>
-      </CardContent>
-
-      {/* Place Image */}
-      <CardMedia
-        component="img"
-        onError={(e) => {
-          e.currentTarget.src = "/images/place-placeholder.png";
-        }}
-        src={
-          (itinerary.place?.photos &&
-            getPlacePhotoUrl(itinerary.place?.photos?.[0])) ||
-          ""
-        }
-        alt={itinerary.place?.displayName || "Place image"}
-        className="object-cover col-span-1 w-full h-full rounded-lg"
-      />
-    </Card>
+            <div className="space-y-2">
+              {itinerary.place?.types && (
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  flexWrap={"wrap"}
+                  className="text-xs space-x-2 text-gray-600 font-medium line-clamp-1"
+                >
+                  {itinerary.place?.types
+                    .filter((e) => e != "point_of_interest")
+                    .map((type, index) => (
+                      <Chip key={index} label={type} className="p-0" />
+                    ))}
+                </Stack>
+              )}
+            </div>
+            {itinerary.place?.editorialSummary && (
+              <p className="italic text-xs text-gray-600 font-semibold line-clamp-2">
+                {itinerary.place?.editorialSummary}
+              </p>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      )}
+    </>
   );
 };
 
@@ -362,9 +315,17 @@ const DistanceDivider = ({
     destinationPlaceId,
     travelMode
   );
+  const { setTravelMode: addTravelMode } = useDirectionStore();
+
+  useEffect(() => {
+    if (addTravelMode) {
+      addTravelMode(travelMode);
+    }
+  }, [originPlaceId, destinationPlaceId, travelMode]);
 
   const handleTravelModeChange = (event: any) => {
-    setTravelMode(event.target.value);
+    const mode = event.target.value as google.maps.TravelMode;
+    setTravelMode(mode);
   };
 
   return (
@@ -509,7 +470,7 @@ const DaySectionPlaceFinder = ({
         <TextField
           {...params}
           value={destination}
-          className="rounded-lg"
+          className=""
           size="small"
           fullWidth
           placeholder="Add a place to visit..."
@@ -522,7 +483,7 @@ const DaySectionPlaceFinder = ({
           onChange={handleInputChange}
           InputProps={{
             ...params.InputProps,
-            className: "rounded-lg py-2 border-gray-300",
+            className: " py-2 border-gray-300",
             startAdornment: (
               <InputAdornment position="start">
                 <Place color={errors.place ? "error" : "action"} />
@@ -556,88 +517,120 @@ const DaySectionPlaceFinder = ({
     />
   );
 };
+
 const DaySection: React.FC<DaySectionProps> = (props) => {
-  const { addItinerary, itineraries } = useTripDetailStore();
+  const { itineraries } = useTripDetailStore();
   const { fetchPlaceDetail } = useFetchPlaceDetails();
   const placesForDay = itineraries.filter((item) => item.date === props.date);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
-
-  const handleExpandChange = (
-    event: React.SyntheticEvent,
-    isExpanded: boolean
-  ) => {
-    setExpanded(isExpanded);
+  const { socket } = useSocket();
+  const toggleExpand = () => {
+    setExpanded((prev) => !prev);
   };
+
   const handleAddPlace = async (placeId: string) => {
     try {
       setLoading(true);
-      const placeDetails = await fetchPlaceDetail(placeId).then((data) => {
-        return data;
-      });
+      const placeDetails = await fetchPlaceDetail(placeId);
       const itinerary = {
-        _id: `place-note-${Date.now()}`,
-        placeId: placeId,
+        id: `itinerary-note-${Date.now()}`,
         note: "",
         date: props.date,
-        place: placeDetails,
-        time: {
-          startTime: "",
-          endTime: "",
+        place: {
+          placeId: placeDetails?.id || "",
+          displayName: placeDetails?.displayName || "",
+          types: placeDetails?.types || [],
+          photo: placeDetails?.photos
+            ? getPlacePhotoUrl(placeDetails?.photos[0])
+            : "",
+          editorialSummary:
+            placeDetails?.editorialSummary ||
+            "No summary available, please refer to the location details.",
+          location: {
+            lat: placeDetails?.location?.lat() || 0,
+            lng: placeDetails?.location?.lng() || 0,
+          },
+          time: "",
+          cost: "",
         },
         isEditing: true,
       };
-      addItinerary(itinerary);
+      socket?.emit("planItemAdded", {
+        section: "itineraries",
+        item: itinerary,
+      });
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
+
   if (loading) {
-    return <CircularProgress color="inherit" size={40} />;
+    return (
+      <div className="bg-white p-4 my-2 rounded flex items-center justify-center">
+        <CircularProgress color="inherit" size={40} />
+      </div>
+    );
   }
-  return (
-    <Accordion
-      expanded={expanded}
-      onChange={handleExpandChange}
-      className="bg-white p-4 my-4 rounded-lg shadow-sm"
-      slotProps={{ transition: { unmountOnExit: true } }}
-    >
-      <AccordionSummary
-        expandIcon={<Settings />}
-        aria-controls="panel1bh-content"
-        className="group p-0"
-        id="panel1bh-header"
-      >
-        <h1 className="text-2xl font-bold group-hover:underline">
-          {props.date}
-        </h1>
-      </AccordionSummary>
-      <AccordionDetails className="p-0 space-y-4">
-        {placesForDay.map((itinerary, index) => (
-          <React.Fragment key={itinerary._id}>
-            {index > 0 && (
-              <DistanceDivider
-                originPlaceId={placesForDay[index - 1].placeId || ""}
-                destinationPlaceId={itinerary.placeId || ""}
-              />
-            )}
-            <DaySectionCard itinerary={itinerary} />
-          </React.Fragment>
-        ))}
-        <DaySectionPlaceFinder onAddPlace={handleAddPlace} />
-        {/* <DaySectionCard /> */}
-      </AccordionDetails>
-    </Accordion>
-  );
-};
-const ItinerarySection: React.FC<ItineraryProps> = () => {
-  const trip = useTripDetailStore((state) => state.trip);
-  const generatedDates = getDatesBetween(trip.startDate, trip.endDate);
 
   return (
-    <section className="pt-10">
+    <div className="bg-white p-4 my-2 rounded ">
+      <div
+        className="flex items-center justify-between cursor-pointer group"
+        onClick={toggleExpand}
+      >
+        <Typography variant="h6" className="group-hover:underline font-bold">
+          {props.date}
+        </Typography>
+        <IconButton>
+          <Settings />
+        </IconButton>
+      </div>
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="pt-4 space-y-4">
+              {placesForDay.map((itinerary, index) => (
+                <React.Fragment key={itinerary.id}>
+                  {index > 0 && (
+                    <DistanceDivider
+                      originPlaceId={
+                        placesForDay[index - 1].place?.placeId || ""
+                      }
+                      destinationPlaceId={itinerary.place?.placeId || ""}
+                    />
+                  )}
+                  <DaySectionCard itinerary={itinerary} />
+                </React.Fragment>
+              ))}
+              <DaySectionPlaceFinder onAddPlace={handleAddPlace} />
+              {placesForDay.length > 0 && (
+                <PlaceSuggestion
+                  place={placesForDay[placesForDay.length - 1].place!}
+                  onAddPlace={handleAddPlace}
+                />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const ItinerarySection: React.FC<ItineraryProps> = () => {
+  const trip = useTripDetailStore((state) => state.trip);
+  console.log(trip);
+  const generatedDates = getDatesBetween(trip?.startDate, trip?.endDate);
+  return (
+    <section className="pt-10" id="itinerary">
       <div className="bg-white lg:p-10 lg:px-12">
         <Stack
           direction={"row"}
@@ -668,13 +661,16 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
                 },
               },
             }}
-            defaultValue={[dayjs(trip.startDate), dayjs(trip.endDate)]}
+            defaultValue={[dayjs(trip?.startDate), dayjs(trip?.endDate)]}
           />
         </Stack>
-        <ul className="list-none py-4 ">
+        <ul className="list-none py-2 ">
           {!!generatedDates?.length &&
             generatedDates?.map((date, index) => (
-              <DaySection date={date} key={index} />
+              <>
+                <DaySection date={date} key={index} />
+                {index >= 0 && <Divider />}
+              </>
             ))}
         </ul>
       </div>

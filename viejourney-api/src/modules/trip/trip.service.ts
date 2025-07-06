@@ -1,24 +1,20 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { MailerService } from '@nestjs-modules/mailer';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { AccountService } from '../account/account.service';
+import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
-import { Trip } from 'src/common/entities/trip.entity';
+import { Model, Types } from 'mongoose';
 import { CreateTripDto } from 'src/common/dtos/create-trip.dto';
 import { UpdateTripDto } from 'src/common/dtos/update-trip.dto';
-import { NotFoundError } from 'rxjs';
+import { Plan, TripPlan } from 'src/common/entities/plan.entity';
+import { Trip } from 'src/common/entities/trip.entity';
+import { AccountService } from '../account/account.service';
 
 @Injectable()
 export class TripService {
   constructor(
     @InjectModel('Trip') private readonly tripModel: Model<Trip>,
+    @InjectModel('Plan') private readonly planModel: Model<TripPlan>,
     private readonly accountService: AccountService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailerService,
@@ -30,7 +26,7 @@ export class TripService {
         ? [createTripDto.dates[0], createTripDto.dates[1]]
         : [createTripDto.dates[1], createTripDto.dates[0]];
     const newTrip = new this.tripModel({
-      title: `Trip to ${createTripDto.destination}`,
+      title: `Trip to ${createTripDto.destination.name}`,
       destination: createTripDto.destination,
       startDate: startDate,
       endDate: endDate,
@@ -121,7 +117,23 @@ export class TripService {
   update(id: number, updateTripDto: UpdateTripDto) {
     return `This action updates a #${id} trip`;
   }
-
+  async updatePlan(
+    tripId: string,
+    plan: Plan,
+    userId?: string,
+  ): Promise<TripPlan> {
+    return this.planModel
+      .findOneAndUpdate(
+        { tripId: new Types.ObjectId(tripId) },
+        {
+          plan,
+          lastUpdated: new Date(),
+          lastUpdatedBy: userId ? new Types.ObjectId(userId) : undefined,
+        },
+        { upsert: true, new: true },
+      )
+      .exec();
+  }
   remove(id: number) {
     return `This action removes a #${id} trip`;
   }

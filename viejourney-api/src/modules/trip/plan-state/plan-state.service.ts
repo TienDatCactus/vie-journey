@@ -7,9 +7,92 @@ export interface Note {
   text: string;
 }
 
+export interface Transit {
+  id: string;
+  note: string;
+  cost: number;
+  currency: string;
+  mode:
+    | 'Train'
+    | 'Flight'
+    | 'Car'
+    | 'Bus'
+    | 'Boat'
+    | 'Walk'
+    | 'Bike'
+    | 'Others';
+  departure: {
+    datetime: string;
+    location: string;
+  };
+  arrival: {
+    datetime: string;
+    location: string;
+  };
+}
+export interface Place {
+  id: string;
+  name: string;
+  placeId?: string;
+  note?: string;
+}
+export interface Itinerary {
+  id: string;
+  date: string; // ISO date string
+  place?: {
+    placeId?: string | null; // Google Place ID
+    displayName: string;
+    types: string[];
+    photo: string;
+    editorialSummary?: string;
+    location?: {
+      lat: number;
+      lng: number;
+    }; // Location coordinates
+    time?: string; // ISO time string
+    cost?: number;
+  };
+  note: string;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
+  isEditing?: boolean;
+}
+
+export interface Expense {
+  id: string;
+  amount: number;
+  currency: string;
+  type:
+    | 'Flights'
+    | 'Lodging'
+    | 'Car rental'
+    | 'Transit'
+    | 'Food'
+    | 'Drinks'
+    | 'Sightseeing'
+    | 'Activities'
+    | 'Shopping'
+    | 'Gas'
+    | 'Groceries'
+    | 'Other';
+  desc: string;
+  payer: string;
+  splits: {
+    splitWith: string[];
+    amount: number;
+    isSettled: boolean;
+  };
+}
+export interface Budgeting {
+  budget: number;
+  expenses: Expense[];
+}
 export interface Plan {
   notes: Note[];
-  expenses: { placeholder1: string; placeholder2: string };
+  transits: Transit[];
+  places: Place[];
+  itineraries: Itinerary[];
+  budgeting: Budgeting;
 }
 
 export type PlanSection = keyof Plan;
@@ -103,25 +186,33 @@ export class PlanStateService {
     itemId: DeletePayload<T>,
   ) {
     const plan = this.getOrCreatePlan(tripId);
+
     if (Array.isArray(plan[section])) {
       type Item = WithId<Plan[T], string>;
       const index = (plan[section] as Item[]).findIndex(
         (i) => i.id === (itemId as string),
       );
       if (index !== -1) {
+        console.log('first', plan);
         (plan[section] as Item[]).splice(index, 1);
+        console.log('then', plan);
       }
       this.scheduleSave(tripId);
     }
   }
 
-  savePlan(tripId: string) {
-    const plan = this.planStates.get(tripId);
-    if (!plan) return;
-    // NOTE: Persist plan state in db
+  async savePlan(tripId: string) {
+    const state = this.planStates.get(tripId);
+    if (!state) return;
+    try {
+      await this.tripService.updatePlan(tripId, state.plan);
+      console.log(`Plan saved for trip: ${tripId}`);
+    } catch (error) {
+      console.error(`Failed to save plan for trip: ${tripId}`, error);
+    }
   }
 
-  private scheduleSave(tripId: string) {
+  scheduleSave(tripId: string) {
     const state = this.planStates.get(tripId);
     if (!state) return;
     if (state.timeout) clearTimeout(state.timeout);
@@ -131,14 +222,29 @@ export class PlanStateService {
     );
   }
 
-  private getOrCreatePlan(tripId: string): Plan {
+  getOrCreatePlan(tripId: string): Plan {
     let state = this.planStates.get(tripId);
     if (!state) {
       state = {
-        plan: { notes: [], expenses: { placeholder1: '', placeholder2: '' } },
+        plan: {
+          notes: [],
+          places: [],
+          transits: [],
+          itineraries: [],
+          budgeting: {
+            budget: 0,
+            expenses: [],
+          },
+        },
       };
       this.planStates.set(tripId, state);
     }
     return state.plan;
+  }
+  public initializePlan(tripId: string, plan: Plan): void {
+    this.planStates.set(tripId, {
+      plan,
+      timeout: undefined,
+    });
   }
 }

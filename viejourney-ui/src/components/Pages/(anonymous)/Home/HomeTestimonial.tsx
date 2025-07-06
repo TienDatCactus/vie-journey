@@ -23,14 +23,14 @@ const HomeTestimonial: React.FC = () => {
           <img
             src="/images/pexels-elletakesphotos-1680172.jpg"
             alt="testimonial 1"
-            className="rounded-lg w-40 h-40 object-cover shadow-lg grayscale"
+            className=" w-40 h-40 object-cover shadow-lg grayscale"
           />
         </li>
         <li className="scale-110 transition-all duration-200 hover:scale-125">
           <img
             src="/images/pexels-elletakesphotos-1680172.jpg"
             alt="testimonial 2"
-            className="rounded-lg w-40 h-40 object-cover shadow-lg "
+            className=" w-40 h-40 object-cover shadow-lg "
           />
           <h3 className="text-dark-900 font-semibold">James Carter</h3>
           <p className="text-dark-700">The Adventure Junkie</p>
@@ -39,7 +39,7 @@ const HomeTestimonial: React.FC = () => {
           <img
             src="/images/pexels-elletakesphotos-1680172.jpg"
             alt="testimonial 3"
-            className="rounded-lg w-40 h-40 object-cover shadow-lg grayscale"
+            className=" w-40 h-40 object-cover shadow-lg grayscale"
           />
         </li>
       </ul>

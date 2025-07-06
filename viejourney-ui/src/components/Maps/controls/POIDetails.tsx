@@ -27,6 +27,7 @@ import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { motion } from "motion/react";
 import { POIData } from "../types";
+import { getPlacePhotoUrl } from "../../../utils/handlers/utils";
 
 interface POIDetailsProps {
   poi: POIData;
@@ -41,7 +42,6 @@ const POIDetails: React.FC<POIDetailsProps> = ({
   onAddToTrip,
   onToggleFavorite,
 }) => {
-  console.log(poi);
   const [isFavorite, setIsFavorite] = useState(false);
   const handleFavoriteToggle = () => {
     const newState = !isFavorite;
@@ -135,7 +135,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
       animate={{ opacity: 1, height: "auto", y: 0 }}
       exit={{ opacity: 0, height: 0, y: -20 }}
       transition={{ duration: 0.3 }}
-      className="w-full h-full flex flex-col bg-white rounded-lg shadow-lg overflow-hidden"
+      className="w-full h-full flex flex-col bg-white  shadow-lg overflow-hidden"
     >
       {/* Header with image */}
       <div className="relative lg:h-64">
@@ -144,16 +144,8 @@ const POIDetails: React.FC<POIDetailsProps> = ({
             poi.photos.map((photo, index) => (
               <SwiperSlide key={index}>
                 <img
-                  src={
-                    photo?.getURI() ||
-                    `https://placehold.co/600x400?text=${encodeURIComponent(
-                      poi.displayName || "Place"
-                    )}`
-                  }
+                  src={getPlacePhotoUrl(photo)}
                   loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://placehold.co/600x400?text=Image+not+available`;
-                  }}
                   alt={`${poi.displayName || "Place"} - photo ${index + 1}`}
                   className="relative h-64 w-full -z-10 object-cover"
                 />

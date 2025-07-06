@@ -72,3 +72,30 @@ export function getPlacePhotoUrl(photo: any): string {
     return fallbackImage;
   }
 }
+const colorMap: Record<string, string> = {};
+const palette = ["#f44336", "#3f51b5", "#4caf50", "#ff9800", "#9c27b0"];
+
+export function getColorForDate(date: string): string {
+  if (!colorMap[date]) {
+    const index = Object.keys(colorMap).length % palette.length;
+    colorMap[date] = palette[index];
+  }
+  return colorMap[date];
+}
+export function formatCurrency(
+  value: number,
+  locale: "en-US" | "ms-MY" | "vi-VN"
+): string {
+  const currencyMap: Record<typeof locale, string> = {
+    "en-US": "USD",
+    "ms-MY": "MYR",
+    "vi-VN": "VND",
+  };
+
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currencyMap[locale],
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}

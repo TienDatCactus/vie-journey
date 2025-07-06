@@ -1,42 +1,63 @@
-import React from "react";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+"use client";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShareIcon from "@mui/icons-material/Share";
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
-import Content from "./Notes";
-import PlaceToVisit from "./PlaceToVisit";
-import RelatedBlog from "./RelatedBlog";
-import Comment from "./Comment";
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
+import useBlogUser from "../../../utils/hooks/user-blog-user";
+import { IBlogDetail } from "../../../utils/interfaces/blog";
 import BlogAppBar from "./BlogAppBar";
+import RelatedBlog from "./RelatedBlog";
 
-const SideHeader: React.FC = () => {
+const SideHeader: React.FC<{ id: string }> = ({ id }) => {
+  const [blog, setBlog] = useState<IBlogDetail>();
+  const { handleGetBlogUserDetail } = useBlogUser();
+
+  const fetchBlog = async () => {
+    const res = await handleGetBlogUserDetail(id);
+    if (res) setBlog(res);
+  };
+
+  useEffect(() => {
+    fetchBlog();
+  }, [id]);
+
   return (
     <div className="mt-0 py-0 relative shadow-lg">
       <BlogAppBar />
       <div className="relative">
         <img
-          src="https://upload.wikimedia.org/wikipedia/commons/1/1e/San_Francisco_from_the_Marin_Headlands_in_March_2019.jpg"
+          src={
+            blog?.coverImage ||
+            "https://upload.wikimedia.org/wikipedia/commons/1/1e/San_Francisco_from_the_Marin_Headlands_in_March_2019.jpg"
+          }
           alt="blog-image"
-          className="w-full h-auto"
+          className="w-full h-auto "
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
         <TravelExploreIcon className="text-white absolute top-4 left-4 text-4xl cursor-pointer z-10" />
         <p className="text-white text-4xl font-bold absolute bottom-6 left-6 z-10">
-          San Francisco City Guide
+          {blog?.title}
         </p>
       </div>
       <div className="p-5">
         <div className="general-box flex gap-2 p-3">
           <div className="user-info flex gap-5">
             <img
-              src="https://tse4.mm.bing.net/th/id/OIP.BD-U5ovS6kKkW0480Yzl5gHaFf?rs=1&pid=ImgDetMain"
+              src={
+                typeof blog?.createdBy.avatar === "string"
+                  ? blog.createdBy.avatar
+                  : blog?.createdBy.avatar?.url ||
+                    "https://tse4.mm.bing.net/th/id/OIP.BD-U5ovS6kKkW0480Yzl5gHaFf?rs=1&pid=ImgDetMain"
+              }
               alt="avatar-image"
               className="w-12 h-12 rounded-full object-cover"
             />
             <div className="">
-              <p>Marcus Glyptis</p>
+              <p>{blog?.createdBy.fullName}</p>
               <p className="text-gray-400 text-[14px]">
-                26th May 2025 - 606 views
+                {dayjs(blog?.createdAt).format("YYYY-MM-DD")}
               </p>
             </div>
           </div>
@@ -50,16 +71,20 @@ const SideHeader: React.FC = () => {
           </div>
         </div>
         <div className="flex text-[15px] text-gray-500 p-3">
-          Visited PR for 5 days in May 2025, here is my complete travel
-          itinerary
+          {blog?.summary}
         </div>
-        <Content />
+
+        <div
+          className="prose max-w-none"
+          dangerouslySetInnerHTML={{ __html: blog?.content || "" }}
+        />
+        {/* <Content />
         <PlaceToVisit />
         <PlaceToVisit />
         <PlaceToVisit />
         <PlaceToVisit />
         <PlaceToVisit />
-        <Comment />
+        <Comment /> */}
       </div>
       <RelatedBlog />
     </div>

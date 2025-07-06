@@ -42,7 +42,7 @@ export default function ProfileSettings({ userInfo }: { userInfo: UserInfo }) {
     fullName: userInfo?.fullName,
     phone: userInfo?.phone,
     address: userInfo.address,
-    dob: userInfo.dob ? dayjs(userInfo.dob).toDate() : null,
+    dob: userInfo.dob ? dayjs(userInfo.dob).format("YYYY-MM-DD") : "",
   });
 
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({
@@ -187,7 +187,7 @@ export default function ProfileSettings({ userInfo }: { userInfo: UserInfo }) {
                   onChange={(newValue) =>
                     setProfileData((prev) => ({
                       ...prev,
-                      dob: newValue ? newValue.toDate() : null,
+                      dob: newValue ? newValue.format("YYYY-MM-DD") : "",
                     }))
                   }
                   slotProps={{

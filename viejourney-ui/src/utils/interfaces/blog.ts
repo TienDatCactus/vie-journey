@@ -1,3 +1,11 @@
+
+export interface IQueryParam {
+  search: string;
+  page: number;
+  pageSize: number;
+  status: string;
+  sort: string;
+}
 export interface PostData {
   title: string;
   author: string;
@@ -33,6 +41,13 @@ export interface IUser {
   updatedAt: string;
 }
 
+export interface BlogResponse {
+  data: IBlogPost[];
+  Total_Blogs: number;
+  currentPage: string;
+  pageSize: string;
+  totalPages: number;
+}
 export interface IBlogPost {
   _id: string;
   title: string;
@@ -55,7 +70,7 @@ export interface IBlogQuery {
   content: string;
   summary: string;
   tags: string[];
-  tripId: string;
+  location: string;
   file: File | null;
   userId: string;
 }
@@ -98,4 +113,61 @@ export interface IBlogDetail {
   coverImage: string;
   tripId: string | null;
   flags: IFlag[];
+  createdAt?: string;
+}
+
+export interface IBlogDraft {
+  blogId: string;
+  title: string;
+  location: string;
+  status:  string;
+  message: string;
+}
+
+export interface IContentItem {
+  _id: string;
+  title: string;
+  content: string;
+  summary: string;
+  tags: string[];
+  coverImage: string;
+  location: string;
+  status: string;
+  slug?: string;
+  createdAt: string; 
+  updatedAt: string; 
+}
+
+interface BlogMetrics {
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+}
+
+export interface IMyBlog {
+  _id: string;
+  title: string;
+  summary: string;
+  coverImage: string;
+  location: string;
+  status: string
+  createdAt: string; 
+  updatedAt: string;
+  metrics: BlogMetrics;
+}
+
+interface Author {
+  name: string;
+  email: string;
+}
+export interface IBlog {
+  _id: string;
+  title: string;
+  summary: string;
+  coverImage: string;
+  tags: string[]; // array of strings
+  author: Author;
+  metrics: BlogMetrics;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
 }

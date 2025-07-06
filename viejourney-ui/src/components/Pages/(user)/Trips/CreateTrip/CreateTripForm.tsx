@@ -37,12 +37,22 @@ import React, { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useAutocompleteSuggestions } from "../../../../../utils/hooks/use-autocomplete-suggestion";
 import { doCreateTrip } from "../../../../../services/api";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
 
 export const CreateTripForm: React.FC = () => {
+  const placesLib = useMapsLibrary("places");
+  if (!placesLib) {
+    return <div>Loading Google Maps library...</div>;
+  }
   const [modalOpen, setModalOpen] = React.useState(false);
   const [inviteEmails, setInviteEmails] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState<string>("");
+  const [destinationId, setDestinationId] = useState<string | null>(null);
+  const [destinationLocation, setDestinationLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<{
     placePrediction: google.maps.places.PlacePrediction;
   } | null>(null);
@@ -62,13 +72,28 @@ export const CreateTripForm: React.FC = () => {
       placePrediction: google.maps.places.PlacePrediction | null;
     } | null
   ) => {
-    // Only set selected place if placePrediction is not null
     if (suggestion?.placePrediction) {
       setSelectedPlace({ placePrediction: suggestion.placePrediction });
       setDestination(suggestion.placePrediction.mainText + "");
+      setDestinationId(suggestion.placePrediction.placeId || null);
+
+      const placeInstance = new placesLib.Place({
+        id: suggestion.placePrediction.placeId,
+      });
+      placeInstance.fetchFields({ fields: ["location"] }).then((res: any) => {
+        const location = res.place?.location;
+        if (!location) {
+          throw new Error("No location found for placeId");
+        }
+        setDestinationLocation({
+          lat: location.lat(),
+          lng: location.lng(),
+        });
+      });
       setOpen(false);
     }
   };
+  console.log(destinationId, destinationLocation);
   const {
     handleSubmit,
     register,
@@ -105,12 +130,19 @@ export const CreateTripForm: React.FC = () => {
     setModalOpen(false);
   };
   const onSubmit = async (data: any) => {
-    console.log("Form submitted with data:", { ...data, inviteEmails });
     try {
       setLoading(true);
       await doCreateTrip({
         ...data,
         inviteEmails,
+        destination: {
+          name: data.destination,
+          id: destinationId,
+          location: {
+            lat: destinationLocation?.lat || 0,
+            lng: destinationLocation?.lng || 0,
+          },
+        },
         dates: data.dates.map(
           (date: Dayjs | null) => date?.toISOString() || null
         ),
@@ -164,7 +196,7 @@ export const CreateTripForm: React.FC = () => {
               <TextField
                 {...params}
                 value={destination}
-                className="rounded-lg"
+                className=""
                 size="small"
                 fullWidth
                 placeholder="e.g Ta xua, Sapa, Da Nang"
@@ -240,7 +272,7 @@ export const CreateTripForm: React.FC = () => {
                       variant: "outlined",
                       InputProps: {
                         disableUnderline: true,
-                        className: "rounded-lg",
+                        className: "",
                       },
                     },
                   }}
@@ -256,7 +288,7 @@ export const CreateTripForm: React.FC = () => {
             <Select
               defaultValue={"Solo traveler"}
               {...register("travelers")}
-              className="w-full rounded-lg"
+              className="w-full "
             >
               <MenuItem value={"Solo traveler"}>Solo traveler</MenuItem>
               <MenuItem value={"2 travelers"}>2 travelers</MenuItem>
@@ -276,7 +308,7 @@ export const CreateTripForm: React.FC = () => {
               required: "Budget is required",
             })}
             defaultValue={"Budget ($0 - $500)"}
-            className="w-full rounded-lg"
+            className="w-full "
           >
             <MenuItem value={"Budget ($0 - $500)"}>Budget ($0 - $500)</MenuItem>
             <MenuItem value={"Mid-range ($500 - $1500)"}>
@@ -302,7 +334,7 @@ export const CreateTripForm: React.FC = () => {
             {...register("description")}
             placeholder="Describe your trip, activities, and preferences"
             variant="outlined"
-            className="w-full rounded-lg"
+            className="w-full "
           />
         </FormControl>
         <Divider className="my-4" />

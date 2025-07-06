@@ -26,16 +26,56 @@ export class AdminService {
     private readonly assetsService: AssetsService,
   ) {}
 
-  // getAssetsByType
-  async getAssetsByType(type) {
+  async fetchAllBannersBySubsection() {
     try {
-      const assets = await this.assetModel
-        .find({ type: type })
-        .catch((error) => {
-          throw new Error(
-            `Error fetching assets of type ${type}: ${error.message}`,
-          );
-        });
+      // Lấy tất cả asset có type là BANNER
+      const banners = await this.assetModel.find({ type: 'BANNER' }).exec();
+
+      // Danh sách các subsection cần lấy
+      const subsections = ['hero', 'intro', 'destination', 'hotels', 'creator'];
+
+      // Kết quả trả về
+      const result: Record<string, any[]> = {};
+
+      subsections.forEach((sub) => {
+        // Lọc các banner theo subsection (không phân biệt hoa thường)
+        result[sub] = banners
+          .filter(
+            (b) =>
+              b.subsection && b.subsection.toLowerCase() === sub.toLowerCase(),
+          )
+          .map((b) => ({
+            url: b.url,
+          }));
+      });
+
+      return result;
+    } catch (error) {
+      throw new BadRequestException(
+        `Error fetching landing banner: ${error.message}`,
+      );
+    }
+  }
+
+  // get subsection
+  async getSubsection() {
+    const assets = await this.assetModel.find({ type: 'BANNER' });
+    // Lấy unique subsection
+    const subsection = [...new Set(assets.map((asset) => asset.subsection))];
+    return subsection;
+  }
+
+  // getAssetsByType
+  async getAssetsByType(type: string, subsection?: string) {
+    try {
+      const filter: any = {};
+      if (type) {
+        filter.type = { $regex: new RegExp(`^${type}$`, 'i') }; // không phân biệt hoa thường
+      }
+      if (subsection) {
+        filter.subsection = { $regex: new RegExp(`^${subsection}$`, 'i') }; // không phân biệt hoa thường
+      }
+      const assets = await this.assetModel.find(filter).exec();
       return assets;
     } catch (error) {
       throw new Error(
@@ -71,7 +111,7 @@ export class AdminService {
       );
 
       return updatedAsset;
-    } else if (asset.type === 'BANNER') {
+    } else {
       // Xóa ảnh trên Cloudinary (nếu cần)
       await this.assetsService.deleteImage(asset.publicId);
 
@@ -100,7 +140,8 @@ export class AdminService {
     await this.assetsService.deleteImage(publicId);
 
     const uploadResult = await this.assetsService.uploadImage(file, {
-      public_id: `users/${asset.userId}/AVATAR/${file.filename || uuidv4()}`,
+      public_id: `${asset.assetOwner.toLocaleLowerCase()}/${asset.userId}/${uuidv4()}`,
+      folder: `vie-journey/${asset.type.toLocaleLowerCase()}/${asset?.subsection?.toLocaleLowerCase() || ''}`,
     });
     if (!uploadResult || !uploadResult.secure_url) {
       throw new BadRequestException('Failed to upload image to Cloudinary');
@@ -120,23 +161,53 @@ export class AdminService {
     return asset;
   }
 
-  // addAsset/banner
-  async addAssetBanner(file: Express.Multer.File, userId: string) {
+  // addAsset/system
+  async addAssetSystem(
+    file: Express.Multer.File,
+    userId: string,
+    type: string,
+    subsection?: string | null,
+  ) {
     if (!file) {
       throw new BadRequestException('File upload is required');
+    }
+    // Nếu là asset của hệ thống (cần subsection)
+    if (type.toUpperCase() === 'BANNER') {
+      if (!subsection) {
+        throw new BadRequestException('Subsection is required');
+      }
+      // Đếm số lượng asset theo subsection (không phân biệt hoa thường)
+      const count = await this.assetModel.countDocuments({
+        subsection: { $regex: new RegExp(`^${subsection}$`, 'i') },
+      });
+
+      if (
+        (subsection.toLowerCase() === 'hero' && count >= 1) ||
+        (subsection.toLowerCase() === 'intro' && count >= 4) ||
+        (subsection.toLowerCase() === 'destination' && count >= 3) ||
+        (subsection.toLowerCase() === 'hotel' && count >= 4) ||
+        (subsection.toLowerCase() === 'creator' && count >= 3)
+      ) {
+        throw new BadRequestException(
+          `Số lượng asset cho subsection ${subsection} đã vượt quá giới hạn!`,
+        );
+      }
     }
 
     // 1. Upload ảnh mới
     const uploadResult = await this.assetsService.uploadImage(file, {
-      public_id: `users/${userId}/BANNER/${uuidv4()}`,
+      public_id: `system/${userId}/${uuidv4()}`,
+      folder: `vie-journey/${type.toLocaleLowerCase()}/${subsection ? subsection.toLocaleLowerCase() : ''}`,
     });
 
     // 2. Tạo mới asset với ảnh đã upload
     const newAsset = new this.assetModel({
       userId: new Types.ObjectId(userId),
+      type: type.toLocaleUpperCase(),
+      assetOwner: 'SYSTEM',
+      subsection: subsection ? subsection.toLocaleUpperCase() : null,
       url: uploadResult.secure_url,
       publicId: uploadResult.public_id,
-      type: 'BANNER',
       location: uploadResult.public_id.split('/')[0],
       format: uploadResult.format.toLocaleUpperCase(),
       file_size: `${(uploadResult.bytes / 1024).toFixed(2)} KB`,
@@ -227,5 +298,109 @@ export class AdminService {
       throw new Error(`Account with ID ${id} not found`);
     }
     return account;
+  }
+
+  async banUser(userId: string, reason: string): Promise<{
+    userId: string;
+    accountId: string;
+    role: string;
+    email: string;
+    userName: string;
+    status: string;
+    banReason: string;
+    flaggedCount: number;
+    bannedAt: Date;
+  }> {
+    const userInfo = await this.userInfosModel.findById(userId);
+    if (!userInfo) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const account = await this.accountModel.findById(userInfo.userId);
+    if (!account) {
+      throw new NotFoundException(`Account not found for user ${userId}`);
+    }
+
+    // Check if user role is "USER" - only allow banning regular users
+    if (account.role !== 'USER') {
+      throw new BadRequestException(`Cannot ban user with role '${account.role}'. Only users with role 'USER' can be banned.`);
+    }    if (account.status === Status.banned) {
+      throw new BadRequestException(`Account is already banned. Ban reason: ${userInfo.banReason}, Banned at: ${userInfo.bannedAt}`);
+    }try {
+      // Update account status first
+      account.status = Status.banned;
+      await account.save();
+
+      // If account update successful, update user info
+      userInfo.banReason = reason;
+      userInfo.bannedAt = new Date();
+      userInfo.flaggedCount += 1;
+      await userInfo.save();
+
+      return {
+        userId: userInfo._id.toString(),
+        accountId: account._id.toString(),
+        role: account.role,
+        email: account.email,
+        userName: userInfo.fullName,
+        status: account.status,
+        banReason: userInfo.banReason,
+        flaggedCount: userInfo.flaggedCount,
+        bannedAt: userInfo.bannedAt
+      };
+    } catch (error) {
+      throw new BadRequestException('Failed to ban user: ' + error.message);
+    }
+  }
+
+  async unbanUser(userId: string): Promise<{
+    userId: string;
+    accountId: string;
+    role: string;
+    email: string;
+    userName: string;
+    status: string;
+    banReason: string | null;
+    flaggedCount: number;
+    bannedAt: Date | null;
+  }> {
+    const userInfo = await this.userInfosModel.findById(userId);
+    if (!userInfo) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const account = await this.accountModel.findById(userInfo.userId);
+    if (!account) {
+      throw new NotFoundException(`Account not found for user ${userId}`);
+    }
+
+    if (account.status !== Status.banned) {
+      throw new BadRequestException(`Account is not banned. Current status: ${account.status}`);
+    }
+
+    try {
+      // Update account status to active
+      account.status = Status.active;
+      await account.save();
+
+      // Clear ban information
+      userInfo.banReason = null;
+      userInfo.bannedAt = null;
+      await userInfo.save();
+
+      return {
+        userId: userInfo._id.toString(),
+        accountId: account._id.toString(),
+        role: account.role,
+        email: account.email,
+        userName: userInfo.fullName,
+        status: account.status,
+        banReason: userInfo.banReason,
+        flaggedCount: userInfo.flaggedCount,
+        bannedAt: userInfo.bannedAt
+      };
+    } catch (error) {
+      throw new BadRequestException('Failed to unban user: ' + error.message);
+    }
   }
 }

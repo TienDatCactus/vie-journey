@@ -40,7 +40,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
-import { motion, useAnimation } from "motion/react";
+import { AnimatePresence, motion, useAnimation } from "motion/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { PlaceNote } from "../../../../../../../services/stores/storeInterfaces";
@@ -134,7 +134,7 @@ const PlacesFinder = ({
         <TextField
           {...params}
           value={destination}
-          className="rounded-lg"
+          className=""
           size="small"
           fullWidth
           placeholder="Add a place to visit..."
@@ -147,7 +147,7 @@ const PlacesFinder = ({
           onChange={handleInputChange}
           InputProps={{
             ...params.InputProps,
-            className: "rounded-lg py-2 border-gray-300",
+            className: " py-2 border-gray-300",
             startAdornment: (
               <InputAdornment position="start">
                 <Place color={errors.place ? "error" : "action"} />
@@ -231,14 +231,14 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     setAnchorEl(null);
   };
   const handleSave = () => {
-    onUpdateNote(placeNote._id, localContent.note, localContent.visited);
-    onToggleEdit(placeNote._id);
-    onToggleVisited(placeNote._id, localContent.visited);
+    onUpdateNote(placeNote.id, localContent.note, localContent.visited);
+    onToggleEdit(placeNote.id);
+    onToggleVisited(placeNote.id, localContent.visited);
   };
 
   const handleCancel = () => {
     // Just exit edit mode without saving
-    onToggleEdit(placeNote._id);
+    onToggleEdit(placeNote.id);
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalContent((prev) => ({
@@ -246,7 +246,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       note: e.target.value,
     }));
   };
-
   return (
     <Card
       elevation={0}
@@ -264,9 +263,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         <>
           <CardMedia
             loading="lazy"
-            onError={(e) => {
-              e.currentTarget.src = `https://placehold.co/300x500?text=Image+not+available`;
-            }}
             component="img"
             src={getPlacePhotoUrl(placeDetail?.photos?.[0])}
             className="object-cover col-span-1 w-full h-full rounded-s-lg"
@@ -304,7 +300,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    onToggleEdit(placeNote._id);
+                    onToggleEdit(placeNote.id);
                   }}
                 >
                   <Edit fontSize="small" sx={{ mr: 1 }} /> Edit Notes
@@ -312,7 +308,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    onDelete(placeNote._id);
+                    onDelete(placeNote.id);
                   }}
                 >
                   <Delete fontSize="small" sx={{ mr: 1 }} /> Delete
@@ -518,6 +514,7 @@ const ReservationPlaces: React.FC = () => {
     deletePlaceNote,
     togglePlaceVisited,
   } = useTripDetailStore();
+  const [expanded, setExpanded] = useState(false);
   const { fetchPlaceDetail, placeDetails } = useFetchPlaceDetails();
   const { info } = useAuthStore();
   const [loading, setLoading] = useState(false);
@@ -525,7 +522,7 @@ const ReservationPlaces: React.FC = () => {
     try {
       setLoading(true);
       const newPlaceNote: PlaceNote = {
-        _id: `place-note-${Date.now()}`,
+        id: `place-note-${Date.now()}`,
         placeId: placeId,
         note: "",
         visited: false,
@@ -543,54 +540,56 @@ const ReservationPlaces: React.FC = () => {
   };
 
   return (
-    <div>
-      <Accordion
-        elevation={0}
-        className="bg-white py-4"
-        slotProps={{ transition: { unmountOnExit: true } }}
+    <div className="bg-white py-4 rounded" id="places">
+      <div
+        className="flex items-center justify-between px-4 cursor-pointer"
+        onClick={() => setExpanded((prev) => !prev)}
       >
-        <AccordionSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="panel1bh-content"
-          className="group"
-          id="panel1bh-header"
-        >
-          <Badge badgeContent={placeNotes.length} color="success">
-            <h1 className="text-3xl font-bold text-neutral-900 group-hover:underline">
-              Places
-            </h1>
-          </Badge>
-        </AccordionSummary>
-        <AccordionDetails>
-          <div className="flex flex-col gap-4">
-            {/* Place search form */}
+        <Badge badgeContent={placeNotes.length} color="success">
+          <h1 className="text-3xl font-bold text-neutral-900 hover:underline">
+            Places
+          </h1>
+        </Badge>
+      </div>
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden px-4 pt-4"
+          >
+            <div className="flex flex-col gap-4">
+              {/* Place search form */}
 
-            {/* Place notes list */}
-            {placeNotes.length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <p className="text-gray-500 mb-2">No places added yet</p>
-                <p className="text-sm text-gray-400">
-                  Search for places using the search box below
-                </p>
-              </div>
-            ) : (
-              placeNotes.map((placeNote) => (
-                <PlaceCard
-                  isLoading={loading}
-                  key={placeNote._id}
-                  placeNote={placeNote}
-                  placeDetail={placeDetails[placeNote.placeId]}
-                  onUpdateNote={updatePlaceNote}
-                  onToggleEdit={toggleEditPlaceNotes}
-                  onDelete={deletePlaceNote}
-                  onToggleVisited={togglePlaceVisited}
-                />
-              ))
-            )}
-            <PlacesFinder onAddPlace={handleAddPlace} />
-          </div>
-        </AccordionDetails>
-      </Accordion>
+              {/* Place notes list */}
+              {placeNotes.length === 0 ? (
+                <div className="text-center py-8 bg-gray-50  border border-dashed border-gray-300">
+                  <p className="text-gray-500 mb-2">No places added yet</p>
+                  <p className="text-sm text-gray-400">
+                    Search for places using the search box below
+                  </p>
+                </div>
+              ) : (
+                placeNotes.map((placeNote) => (
+                  <PlaceCard
+                    isLoading={loading}
+                    key={placeNote.id}
+                    placeNote={placeNote}
+                    placeDetail={placeDetails[placeNote.placeId]}
+                    onUpdateNote={updatePlaceNote}
+                    onToggleEdit={toggleEditPlaceNotes}
+                    onDelete={deletePlaceNote}
+                    onToggleVisited={togglePlaceVisited}
+                  />
+                ))
+              )}
+              <PlacesFinder onAddPlace={handleAddPlace} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

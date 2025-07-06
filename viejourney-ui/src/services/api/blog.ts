@@ -1,14 +1,23 @@
 import {
+  BlogResponse,
+  IBlog,
   IBlogDetail,
-  IBlogPost,
+  IBlogDraft,
   IBlogQuery,
   IBlogRes,
+  IContentItem,
+  IMyBlog,
+  IQueryParam,
 } from "../../utils/interfaces/blog";
 import http from "../axios/index";
 import { BLOG } from "./url";
 
-export const getListBlogs = async (): Promise<IBlogPost[]> => {
-  const res = await http.get(BLOG.LIST_BLOGS);
+export const getListBlogs = async (
+  params: IQueryParam
+): Promise<BlogResponse> => {
+  const res = await http.get(BLOG.LIST_BLOGS, {
+    params,
+  });
   return res.data;
 };
 
@@ -19,7 +28,8 @@ export const createBlog = async (data: IBlogQuery): Promise<IBlogRes> => {
   formData.append("slug", data.slug);
   formData.append("content", data.content);
   formData.append("summary", data.summary);
-  formData.append("tripId", data.tripId);
+  formData.append("location", data.location);
+
   formData.append("userId", data.userId);
   if (data.file) {
     formData.append("file", data.file);
@@ -39,7 +49,7 @@ export const createBlog = async (data: IBlogQuery): Promise<IBlogRes> => {
 };
 
 export const deleteBlog = async (id: string) => {
-  const res = await http.delete(`${BLOG.DELETE_BLOGS}/${id}`);
+  const res = await http.delete(`${BLOG.BLOGS}/${id}`);
   return res.data;
 };
 
@@ -47,3 +57,107 @@ export const getBlogDetail = async (id: string): Promise<IBlogDetail> => {
   const res = await http.get(`${BLOG.LIST_BLOGS}/${id}`);
   return res.data;
 };
+
+export const updateStatusBlog = async (
+  id: string,
+  status: "APPROVED" | "REJECTED"
+) => {
+  const res = await http.post(`${BLOG.BLOGS}/${id}/status`, {
+    status,
+  });
+  return res.data;
+};
+
+export const banAuthor = async (id: string, reason: string) => {
+  const res = await http.post(`${BLOG.BLOGS}/ban-author/${id}`, {
+    reason,
+  });
+  return res.data;
+};
+
+// blog user
+export const startBlog = async (location: string): Promise<IBlogDraft> => {
+  const res = await http.post(`${BLOG.BLOGS}/start-blog`, {
+    location,
+  });
+  return res.data;
+};
+
+export const getBlogDraft = async (id: string): Promise<IContentItem> => {
+  const res = await http.get(`${BLOG.BLOGS}/draft/${id}`);
+  return res.data;
+};
+
+export const getBlogPublic = async (id: string): Promise<IContentItem> => {
+  const res = await http.get(`${BLOG.BLOGS}/published/${id}`);
+  return res.data;
+};
+export const editBlogDraft = async (id: string, data: any) => {
+  const formData = new FormData();
+
+  formData.append("title", data.title);
+  formData.append("content", data.content);
+  formData.append("summary", data.summary);
+  formData.append("slug", data.slug);
+
+  if (data.coverImage) {
+    formData.append("coverImage", data.coverImage);
+  }
+
+  data.tags.forEach((tag: string) => {
+    formData.append("tags", tag);
+  });
+
+  const res = await http.patch(`${BLOG.BLOGS}/draft/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return res.data;
+};
+
+export const editBlogPublic = async (id: string, data: any) => {
+  const formData = new FormData();
+
+  formData.append("title", data.title);
+  formData.append("content", data.content);
+  formData.append("summary", data.summary);
+  formData.append("slug", data.slug);
+
+  if (data.coverImage) {
+    formData.append("coverImage", data.coverImage);
+  }
+
+  data.tags.forEach((tag: string) => {
+    formData.append("tags", tag);
+  });
+
+  const res = await http.patch(`${BLOG.BLOGS}/edit/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return res.data;
+};
+
+export const publicBlog = async (id: string) => {
+  const res = await http.post(`${BLOG.BLOGS}/publish/${id}`);
+  return res.data;
+};
+
+export const getMyBlog = async (): Promise<IMyBlog[]> => {
+  const res = await http.get(`${BLOG.BLOGS}/my-blogs`);
+  return res.data?.blogs;
+};
+
+export const getBlogUserDetail = async (id: string): Promise<IBlogDetail> => {
+  const res = await http.get(`${BLOG.BLOGS}/${id}`);
+  return res.data;
+};
+
+export const getBlogList = async () : Promise<IBlog[]> => {
+  const res = await http.get(`${BLOG.BLOGS}/home`);
+  return res.data.data.blogs;
+}

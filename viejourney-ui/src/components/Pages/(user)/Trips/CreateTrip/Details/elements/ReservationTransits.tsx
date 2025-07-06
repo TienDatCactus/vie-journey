@@ -4,23 +4,25 @@ import {
   Circle,
   Delete,
   Edit,
+  ExpandLess,
   ExpandMore,
+  Search,
 } from "@mui/icons-material";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
+  Autocomplete,
   Badge,
   Button,
   ButtonGroup,
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Divider,
   FormControl,
   FormHelperText,
   FormLabel,
   Grid2,
+  IconButton,
   InputAdornment,
   ListItemIcon,
   ListItemText,
@@ -35,21 +37,102 @@ import {
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
-import React from "react";
+import { AnimatePresence, motion } from "motion/react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
+import { useSocket } from "../../../../../../../services/context/socketContext";
 import { TransitData } from "../../../../../../../services/stores/storeInterfaces";
 import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
+import { useAutocompleteSuggestions } from "../../../../../../../utils/hooks/use-autocomplete-suggestion";
 
 interface ReservationCardsProps {
   index?: number;
   data: TransitData;
-  onUpdate: (id: string, transit: TransitData) => void;
+
   onToggleEdit: (id: string) => void;
-  onDelete: (id: string) => void;
 }
 
 const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
+  const { socket } = useSocket();
+  const [departureValue, setDepartureValue] = useState(
+    props.data.departure.location
+  );
+  const [arrivalValue, setArrivalValue] = useState(props.data.arrival.location);
+
+  const [departureOpen, setDepartureOpen] = useState(false);
+  const [arrivalOpen, setArrivalOpen] = useState(false);
+
+  const [selectedDeparturePlace, setSelectedDeparturePlace] = useState<{
+    placePrediction: google.maps.places.PlacePrediction;
+  } | null>(null);
+
+  const [selectedArrivalPlace, setSelectedArrivalPlace] = useState<{
+    placePrediction: google.maps.places.PlacePrediction;
+  } | null>(null);
+
+  const { suggestions: departureSuggestions, isLoading: isDepartureLoading } =
+    useAutocompleteSuggestions(departureValue, {
+      includedPrimaryTypes: [
+        "transit_station",
+        "airport",
+        "train_station",
+        "bus_station",
+        "taxi_stand",
+      ],
+    });
+
+  const { suggestions: arrivalSuggestions, isLoading: isArrivalLoading } =
+    useAutocompleteSuggestions(arrivalValue, {
+      includedPrimaryTypes: [
+        "transit_station",
+        "airport",
+        "train_station",
+        "bus_station",
+        "taxi_stand",
+      ],
+    });
+
+  const handleDepartureInputChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setDepartureValue(event.target.value);
+  };
+
+  const handleArrivalInputChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setArrivalValue(event.target.value);
+  };
+
+  // Handle departure place selection
+  const handleDepartureSelect = (
+    suggestion: {
+      placePrediction: google.maps.places.PlacePrediction | null;
+    } | null
+  ) => {
+    if (suggestion?.placePrediction) {
+      setSelectedDeparturePlace({
+        placePrediction: suggestion.placePrediction,
+      });
+      setDepartureValue(suggestion.placePrediction.mainText + "");
+      setDepartureOpen(false);
+    }
+  };
+
+  // Handle arrival place selection
+  const handleArrivalSelect = (
+    suggestion: {
+      placePrediction: google.maps.places.PlacePrediction | null;
+    } | null
+  ) => {
+    if (suggestion?.placePrediction) {
+      setSelectedArrivalPlace({ placePrediction: suggestion.placePrediction });
+      setArrivalValue(suggestion.placePrediction.mainText + "");
+      setArrivalOpen(false);
+    }
+  };
+
   const {
     handleSubmit,
     control,
@@ -58,57 +141,19 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
     watch,
   } = useForm({
     defaultValues: {
-      mode: props.data.mode,
-      departureLocation: props.data.departure.location,
-      arrivalLocation: props.data.arrival.location,
-      departureDateTime: dayjs(props.data.departure.datetime),
-      arrivalDateTime: dayjs(props.data.arrival.datetime),
-      cost: props.data.cost,
-      note: props.data.note,
-      currency: props.data.currency || "$",
+      mode: props.data?.mode,
+      departureLocation: props.data.departure?.location,
+      arrivalLocation: props.data.arrival?.location,
+      departureDateTime: dayjs(props.data.departure?.datetime),
+      arrivalDateTime: dayjs(props.data.arrival?.datetime),
+      cost: props.data?.cost,
+      note: props.data?.note,
+      currency: props.data?.currency || "$",
     },
   });
-  // const placesLib = useMapsLibrary("places");
-  // const [destination, setDestination] = useState<string>("");
-  // const [selectedPlace, setSelectedPlace] = useState<{
-  //   placePrediction: google.maps.places.PlacePrediction;
-  // } | null>(null);
-  // const [open, setOpen] = useState(false);
-  // const { suggestions, isLoading } = useAutocompleteSuggestions(destination, {
-  //   includedPrimaryTypes: ["point_of_interest"],
-  // });
-
-  // const handleInputChange = useCallback(
-  //   (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-  //     const value = event.target.value;
-  //     setDestination(value);
-  //   },
-  //   []
-  // );
-
-  // const handlePlaceSelect = (
-  //   suggestion: {
-  //     placePrediction: google.maps.places.PlacePrediction | null;
-  //   } | null
-  // ) => {
-  //   if (suggestion?.placePrediction && placesLib) {
-  //     setSelectedPlace({ placePrediction: suggestion.placePrediction });
-  //     console.log("Selected Place:", suggestion.placePrediction.placeId);
-
-  //     const placeId = suggestion.placePrediction.placeId || "";
-  //     const name = String(suggestion.placePrediction.mainText || "");
-  //     if (placeId) {
-  //       onAddPlace(placeId, name);
-  //     }
-
-  //     setDestination("");
-  //     setSelectedPlace(null);
-  //     setOpen(false);
-  //   }
-  // };
   const onFormSubmit = (data: any) => {
     const updated: TransitData = {
-      ...props.data,
+      id: props.data.id,
       note: data.note,
       cost: Number(data.cost),
       mode: data.mode,
@@ -122,9 +167,11 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
       },
       currency: data.currency || "$",
     };
-
-    props.onUpdate(props.data._id, updated);
-    props.onToggleEdit(props.data._id);
+    socket?.emit("planItemUpdated", {
+      section: "transits",
+      item: updated,
+    });
+    props.onToggleEdit(props.data.id || "");
   };
 
   return (
@@ -291,14 +338,83 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                   <Controller
                     name="departureLocation"
                     control={control}
-                    rules={{ required: "Location required" }}
+                    rules={{ required: "Departure location is required" }}
                     render={({ field }) => (
-                      <TextField
-                        {...field}
-                        error={!!errors.departureLocation}
-                        variant="standard"
-                        placeholder="Location"
-                        fullWidth
+                      <Autocomplete
+                        id="departure-autocomplete"
+                        open={departureOpen}
+                        onOpen={() => {
+                          if (departureValue.length >= 2)
+                            setDepartureOpen(true);
+                        }}
+                        onClose={() => setDepartureOpen(false)}
+                        isOptionEqualToValue={(option, value) =>
+                          option.placePrediction?.placeId ===
+                          value.placePrediction?.placeId
+                        }
+                        getOptionLabel={(option) =>
+                          option.placePrediction?.mainText + ""
+                        }
+                        options={departureSuggestions}
+                        loading={isDepartureLoading}
+                        value={selectedDeparturePlace}
+                        onChange={(_, newValue) => {
+                          handleDepartureSelect(newValue);
+                          if (newValue?.placePrediction) {
+                            field.onChange(
+                              newValue.placePrediction.mainText + ""
+                            );
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...field}
+                            value={departureValue}
+                            className=""
+                            size="small"
+                            fullWidth
+                            placeholder="Enter departure location"
+                            variant="outlined"
+                            onChange={(e) => {
+                              handleDepartureInputChange(e);
+                              field.onChange(e.target.value);
+                            }}
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <Search />
+                                </InputAdornment>
+                              ),
+                              endAdornment: (
+                                <>
+                                  {isDepartureLoading ? (
+                                    <CircularProgress
+                                      color="inherit"
+                                      size={20}
+                                    />
+                                  ) : null}
+                                  {params.InputProps.endAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                        renderOption={(props, option) => (
+                          <li {...props} key={option.placePrediction?.placeId}>
+                            <Stack>
+                              <div className="font-medium">
+                                {option?.placePrediction?.mainText + ""}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {option.placePrediction?.secondaryText != null
+                                  ? option.placePrediction?.secondaryText + ""
+                                  : option.placePrediction?.text + ""}
+                              </div>
+                            </Stack>
+                          </li>
+                        )}
                       />
                     )}
                   />
@@ -334,14 +450,82 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                   <Controller
                     name="arrivalLocation"
                     control={control}
-                    rules={{ required: "Location required" }}
+                    rules={{ required: "Arrival location is required" }}
                     render={({ field }) => (
-                      <TextField
-                        {...field}
-                        error={!!errors.arrivalLocation}
-                        variant="standard"
-                        placeholder="Location"
-                        fullWidth
+                      <Autocomplete
+                        id="arrival-autocomplete"
+                        open={arrivalOpen}
+                        onOpen={() => {
+                          if (arrivalValue.length >= 2) setArrivalOpen(true);
+                        }}
+                        onClose={() => setArrivalOpen(false)}
+                        isOptionEqualToValue={(option, value) =>
+                          option.placePrediction?.placeId ===
+                          value.placePrediction?.placeId
+                        }
+                        getOptionLabel={(option) =>
+                          option.placePrediction?.mainText + ""
+                        }
+                        options={arrivalSuggestions}
+                        loading={isArrivalLoading}
+                        value={selectedArrivalPlace}
+                        onChange={(_, newValue) => {
+                          handleArrivalSelect(newValue);
+                          if (newValue?.placePrediction) {
+                            field.onChange(
+                              newValue.placePrediction.mainText + ""
+                            );
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...field}
+                            value={arrivalValue}
+                            className=""
+                            size="small"
+                            fullWidth
+                            placeholder="e.g Ta xua, Sapa, Da Nang"
+                            variant="outlined"
+                            onChange={(e) => {
+                              handleArrivalInputChange(e);
+                              field.onChange(e.target.value);
+                            }}
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <Search />
+                                </InputAdornment>
+                              ),
+                              endAdornment: (
+                                <>
+                                  {isArrivalLoading ? (
+                                    <CircularProgress
+                                      color="inherit"
+                                      size={20}
+                                    />
+                                  ) : null}
+                                  {params.InputProps.endAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                        renderOption={(props, option) => (
+                          <li {...props} key={option.placePrediction?.placeId}>
+                            <Stack>
+                              <div className="font-medium">
+                                {option?.placePrediction?.mainText + ""}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {option.placePrediction?.secondaryText != null
+                                  ? option.placePrediction?.secondaryText + ""
+                                  : option.placePrediction?.text + ""}
+                              </div>
+                            </Stack>
+                          </li>
+                        )}
                       />
                     )}
                   />
@@ -374,7 +558,6 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                     multiline
                     fullWidth
                     rows={2}
-                    maxRows={4}
                     slotProps={{
                       input: {
                         className:
@@ -390,7 +573,7 @@ const EditableTransitCards: React.FC<ReservationCardsProps> = (props) => {
                 variant="outlined"
                 type="button"
                 color="error"
-                onClick={() => props.onToggleEdit(props.data._id)}
+                onClick={() => props.onToggleEdit(props.data.id || "")}
               >
                 Cancel
               </Button>
@@ -409,6 +592,7 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
   if (props.data.isEditing) {
     return <EditableTransitCards {...props} />;
   }
+  const { socket } = useSocket();
 
   const { data } = props;
   const [contextMenu, setContextMenu] = React.useState<{
@@ -437,7 +621,12 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
       });
     }
   };
-
+  const handleDelete = () => {
+    socket?.emit("planItemDeleted", {
+      section: "transits",
+      itemId: props.data.id,
+    });
+  };
   const handleClose = () => {
     setContextMenu(null);
   };
@@ -454,19 +643,19 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
               <Stack direction={"row"} alignItems={"center"} gap={2}>
                 <Stack direction={"column"}>
                   <h1 className="text-lg font-bold">
-                    {data.departure.location.split(" - ")[0]}
+                    {data.departure?.location.split(" - ")[0]}
                   </h1>
                   <p className="text-neutral-600 text-sm">
-                    {data.departure.location.split(" - ")[1] || ""}
+                    {data.departure?.location.split(" - ")[1] || ""}
                   </p>
                 </Stack>
                 <ArrowForward className="text-neutral-700 text-3xl" />
                 <Stack direction={"column"}>
                   <h1 className="text-lg font-bold">
-                    {data.arrival.location.split(" - ")[0]}
+                    {data.arrival?.location.split(" - ")[0]}
                   </h1>
                   <p className="text-neutral-600 text-sm">
-                    {data.arrival.location.split(" - ")[1] || ""}
+                    {data.arrival?.location.split(" - ")[1] || ""}
                   </p>
                 </Stack>
               </Stack>
@@ -478,15 +667,15 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
                   alignItems={"center"}
                 >
                   <time>
-                    {dayjs(data.departure.datetime).format("ddd, D MMM")} -{" "}
-                    {dayjs(data.departure.datetime, "HH:mm:ss").format(
+                    {dayjs(data.departure?.datetime).format("ddd, D MMM")} -{" "}
+                    {dayjs(data.departure?.datetime, "HH:mm:ss").format(
                       "h:mm A"
                     )}
                   </time>
                   <Circle className="text-xs" />
                   <span>
-                    {dayjs(data.arrival.datetime).format("ddd, D MMM")} -
-                    {dayjs(data.arrival.datetime, "HH:mm:ss").format("h:mm A")}
+                    {dayjs(data.arrival?.datetime).format("ddd, D MMM")} -
+                    {dayjs(data.arrival?.datetime, "HH:mm:ss").format("h:mm A")}
                   </span>
                 </Stack>
                 <div className="flex items-center gap-2">
@@ -496,7 +685,7 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
                     className="bg-blue-100 text-blue-800"
                   />
                   <span className="font-mono text-sm text-gray-600 font-semibold">
-                    {data._id}
+                    {data?.id}
                   </span>
                 </div>
               </Stack>
@@ -508,7 +697,7 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
                   Cost
                 </h1>
                 <Chip
-                  label={`${data.currency || "$"}${data.cost}`}
+                  label={`${data?.currency || "$"}${data?.cost}`}
                   className="bg-gray-200 font-semibold text-base w-fit justify-start text-gray-800"
                 />
               </Stack>
@@ -535,13 +724,13 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
               }
             >
               <MenuList>
-                <MenuItem onClick={() => props.onToggleEdit(data._id)}>
+                <MenuItem onClick={() => props.onToggleEdit(data?.id || "")}>
                   <ListItemIcon>
                     <Edit fontSize="small" />
                   </ListItemIcon>
                   <ListItemText>Edit</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => props.onDelete(data._id)}>
+                <MenuItem onClick={handleDelete}>
                   <ListItemIcon>
                     <Delete fontSize="small" />
                   </ListItemIcon>
@@ -557,17 +746,14 @@ const TransitCards: React.FC<ReservationCardsProps> = (props) => {
 };
 
 const ReservationTransits: React.FC = () => {
-  const {
-    transits,
-    addTransit,
-    updateTransit,
-    toggleEditTransit,
-    deleteTransit,
-  } = useTripDetailStore();
+  const { transits, toggleEditTransit } = useTripDetailStore();
 
+  const [expanded, setExpanded] = useState(false);
+
+  const { socket } = useSocket();
   const handleAddTransit = () => {
     const newTransit: TransitData = {
-      _id: `transit-${Date.now()}`,
+      id: "",
       note: "",
       cost: 0,
       currency: "$",
@@ -582,54 +768,63 @@ const ReservationTransits: React.FC = () => {
       },
       isEditing: true,
     };
-
-    addTransit(newTransit);
+    socket?.emit("planItemAdded", {
+      section: "transits",
+      item: {
+        content: newTransit,
+      },
+    });
   };
+  console.log("Transits:", transits);
 
   return (
-    <div>
-      <Accordion
-        elevation={0}
-        className="bg-white py-4"
-        slotProps={{ transition: { unmountOnExit: true } }}
+    <div className="bg-white py-4 rounded" id="transits">
+      <div
+        className="flex items-center justify-between cursor-pointer p-4"
+        onClick={() => setExpanded((prev) => !prev)}
       >
-        <AccordionSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="panel1bh-content"
-          className="group"
-          id="panel1bh-header"
-        >
-          <Badge badgeContent={transits.length} color="primary">
-            <h1 className="text-3xl font-bold text-neutral-900 group-hover:underline">
-              Transits
-            </h1>
-          </Badge>
-        </AccordionSummary>
-        <AccordionDetails>
-          <div className="flex flex-col gap-4">
-            {transits.map((transit, index) => (
-              <TransitCards
-                key={transit._id}
-                data={transit}
-                index={index + 1}
-                onUpdate={updateTransit}
-                onToggleEdit={toggleEditTransit}
-                onDelete={deleteTransit}
-              />
-            ))}
+        <Badge badgeContent={transits.length} color="primary">
+          <h1 className="text-3xl font-bold text-neutral-900 hover:underline">
+            Transits
+          </h1>
+        </Badge>
+        <IconButton size="small">
+          {expanded ? <ExpandLess /> : <ExpandMore />}
+        </IconButton>
+      </div>
 
-            <Divider textAlign="right">
-              <Button
-                endIcon={<Add />}
-                className="text-dark-900"
-                onClick={handleAddTransit}
-              >
-                Add more Transit
-              </Button>
-            </Divider>
-          </div>
-        </AccordionDetails>
-      </Accordion>
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden px-4 pt-4"
+          >
+            <div className="flex flex-col gap-4">
+              {transits.map((transit, index) => (
+                <TransitCards
+                  key={transit.id}
+                  data={transit}
+                  index={index + 1}
+                  onToggleEdit={toggleEditTransit}
+                />
+              ))}
+
+              <Divider textAlign="right">
+                <Button
+                  endIcon={<Add />}
+                  className="text-dark-900"
+                  onClick={handleAddTransit}
+                >
+                  Add more Transit
+                </Button>
+              </Divider>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

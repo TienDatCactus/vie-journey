@@ -4,7 +4,6 @@ import { Button, Divider, Stack } from "@mui/material";
 import { useLocation } from "react-router-dom";
 const Footer = () => {
   const path = useLocation().pathname;
-  console.log(path);
   const footerList = [
     {
       title: "Explore",

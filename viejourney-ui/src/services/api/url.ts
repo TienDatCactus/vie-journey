@@ -53,9 +53,10 @@ export const TRIP = {
 
 export const ASSET = {
   UPLOAD: "/assets/image",
+  LANDING: "/assets/landing",
 };
 
 export const BLOG = {
   LIST_BLOGS: "/blogs/manager",
-  DELETE_BLOGS: "/blogs",
+  BLOGS: "/blogs",
 };
