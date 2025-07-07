@@ -28,7 +28,7 @@ import { enqueueSnackbar } from "notistack";
 import React from "react";
 import Map from "../../../components/Maps/Map";
 import { MainLayout } from "../../../layouts";
-import { editUserAvatar, } from "../../../services/api/user";
+import { editUserAvatar } from "../../../services/api/user";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 import ProfileSettings from "./component/Setting";
 import TravelBlog from "./component/TravelBlog";
@@ -39,7 +39,7 @@ const Dashboard: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string>("");
-  const { info, loadUserInfo } = useAuthStore();
+  const { info, loadUserInfo, credential } = useAuthStore();
   const [uploading, setUploading] = React.useState(false);
   const menuItems = [
     { id: 0, label: "Overview" },
@@ -76,13 +76,13 @@ const Dashboard: React.FC = () => {
           });
           return;
         }
-        if (!info?._id) {
+        if (!credential?.userId) {
           enqueueSnackbar("User ID is not available", {
             variant: "error",
           });
           return;
         }
-        await editUserAvatar(info?.userId, selectedFile);
+        await editUserAvatar(credential.userId, selectedFile);
 
         loadUserInfo();
         enqueueSnackbar("Updated image successful", {
@@ -106,7 +106,7 @@ const Dashboard: React.FC = () => {
               hidden: {},
               show: {
                 transition: {
-                  staggerChildren: 0.05, 
+                  staggerChildren: 0.05,
                 },
               },
             }}

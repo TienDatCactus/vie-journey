@@ -37,6 +37,10 @@ const CreateTripDetails: React.FC = () => {
     updateItinerary,
     toggleEditItinerary,
     deleteItinerary,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    setTotalBudget,
   } = useTripDetailStore();
   const { addPlaceId } = useDirectionStore();
 
@@ -82,7 +86,6 @@ const CreateTripDetails: React.FC = () => {
           isEditing: false,
         });
       } else if (data.section == "transits") {
-        console.log("Transit added:", data);
         addTransit({
           ...data.item.content,
           id: data.item.id,
@@ -90,7 +93,22 @@ const CreateTripDetails: React.FC = () => {
       } else if (data.section == "itineraries") {
         console.log("first itinerary added:", data);
         addPlaceId(data.item.place.placeId, data.item.date);
-        addItinerary(data.item);
+        addItinerary({
+          ...data.item,
+          place: {
+            ...data.item.place,
+            createdBy: data.addedBy,
+          },
+        });
+      } else if (data.section == "budget") {
+        console.log(data);
+        setTotalBudget(Number(data.item));
+      } else if (data.section == "expenses") {
+        console.log("expense added:", data);
+        addExpense({
+          ...data.item,
+          createdBy: data.addedBy,
+        });
       }
     });
 
@@ -106,9 +124,15 @@ const CreateTripDetails: React.FC = () => {
           note: data.item.note,
           place: {
             ...data.item.place,
+            createdBy: data.updatedBy,
           },
         });
-        toggleEditItinerary(data.item.id);
+      } else if (data.section == "expenses") {
+        console.log("expense updated:", data);
+        updateExpense(data.item.id, {
+          ...data.item,
+          createdBy: data.updatedBy,
+        });
       }
     });
 
@@ -119,6 +143,8 @@ const CreateTripDetails: React.FC = () => {
         deleteTransit(data.itemId);
       } else if (data.section == "itineraries") {
         deleteItinerary(data.itemId);
+      } else if (data.section == "expenses") {
+        deleteExpense(data.itemId);
       }
     });
 

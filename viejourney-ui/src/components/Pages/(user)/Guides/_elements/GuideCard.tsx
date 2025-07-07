@@ -22,7 +22,7 @@ const GuideCard = (props: IBlog) => {
           component="img"
           image={props.coverImage || "https://placehold.co/600x400"}
           alt="green iguana"
-          className="duration-200 ease-in-out  hover:scale-115 cursor-pointer  transition-all"
+          className="duration-200 ease-in-out lg:h-60  hover:scale-115 cursor-pointer  transition-all"
           onClick={handleNavigate}
         />
       </div>

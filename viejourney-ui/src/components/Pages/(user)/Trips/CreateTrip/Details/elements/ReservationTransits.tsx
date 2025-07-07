@@ -775,7 +775,6 @@ const ReservationTransits: React.FC = () => {
       },
     });
   };
-  console.log("Transits:", transits);
 
   return (
     <div className="bg-white py-4 rounded" id="transits">

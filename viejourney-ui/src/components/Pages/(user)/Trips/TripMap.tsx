@@ -5,7 +5,6 @@ import Map from "../../../Maps/Map";
 
 const TripMap: React.FC = () => {
   const trip = useTripDetailStore((state) => state.trip);
-  console.log(trip.destination);
   return (
     <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
       <Map

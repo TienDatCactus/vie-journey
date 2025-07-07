@@ -90,13 +90,19 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.handshake.auth?.user as WSUser;
     console.log(`Added item in section ${data.section}:`, data.item);
     const itemId = this.planService.addItem(tripId, data.section, data.item);
-    console.log(`Added by user:`, user);
-
-    this.server.to(tripId).emit('onPlanItemAdded', {
-      section: data.section,
-      item: { ...data.item, id: itemId },
-      addedBy: user,
-    });
+    if (data.section === 'budget') {
+      this.server.to(tripId).emit('onPlanItemAdded', {
+        section: data.section,
+        item: data.item,
+        addedBy: user,
+      });
+    } else {
+      this.server.to(tripId).emit('onPlanItemAdded', {
+        section: data.section,
+        item: { ...data.item, id: itemId },
+        addedBy: user,
+      });
+    }
   }
 
   // Payload:

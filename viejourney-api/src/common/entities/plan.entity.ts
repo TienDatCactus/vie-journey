@@ -94,17 +94,13 @@ export interface Expense {
   splits: Split;
 }
 
-export interface Budgeting {
-  budget: number;
-  expenses: Expense[];
-}
-
 export interface Plan {
   notes: Note[];
   transits: Transit[];
   places: Place[];
   itineraries: Itinerary[];
-  budgeting: Budgeting;
+  budget: number;
+  expenses: Expense[];
 }
 
 export interface TripPlan extends Document {

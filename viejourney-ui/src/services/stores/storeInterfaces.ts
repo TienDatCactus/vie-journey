@@ -51,7 +51,7 @@ export interface PlaceNote {
   placeId: string;
   note: string;
   visited: boolean;
-  addedBy: UserInfo;
+  addedBy: Partial<UserInfo>;
   isEditing?: boolean;
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
@@ -72,6 +72,7 @@ export interface Itinerary {
     }; // Location coordinates
     time?: string;
     cost?: number;
+    createdBy?: Partial<UserInfo>; // User who created this place
   };
   note: string;
 

@@ -12,6 +12,7 @@ import {
   IconButton,
   Tooltip,
   Button,
+  Grid2,
 } from "@mui/material";
 import {
   LocationOn,
@@ -19,6 +20,8 @@ import {
   Edit,
   Delete,
   Share,
+  Add,
+  Public,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { IMyBlog } from "../../../../../utils/interfaces/blog";
@@ -117,23 +120,139 @@ export default function TravelBlog() {
 
   if (myBlogs.length === 0) {
     return (
-      <Container maxWidth="lg" className="py-8">
-        <Typography
-          variant="h4"
-          component="h1"
-          className="mb-6 font-bold text-gray-800"
-        >
-          My Travel Blogs
-        </Typography>
-        <Box className="text-center py-12">
-          <Typography variant="h6" className="text-gray-500 mb-4">
-            No blogs found
-          </Typography>
-          <Typography variant="body1" className="text-gray-400">
-            Start creating your first travel blog to share your adventures!
-          </Typography>
-        </Box>
-      </Container>
+      <Box
+        sx={{
+          maxWidth: "125rem",
+          mx: "auto",
+          backgroundColor: "#fafafa",
+          py: 4,
+        }}
+      >
+        <div>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              mb: 6,
+            }}
+          >
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: "bold",
+                  color: "#1a1a1a",
+                  mb: 1,
+                }}
+              >
+                Travel Guides
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#666",
+                  fontSize: "16px",
+                }}
+              >
+                Share your travel knowledge
+              </Typography>
+            </Box>
+
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              // onClick={handleCreateGuide}
+              sx={{
+                backgroundColor: "#2c2c2c",
+                "&:hover": {
+                  backgroundColor: "#1a1a1a",
+                },
+                textTransform: "none",
+                fontWeight: 500,
+                px: 3,
+                py: 1,
+                borderRadius: 2,
+              }}
+            >
+              Create Guide
+            </Button>
+          </Box>
+
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "400px",
+              textAlign: "center",
+            }}
+          >
+            <Box
+              sx={{
+                mb: 3,
+                p: 3,
+                borderRadius: "50%",
+                backgroundColor: "#f5f5f5",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Public
+                sx={{
+                  fontSize: 60,
+                  color: "#bbb",
+                  strokeWidth: 1,
+                }}
+              />
+            </Box>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                color: "#333",
+                mb: 2,
+              }}
+            >
+              No guides yet
+            </Typography>
+
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#666",
+                mb: 4,
+                maxWidth: "400px",
+                lineHeight: 1.6,
+              }}
+            >
+              Start sharing your travel experiences by creating your first guide
+            </Typography>
+
+            <Button
+              variant="contained"
+              // onClick={handleCreateFirstGuide}
+              sx={{
+                backgroundColor: "#2c2c2c",
+                "&:hover": {
+                  backgroundColor: "#1a1a1a",
+                },
+                textTransform: "none",
+                fontWeight: 500,
+                px: 4,
+                py: 1.5,
+                borderRadius: 2,
+                fontSize: "16px",
+              }}
+            >
+              Create Your First Guide
+            </Button>
+          </Box>
+        </div>
+      </Box>
     );
   }
 
@@ -156,9 +275,18 @@ export default function TravelBlog() {
         </div>
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid2 container spacing={3}>
         {myBlogs.map((blog) => (
-          <Grid item xs={12} sm={6} md={4} key={blog._id}>
+          <Grid2
+            size={{
+              xs: 12,
+              sm: 6,
+              md: 4,
+              lg: 3,
+              xl: 2,
+            }}
+            key={blog._id}
+          >
             <Card
               className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer"
               onClick={() => navigate(`/blogs/${blog._id}`)}
@@ -258,9 +386,9 @@ export default function TravelBlog() {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          </Grid2>
         ))}
-      </Grid>
+      </Grid2>
     </Container>
   );
 }

@@ -10,7 +10,7 @@ import {
 } from "@mui/icons-material";
 import { Button, ButtonGroup, Chip, CircularProgress } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { doValidateAccessToken } from "../../../services/api";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
@@ -22,32 +22,36 @@ const OauthSuccess: React.FC = () => {
   const [params] = useSearchParams();
 
   const navigate = useNavigate();
+  const processedTokenRef = useRef(false);
+
   useEffect(() => {
     const handleCallback = async () => {
       const token = params.get("accessToken");
-      if (token) {
-        try {
-          setLoading(true);
-          const tokenData = await doValidateAccessToken(token);
-          if (tokenData?.userId) {
-            setLoading(false);
-            setToken({
-              accessToken: token,
-              userId: tokenData.userId,
-            });
-            setCredential({ userId: tokenData.userId, token });
-          }
-        } catch (error) {
-          console.error("Error processing OAuth callback:", error);
+      if (!token || processedTokenRef.current) return;
+
+      try {
+        processedTokenRef.current = true;
+        setLoading(true);
+        const tokenData = await doValidateAccessToken(token);
+        if (tokenData?.userId) {
+          setToken({
+            accessToken: token,
+            userId: tokenData.userId,
+          });
+          setCredential({ userId: tokenData.userId, token });
         }
-      } else {
-        enqueueSnackbar("Invalid OAuth callback. No token found.", {
+      } catch (error) {
+        console.error("Error processing OAuth callback:", error);
+        enqueueSnackbar("Authentication failed. Please try again.", {
           variant: "error",
         });
+      } finally {
+        setLoading(false);
       }
     };
+
     handleCallback();
-  }, [params]);
+  }, [params, setCredential, enqueueSnackbar]);
   useEffect(() => {
     if (loading) return;
     if (timer <= 0) {

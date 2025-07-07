@@ -83,16 +83,13 @@ export interface Expense {
     isSettled: boolean;
   };
 }
-export interface Budgeting {
-  budget: number;
-  expenses: Expense[];
-}
 export interface Plan {
   notes: Note[];
   transits: Transit[];
   places: Place[];
   itineraries: Itinerary[];
-  budgeting: Budgeting;
+  budget: number;
+  expenses: Expense[];
 }
 
 export type PlanSection = keyof Plan;
@@ -144,6 +141,20 @@ export class PlanStateService {
     item: AddPayload<T>,
   ): string {
     const plan = this.getOrCreatePlan(tripId);
+    if (section === 'budget') {
+      if (typeof item == 'number' || typeof item === 'string') {
+        plan.budget = item;
+        this.scheduleSave(tripId);
+        return 'budget';
+      } else {
+        throw new Error('Invalid budget payload');
+      }
+    }
+    if (!Array.isArray(plan[section])) {
+      throw new Error(
+        `Section ${section} is not an array and cannot add items to it`,
+      );
+    }
     type Item = WithId<Plan[T], string>;
     const newItem: Item = {
       ...(item as Omit<Item, 'id'>),
@@ -160,6 +171,7 @@ export class PlanStateService {
     item: UpdatePayload<T>,
   ) {
     const plan = this.getOrCreatePlan(tripId);
+
     if (Array.isArray(plan[section])) {
       type Item = WithId<Plan[T], string>;
       const index = (plan[section] as Item[]).findIndex(
@@ -172,11 +184,7 @@ export class PlanStateService {
         };
       }
     } else {
-      const update: Plan[T] = {
-        ...plan[section],
-        ...(item as Partial<Plan[T]>),
-      };
-      plan[section] = update;
+      throw new Error(`Update not supported for section: ${section}`);
     }
   }
 
@@ -231,10 +239,8 @@ export class PlanStateService {
           places: [],
           transits: [],
           itineraries: [],
-          budgeting: {
-            budget: 0,
-            expenses: [],
-          },
+          budget: 0,
+          expenses: [],
         },
       };
       this.planStates.set(tripId, state);
