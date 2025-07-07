@@ -377,6 +377,7 @@ http.interceptors.response.use(
         "/auth/login",
         "/auth/register",
         "/auth/refresh",
+        "/auth/oauth-success",
       ].some((endpoint) => originalRequest.url?.includes(endpoint));
 
       if (isAuthEndpoint) {
@@ -410,23 +411,10 @@ http.interceptors.response.use(
         if (refreshResult && refreshResult.accessToken) {
           // Update Authorization header
           originalRequest.headers.Authorization = `Bearer ${refreshResult.accessToken}`;
-
-          console.log("Token refresh successful, retrying original request", {
-            url: originalRequest.url,
-            method: originalRequest.method,
-          });
-
-          // Notify subscribers
           onTokenRefreshed(refreshResult.accessToken);
-
-          // Reset refreshing state
           isRefreshing = false;
-
-          // Retry original request
           return http(originalRequest);
         } else {
-          // If refresh failed, redirect
-          console.log("Token refresh failed, redirecting to login");
           onRefreshFailure();
           isRefreshing = false;
           return handleError(error);

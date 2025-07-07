@@ -33,7 +33,6 @@ interface TripDetailStore {
   toggleEditPlaceNotes: (id: string) => void;
   deletePlaceNote: (id: string) => void;
   setPlaceNotes: (notes: PlaceNote[]) => void;
-  togglePlaceVisited: (id: string, visited: boolean) => void;
 
   itineraries: Itinerary[];
   addItinerary: (itinerary: Itinerary) => void;
@@ -120,12 +119,6 @@ export const useTripDetailStore = create<TripDetailStore>()(
           placeNotes: state.placeNotes.filter((n) => n.id !== id),
         })),
 
-      togglePlaceVisited: (id, visited) =>
-        set((state) => ({
-          placeNotes: state.placeNotes.map((n) =>
-            n.id === id ? { ...n, visited } : n
-          ),
-        })),
       setTrip: (trip) => set(() => ({ trip })),
       addItinerary: (itinerary) =>
         set((state) => ({

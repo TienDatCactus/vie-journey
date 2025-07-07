@@ -766,7 +766,7 @@ const ReservationTransits: React.FC = () => {
         datetime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         location: "",
       },
-      isEditing: true,
+      isEditing: false,
     };
     socket?.emit("planItemAdded", {
       section: "transits",

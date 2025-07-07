@@ -187,15 +187,6 @@ class Expense {
 }
 
 @Schema({ _id: false })
-class Budgeting {
-  @Prop({ default: 0 })
-  budget: number;
-
-  @Prop({ type: [Expense], default: [] })
-  expenses: Expense[];
-}
-
-@Schema({ _id: false })
 class Plan {
   @Prop({ type: [Note], default: [] })
   notes: Note[];
@@ -209,8 +200,11 @@ class Plan {
   @Prop({ type: [Itinerary], default: [] })
   itineraries: Itinerary[];
 
-  @Prop({ type: Budgeting, default: { budget: 0, expenses: [] } })
-  budgeting: Budgeting;
+  @Prop({ default: 0 })
+  budget: number;
+
+  @Prop({ type: [Expense], default: [] })
+  expenses: Expense[];
 }
 
 @Schema({ timestamps: true, versionKey: false })
@@ -225,10 +219,8 @@ export class TripPlan extends Document {
       transits: [],
       places: [],
       itineraries: [],
-      budgeting: {
-        budget: 0,
-        expenses: [],
-      },
+      budget: 0,
+      expenses: [],
     },
   })
   plan: Plan;

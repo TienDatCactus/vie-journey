@@ -35,12 +35,15 @@ const CreateTripDetails: React.FC = () => {
     deleteTransit,
     addItinerary,
     updateItinerary,
-    toggleEditItinerary,
+
     deleteItinerary,
     addExpense,
     updateExpense,
     deleteExpense,
     setTotalBudget,
+    addPlaceNote,
+    deletePlaceNote,
+    updatePlaceNote,
   } = useTripDetailStore();
   const { addPlaceId } = useDirectionStore();
 
@@ -90,6 +93,15 @@ const CreateTripDetails: React.FC = () => {
           ...data.item.content,
           id: data.item.id,
         });
+      } else if (data.section == "places") {
+        console.log("place added:", data);
+        addPlaceNote({
+          ...data.item,
+          place: {
+            ...data.item.place,
+            createdBy: data.addedBy,
+          },
+        });
       } else if (data.section == "itineraries") {
         console.log("first itinerary added:", data);
         addPlaceId(data.item.place.placeId, data.item.date);
@@ -118,6 +130,9 @@ const CreateTripDetails: React.FC = () => {
         updateNote(data.item.id, data.item.text);
       } else if (data.section == "transits") {
         updateTransit(data.item.id, data.item);
+      } else if (data.section == "places") {
+        console.log("place updated:", data);
+        updatePlaceNote(data.item.id, data.item.note, data.item.visited);
       } else if (data.section == "itineraries") {
         console.log("itinerary updated:", data);
         updateItinerary(data.item.id, {
@@ -141,6 +156,8 @@ const CreateTripDetails: React.FC = () => {
         deleteNote(data.itemId);
       } else if (data.section == "transits") {
         deleteTransit(data.itemId);
+      } else if (data.section == "places") {
+        deletePlaceNote(data.itemId);
       } else if (data.section == "itineraries") {
         deleteItinerary(data.itemId);
       } else if (data.section == "expenses") {

@@ -37,7 +37,22 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly tripService: TripService,
     private readonly planService: PlanStateService,
-  ) {}
+  ) {
+    this.planService.notifySaveStatus = this.notifySaveStatus.bind(this);
+  }
+  private notifySaveStatus(
+    tripId: string,
+    status: 'saving' | 'saved' | 'error',
+    errorMessage?: string,
+  ): void {
+    const payload = {
+      status,
+      timestamp: new Date().toISOString(),
+      ...(errorMessage && { error: errorMessage }),
+    };
+
+    this.server.to(tripId).emit('savePlanStatus', payload);
+  }
 
   async handleConnection(client: Socket) {
     const tripId = client.handshake.auth.tripId as string;
@@ -158,6 +173,31 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
       section: data.section,
       itemId: data.itemId,
       deletedBy: user,
+    });
+  }
+  // Add to TripGateway class
+  // Update your existing handler in trip.gateway.ts
+  @SubscribeMessage('requestSaveStatus')
+  async handleRequestSaveStatus(
+    @MessageBody() data: { forceSave?: boolean } = {},
+    @ConnectedSocket() client: Socket,
+  ) {
+    const tripId = client.handshake.auth?.tripId as string;
+    const user = client.handshake.auth?.user as WSUser;
+    const isSaving = this.planService.isSavingPlan(tripId);
+
+    if (data.forceSave) {
+      console.log(
+        `Force saving trip plan for ${tripId} requested by ${user?.email}`,
+      );
+      await this.planService.forceSave(tripId);
+
+      return;
+    }
+
+    client.emit('savePlanStatus', {
+      status: isSaving ? 'saving' : 'saved',
+      timestamp: new Date().toISOString(),
     });
   }
 }

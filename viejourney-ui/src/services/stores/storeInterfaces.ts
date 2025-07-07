@@ -48,15 +48,27 @@ export interface PlaceData extends google.maps.places.Place {
 
 export interface PlaceNote {
   id: string;
-  placeId: string;
+  placeId?: string; // Google Place ID - for when place details haven't loaded yet
+  place?: {
+    placeId: string; // Google Place ID
+    displayName: string;
+    types: string[];
+    photo: string;
+    editorialSummary?: string;
+    regularOpeningHours?: any;
+    websiteURI: string;
+    priceLevel: string;
+    rating: number;
+    googleMapsURI: string;
+    userRatingCount: number;
+    createdBy?: Partial<UserInfo>; // User who created this place
+  };
   note: string;
   visited: boolean;
-  addedBy: Partial<UserInfo>;
   isEditing?: boolean;
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
 }
-
 export interface Itinerary {
   id: string;
   date: string; // ISO date string

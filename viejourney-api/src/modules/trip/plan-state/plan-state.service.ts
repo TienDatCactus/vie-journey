@@ -183,6 +183,7 @@ export class PlanStateService {
           ...(item as Partial<Item>),
         };
       }
+      this.scheduleSave(tripId);
     } else {
       throw new Error(`Update not supported for section: ${section}`);
     }
@@ -209,15 +210,49 @@ export class PlanStateService {
     }
   }
 
+  // Add to PlanStateService class
+  private savingStatus = new Map<string, boolean>();
+
+  // Check if a plan is currently being saved
+  public isSavingPlan(tripId: string): boolean {
+    return this.savingStatus.get(tripId) === true;
+  }
+
+  // Update the savePlan method to track save status
   async savePlan(tripId: string) {
     const state = this.planStates.get(tripId);
     if (!state) return;
+    console.log(`[DEBUG] Memory state before saving (Trip ${tripId}):`);
     try {
+      // Mark as saving
+      this.savingStatus.set(tripId, true);
+      this.emitSaveStatus(tripId, 'saving');
       await this.tripService.updatePlan(tripId, state.plan);
+      this.savingStatus.set(tripId, false);
       console.log(`Plan saved for trip: ${tripId}`);
+      this.emitSaveStatus(tripId, 'saved');
     } catch (error) {
+      // Mark as not saving on error
+      this.savingStatus.set(tripId, false);
+
       console.error(`Failed to save plan for trip: ${tripId}`, error);
+
+      // Notify clients about save error
+      this.emitSaveStatus(tripId, 'error', error.message);
     }
+  }
+  public notifySaveStatus?: (
+    tripId: string,
+    status: 'saving' | 'saved' | 'error',
+    errorMessage?: string,
+  ) => void;
+  // Helper method to emit save status
+  private emitSaveStatus(
+    tripId: string,
+    status: 'saving' | 'saved' | 'error',
+    errorMessage?: string,
+  ) {
+    this.notifySaveStatus?.(tripId, status, errorMessage);
   }
 
   scheduleSave(tripId: string) {
@@ -252,5 +287,16 @@ export class PlanStateService {
       plan,
       timeout: undefined,
     });
+  }
+  // Add to PlanStateService
+  public async forceSave(tripId: string): Promise<void> {
+    const state = this.planStates.get(tripId);
+    if (!state) return;
+    if (state.timeout) {
+      clearTimeout(state.timeout);
+      state.timeout = undefined;
+    }
+    console.log(`[FORCE SAVE] Force saving plan for trip ${tripId}:`);
+    await this.savePlan(tripId); // <-- Await the save
   }
 }
