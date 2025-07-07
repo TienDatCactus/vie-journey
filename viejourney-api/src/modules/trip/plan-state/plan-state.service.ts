@@ -1,96 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TripService } from '../trip.service';
 import { randomUUID } from 'crypto';
-
-export interface Note {
-  id: string;
-  text: string;
-}
-
-export interface Transit {
-  id: string;
-  note: string;
-  cost: number;
-  currency: string;
-  mode:
-    | 'Train'
-    | 'Flight'
-    | 'Car'
-    | 'Bus'
-    | 'Boat'
-    | 'Walk'
-    | 'Bike'
-    | 'Others';
-  departure: {
-    datetime: string;
-    location: string;
-  };
-  arrival: {
-    datetime: string;
-    location: string;
-  };
-}
-export interface Place {
-  id: string;
-  name: string;
-  placeId?: string;
-  note?: string;
-}
-export interface Itinerary {
-  id: string;
-  date: string; // ISO date string
-  place?: {
-    placeId?: string | null; // Google Place ID
-    displayName: string;
-    types: string[];
-    photo: string;
-    editorialSummary?: string;
-    location?: {
-      lat: number;
-      lng: number;
-    }; // Location coordinates
-    time?: string; // ISO time string
-    cost?: number;
-  };
-  note: string;
-  createdAt?: string; // ISO date string
-  updatedAt?: string; // ISO date string
-  isEditing?: boolean;
-}
-
-export interface Expense {
-  id: string;
-  amount: number;
-  currency: string;
-  type:
-    | 'Flights'
-    | 'Lodging'
-    | 'Car rental'
-    | 'Transit'
-    | 'Food'
-    | 'Drinks'
-    | 'Sightseeing'
-    | 'Activities'
-    | 'Shopping'
-    | 'Gas'
-    | 'Groceries'
-    | 'Other';
-  desc: string;
-  payer: string;
-  splits: {
-    splitWith: string[];
-    amount: number;
-    isSettled: boolean;
-  };
-}
-export interface Plan {
-  notes: Note[];
-  transits: Transit[];
-  places: Place[];
-  itineraries: Itinerary[];
-  budget: number;
-  expenses: Expense[];
-}
+import { Plan } from 'src/common/entities/plan.entity';
 
 export type PlanSection = keyof Plan;
 
@@ -218,13 +129,11 @@ export class PlanStateService {
     return this.savingStatus.get(tripId) === true;
   }
 
-  // Update the savePlan method to track save status
   async savePlan(tripId: string) {
     const state = this.planStates.get(tripId);
     if (!state) return;
     console.log(`[DEBUG] Memory state before saving (Trip ${tripId}):`);
     try {
-      // Mark as saving
       this.savingStatus.set(tripId, true);
       this.emitSaveStatus(tripId, 'saving');
       await this.tripService.updatePlan(tripId, state.plan);
@@ -232,12 +141,10 @@ export class PlanStateService {
       console.log(`Plan saved for trip: ${tripId}`);
       this.emitSaveStatus(tripId, 'saved');
     } catch (error) {
-      // Mark as not saving on error
       this.savingStatus.set(tripId, false);
 
       console.error(`Failed to save plan for trip: ${tripId}`, error);
 
-      // Notify clients about save error
       this.emitSaveStatus(tripId, 'error', error.message);
     }
   }
@@ -246,7 +153,6 @@ export class PlanStateService {
     status: 'saving' | 'saved' | 'error',
     errorMessage?: string,
   ) => void;
-  // Helper method to emit save status
   private emitSaveStatus(
     tripId: string,
     status: 'saving' | 'saved' | 'error',
@@ -297,6 +203,6 @@ export class PlanStateService {
       state.timeout = undefined;
     }
     console.log(`[FORCE SAVE] Force saving plan for trip ${tripId}:`);
-    await this.savePlan(tripId); // <-- Await the save
+    await this.savePlan(tripId);
   }
 }

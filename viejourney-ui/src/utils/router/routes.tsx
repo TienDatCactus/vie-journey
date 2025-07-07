@@ -137,7 +137,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <SuspenseWrapper component={Dashboard} />,
+        element: <SuspenseWrapper component={Dashboard} requireAuth={true} />,
       },
     ],
     errorElement: <ErrorBoundary />,

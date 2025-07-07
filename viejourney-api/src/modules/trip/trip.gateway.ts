@@ -190,8 +190,11 @@ export class TripGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log(
         `Force saving trip plan for ${tripId} requested by ${user?.email}`,
       );
+      client.emit('savePlanStatus', {
+        status: isSaving ? 'saving' : 'saved',
+        timestamp: new Date().toISOString(),
+      });
       await this.planService.forceSave(tripId);
-
       return;
     }
 

@@ -38,13 +38,6 @@ export interface Transit {
   arrival: Arrival;
 }
 
-export interface Place {
-  id: string;
-  name: string;
-  placeId?: string;
-  note?: string;
-}
-
 export interface PlaceDetails {
   placeId?: string | null;
   displayName: string;
@@ -56,16 +49,75 @@ export interface PlaceDetails {
   cost?: number;
 }
 
+export interface Note {
+  id: string;
+  text: string;
+}
+
+export interface Transit {
+  id: string;
+  note: string;
+  cost: number;
+  currency: string;
+  mode:
+    | 'Train'
+    | 'Flight'
+    | 'Car'
+    | 'Bus'
+    | 'Boat'
+    | 'Walk'
+    | 'Bike'
+    | 'Others';
+  departure: {
+    datetime: string;
+    location: string;
+  };
+  arrival: {
+    datetime: string;
+    location: string;
+  };
+}
+export interface Place {
+  id: string;
+  place: {
+    placeId: string; // Google Place ID
+    displayName?: string;
+    types?: string[];
+    photo?: string;
+    editorialSummary?: string;
+    regularOpeningHours?: any;
+    websiteURI?: string;
+    priceLevel?: string;
+    rating?: number;
+    googleMapsURI?: string;
+    userRatingCount?: number;
+  };
+  note: string;
+  visited: boolean;
+  isEditing?: boolean;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
+}
 export interface Itinerary {
   id: string;
   date: string; // ISO date string
-  place?: PlaceDetails;
+  place?: {
+    placeId?: string | null; // Google Place ID
+    displayName: string;
+    types: string[];
+    photo: string;
+    editorialSummary?: string;
+    location?: {
+      lat: number;
+      lng: number;
+    }; // Location coordinates
+    time?: string; // ISO time string
+    cost?: number;
+  };
   note: string;
-  createdAt?: string;
-  updatedAt?: string;
-  isEditing?: boolean;
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
 }
-
 export interface Split {
   splitWith: string[];
   amount: number;
@@ -73,7 +125,7 @@ export interface Split {
 }
 
 export interface Expense {
-  id: string; // Note: Using 'id' instead of '_id' to match your service interfaces
+  id: string;
   amount: number;
   currency: string;
   type:
@@ -91,9 +143,12 @@ export interface Expense {
     | 'Other';
   desc: string;
   payer: string;
-  splits: Split;
+  splits: {
+    splitWith: string[];
+    amount: number;
+    isSettled: boolean;
+  };
 }
-
 export interface Plan {
   notes: Note[];
   transits: Transit[];
@@ -102,7 +157,6 @@ export interface Plan {
   budget: number;
   expenses: Expense[];
 }
-
 export interface TripPlan extends Document {
   tripId: Types.ObjectId;
   plan: Plan;

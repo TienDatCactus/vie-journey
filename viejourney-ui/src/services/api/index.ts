@@ -11,12 +11,11 @@ import {
   LoginReqDTO,
   LoginRespDTO,
   LogoutReqDTO,
-  RefreshTokenRespDTO,
   RegisterReqDTO,
   RegisterRespDTO,
   VerifyReqDTO,
 } from "./dto";
-import { clearToken, setToken } from "./token";
+import { setToken } from "./token";
 import { AUTH, TRIP, USER } from "./url";
 
 export const doLogin = async (data: LoginReqDTO) => {
@@ -98,22 +97,14 @@ export const doGetUser = async (data: GetUserReqDTO) => {
   }
 };
 
-export const refreshToken = async (): Promise<RefreshTokenRespDTO | null> => {
+export async function refreshToken() {
   try {
-    const resp = await http.post(AUTH?.REFRESH_TOKEN);
-    const newTokenData = extractApiData<RefreshTokenRespDTO>(resp);
-    if (newTokenData && newTokenData.accessToken) {
-      localStorage.setItem("token", JSON.stringify(newTokenData));
-      return newTokenData;
-    } else {
-      clearToken();
-      return null;
-    }
-  } catch (error) {
-    clearToken();
+    const res = await http.post(AUTH?.REFRESH_TOKEN);
+    return res.data; // should be { accessToken }
+  } catch (e) {
     return null;
   }
-};
+}
 
 export const doResendVerificationEmail = async (email: string) => {
   try {

@@ -223,7 +223,6 @@ const DeleteExpenseDialog: React.FC<{
 }> = ({ expenseId }) => {
   const { socket } = useSocket();
   const handleDelete = () => {
-    console.log("chosen:", expenseId);
     socket?.emit("planItemDeleted", {
       section: "expenses",
       itemId: expenseId,

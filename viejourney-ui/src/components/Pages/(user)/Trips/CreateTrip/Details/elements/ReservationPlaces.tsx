@@ -169,7 +169,6 @@ const PlacesFinder = ({
   );
 };
 const PlaceCard: React.FC<PlaceCardProps> = ({ placeNote, isLoading }) => {
-  console.log("PlaceCard rendered for:", placeNote);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { socket } = useSocket();
   const placeDetail = placeNote.place;
@@ -216,6 +215,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ placeNote, isLoading }) => {
       section: "places",
       item: {
         id: placeNote.id,
+        place: placeDetail,
         note: localContent.note,
         visited: localContent.visited,
       },
@@ -542,7 +542,9 @@ const ReservationPlaces: React.FC = () => {
       };
       socket?.emit("planItemAdded", {
         section: "places",
-        item: newPlaceNote,
+        item: {
+          ...newPlaceNote,
+        },
       });
     } catch (error) {
       console.error("Error adding place:", error);

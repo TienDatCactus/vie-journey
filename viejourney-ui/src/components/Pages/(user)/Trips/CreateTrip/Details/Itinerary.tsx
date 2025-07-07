@@ -82,7 +82,6 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
     });
     toggleEditItinerary(itinerary.id);
   };
-  console.log(itinerary.place);
   const handleDeleteItinerary = (id: string) => {
     socket?.emit("planItemDeleted", {
       section: "itineraries",

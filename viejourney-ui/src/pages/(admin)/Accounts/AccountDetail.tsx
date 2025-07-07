@@ -1,31 +1,30 @@
-import React from "react";
-import { AdminLayout } from "../../../layouts";
-import axios from "axios";
-import {
-  Box,
-  Grid,
-  Avatar,
-  Typography,
-  Stack,
-  Button,
-  Divider,
-  Tabs,
-  Tab,
-  Paper,
-  IconButton,
-  Chip,
-} from "@mui/material";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import PhoneIcon from "@mui/icons-material/Phone";
-import EmailIcon from "@mui/icons-material/Email";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EmailIcon from "@mui/icons-material/Email";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { ACCOUNTS, ADMIN } from "../../../services/api/url";
+import PhoneIcon from "@mui/icons-material/Phone";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  Divider,
+  Grid,
+  IconButton,
+  Paper,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { AdminLayout } from "../../../layouts";
+import { ACCOUNTS } from "../../../services/api/url";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditAccountDialog from "./EditAccountDialog";
 
@@ -501,7 +500,7 @@ const AccountDetail = () => {
           onClose={() => setOpenEdit(false)}
           onSave={handleEdit}
           loading={loadingEdit}
-          user={user}
+          user={user || undefined}
         />
       </Box>
     </AdminLayout>

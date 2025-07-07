@@ -48,7 +48,6 @@ export interface PlaceData extends google.maps.places.Place {
 
 export interface PlaceNote {
   id: string;
-  placeId?: string; // Google Place ID - for when place details haven't loaded yet
   place?: {
     placeId: string; // Google Place ID
     displayName: string;

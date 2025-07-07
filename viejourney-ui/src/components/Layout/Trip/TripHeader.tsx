@@ -1,4 +1,5 @@
 import {
+  Check,
   MoreHoriz,
   PhoneAndroid,
   Redo,
@@ -38,7 +39,6 @@ const TripHeader: React.FC = () => {
   };
   useEffect(() => {
     socket?.on("savePlanStatus", (data) => {
-      console.log("Save status:", data.status);
       setSaveStatus(data.status);
       setError(data.error || "");
       if (data.status === "saved") {
@@ -64,21 +64,20 @@ const TripHeader: React.FC = () => {
               <TravelExplore className="text-dark-700 lg:text-4xl mb-2 font-semibold uppercase" />
             </div>
             <div>
-              <p className="text-dark-700 lg:text-xs mb-2 font-semibold uppercase">
+              <div className="text-dark-700 lg:text-xs mb-2 font-semibold uppercase">
                 {saveStatus === "saved" && (
-                  <div className="saved-indicator">
-                    <span className="check-icon">✓</span>
+                  <p>
                     {lastSaved
                       ? `All changes saved at ${lastSaved}`
-                      : "All changes saved"}
-                  </div>
+                      : "Changes will be save automatically."}
+                  </p>
                 )}
                 {saveStatus === "error" && (
                   <div>
                     <p> Failed to save changes: {error || "Unknown error"}</p>
                   </div>
                 )}
-              </p>
+              </div>
               <ButtonGroup className="*:text-neutral-600 *:border-neutral-300">
                 <Button startIcon={<Undo />}>Undo</Button>
                 <Button startIcon={<Redo />}>Redo</Button>
