@@ -3,12 +3,14 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import useBlogUser from "../../../utils/hooks/user-blog-user";
 import { IBlog } from "../../../utils/interfaces/blog";
+import { useNavigate } from "react-router-dom";
 
 const RelatedBlog = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [blogs, setBlogs] = useState<IBlog[]>();
   const { getBlogList } = useBlogUser();
 
+  const navigate = useNavigate();
   const fetchBlog = async () => {
     const res = await getBlogList();
     if (res) setBlogs(res);
@@ -61,6 +63,7 @@ const RelatedBlog = () => {
             {blogs?.map((blog) => (
               <div
                 key={blog._id}
+                onClick={() => navigate(`/blogs/${blog._id}`)}
                 className="flex-shrink-0 w-1/3 bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer"
               >
                 {/* Image Container */}
