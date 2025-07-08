@@ -29,6 +29,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
+  // list all blogs
+  @Get('manager')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
+  async getAllBlogs(@Query() paginationDto: PaginationDto) {
+    return this.blogService.findAll(paginationDto);
+  }
   @Get('home')
   async getAllApprovedBlogs(
     @Query('page') page?: string,
@@ -163,13 +170,6 @@ export class BlogController {
   }
 
   // ====================== MANAGER/ADMIN ENDPOINTS ======================
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Manager)
-  @Get('manager')
-  async getManagerBlogs() {
-    return this.blogService.findAll();
-  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Manager)

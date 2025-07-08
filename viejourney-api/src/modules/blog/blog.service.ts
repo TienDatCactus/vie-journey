@@ -24,30 +24,88 @@ export class BlogService {
   ) {}
 
   // list all blogs
-  async findAll() {
-    const blogs = await this.blogModel
-      .find()
-      .populate('createdBy tripId')
-      .populate({
-        path: 'createdBy',
-        populate: {
-          path: 'avatar',
-          model: 'Asset',
-          select: 'url',
-        },
-      })
-      .exec();
-    if (!blogs || blogs.length === 0) {
-      throw new NotFoundException('No blogs found');
+  async findAll(paginationDto: PaginationDto) {
+    const page = paginationDto.page ?? 1;
+    const pageSize = paginationDto.pageSize ?? 10;
+    const status = paginationDto.status?.trim();
+    const viewCountRange = paginationDto.viewCountRange;
+    const search = paginationDto.search?.trim();
+    const sort = paginationDto.sort || 'desc';
+    // Tạo query filter
+    const filter: any = {};
+    if (search) {
+      filter.title = { $regex: search, $options: 'i' }; // tìm kiếm không phân biệt hoa thường
+    }
+    const skip = (page - 1) * pageSize;
+    if (search) {
+      filter.title = { $regex: search, $options: 'i' }; // tìm kiếm không phân biệt hoa thường
+    }
+    if (status) {
+      filter.status = status;
+    }
+    if (viewCountRange) {
+      if (viewCountRange === 'lt100') {
+        filter['metrics.viewCount'] = { $lt: 100 };
+      } else if (viewCountRange === '100to1000') {
+        filter['metrics.viewCount'] = { $gte: 100, $lte: 1000 };
+      } else if (viewCountRange === 'gt1000') {
+        filter['metrics.viewCount'] = { $gt: 1000 };
+      }
+    }
+    const sortOption = sort === 'asc' ? 1 : -1;
+
+    const [blogs, totalItems] = await Promise.all([
+      this.blogModel
+        .find(filter)
+        .sort({ updatedAt: sortOption })
+        .skip(skip)
+        .limit(pageSize)
+        .populate('createdBy')
+        .populate({
+          path: 'createdBy',
+          populate: {
+            path: 'avatar',
+            model: 'Asset',
+            select: 'url',
+          },
+        })
+        .exec(),
+      this.blogModel.countDocuments(filter).exec(),
+    ]);
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    // Nếu vượt quá số trang, trả về mảng rỗng và thông báo hợp lý
+    if (page > totalPages && totalItems > 0) {
+      return {
+        data: [],
+        totalPages,
+        currentPage: page,
+        pageSize: pageSize,
+        totalItems,
+        message:
+          'Page exceeds total number of pages, no blogs found for this page.',
+      };
+    }
+
+    // Nếu không có blog nào trong hệ thống
+    if (totalItems === 0) {
+      return {
+        data: [],
+        totalPages: 0,
+        currentPage: page,
+        pageSize: pageSize,
+        totalItems: 0,
+        message: 'No blogs found in the system.',
+      };
     }
     const listBlogs = blogs.map((blog) => {
       return {
         _id: blog._id,
         title: blog.title,
-        createdBy: blog.createdBy,
-        avatarUser: blog.createdBy.avatar?.url || null,
+        createdBy: blog?.createdBy,
+        avatarUser: blog?.createdBy?.avatar?.url || null,
         summary: blog.summary,
-        destination: blog.tripId?.destination || null,
+        destination: blog?.destination?.location || null,
         viewCount: blog.metrics?.viewCount || 0,
         likeCount: blog.metrics?.likeCount || 0,
         commentCount: blog.metrics?.commentCount || 0,
@@ -57,7 +115,13 @@ export class BlogService {
         updatedAt: blog.updatedAt,
       };
     });
-    return listBlogs;
+    return {
+      data: listBlogs,
+      Total_Blogs: totalItems,
+      currentPage: page,
+      pageSize: pageSize,
+      totalPages,
+    };
   }
 
   // Get all approved blogs for home page (public access)
