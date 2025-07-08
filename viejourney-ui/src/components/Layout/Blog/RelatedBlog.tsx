@@ -1,66 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import useBlogUser from "../../../utils/hooks/user-blog-user";
+import { IBlog } from "../../../utils/interfaces/blog";
 
 const RelatedBlog = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [blogs, setBlogs] = useState<IBlog[]>();
+  const { getBlogList } = useBlogUser();
 
-  const blogs = [
-    {
-      id: 1,
-      title: "Japan Guide in GB&PL",
-      author: "Julia Jablonska",
-      views: "1345 views",
-      likes: "35 likes",
-      image:
-        "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&h=300&fit=crop",
-      avatar:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face",
-    },
-    {
-      id: 2,
-      title: "A 10-Day Japan Winter Itinerary for Families with Young Kids",
-      author: "Laura Khairunnisa",
-      views: "1672 views",
-      likes: "29 likes",
-      image:
-        "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=400&h=300&fit=crop",
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
-    },
-    {
-      id: 3,
-      title: "Japan Bound! Plan from A to Z",
-      author: "Ilse",
-      views: "18807 views",
-      likes: "760 likes",
-      image:
-        "https://images.unsplash.com/photo-1528164344705-47542687000d?w=400&h=300&fit=crop",
-      avatar:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-    },
-    {
-      id: 4,
-      title: "Tokyo Food Guide: Best Places to Eat",
-      author: "Mike Chen",
-      views: "2543 views",
-      likes: "156 likes",
-      image:
-        "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-    },
-  ];
+  const fetchBlog = async () => {
+    const res = await getBlogList();
+    if (res) setBlogs(res);
+  };
+  useEffect(() => {
+    fetchBlog();
+  }, []);
+
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % Math.max(1, blogs.length - 2));
+    setCurrentSlide((prev) => (prev + 1) % Math.max(1, (blogs?.length ?? 0) - 2));
   };
 
   const prevSlide = () => {
     setCurrentSlide(
       (prev) =>
-        (prev - 1 + Math.max(1, blogs.length - 2)) %
-        Math.max(1, blogs.length - 2)
+        (prev - 1 + Math.max(1, (blogs?.length ?? 0) - 2)) %
+        Math.max(1, (blogs?.length ?? 0) - 2)
     );
   };
 
@@ -92,15 +58,15 @@ const RelatedBlog = () => {
             className="flex transition-transform duration-300 ease-in-out gap-4"
             style={{ transform: `translateX(-${currentSlide * 33.333}%)` }}
           >
-            {blogs.map((blog) => (
+            {blogs?.map((blog) => (
               <div
-                key={blog.id}
+                key={blog._id}
                 className="flex-shrink-0 w-1/3 bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer"
               >
                 {/* Image Container */}
                 <div className="relative h-40 overflow-hidden">
                   <img
-                    src={blog.image}
+                    src={blog.coverImage}
                     alt={blog.title}
                     className="w-full h-full object-cover"
                   />
@@ -118,19 +84,19 @@ const RelatedBlog = () => {
                 <div className="p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <img
-                      src={blog.avatar}
-                      alt={blog.author}
+                      src={blog.coverImage}
+                      alt={blog.author.name}
                       className="w-6 h-6 rounded-full object-cover"
                     />
                     <span className="text-sm font-medium text-gray-800">
-                      {blog.author}
+                      {blog.author.name}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-3 text-xs text-gray-600">
-                    <span>{blog.views}</span>
+                    <span>{blog.metrics.viewCount}</span>
                     <span>•</span>
-                    <span>{blog.likes}</span>
+                    <span>{blog.metrics.likeCount}</span>
                   </div>
                 </div>
               </div>

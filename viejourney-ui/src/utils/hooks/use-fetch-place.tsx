@@ -1,20 +1,19 @@
 import { useState, useCallback } from "react";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
-import { useTripDetailStore } from "../../services/stores/useTripDetailStore";
 
 export function useFetchPlaceDetails() {
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
   const placesLib = useMapsLibrary("places");
-  const { placeDetails, setPlaceDetails } = useTripDetailStore();
+  const [placeDetails, setPlaceDetails] = useState<
+    Record<string, google.maps.places.Place>
+  >({});
 
   const fetchPlaceDetail = useCallback(
     async (placeId: string): Promise<google.maps.places.Place | undefined> => {
-      // Check if we already have this place detail cached
       if (placeDetails[placeId]) {
         return placeDetails[placeId];
       }
 
-      // Set loading state for this placeId
       setIsLoading((prev) => ({ ...prev, [placeId]: true }));
 
       try {
@@ -23,8 +22,6 @@ export function useFetchPlaceDetails() {
           return undefined;
         }
 
-        // This would typically be an API call to fetch place details
-        // Using the Google Maps JavaScript API approach
         const placeResult = await new Promise<google.maps.places.Place>(
           (resolve, reject) => {
             const place = new placesLib.Place({ id: placeId });
@@ -43,7 +40,6 @@ export function useFetchPlaceDetails() {
               })
               .then(
                 (response) => {
-                  console.log(response.place);
                   resolve(response.place);
                 },
                 (error) => reject(error)
@@ -51,35 +47,25 @@ export function useFetchPlaceDetails() {
           }
         );
 
-        // Store the place details in our state
-        setPlaceDetails(placeId, placeResult);
-
-        // Clear loading state
-        setIsLoading((prev) => {
-          const updated = { ...prev };
-          delete updated[placeId];
-          return updated;
-        });
-
+        setPlaceDetails((prev) => ({ ...prev, [placeId]: placeResult }));
         return placeResult;
       } catch (error) {
         console.error("Error fetching place details:", error);
-
-        // Clear loading state even on error
+        return undefined;
+      } finally {
         setIsLoading((prev) => {
           const updated = { ...prev };
           delete updated[placeId];
           return updated;
         });
-
-        return undefined;
       }
     },
-    [placesLib, placeDetails, setPlaceDetails]
+    [placesLib, placeDetails]
   );
 
   return {
     fetchPlaceDetail,
     isLoading: (placeId: string) => !!isLoading[placeId],
+    placeDetails,
   };
 }

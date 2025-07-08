@@ -280,7 +280,6 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       return Promise.reject(err);
     }
 
-    // Server errors (500+)
     if (status >= 500 && !errorMessage) {
       showDebouncedSnackbar(
         `Hệ thống đang tạm thời gián đoạn. Xin vui lòng trở lại sau hoặc liên hệ với quản trị viên. (SC${status})`,
@@ -288,12 +287,6 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       );
       return Promise.reject(err);
     }
-
-    // Priority order for error messages:
-    // 1. Use message from response if available
-    // 2. If error has validation errors, include those details
-    // 3. If no message, use status code based message
-    // 4. Fall back to default message
 
     if (errorMessage) {
       // If we have specific validation errors, include those details
@@ -384,6 +377,7 @@ http.interceptors.response.use(
         "/auth/login",
         "/auth/register",
         "/auth/refresh",
+        "/auth/oauth-success",
       ].some((endpoint) => originalRequest.url?.includes(endpoint));
 
       if (isAuthEndpoint) {
@@ -417,23 +411,10 @@ http.interceptors.response.use(
         if (refreshResult && refreshResult.accessToken) {
           // Update Authorization header
           originalRequest.headers.Authorization = `Bearer ${refreshResult.accessToken}`;
-
-          console.log("Token refresh successful, retrying original request", {
-            url: originalRequest.url,
-            method: originalRequest.method,
-          });
-
-          // Notify subscribers
           onTokenRefreshed(refreshResult.accessToken);
-
-          // Reset refreshing state
           isRefreshing = false;
-
-          // Retry original request
           return http(originalRequest);
         } else {
-          // If refresh failed, redirect
-          console.log("Token refresh failed, redirecting to login");
           onRefreshFailure();
           isRefreshing = false;
           return handleError(error);

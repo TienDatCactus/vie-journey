@@ -26,7 +26,7 @@ export class Blog extends Document {
   @Prop({ required: false }) // Cloudinary URL or asset reference
   coverImage: string;
 
-  @Prop({ type: mongoose.Types.ObjectId, ref: 'Trip', required: false }) // Link to trip if blog is about a trip
+  @Prop({ type: mongoose.Types.ObjectId, ref: 'Trip', required: false })
   tripId: Trip | null;
 
   @Prop({
@@ -55,7 +55,7 @@ export class Blog extends Document {
   @Prop({
     type: String,
     enum: ['DRAFT', 'PENDING', 'APPROVED', 'REJECTED'],
-    default: 'APPROVED',
+    default: 'DRAFT',
   })
   status: string;
 

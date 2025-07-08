@@ -142,8 +142,25 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
     const placeInstance = new placesLib.Place({
       id: suggestion.placePrediction.placeId,
     });
-    handlePOIClick(placeInstance);
+    const location = placeInstance
+      .fetchFields({
+        fields: ["location"],
+      })
+      .then(
+        (response) => {
+          mapInstance.panTo({
+            lat: response.place.location?.lat() || 0,
+            lng: response.place.location?.lng() || 0,
+          });
+        },
+        (error) => console.log(error)
+      );
+    if (!location) {
+      console.error("Failed to fetch place details");
+      return;
+    }
 
+    handlePOIClick(placeInstance);
     setHighlightedPOI(placeInstance.id);
     setDestination(suggestion.placePrediction.mainText + "");
     setOpen(false);
@@ -178,7 +195,7 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
             renderInput={(params) => (
               <TextField
                 {...params}
-                className="rounded-lg "
+                className=" "
                 size="small"
                 fullWidth
                 placeholder="e.g Ta xua, Sapa, Da Nang"
@@ -187,7 +204,7 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
                 onChange={handleInputChange}
                 InputProps={{
                   ...params.InputProps,
-                  className: "rounded-lg bg-white ",
+                  className: " bg-white ",
                   startAdornment: (
                     <InputAdornment position="start">
                       <Search color="action" />
@@ -219,7 +236,7 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
               </li>
             )}
           />
-          <div className=" relative bg-white rounded-lg py-2">
+          <div className=" relative bg-white  py-2">
             <div className="grid grid-cols-1 overflow-auto max-h-40 ">
               {PLACE_CATEGORIES.map((category) => (
                 <Tooltip key={category.id} title={category.label}>

@@ -16,7 +16,7 @@ export class UserInfos extends Document {
   fullName: string;
 
   @Prop({ trim: true })
-  dob: Date;
+  dob: string;
 
   @Prop()
   phone: string;

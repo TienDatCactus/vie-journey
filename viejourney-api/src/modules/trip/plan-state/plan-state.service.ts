@@ -1,16 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TripService } from '../trip.service';
 import { randomUUID } from 'crypto';
-
-export interface Note {
-  id: string;
-  text: string;
-}
-
-export interface Plan {
-  notes: Note[];
-  expenses: { placeholder1: string; placeholder2: string };
-}
+import { Plan } from 'src/common/entities/plan.entity';
 
 export type PlanSection = keyof Plan;
 
@@ -61,6 +52,20 @@ export class PlanStateService {
     item: AddPayload<T>,
   ): string {
     const plan = this.getOrCreatePlan(tripId);
+    if (section === 'budget') {
+      if (typeof item == 'number' || typeof item === 'string') {
+        plan.budget = item;
+        this.scheduleSave(tripId);
+        return 'budget';
+      } else {
+        throw new Error('Invalid budget payload');
+      }
+    }
+    if (!Array.isArray(plan[section])) {
+      throw new Error(
+        `Section ${section} is not an array and cannot add items to it`,
+      );
+    }
     type Item = WithId<Plan[T], string>;
     const newItem: Item = {
       ...(item as Omit<Item, 'id'>),
@@ -77,6 +82,7 @@ export class PlanStateService {
     item: UpdatePayload<T>,
   ) {
     const plan = this.getOrCreatePlan(tripId);
+
     if (Array.isArray(plan[section])) {
       type Item = WithId<Plan[T], string>;
       const index = (plan[section] as Item[]).findIndex(
@@ -88,12 +94,9 @@ export class PlanStateService {
           ...(item as Partial<Item>),
         };
       }
+      this.scheduleSave(tripId);
     } else {
-      const update: Plan[T] = {
-        ...plan[section],
-        ...(item as Partial<Plan[T]>),
-      };
-      plan[section] = update;
+      throw new Error(`Update not supported for section: ${section}`);
     }
   }
 
@@ -103,25 +106,62 @@ export class PlanStateService {
     itemId: DeletePayload<T>,
   ) {
     const plan = this.getOrCreatePlan(tripId);
+
     if (Array.isArray(plan[section])) {
       type Item = WithId<Plan[T], string>;
       const index = (plan[section] as Item[]).findIndex(
         (i) => i.id === (itemId as string),
       );
       if (index !== -1) {
+        console.log('first', plan);
         (plan[section] as Item[]).splice(index, 1);
+        console.log('then', plan);
       }
       this.scheduleSave(tripId);
     }
   }
 
-  savePlan(tripId: string) {
-    const plan = this.planStates.get(tripId);
-    if (!plan) return;
-    // NOTE: Persist plan state in db
+  // Add to PlanStateService class
+  private savingStatus = new Map<string, boolean>();
+
+  // Check if a plan is currently being saved
+  public isSavingPlan(tripId: string): boolean {
+    return this.savingStatus.get(tripId) === true;
   }
 
-  private scheduleSave(tripId: string) {
+  async savePlan(tripId: string) {
+    const state = this.planStates.get(tripId);
+    if (!state) return;
+    console.log(`[DEBUG] Memory state before saving (Trip ${tripId}):`);
+    try {
+      this.savingStatus.set(tripId, true);
+      this.emitSaveStatus(tripId, 'saving');
+      await this.tripService.updatePlan(tripId, state.plan);
+      this.savingStatus.set(tripId, false);
+      console.log(`Plan saved for trip: ${tripId}`);
+      this.emitSaveStatus(tripId, 'saved');
+    } catch (error) {
+      this.savingStatus.set(tripId, false);
+
+      console.error(`Failed to save plan for trip: ${tripId}`, error);
+
+      this.emitSaveStatus(tripId, 'error', error.message);
+    }
+  }
+  public notifySaveStatus?: (
+    tripId: string,
+    status: 'saving' | 'saved' | 'error',
+    errorMessage?: string,
+  ) => void;
+  private emitSaveStatus(
+    tripId: string,
+    status: 'saving' | 'saved' | 'error',
+    errorMessage?: string,
+  ) {
+    this.notifySaveStatus?.(tripId, status, errorMessage);
+  }
+
+  scheduleSave(tripId: string) {
     const state = this.planStates.get(tripId);
     if (!state) return;
     if (state.timeout) clearTimeout(state.timeout);
@@ -131,14 +171,38 @@ export class PlanStateService {
     );
   }
 
-  private getOrCreatePlan(tripId: string): Plan {
+  getOrCreatePlan(tripId: string): Plan {
     let state = this.planStates.get(tripId);
     if (!state) {
       state = {
-        plan: { notes: [], expenses: { placeholder1: '', placeholder2: '' } },
+        plan: {
+          notes: [],
+          places: [],
+          transits: [],
+          itineraries: [],
+          budget: 0,
+          expenses: [],
+        },
       };
       this.planStates.set(tripId, state);
     }
     return state.plan;
+  }
+  public initializePlan(tripId: string, plan: Plan): void {
+    this.planStates.set(tripId, {
+      plan,
+      timeout: undefined,
+    });
+  }
+  // Add to PlanStateService
+  public async forceSave(tripId: string): Promise<void> {
+    const state = this.planStates.get(tripId);
+    if (!state) return;
+    if (state.timeout) {
+      clearTimeout(state.timeout);
+      state.timeout = undefined;
+    }
+    console.log(`[FORCE SAVE] Force saving plan for trip ${tripId}:`);
+    await this.savePlan(tripId);
   }
 }

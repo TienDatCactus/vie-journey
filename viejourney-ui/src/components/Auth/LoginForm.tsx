@@ -112,7 +112,7 @@ const LoginForm: React.FC = () => {
           <InputLabel className="font-bold text-sm">Email</InputLabel>
           <OutlinedInput
             disabled={loading}
-            className="w-full *:text-sm"
+            className="w-full *:text-sm rounded-sm"
             error={!!errors.email}
             size="small"
             placeholder="Enter your email address"
@@ -140,7 +140,7 @@ const LoginForm: React.FC = () => {
             size="small"
             error={!!errors.password}
             {...register("password", { required: true, minLength: 6 })}
-            className="w-full *:text-sm"
+            className="w-full *:text-sm rounded-sm"
             placeholder="Enter your password"
             autoComplete="current-password"
           />

@@ -10,49 +10,48 @@ import {
 } from "@mui/icons-material";
 import { Button, ButtonGroup, Chip, CircularProgress } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { doValidateAccessToken } from "../../../services/api";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 import { setToken } from "../../../services/api/token";
 const OauthSuccess: React.FC = () => {
-  const { loadUserFromToken, setCredential, user, loadUserInfo, info } =
-    useAuthStore();
+  const { setCredential, user, info } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = React.useState<number>(5);
-  const params = useSearchParams();
+  const [params] = useSearchParams();
+
   const navigate = useNavigate();
+  const processedTokenRef = useRef(false);
+
   useEffect(() => {
     const handleCallback = async () => {
-      const token = params[0].get("accessToken");
-      if (token) {
-        try {
-          setLoading(true);
-          const tokenData = await doValidateAccessToken(token);
-          if (tokenData?.userId) {
-            setLoading(false);
-            enqueueSnackbar("Authentication successful!", {
-              variant: "success",
-            });
-            setToken({
-              accessToken: token,
-              userId: tokenData.userId,
-            });
-            setCredential({ userId: tokenData.userId, token });
-            await loadUserFromToken();
-            await loadUserInfo();
-          }
-        } catch (error) {
-          console.error("Error processing OAuth callback:", error);
+      const token = params.get("accessToken");
+      if (!token || processedTokenRef.current) return;
+
+      try {
+        processedTokenRef.current = true;
+        setLoading(true);
+        const tokenData = await doValidateAccessToken(token);
+        if (tokenData?.userId) {
+          setToken({
+            accessToken: token,
+            userId: tokenData.userId,
+          });
+          setCredential({ userId: tokenData.userId, token });
         }
-      } else {
-        enqueueSnackbar("Invalid OAuth callback. No token found.", {
+      } catch (error) {
+        console.error("Error processing OAuth callback:", error);
+        enqueueSnackbar("Authentication failed. Please try again.", {
           variant: "error",
         });
+      } finally {
+        setLoading(false);
       }
     };
+
     handleCallback();
-  }, []);
+  }, [params, setCredential, enqueueSnackbar]);
   useEffect(() => {
     if (loading) return;
     if (timer <= 0) {
@@ -80,9 +79,6 @@ const OauthSuccess: React.FC = () => {
           <img
             className="col-span-3 w-full p-1 rounded-full object-center object-contain"
             alt="User Avatar"
-            onError={(e) => {
-              e.currentTarget.src = "/images/placeholders/icons8-avatar-50.png";
-            }}
             src={info?.avatar}
           />
           <div className="col-span-9 flex flex-col justify-center gap-1">
@@ -100,7 +96,7 @@ const OauthSuccess: React.FC = () => {
             )}
             <Button
               variant="contained"
-              className="gap-2 bg-white mt-1 rounded-lg text-dark-900 px-4 w-fit"
+              className="gap-2 bg-white mt-1  text-dark-900 px-4 w-fit"
               size="small"
             >
               <img src="/icons/icons8-google.svg" className="w-5 h-5" />

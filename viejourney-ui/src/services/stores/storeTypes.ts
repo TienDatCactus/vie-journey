@@ -2,7 +2,14 @@
 export interface Trip {
   _id: string;
   title: string;
-  destination: string;
+  destination: {
+    id: string; // Google Place ID or custom ID
+    name: string; // Name of the destination
+    location: {
+      lat: number; // Latitude of the destination
+      lng: number; // Longitude of the destination
+    };
+  };
   startDate: Date;
   endDate: Date;
   budgetRange?: string;
@@ -23,8 +30,7 @@ export interface Note {
 export interface Place {
   id: string;
   name: string;
-  placeId?: string; // Optional for places not in Google Places
-  location: { lat: number; lng: number };
+  placeId?: string;
   note?: string;
 }
 
@@ -40,6 +46,20 @@ export interface DayItinerary {
   date: string;
   places: Place[];
   notes: Note[];
+  routes: {
+    origin: string; // placeId
+    destination: string; // placeId
+    distance?: string;
+    duration?: string;
+    transportType: "car" | "walk" | "bus";
+    steps?:
+      | {
+          instructions?: string;
+          distance?: string;
+          duration?: string;
+        }[]
+      | undefined;
+  }[];
 }
 
 export interface Expense {

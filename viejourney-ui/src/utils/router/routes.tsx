@@ -1,21 +1,10 @@
 import React, { lazy, Suspense } from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
-import Accounts from "../../pages/(admin)/Accounts";
-import AccountDetail from "../../pages/(admin)/Accounts/AccountDetail";
-import BlogManagementList from "../../pages/(manager)/Blog/BlogManagementList";
-import BlogManagementView from "../../pages/(manager)/BlogDetail/index";
-import BlogDetail from "../../pages/(user)/Blogs/BlogDetail/BlogDetail";
-import CreateBlogDetail from "../../pages/(user)/Blogs/CreateBlogDetail/CreateBlogDetail";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { AuthLayout } from "../../layouts";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
-import HotelManagement from "../../pages/(manager)/Hotel";
-import HotelDetail from "../../pages/(manager)/Hotel/HotelDetail";
-import BlogList from "../../pages/(user)/Blogs/BlogList";
-import CreateBlog from "../../pages/(user)/Blogs/CreateBlog/CreateBlog";
-import RoleManagement from "../../pages/(admin)/RoleManagement";
-
-// Anonymous routes (no auth required)
+// Anonymous routes
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
 const VerifyScreen = lazy(
   () => import("../../pages/(anonymous)/Auth/VerifyEmail")
@@ -24,35 +13,72 @@ const ResetPassword = lazy(
   () => import("../../pages/(anonymous)/Auth/ResetPassword")
 );
 const UnAuthHome = lazy(() => import("../../pages/(anonymous)/Home/Home"));
+const OauthSuccess = lazy(
+  () => import("../../pages/(anonymous)/Auth/OauthSuccess")
+);
 
-// Protected routes (auth required)
+// User routes
 const AuthHome = lazy(() => import("../../pages/(user)/Home/Home"));
 const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
-const Admin = lazy(() => import("../../pages/(admin)/Dashboard/index"));
 const Hotels = lazy(() => import("../../pages/(user)/Hotels/Hotels"));
 const CreateTrip = lazy(() => import("../../pages/(user)/Trip/CreateTrip"));
-
 const CreateTripDetails = lazy(
   () => import("../../pages/(user)/Trip/CreateTripDetails/CreateTripDetails")
 );
-const OauthSuccess = lazy(
-  () => import("./../../pages/(anonymous)/Auth/OauthSuccess")
+const BlogList = lazy(() => import("../../pages/(user)/Blogs/BlogList"));
+const BlogDetail = lazy(
+  () => import("../../pages/(user)/Blogs/BlogDetail/BlogDetail")
 );
+const CreateBlog = lazy(
+  () => import("../../pages/(user)/Blogs/CreateBlog/CreateBlog")
+);
+const CreateBlogDetail = lazy(
+  () => import("../../pages/(user)/Blogs/CreateBlogDetail/CreateBlogDetail")
+);
+
+// Admin routes
+const Admin = lazy(() => import("../../pages/(admin)/Dashboard/index"));
+const Accounts = lazy(() => import("../../pages/(admin)/Accounts"));
+const AccountDetail = lazy(
+  () => import("../../pages/(admin)/Accounts/AccountDetail")
+);
+const RoleManagement = lazy(() => import("../../pages/(admin)/RoleManagement"));
 const Media = lazy(() => import("../../pages/(admin)/Media"));
+
+// Manager routes
+const BlogManagementList = lazy(
+  () => import("../../pages/(manager)/Blog/BlogManagementList")
+);
+const BlogManagementView = lazy(
+  () => import("../../pages/(manager)/BlogDetail/index")
+);
+const HotelManagement = lazy(() => import("../../pages/(manager)/Hotel"));
+const HotelDetail = lazy(
+  () => import("../../pages/(manager)/Hotel/HotelDetail")
+);
 
 // Wrap lazy-loaded components with Suspense
 const SuspenseWrapper = ({
   component: Component,
+  requireAuth = false,
 }: {
   component: React.ComponentType<any>;
+  requireAuth?: boolean;
 }) => (
-  <Suspense fallback={<Fallback />}>
-    <Component />
-  </Suspense>
+  <ProtectedRoute requireAuth={requireAuth}>
+    <Suspense fallback={<Fallback />}>
+      <Component />
+    </Suspense>
+  </ProtectedRoute>
 );
 const router = createBrowserRouter([
   {
     path: "/",
+    element: (
+      <AuthLayout>
+        <Outlet />
+      </AuthLayout>
+    ),
     children: [
       {
         path: "",
@@ -61,11 +87,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/home",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <SuspenseWrapper component={AuthHome} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={AuthHome} requireAuth={true} />,
         errorElement: <ErrorBoundary />,
       },
     ],
@@ -81,88 +103,71 @@ const router = createBrowserRouter([
       },
       {
         path: "login",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={Access} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={Access} />,
       },
       {
         path: "register",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={Access} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={Access} />,
       },
       {
         path: "verify-email/:token",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={VerifyScreen} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={VerifyScreen} />,
       },
       {
         path: "reset-password/:token",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={ResetPassword} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={ResetPassword} />,
       },
       {
         path: "oauth-success",
-        element: <SuspenseWrapper component={OauthSuccess} />,
+        element: (
+          <AuthLayout>
+            <SuspenseWrapper component={OauthSuccess} />
+          </AuthLayout>
+        ),
       },
     ],
   },
   {
     path: "/profile",
     element: (
-      <ProtectedRoute requireAuth={false}>
-        <SuspenseWrapper component={Dashboard} />
-      </ProtectedRoute>
+      <AuthLayout>
+        <Outlet />
+      </AuthLayout>
     ),
+    children: [
+      {
+        path: "",
+        element: <SuspenseWrapper component={Dashboard} requireAuth={true} />,
+      },
+    ],
     errorElement: <ErrorBoundary />,
   },
   {
     path: "/blogs",
+    element: (
+      <AuthLayout>
+        <Outlet />
+      </AuthLayout>
+    ),
     children: [
       {
         path: "",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={BlogList} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={BlogList} />,
         errorElement: <ErrorBoundary />,
       },
       {
         path: ":id",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={BlogDetail} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={BlogDetail} />,
         errorElement: <ErrorBoundary />,
       },
       {
         path: ":id/edit",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={BlogDetail} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={BlogDetail} />,
         errorElement: <ErrorBoundary />,
       },
       {
         path: "create",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={CreateBlog} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={CreateBlog} />,
         errorElement: <ErrorBoundary />,
       },
     ],
@@ -171,23 +176,30 @@ const router = createBrowserRouter([
   {
     path: "/hotels",
     element: (
-      <ProtectedRoute requireAuth={false}>
-        <SuspenseWrapper component={Hotels} />
-      </ProtectedRoute>
+      <AuthLayout>
+        <Outlet />
+      </AuthLayout>
     ),
+    children: [
+      {
+        path: "",
+        element: <SuspenseWrapper component={Hotels} />,
+      },
+    ],
     errorElement: <ErrorBoundary />,
   },
   {
     path: "/admin",
+    element: (
+      <AuthLayout>
+        <Outlet />
+      </AuthLayout>
+    ),
     errorElement: <ErrorBoundary />,
     children: [
       {
         path: "dashboard",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={Admin} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={Admin} requireAuth={true} />,
       },
       {
         path: "accounts",
@@ -195,17 +207,13 @@ const router = createBrowserRouter([
           {
             path: "",
             element: (
-              <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={Accounts} />
-              </ProtectedRoute>
+              <SuspenseWrapper component={Accounts} requireAuth={true} />
             ),
           },
           {
             path: "detail/:id",
             element: (
-              <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={AccountDetail} />
-              </ProtectedRoute>
+              <SuspenseWrapper component={AccountDetail} requireAuth={true} />
             ),
           },
         ],
@@ -216,17 +224,13 @@ const router = createBrowserRouter([
           {
             path: "",
             element: (
-              <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={HotelManagement} />
-              </ProtectedRoute>
+              <SuspenseWrapper component={HotelManagement} requireAuth={true} />
             ),
           },
           {
             path: "detail/:id",
             element: (
-              <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={HotelDetail} />
-              </ProtectedRoute>
+              <SuspenseWrapper component={HotelDetail} requireAuth={true} />
             ),
           },
         ],
@@ -234,52 +238,44 @@ const router = createBrowserRouter([
       {
         path: "role-management",
         element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={RoleManagement} />
-          </ProtectedRoute>
+          <SuspenseWrapper component={RoleManagement} requireAuth={true} />
         ),
       },
       {
         path: "media",
         errorElement: <ErrorBoundary />,
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={Media} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={Media} requireAuth={true} />,
       },
     ],
   },
   {
     path: "/trips",
-    // element: <ProtectedRoute requireAuth={false} />,
+    element: (
+      <AuthLayout>
+        <Outlet />
+      </AuthLayout>
+    ),
     errorElement: <ErrorBoundary />,
     children: [
       {
         path: "create",
-        children: [
-          {
-            path: "",
-            element: (
-              <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={CreateTrip} />
-              </ProtectedRoute>
-            ),
-          },
-        ],
+        element: <SuspenseWrapper component={CreateTrip} requireAuth={true} />,
       },
       {
         path: "edit/:id",
         element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={CreateTripDetails} />
-          </ProtectedRoute>
+          <SuspenseWrapper component={CreateTripDetails} requireAuth={true} />
         ),
       },
     ],
   },
   {
     path: "/manager",
+    element: (
+      <AuthLayout>
+        <Outlet />
+      </AuthLayout>
+    ),
     errorElement: <ErrorBoundary />,
     children: [
       {
@@ -288,17 +284,19 @@ const router = createBrowserRouter([
           {
             path: "",
             element: (
-              <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={BlogManagementList} />
-              </ProtectedRoute>
+              <SuspenseWrapper
+                component={BlogManagementList}
+                requireAuth={true}
+              />
             ),
           },
           {
             path: ":id",
             element: (
-              <ProtectedRoute requireAuth={false}>
-                <SuspenseWrapper component={BlogManagementView} />
-              </ProtectedRoute>
+              <SuspenseWrapper
+                component={BlogManagementView}
+                requireAuth={true}
+              />
             ),
           },
         ],
@@ -307,47 +305,30 @@ const router = createBrowserRouter([
   },
   {
     path: "/blogs",
+    element: (
+      <AuthLayout>
+        <Outlet />
+      </AuthLayout>
+    ),
     errorElement: <ErrorBoundary />,
     children: [
       {
         path: "",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={BlogList} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={BlogList} />,
       },
       {
         path: "edit/:id",
         element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={CreateBlogDetail} />
-          </ProtectedRoute>
+          <SuspenseWrapper component={CreateBlogDetail} requireAuth={true} />
         ),
       },
       {
         path: ":id",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={BlogDetail} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={BlogDetail} />,
       },
       {
         path: "create",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={CreateBlog} />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: ":id/edit",
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <SuspenseWrapper component={CreateBlogDetail} />
-          </ProtectedRoute>
-        ),
+        element: <SuspenseWrapper component={CreateBlog} requireAuth={true} />,
       },
     ],
   },

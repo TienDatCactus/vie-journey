@@ -1,6 +1,6 @@
 export interface Account {
   _id: string;
- 
+
   email: string;
   role: "USER" | "ADMIN" | "MANAGER";
   status: "ACTIVE" | "INACTIVE" | "BANNED";
@@ -9,7 +9,14 @@ export interface Account {
 export interface Trip {
   _id: string;
   title: string;
-  destination: string;
+  destination: {
+    id: string;
+    name: string;
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
   startDate: Date;
   endDate: Date;
   budgetRange?: string;
@@ -19,8 +26,7 @@ export interface Trip {
   visibility: boolean;
 }
 
-export interface UserInfo {
-  _id?: string;
+export interface UserInfo extends Account {
   fullName: string;
   dob: Date | null;
   userId: string;
@@ -38,7 +44,7 @@ export interface UserInfo {
 export interface IUserInfoUpdate {
   _id?: string;
   fullName?: string;
-  dob?: Date | null;
+  dob?: string;
   phone?: string;
   address?: string;
   avatar?: string;

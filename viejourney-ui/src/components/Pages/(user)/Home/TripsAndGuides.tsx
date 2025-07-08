@@ -6,14 +6,12 @@ import { Link } from "react-router-dom";
 const HomeTrips: React.FC = () => {
   const fakeData1 = [
     {
-      places: 5,
       title: "Trip to Paris",
       from: "2023-01-01",
       to: "2023-01-10",
       img: "",
     },
     {
-      places: 3,
       title: "Weekend in New York",
       from: "2023-02-15",
       to: "2023-02-18",
@@ -62,10 +60,9 @@ const HomeTrips: React.FC = () => {
                     <TripTag
                       img={item?.img}
                       title={item?.title}
-                      places={item?.places}
                       from={item?.from}
                       to={item?.to}
-                    />{" "}
+                    />
                     {index < fakeData1?.length - 1 && (
                       <Divider className="border-[--color-neutral-400] border my-4" />
                     )}

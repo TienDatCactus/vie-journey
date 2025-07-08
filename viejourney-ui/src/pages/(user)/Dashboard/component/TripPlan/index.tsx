@@ -48,7 +48,7 @@ const TripPlans: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<Add />}
-            className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg shadow-md"
+            className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2  shadow-md"
             sx={{
               backgroundColor: "#1f2937",
               "&:hover": {

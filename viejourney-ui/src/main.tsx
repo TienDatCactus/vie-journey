@@ -15,11 +15,11 @@ import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import { RouterProvider } from "react-router-dom";
+import TypebotChat from "./components/TypeBotChat";
 import "./index.css";
-import { AuthLayout } from "./layouts";
+import { SocketProvider } from "./services/context/socketContext";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
-import TypebotChat from "./components/TypeBotChat";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
@@ -36,7 +36,9 @@ const theme = createTheme({
     fontWeightRegular: 400,
     fontWeightMedium: 500,
   },
-
+  shape: {
+    borderRadius: 8,
+  },
   components: {
     MuiPopover: {
       defaultProps: {
@@ -65,11 +67,11 @@ root.render(
                 language="en"
                 libraries={["places", "marker", "geometry"]}
               >
-                <AuthLayout>
+                <SocketProvider>
                   <HelmetProvider>
                     <RouterProvider router={router} />
                   </HelmetProvider>
-                </AuthLayout>
+                </SocketProvider>
               </APIProvider>
               <TypebotChat />
             </LocalizationProvider>

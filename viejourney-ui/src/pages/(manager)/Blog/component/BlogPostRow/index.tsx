@@ -7,8 +7,10 @@ import {
   Edit,
   LocationOn,
   Schedule,
-  Visibility
+  Visibility,
+   
 } from "@mui/icons-material";
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Avatar,
   Button,
@@ -27,10 +29,10 @@ import { IBlogPost } from "../../../../../utils/interfaces/blog";
 
 export default function BlogPostRow({
   blog,
-  handleDeleteBlog, 
+  handleDeleteBlog,
 }: {
   blog: IBlogPost;
-  handleDeleteBlog: (id: string) => void; 
+  handleDeleteBlog: (id: string) => void;
 }) {
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedBlogId, setSelectedBlogId] = useState<string | null>(null);
@@ -53,6 +55,13 @@ export default function BlogPostRow({
             <span>PENDING</span>
           </div>
         );
+      case "REJECTED":
+        return (
+          <div className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-md w-fit">
+            <CloseIcon  sx={{ fontSize: 16 }} />
+            <span>REJECTED</span>
+          </div>
+        );
     }
   };
 
@@ -64,7 +73,7 @@ export default function BlogPostRow({
       <td className="py-4 pr-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-1">
-            <span className="font-medium">{blog.summary}</span>
+            <span className="font-medium">{blog.title}</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
             <Avatar sx={{ width: 24, height: 24 }} src={blog?.avatarUser}>
@@ -78,7 +87,7 @@ export default function BlogPostRow({
       </td>
       <td className="py-4 pr-4">
         <div className="flex flex-col">
-          <span>{blog.title}</span>
+          <span>{blog.summary}</span>
           <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
             <LocationOn sx={{ fontSize: 12 }} />
             <span>Đà Nẵng, Việt Nam</span>

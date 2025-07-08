@@ -1,50 +1,32 @@
-import React from "react";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import { Avatar, IconButton, Stack } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import CardActionArea from "@mui/material/CardActionArea";
-import { Avatar, IconButton, Stack } from "@mui/material";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
+import { IBlog } from "../../../../../utils/interfaces/blog";
 
-interface GuideCardProps {
-  index: number;
-  img: string;
-  title: string;
-  description: string;
-  author: string;
-  likes: number;
-  views: number;
-}
-
-const GuideCard = (props: GuideCardProps) => {
+const GuideCard = (props: IBlog) => {
   const navigate = useNavigate();
-  const { index, img, title, description, author, likes, views } = props;
 
   const handleNavigate = () => {
-    navigate(`/guides/detail`); // 🔗 Điều hướng tới trang chi tiết
+    navigate(`/blogs/${props._id}`); // 🔗 Điều hướng tới trang chi tiết
   };
 
   return (
-    <Card
-      sx={{ maxWidth: 345 }}
-      elevation={0}
-      key={index}
-      className="rounded-lg"
-    >
-      <div className="overflow-hidden rounded-lg">
+    <Card sx={{ maxWidth: 345 }} elevation={0} key={props._id} className="">
+      <div className="overflow-hidden ">
         <CardMedia
           component="img"
-          height="180"
-          image={"https://placehold.co/600x400"}
+          image={props.coverImage || "https://placehold.co/600x400"}
           alt="green iguana"
-          className="duration-200 ease-in-out rounded-lg hover:scale-115 cursor-pointer"
+          className="duration-200 ease-in-out lg:h-60  hover:scale-115 cursor-pointer  transition-all"
           onClick={handleNavigate}
         />
       </div>
-      <CardContent>
+      <CardContent className="p-2">
         <Typography
           gutterBottom
           variant="h5"
@@ -52,30 +34,30 @@ const GuideCard = (props: GuideCardProps) => {
           className="my-0 truncate"
           onClick={handleNavigate}
         >
-          {title}
+          {props.title}
         </Typography>
         <Typography
           variant="body2"
           sx={{ color: "text.secondary" }}
           className="truncate"
         >
-          {description}
+          {props.summary}
         </Typography>
         <Stack className="mt-2" direction={"row"} alignItems={"center"} gap={1}>
           <Avatar className="w-[30px] h-[30px] text-[12px]">J</Avatar>
-          <h5 className="truncate">{author}</h5>
+          <h5 className="truncate">{props.author.name}</h5>
           <Stack direction={"row"} gap={1}>
             <Stack direction={"row"} alignItems={"center"}>
               <IconButton>
                 <FavoriteBorderIcon className="text-[18px]" />
               </IconButton>
-              <p className="m-0">{likes} </p>
+              <p className="m-0">{props.metrics.likeCount} </p>
             </Stack>
             <Stack direction={"row"} alignItems={"center"}>
               <IconButton>
                 <VisibilityIcon className="text-[18px]" />
               </IconButton>
-              <p className="m-0">{views} </p>
+              <p className="m-0">{props.metrics.viewCount} </p>
             </Stack>
           </Stack>
         </Stack>

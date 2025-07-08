@@ -1,1 +1,1 @@
-export { default as AllGuides } from "./AllGuides";
+export { default as AllBlogs } from "./AllBlogs";

@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import {
   Expense,
-  Intinerary,
+  Itinerary,
   NoteData,
   PlaceNote,
   TransitData,
@@ -19,14 +19,13 @@ interface TripDetailStore {
   updateNote: (id: string, content: string) => void;
   toggleEditNote: (id: string) => void;
   deleteNote: (id: string) => void;
-  setNotes: (notes: NoteData[]) => void;
+  setNotes: (note: NoteData) => void;
 
   transits: TransitData[];
   addTransit: (transit: TransitData) => void;
   updateTransit: (id: string, transit: Partial<TransitData>) => void;
   toggleEditTransit: (id: string) => void;
   deleteTransit: (id: string) => void;
-  setTransits: (transits: TransitData[]) => void;
 
   placeNotes: PlaceNote[];
   addPlaceNote: (note: PlaceNote) => void;
@@ -34,65 +33,68 @@ interface TripDetailStore {
   toggleEditPlaceNotes: (id: string) => void;
   deletePlaceNote: (id: string) => void;
   setPlaceNotes: (notes: PlaceNote[]) => void;
-  togglePlaceVisited: (id: string) => void;
-  setPlaceDetails: (placeId: string, detail: google.maps.places.Place) => void;
 
-  placeDetails: Record<string, google.maps.places.Place>;
-  itineraries: Intinerary[];
-  addItinerary: (itinerary: Intinerary) => void;
-  updateItinerary: (id: string, itinerary: Partial<Intinerary>) => void;
+  itineraries: Itinerary[];
+  addItinerary: (itinerary: Itinerary) => void;
+  updateItinerary: (id: string, itinerary: Partial<Itinerary>) => void;
   deleteItinerary: (id: string) => void;
-  setItineraries: (itineraries: Intinerary[]) => void;
   toggleEditItinerary: (id: string) => void;
 
+  totalBudget: number;
+  currentUsage: number;
+  setTotalBudget: (budget: number) => void;
   expenses: Expense[];
+  addExpense: (expense: Expense) => void;
+  updateExpense: (id: string, expense: Partial<Expense>) => void;
+  deleteExpense: (id: string) => void;
 }
 
 export const useTripDetailStore = create<TripDetailStore>()(
   devtools(
     (set, get) => ({
       notes: [],
+      itineraries: [],
+      expenses: [],
+      placeNotes: [],
+      totalBudget: 0,
+      currentUsage: 0,
+      trip: {} as Trip,
       addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
       updateNote: (id, content) =>
         set((state) => ({
-          notes: state.notes.map((n) => (n._id === id ? { ...n, content } : n)),
+          notes: state.notes.map((n) => (n.id === id ? { ...n, content } : n)),
         })),
       toggleEditNote: (id) =>
         set((state) => ({
           notes: state.notes.map((n) =>
-            n._id === id ? { ...n, isEditing: !n.isEditing } : n
+            n.id === id ? { ...n, isEditing: !n.isEditing } : n
           ),
         })),
       deleteNote: (id) =>
         set((state) => ({
-          notes: state.notes.filter((n) => n._id !== id),
+          notes: state.notes.filter((n) => n.id !== id),
         })),
-      setNotes: (notes) => set(() => ({ notes })),
       transits: [],
       addTransit: (transit) =>
         set((state) => ({ transits: [...state.transits, transit] })),
       updateTransit: (id, updated) =>
         set((state) => ({
           transits: state.transits.map((t) =>
-            t._id === id ? { ...t, ...updated } : t
+            t.id === id ? { ...t, ...updated } : t
           ),
         })),
       toggleEditTransit: (id) =>
         set((state) => ({
           transits: state.transits.map((t) =>
-            t._id === id ? { ...t, isEditing: !t.isEditing } : t
+            t.id === id ? { ...t, isEditing: !t.isEditing } : t
           ),
         })),
       deleteTransit: (id) =>
         set((state) => ({
-          transits: state.transits.filter((t) => t._id !== id),
+          transits: state.transits.filter((t) => t.id !== id),
         })),
-      setTransits: (transits) => set(() => ({ transits })),
 
       // Place notes implementation
-      placeNotes: [],
-      placeDetails: {},
-
       addPlaceNote: (note) =>
         set((state) => ({
           placeNotes: [...state.placeNotes, note],
@@ -101,37 +103,78 @@ export const useTripDetailStore = create<TripDetailStore>()(
       updatePlaceNote: (id, note, visited) =>
         set((state) => ({
           placeNotes: state.placeNotes.map((n) =>
-            n._id === id ? { ...n, note, visited } : n
+            n.id === id ? { ...n, note, visited } : n
           ),
         })),
 
       toggleEditPlaceNotes: (id) =>
         set((state) => ({
           placeNotes: state.placeNotes.map((n) =>
-            n._id === id ? { ...n, isEditing: !n.isEditing } : n
+            n.id === id ? { ...n, isEditing: !n.isEditing } : n
           ),
         })),
 
       deletePlaceNote: (id) =>
         set((state) => ({
-          placeNotes: state.placeNotes.filter((n) => n._id !== id),
+          placeNotes: state.placeNotes.filter((n) => n.id !== id),
         })),
-      setPlaceNotes: (notes) => set(() => ({ placeNotes: notes })),
-      setPlaceDetails: (placeId, detail) =>
+
+      setTrip: (trip) => set(() => ({ trip })),
+      addItinerary: (itinerary) =>
         set((state) => ({
-          placeDetails: {
-            ...state.placeDetails,
-            [placeId]: detail,
-          },
+          itineraries: [...state.itineraries, itinerary],
         })),
-      togglePlaceVisited: (id) =>
+      updateItinerary: (id, updated) =>
         set((state) => ({
-          placeNotes: state.placeNotes.map((n) =>
-            n._id === id ? { ...n, visited: !n.visited } : n
+          itineraries: state.itineraries.map((i) =>
+            i.id === id ? { ...i, ...updated } : i
           ),
         })),
-      trip: {} as Trip,
-      setTrip: (trip) => set(() => ({ trip })),
+      deleteItinerary: (id) =>
+        set((state) => ({
+          itineraries: state.itineraries.filter((i) => i.id !== id),
+        })),
+      toggleEditItinerary: (id) =>
+        set((state) => ({
+          itineraries: state.itineraries.map((i) =>
+            i.id === id ? { ...i, isEditing: !i.isEditing } : i
+          ),
+        })),
+      addExpense: (expense) =>
+        set((state) => ({
+          expenses: [...state.expenses, expense],
+          currentUsage: state.currentUsage + expense.amount,
+        })),
+      updateExpense: (id, updated) =>
+        set((state) => {
+          const updatedExpenses = state.expenses.map((e) =>
+            e.id === id ? { ...e, ...updated } : e
+          );
+          return {
+            expenses: updatedExpenses,
+            currentUsage: updatedExpenses.reduce(
+              (total, expense) => total + expense.amount,
+              0
+            ),
+          };
+        }),
+
+      deleteExpense: (id) =>
+        set((state) => {
+          const updatedExpenses = state.expenses.filter((e) => e.id !== id);
+          return {
+            expenses: updatedExpenses,
+            currentUsage: updatedExpenses.reduce(
+              (total, expense) => total + expense.amount,
+              0
+            ),
+          };
+        }),
+
+      setTotalBudget: (budget) =>
+        set(() => ({
+          totalBudget: budget,
+        })),
     }),
     { name: "trip-detail-storage" }
   )

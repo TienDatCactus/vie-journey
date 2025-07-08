@@ -1,7 +1,7 @@
-import { UserInfo } from "../../utils/interfaces";
+import { Account, UserInfo } from "../../utils/interfaces";
 
 export interface NoteData {
-  _id: string;
+  id: string;
   content: string;
   by: UserInfo | null;
   isEditing?: boolean;
@@ -10,7 +10,7 @@ export interface NoteData {
 }
 
 export interface TransitData {
-  _id: string;
+  id: string;
   note: string;
   cost: number;
   currency: string;
@@ -47,37 +47,73 @@ export interface PlaceData extends google.maps.places.Place {
 }
 
 export interface PlaceNote {
-  _id: string;
-  placeId: string;
+  id: string;
+  place?: {
+    placeId: string; // Google Place ID
+    displayName: string;
+    types: string[];
+    photo: string;
+    editorialSummary?: string;
+    regularOpeningHours?: any;
+    websiteURI: string;
+    priceLevel: string;
+    rating: number;
+    googleMapsURI: string;
+    userRatingCount: number;
+    createdBy?: Partial<UserInfo>; // User who created this place
+  };
   note: string;
   visited: boolean;
-  addedBy: UserInfo;
   isEditing?: boolean;
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
 }
-
-export interface Intinerary {
-  _id: string;
+export interface Itinerary {
+  id: string;
   date: string; // ISO date string
-  placeId: string;
-  note: string;
-  time: {
-    startTime: string; // ISO time string
-    endTime: string; // ISO time string
+  place?: {
+    placeId?: string | null; // Google Place ID
+    displayName: string;
+    types: string[];
+    photo: string;
+    editorialSummary?: string;
+    location?: {
+      lat: number;
+      lng: number;
+    }; // Location coordinates
+    time?: string;
+    cost?: number;
+    createdBy?: Partial<UserInfo>; // User who created this place
   };
+  note: string;
+
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
+  isEditing?: boolean;
 }
 
 export interface Expense {
-  _id: string;
-  paidAt: string; // place title
-  paidBy: UserInfo;
-  paidOn: string; // ISO date string
+  id?: string;
   amount: number;
-  type: string;
   currency: string;
-  createdAt?: string; // ISO date string
-  updatedAt?: string; // ISO date string
+  type:
+    | "Flights"
+    | "Lodging"
+    | "Car rental"
+    | "Transit"
+    | "Food"
+    | "Drinks"
+    | "Sightseeing"
+    | "Activities"
+    | "Shopping"
+    | "Gas"
+    | "Groceries"
+    | "Other";
+  desc: string;
+  payer: string;
+  splits: {
+    splitWith: string[];
+    amount: number;
+    isSettled: boolean;
+  };
 }

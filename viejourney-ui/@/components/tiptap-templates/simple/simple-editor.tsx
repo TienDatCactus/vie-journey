@@ -71,7 +71,6 @@ import { handleImageUpload, MAX_FILE_SIZE } from "../../..//lib/tiptap-utils";
 import "../../..//components/tiptap-templates/simple/simple-editor.scss";
 
 import { Place } from "@mui/icons-material";
-import content from "../../..//components/tiptap-templates/simple/data/content.json";
 import { ThemeToggle } from "./theme-toggle";
 
 const MainToolbarContent = ({
@@ -181,7 +180,13 @@ const MobileToolbarContent = ({
   </>
 );
 
-export function SimpleEditor() {
+export function SimpleEditor({
+  onContentChange,
+  content,
+}: {
+  onContentChange?: (html: string) => void;
+  content?: string;
+}) {
   const isMobile = useMobile();
   const windowSize = useWindowSize();
   const [mobileView, setMobileView] = React.useState<
@@ -223,7 +228,12 @@ export function SimpleEditor() {
       Link.configure({ openOnClick: false }),
       PlaceAutocomplete,
     ],
-    content: content,
+    onUpdate({ editor }) {
+      const html = editor.getHTML();
+      onContentChange?.(html);
+    },
+
+    content: content || "<p></p>",
   });
 
   const bodyRect = useCursorVisibility({

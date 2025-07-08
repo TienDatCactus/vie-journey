@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { IBlogPost, IBlogQuery } from "../../../../../utils/interfaces/blog";
+import {
+  IBlogPost,
+  IBlogQuery,
+  IQueryParam,
+} from "../../../../../utils/interfaces/blog";
 import { enqueueSnackbar } from "notistack";
 import {
   createBlog,
@@ -7,13 +11,25 @@ import {
   getListBlogs,
 } from "../../../../../services/api/blog";
 
+const SIZE = 10;
 function useBlog() {
   const [blogs, setBlogs] = useState<IBlogPost[]>();
-  const getBlogs = async () => {
+  const [totalPage, setTotoalPage] = useState<number>();
+  const [totalBlog, setTotalBlog] = useState<number>();
+  const [params, setParams] = useState<IQueryParam>({
+    search: "",
+    page: 1,
+    pageSize: SIZE,
+    status: "",
+    sort: "asc",
+  });
+  const getBlogs = async (params: IQueryParam) => {
     try {
-      const res = await getListBlogs();
+      const res = await getListBlogs(params);
       if (res) {
-        setBlogs(res);
+        setBlogs(res.data);
+        setTotoalPage(res.totalPages);
+        setTotalBlog(res.Total_Blogs);
       }
     } catch (error) {
       console.log(error);
@@ -25,7 +41,7 @@ function useBlog() {
       const res = await createBlog(data);
       if (res) {
         enqueueSnackbar("Create blog successful", { variant: "success" });
-        getBlogs();
+        getBlogs(params);
       }
     } catch (error) {
       console.log(error);
@@ -39,17 +55,63 @@ function useBlog() {
         enqueueSnackbar("Delete blog successful", {
           variant: "success",
         });
-        getBlogs();
+        getBlogs(params);
       }
     } catch (error) {
       console.log(error);
     }
   };
 
+  const handleChangePage = async (page: number) => {
+    const newParams = {
+      ...params,
+      page: page,
+    };
+    setParams(newParams);
+    getBlogs(newParams);
+  };
+
+  const handleSearchChange = (search: string) => {
+    const newParams = {
+      ...params,
+      search,
+    };
+    setParams(newParams);
+    getBlogs(newParams);
+  };
+
+  const handleChangeStatus = (status: string) => {
+    const newParams = {
+      ...params,
+      status,
+    };
+    setParams(newParams);
+    getBlogs(newParams);
+  };
+  const handleSort = (sort: string) => {
+    const newParams = {
+      ...params,
+      sort,
+    };
+    setParams(newParams);
+    getBlogs(newParams);
+  };
+
   useEffect(() => {
-    getBlogs();
+    getBlogs(params);
   }, []);
-  return { blogs, handleCreateBlog, handleDeleteBlog };
+  return {
+    blogs,
+    handleCreateBlog,
+    handleDeleteBlog,
+    totalPage,
+    params,
+    totalBlog,
+    handleChangePage,
+    handleSearchChange,
+    handleChangeStatus,
+    handleSort
+  };
 }
 
 export default useBlog;

@@ -49,7 +49,7 @@ const RegisterForm: React.FC = () => {
       <FormGroup>
         <InputLabel className="font-bold text-sm">Email</InputLabel>
         <OutlinedInput
-          className="w-full *:text-sm"
+          className="w-full *:text-sm rounded-sm"
           error={!!errors.email}
           size="small"
           placeholder="Enter your email address"
@@ -75,7 +75,7 @@ const RegisterForm: React.FC = () => {
           size="small"
           error={!!errors.password}
           {...register("password", { required: true, minLength: 6 })}
-          className="w-full *:text-sm"
+          className="w-full *:text-sm rounded-sm"
           placeholder="Enter your password"
         />
         {errors.password && (
@@ -91,7 +91,7 @@ const RegisterForm: React.FC = () => {
           size="small"
           error={!!errors.rePassword}
           {...register("rePassword", { required: true })}
-          className="w-full *:text-sm"
+          className="w-full *:text-sm rounded-sm"
           placeholder="Re-enter your password"
         />
         {errors.rePassword && (

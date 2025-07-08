@@ -2,8 +2,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Chip, InputAdornment, Stack, TextField } from "@mui/material";
 import { animate, motion } from "motion/react";
 import React, { useRef } from "react";
+import { AllBlogs } from "../../../components/Pages/(user)/Guides";
 import { MainLayout } from "../../../layouts";
-import { AllGuides } from "../../../components/Pages/(user)/Guides";
 const BlogList: React.FC = () => {
   const handleScroll = () => {
     const element = destRef.current;
@@ -96,7 +96,7 @@ const BlogList: React.FC = () => {
         </Stack>
       </div>
       {/* guides cards */}
-      <AllGuides />
+      <AllBlogs />
       <motion.div
         className="w-full max-w-[1200px] pb-10"
         ref={destRef}
