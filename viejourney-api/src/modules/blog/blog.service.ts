@@ -290,59 +290,56 @@ export class BlogService {
 
   // /blogs/ban-author/:id
   async banAuthor(blogId: string, reason: string) {
-    try {
-      const blog = await this.blogModel
-        .findById(blogId)
-        .populate({
-          path: 'createdBy',
-          populate: {
-            path: 'userId', // userId là ref tới Account
-            model: 'Account',
-            select: 'role', // chỉ lấy trường role nếu muốn
-          },
-        })
-        .exec();
-      if (!blog) {
-        throw new NotFoundException('Blog not found');
-      }
-      if (
-        blog.createdBy &&
-        blog.createdBy.userId &&
-        (blog.createdBy.userId.role === 'ADMIN' ||
-          blog.createdBy.userId.role === 'MANAGER')
-      ) {
-        throw new NotFoundException('Cannot ban admin or manager author');
-      } else if (
-        blog.createdBy &&
-        blog.createdBy.userId &&
-        blog.createdBy.userId.role === 'USER'
-      ) {
-        // Fetch the Account document to ensure 'save' is available
-        const account = await this.accountModel.findById(
-          blog.createdBy.userId._id,
-        );
-        if (account) {
-          account.status = Status.banned;
-          await account.save();
-        }
-        const userInfo = await this.userInfosModel.findById(blog.createdBy._id);
-        if (userInfo) {
-          userInfo.banReason = reason;
-          userInfo.bannedAt = new Date();
-          await userInfo.save();
-        }
-        return {
-          _id: blog._id,
-          reasonBan: userInfo ? userInfo.banReason : blog.createdBy.banReason,
-          bannedAt: userInfo ? userInfo.bannedAt : blog.createdBy.bannedAt,
-          status: account ? account.status : blog.createdBy.userId.status,
-        };
-      }
-    } catch (error) {
+    const blog = await this.blogModel
+      .findById(blogId)
+      .populate({
+        path: 'createdBy',
+        populate: {
+          path: 'userId',
+          model: 'Account',
+          select: 'role',
+        },
+      })
+      .exec();
+
+    if (!blog) {
       throw new NotFoundException('Blog not found');
     }
+    if (
+      blog.createdBy &&
+      blog.createdBy.userId &&
+      (blog.createdBy.userId.role === 'ADMIN' ||
+        blog.createdBy.userId.role === 'MANAGER')
+    ) {
+      throw new BadRequestException('Cannot ban admin or manager author');
+    } else if (
+      blog.createdBy &&
+      blog.createdBy.userId &&
+      blog.createdBy.userId.role === 'USER'
+    ) {
+      const account = await this.accountModel.findById(
+        blog.createdBy.userId._id,
+      );
+      if (account) {
+        account.status = Status.banned;
+        await account.save();
+      }
+      const userInfo = await this.userInfosModel.findById(blog.createdBy._id);
+      if (userInfo) {
+        userInfo.banReason = reason;
+        userInfo.bannedAt = new Date();
+        await userInfo.save();
+      }
+      return {
+        _id: blog._id,
+        reasonBan: userInfo ? userInfo.banReason : blog.createdBy.banReason,
+        bannedAt: userInfo ? userInfo.bannedAt : blog.createdBy.bannedAt,
+        status: account ? account.status : blog.createdBy.userId.status,
+      };
+    }
+    // Nếu không rơi vào các trường hợp trên
+    throw new BadRequestException('Invalid blog author');
   }
-
   // delete blog by id
   async deleteBlogById(blogId: string) {
     const blog = await this.blogModel.findById(blogId).exec();

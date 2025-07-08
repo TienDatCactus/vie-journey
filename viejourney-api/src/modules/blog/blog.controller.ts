@@ -224,8 +224,8 @@ export class BlogController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Manager)
   @Post('ban-author/:id')
-  async banAuthor(@Param('id') id: string, @Body('reason') reason: string) {
-    return this.blogService.banAuthor(id, reason);
+  async banAuthor(@Param('id') blogId: string, @Body('reason') reason: string) {
+    return this.blogService.banAuthor(blogId, reason);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
