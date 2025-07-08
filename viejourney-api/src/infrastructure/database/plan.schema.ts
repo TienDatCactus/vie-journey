@@ -65,19 +65,30 @@ class Transit {
   arrival: Arrival;
 }
 
-@Schema({ _id: false })
+@Schema({ _id: false, timestamps: true })
 class Place {
   @Prop({ required: true })
   id: string;
-
-  @Prop({ required: true })
-  name: string;
-
-  @Prop()
-  placeId?: string;
-
-  @Prop()
-  note?: string;
+  @Prop({ type: Object, required: true })
+  place: {
+    placeId: String;
+    displayName: String;
+    types: [String];
+    photo: String;
+    editorialSummary: String;
+    regularOpeningHours: mongoose.Schema.Types.Mixed;
+    websiteURI: String;
+    priceLevel: String;
+    rating: Number;
+    googleMapsURI: String;
+    userRatingCount: Number;
+  };
+  @Prop({ required: false })
+  note: String;
+  @Prop({ required: false })
+  visited: Boolean;
+  @Prop({ required: false })
+  isEditing: Boolean;
 }
 
 @Schema({ _id: false })
@@ -187,15 +198,6 @@ class Expense {
 }
 
 @Schema({ _id: false })
-class Budgeting {
-  @Prop({ default: 0 })
-  budget: number;
-
-  @Prop({ type: [Expense], default: [] })
-  expenses: Expense[];
-}
-
-@Schema({ _id: false })
 class Plan {
   @Prop({ type: [Note], default: [] })
   notes: Note[];
@@ -209,8 +211,11 @@ class Plan {
   @Prop({ type: [Itinerary], default: [] })
   itineraries: Itinerary[];
 
-  @Prop({ type: Budgeting, default: { budget: 0, expenses: [] } })
-  budgeting: Budgeting;
+  @Prop({ default: 0 })
+  budget: number;
+
+  @Prop({ type: [Expense], default: [] })
+  expenses: Expense[];
 }
 
 @Schema({ timestamps: true, versionKey: false })
@@ -225,10 +230,8 @@ export class TripPlan extends Document {
       transits: [],
       places: [],
       itineraries: [],
-      budgeting: {
-        budget: 0,
-        expenses: [],
-      },
+      budget: 0,
+      expenses: [],
     },
   })
   plan: Plan;

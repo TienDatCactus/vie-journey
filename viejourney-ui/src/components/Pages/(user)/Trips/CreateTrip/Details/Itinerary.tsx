@@ -8,7 +8,6 @@ import {
   Edit,
   Place,
   Save,
-  Settings,
 } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -81,8 +80,8 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
         },
       },
     });
+    toggleEditItinerary(itinerary.id);
   };
-  console.log(itinerary.place);
   const handleDeleteItinerary = (id: string) => {
     socket?.emit("planItemDeleted", {
       section: "itineraries",
@@ -114,12 +113,20 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
             </h1>
             {!itinerary.isEditing && (
               <div className="flex justify-between  items-center  w-full flex-wrap gap-2">
-                <p className="text-sm text-gray-700 flex-1 min-w-0 break-words">
-                  <i className="text-neutral-700">Notes*: </i>
-                  {itinerary.note || (
-                    <span className="italic text-gray-400">No notes</span>
-                  )}
-                </p>
+                <div>
+                  <p className="text-sm text-gray-700 flex-1 min-w-0 break-words">
+                    <i className="text-neutral-700">Notes*: </i>
+                    {itinerary.note || (
+                      <span className="italic text-gray-400">No notes</span>
+                    )}
+                  </p>
+                  <p className="text-sm text-gray-800 italic">
+                    by :{" "}
+                    {itinerary.place?.createdBy?.fullName ||
+                      itinerary.place?.createdBy?.email ||
+                      "Unknown"}
+                  </p>
+                </div>
                 <IconButton
                   className="hover:text-yellow-500"
                   size="small"
@@ -554,7 +561,7 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
           time: "",
           cost: "",
         },
-        isEditing: true,
+        isEditing: false,
       };
       socket?.emit("planItemAdded", {
         section: "itineraries",
@@ -584,9 +591,9 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
         <Typography variant="h6" className="group-hover:underline font-bold">
           {props.date}
         </Typography>
-        <IconButton>
-          <Settings />
-        </IconButton>
+        <span className="text-sm text-gray-500">
+          {placesForDay.length} places to go
+        </span>
       </div>
       <AnimatePresence initial={false}>
         {expanded && (
@@ -627,7 +634,7 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
 
 const ItinerarySection: React.FC<ItineraryProps> = () => {
   const trip = useTripDetailStore((state) => state.trip);
-  console.log(trip);
+
   const generatedDates = getDatesBetween(trip?.startDate, trip?.endDate);
   return (
     <section className="pt-10" id="itinerary">

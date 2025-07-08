@@ -1,9 +1,9 @@
-import { Grid2 } from "@mui/material";
+import { Button, Grid2 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import GuideCard from "./_elements/GuideCard";
 import { IBlog } from "../../../../utils/interfaces/blog";
 import useBlogUser from "../../../../utils/hooks/user-blog-user";
-const AllGuides: React.FC = () => {
+const AllBlogs: React.FC = () => {
   const [blogs, setBlogs] = useState<IBlog[]>();
   const { getBlogList } = useBlogUser();
 
@@ -18,10 +18,10 @@ const AllGuides: React.FC = () => {
     <div className="w-full max-w-[1200px] ">
       <h1 className="mb-4 text-2xl font-bold ">Recent blogs</h1>
       <Grid2 container spacing={2}>
-        {!!(blogs?.length) &&
+        {!!blogs?.length &&
           blogs?.map((guide) => (
             <Grid2 size={3} key={guide._id}>
-              <GuideCard {...guide}  />
+              <GuideCard {...guide} />
             </Grid2>
           ))}
       </Grid2>
@@ -38,4 +38,4 @@ const AllGuides: React.FC = () => {
   );
 };
 
-export default AllGuides;
+export default AllBlogs;

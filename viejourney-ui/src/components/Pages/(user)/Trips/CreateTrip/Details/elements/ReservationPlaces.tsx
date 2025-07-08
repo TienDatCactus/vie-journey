@@ -6,7 +6,6 @@ import {
   Directions,
   DoDisturb,
   Edit,
-  ExpandMore,
   MoreHoriz,
   OpenInNew,
   Place,
@@ -15,9 +14,6 @@ import {
   TaskAlt,
 } from "@mui/icons-material";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Autocomplete,
   Badge,
   Button,
@@ -28,7 +24,6 @@ import {
   Checkbox,
   Chip,
   CircularProgress,
-  Divider,
   FormControlLabel,
   IconButton,
   InputAdornment,
@@ -43,21 +38,15 @@ import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { AnimatePresence, motion, useAnimation } from "motion/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSocket } from "../../../../../../../services/context/socketContext";
 import { PlaceNote } from "../../../../../../../services/stores/storeInterfaces";
-import { useAuthStore } from "../../../../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../../../../services/stores/useTripDetailStore";
 import { getPlacePhotoUrl } from "../../../../../../../utils/handlers/utils";
 import { useAutocompleteSuggestions } from "../../../../../../../utils/hooks/use-autocomplete-suggestion";
 import { useFetchPlaceDetails } from "../../../../../../../utils/hooks/use-fetch-place";
-import { UserInfo } from "../../../../../../../utils/interfaces";
 
 interface PlaceCardProps {
   placeNote: PlaceNote;
-  placeDetail?: google.maps.places.Place;
-  onUpdateNote: (id: string, note: string, visited: boolean) => void;
-  onToggleEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onToggleVisited: (id: string, visited: boolean) => void;
   isLoading?: boolean;
 }
 
@@ -91,8 +80,6 @@ const PlacesFinder = ({
   ) => {
     if (suggestion?.placePrediction && placesLib) {
       setSelectedPlace({ placePrediction: suggestion.placePrediction });
-      console.log("Selected Place:", suggestion.placePrediction.placeId);
-
       const placeId = suggestion.placePrediction.placeId || "";
       const name = String(suggestion.placePrediction.mainText || "");
       if (placeId) {
@@ -181,17 +168,10 @@ const PlacesFinder = ({
     />
   );
 };
-const PlaceCard: React.FC<PlaceCardProps> = ({
-  placeNote,
-  placeDetail,
-  onUpdateNote,
-  onToggleEdit,
-  onDelete,
-  onToggleVisited,
-  isLoading,
-}) => {
+const PlaceCard: React.FC<PlaceCardProps> = ({ placeNote, isLoading }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
+  const { socket } = useSocket();
+  const placeDetail = placeNote.place;
   const [localContent, setLocalContent] = useState({
     note: placeNote.note,
     visited: placeNote.visited,
@@ -213,7 +193,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       },
     });
   }, [controls, placeDetail?.types]);
-
+  const { toggleEditPlaceNotes } = useTripDetailStore();
   useEffect(() => {
     if (placeNote.isEditing) {
       setLocalContent({
@@ -231,20 +211,33 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     setAnchorEl(null);
   };
   const handleSave = () => {
-    onUpdateNote(placeNote.id, localContent.note, localContent.visited);
-    onToggleEdit(placeNote.id);
-    onToggleVisited(placeNote.id, localContent.visited);
+    socket?.emit("planItemUpdated", {
+      section: "places",
+      item: {
+        id: placeNote.id,
+        place: placeDetail,
+        note: localContent.note,
+        visited: localContent.visited,
+      },
+    });
+    toggleEditPlaceNotes(placeNote.id);
   };
 
   const handleCancel = () => {
-    // Just exit edit mode without saving
-    onToggleEdit(placeNote.id);
+    toggleEditPlaceNotes(placeNote.id);
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalContent((prev) => ({
       ...prev,
       note: e.target.value,
     }));
+  };
+  const handleDelete = () => {
+    handleClose();
+    socket?.emit("planItemDeleted", {
+      section: "places",
+      itemId: placeNote.id,
+    });
   };
   return (
     <Card
@@ -264,10 +257,10 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
           <CardMedia
             loading="lazy"
             component="img"
-            src={getPlacePhotoUrl(placeDetail?.photos?.[0])}
+            src={getPlacePhotoUrl(placeDetail?.photo)}
             className="object-cover col-span-1 w-full h-full rounded-s-lg"
           />
-          <CardContent className="p-0 px-4 lg:py-1 flex flex-col col-span-2 justify-between z-20">
+          <CardContent className="p-0 px-4 lg:py-1 flex flex-col col-span-2 justify-between z-20 space-y-4">
             <Stack
               direction={"row"}
               alignItems={"center"}
@@ -283,8 +276,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 {placeDetail?.types && (
                   <Chip
                     label={placeDetail?.types[0]
-                      .split("_")
-                      .map(
+                      ?.split("_")
+                      ?.map(
                         (item) => item.charAt(0).toUpperCase() + item.slice(1)
                       )
                       .join(" ")}
@@ -293,24 +286,19 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                   />
                 )}
               </Stack>
-              <IconButton className="p-1" onClick={handleMenuClick}>
+              <IconButton onClick={handleMenuClick}>
                 <MoreHoriz />
               </IconButton>
               <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    onToggleEdit(placeNote.id);
+                    toggleEditPlaceNotes(placeNote.id);
                   }}
                 >
                   <Edit fontSize="small" sx={{ mr: 1 }} /> Edit Notes
                 </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    onDelete(placeNote.id);
-                  }}
-                >
+                <MenuItem onClick={handleDelete}>
                   <Delete fontSize="small" sx={{ mr: 1 }} /> Delete
                 </MenuItem>
               </Menu>
@@ -332,18 +320,23 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               <Stack direction={"row"} alignItems={"center"}>
                 <AccessTime className="text-gray-600 text-base mr-0.5" />
                 <span className="text-sm text-gray-600">
-                  {placeDetail?.regularOpeningHours?.periods[0]?.open?.hour ? (
+                  {placeDetail?.regularOpeningHours?.periods &&
+                  placeDetail?.regularOpeningHours?.periods.length > 0 ? (
                     <div>
-                      {placeDetail?.regularOpeningHours?.periods[0]?.open?.hour}
-                      AM -{" "}
-                      {
-                        placeDetail?.regularOpeningHours?.periods[0]?.close
-                          ?.minute
-                      }
-                      PM
+                      {placeDetail.regularOpeningHours.periods[0]?.open?.hour ||
+                        "?"}
+                      {placeDetail.regularOpeningHours.periods[0]?.open?.hour
+                        ? "AM"
+                        : ""}
+                      {" - "}
+                      {placeDetail.regularOpeningHours.periods[0]?.close
+                        ?.hour || "?"}
+                      {placeDetail.regularOpeningHours.periods[0]?.close?.hour
+                        ? "PM"
+                        : ""}
                     </div>
                   ) : (
-                    <div>Closed</div>
+                    <div>Hours not available</div>
                   )}
                 </span>
               </Stack>
@@ -355,12 +348,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               </Stack>
             </Stack>
             {!placeNote.isEditing ? (
-              <Stack direction={"row"} alignItems={"center"} gap={1}>
-                <h5 className="text-sm font-semibold">Notes* :</h5>
-                <p className="text-base text-neutral-800 text-ellipsis line-clamp-3">
+              <p className="">
+                <span className="text-sm font-semibold">Notes* :</span>
+                <span className="text-base text-neutral-800 text-ellipsis line-clamp-3">
                   {placeNote.note || "No description provided."}
-                </p>
-              </Stack>
+                </span>
+              </p>
             ) : (
               <TextField
                 fullWidth
@@ -409,7 +402,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 )}
               </motion.div>
             </div>
-            <Divider className="" />
             <Stack
               direction={"row"}
               alignItems={"center"}
@@ -467,8 +459,11 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                   </Button>
                   <Button
                     variant="contained"
-                    className="bg-gray-800 text-white"
+                    className={
+                      placeDetail?.websiteURI && "bg-gray-800 text-white"
+                    }
                     startIcon={<OpenInNew />}
+                    disabled={!placeDetail?.websiteURI}
                     onClick={() => {
                       if (placeDetail?.websiteURI) {
                         window.open(placeDetail.websiteURI, "_blank");
@@ -507,33 +502,52 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 
 const ReservationPlaces: React.FC = () => {
   const placeNotes = useTripDetailStore((state) => state.placeNotes);
-  const {
-    addPlaceNote,
-    updatePlaceNote,
-    toggleEditPlaceNotes,
-    deletePlaceNote,
-    togglePlaceVisited,
-  } = useTripDetailStore();
   const [expanded, setExpanded] = useState(false);
-  const { fetchPlaceDetail, placeDetails } = useFetchPlaceDetails();
-  const { info } = useAuthStore();
+  const { fetchPlaceDetail } = useFetchPlaceDetails();
   const [loading, setLoading] = useState(false);
-  const handleAddPlace = async (placeId: string) => {
+  const { socket } = useSocket();
+  const handleAddPlace = async (placeId: string, name: string) => {
     try {
       setLoading(true);
+      const placeDetailsFetched = await fetchPlaceDetail(placeId);
+      if (!placeDetailsFetched) {
+        console.error("Failed to fetch place details");
+        return;
+      }
       const newPlaceNote: PlaceNote = {
         id: `place-note-${Date.now()}`,
-        placeId: placeId,
+        place: {
+          placeId: placeDetailsFetched.id || placeId,
+          displayName: placeDetailsFetched.displayName || name,
+          types: placeDetailsFetched.types || [],
+          photo: placeDetailsFetched.photos
+            ? getPlacePhotoUrl(placeDetailsFetched.photos[0])
+            : "",
+          editorialSummary:
+            placeDetailsFetched.editorialSummary ||
+            "No summary available, please refer to the location details.",
+          regularOpeningHours: placeDetailsFetched.regularOpeningHours || {
+            periods: [],
+          },
+          websiteURI: placeDetailsFetched.websiteURI || "",
+          priceLevel: placeDetailsFetched.priceLevel || "",
+          rating: placeDetailsFetched.rating || 0,
+          googleMapsURI: placeDetailsFetched.googleMapsURI || "",
+          userRatingCount: placeDetailsFetched.userRatingCount || 0,
+        },
         note: "",
         visited: false,
-        addedBy: info as UserInfo,
-        isEditing: true,
+        isEditing: false,
+        createdAt: new Date().toISOString(),
       };
-
-      addPlaceNote(newPlaceNote);
-      await fetchPlaceDetail(placeId);
+      socket?.emit("planItemAdded", {
+        section: "places",
+        item: {
+          ...newPlaceNote,
+        },
+      });
     } catch (error) {
-      console.error(error);
+      console.error("Error adding place:", error);
     } finally {
       setLoading(false);
     }
@@ -577,11 +591,6 @@ const ReservationPlaces: React.FC = () => {
                     isLoading={loading}
                     key={placeNote.id}
                     placeNote={placeNote}
-                    placeDetail={placeDetails[placeNote.placeId]}
-                    onUpdateNote={updatePlaceNote}
-                    onToggleEdit={toggleEditPlaceNotes}
-                    onDelete={deletePlaceNote}
-                    onToggleVisited={togglePlaceVisited}
                   />
                 ))
               )}

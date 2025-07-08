@@ -15,15 +15,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAuth = true,
 }) => {
   const location = useLocation();
-
   const { isLoading, credential, user } = useAuthStore();
   const isAuthenticated = !!credential?.userId;
-  const isVerified = user?.status == "ACTIVE";
+  const isVerified = user?.status === "ACTIVE";
 
   useEffect(() => {
     if (!requireAuth) return;
-
-    if (user && !isAuthenticated) {
+    if (!isAuthenticated) {
       enqueueSnackbar("You need to be logged in to access this page.", {
         variant: "warning",
       });
@@ -33,18 +31,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         { variant: "error" }
       );
     }
-  }, [requireAuth, isAuthenticated, isVerified]);
+  }, [requireAuth, isAuthenticated, isVerified, user]);
 
   if (isLoading) {
     return <Fallback />;
   }
 
-  if (requireAuth && user && !isAuthenticated) {
-    console.log("ProtectedRoute: User is authenticated but not logged in");
+  if (requireAuth && !isAuthenticated) {
+    // Not authenticated, redirect to login
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  if (requireAuth && user && isAuthenticated && !isVerified) {
+  if (requireAuth && isAuthenticated && user && !isVerified) {
+    // Authenticated but not verified
     return <Navigate to="/auth/login" replace />;
   }
 

@@ -35,8 +35,15 @@ const CreateTripDetails: React.FC = () => {
     deleteTransit,
     addItinerary,
     updateItinerary,
-    toggleEditItinerary,
+
     deleteItinerary,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    setTotalBudget,
+    addPlaceNote,
+    deletePlaceNote,
+    updatePlaceNote,
   } = useTripDetailStore();
   const { addPlaceId } = useDirectionStore();
 
@@ -82,15 +89,38 @@ const CreateTripDetails: React.FC = () => {
           isEditing: false,
         });
       } else if (data.section == "transits") {
-        console.log("Transit added:", data);
         addTransit({
           ...data.item.content,
           id: data.item.id,
         });
+      } else if (data.section == "places") {
+        console.log("place added:", data);
+        addPlaceNote({
+          ...data.item,
+          place: {
+            ...data.item.place,
+            createdBy: data.addedBy,
+          },
+        });
       } else if (data.section == "itineraries") {
         console.log("first itinerary added:", data);
         addPlaceId(data.item.place.placeId, data.item.date);
-        addItinerary(data.item);
+        addItinerary({
+          ...data.item,
+          place: {
+            ...data.item.place,
+            createdBy: data.addedBy,
+          },
+        });
+      } else if (data.section == "budget") {
+        console.log(data);
+        setTotalBudget(Number(data.item));
+      } else if (data.section == "expenses") {
+        console.log("expense added:", data);
+        addExpense({
+          ...data.item,
+          createdBy: data.addedBy,
+        });
       }
     });
 
@@ -100,15 +130,24 @@ const CreateTripDetails: React.FC = () => {
         updateNote(data.item.id, data.item.text);
       } else if (data.section == "transits") {
         updateTransit(data.item.id, data.item);
+      } else if (data.section == "places") {
+        console.log("place updated:", data);
+        updatePlaceNote(data.item.id, data.item.note, data.item.visited);
       } else if (data.section == "itineraries") {
         console.log("itinerary updated:", data);
         updateItinerary(data.item.id, {
           note: data.item.note,
           place: {
             ...data.item.place,
+            createdBy: data.updatedBy,
           },
         });
-        toggleEditItinerary(data.item.id);
+      } else if (data.section == "expenses") {
+        console.log("expense updated:", data);
+        updateExpense(data.item.id, {
+          ...data.item,
+          createdBy: data.updatedBy,
+        });
       }
     });
 
@@ -117,8 +156,12 @@ const CreateTripDetails: React.FC = () => {
         deleteNote(data.itemId);
       } else if (data.section == "transits") {
         deleteTransit(data.itemId);
+      } else if (data.section == "places") {
+        deletePlaceNote(data.itemId);
       } else if (data.section == "itineraries") {
         deleteItinerary(data.itemId);
+      } else if (data.section == "expenses") {
+        deleteExpense(data.itemId);
       }
     });
 

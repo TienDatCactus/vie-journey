@@ -105,10 +105,6 @@ export class BlogService {
 
       return {
         status: 'success',
-        message:
-          blogs.length > 0
-            ? 'Blogs retrieved successfully'
-            : 'No approved blogs found',
         data: {
           blogs: blogs.map((blog) => ({
             _id: blog._id,

@@ -33,7 +33,6 @@ interface TripDetailStore {
   toggleEditPlaceNotes: (id: string) => void;
   deletePlaceNote: (id: string) => void;
   setPlaceNotes: (notes: PlaceNote[]) => void;
-  togglePlaceVisited: (id: string, visited: boolean) => void;
 
   itineraries: Itinerary[];
   addItinerary: (itinerary: Itinerary) => void;
@@ -42,6 +41,7 @@ interface TripDetailStore {
   toggleEditItinerary: (id: string) => void;
 
   totalBudget: number;
+  currentUsage: number;
   setTotalBudget: (budget: number) => void;
   expenses: Expense[];
   addExpense: (expense: Expense) => void;
@@ -57,6 +57,7 @@ export const useTripDetailStore = create<TripDetailStore>()(
       expenses: [],
       placeNotes: [],
       totalBudget: 0,
+      currentUsage: 0,
       trip: {} as Trip,
       addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
       updateNote: (id, content) =>
@@ -118,12 +119,6 @@ export const useTripDetailStore = create<TripDetailStore>()(
           placeNotes: state.placeNotes.filter((n) => n.id !== id),
         })),
 
-      togglePlaceVisited: (id, visited) =>
-        set((state) => ({
-          placeNotes: state.placeNotes.map((n) =>
-            n.id === id ? { ...n, visited } : n
-          ),
-        })),
       setTrip: (trip) => set(() => ({ trip })),
       addItinerary: (itinerary) =>
         set((state) => ({
@@ -148,25 +143,34 @@ export const useTripDetailStore = create<TripDetailStore>()(
       addExpense: (expense) =>
         set((state) => ({
           expenses: [...state.expenses, expense],
-          totalBudget: state.totalBudget + expense.amount,
+          currentUsage: state.currentUsage + expense.amount,
         })),
       updateExpense: (id, updated) =>
-        set((state) => ({
-          expenses: state.expenses.map((e) =>
+        set((state) => {
+          const updatedExpenses = state.expenses.map((e) =>
             e.id === id ? { ...e, ...updated } : e
-          ),
-          totalBudget: state.expenses.reduce(
-            (total, expense) => total + expense.amount,
-            0
-          ),
-        })),
+          );
+          return {
+            expenses: updatedExpenses,
+            currentUsage: updatedExpenses.reduce(
+              (total, expense) => total + expense.amount,
+              0
+            ),
+          };
+        }),
+
       deleteExpense: (id) =>
-        set((state) => ({
-          expenses: state.expenses.filter((e) => e.id !== id),
-          totalBudget:
-            state.totalBudget -
-            (state.expenses.find((e) => e.id === id)?.amount || 0),
-        })),
+        set((state) => {
+          const updatedExpenses = state.expenses.filter((e) => e.id !== id);
+          return {
+            expenses: updatedExpenses,
+            currentUsage: updatedExpenses.reduce(
+              (total, expense) => total + expense.amount,
+              0
+            ),
+          };
+        }),
+
       setTotalBudget: (budget) =>
         set(() => ({
           totalBudget: budget,

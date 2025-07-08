@@ -29,6 +29,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [socketLoading, setSocketLoading] = useState<boolean>(true);
   const [socketDisconnected, setSocketDisconnected] = useState<boolean>(false);
+
   useEffect(() => {
     if (socket && socket.connected == false) {
       setSocketDisconnected(true);

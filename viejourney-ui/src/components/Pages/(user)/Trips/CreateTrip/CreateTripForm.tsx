@@ -1,14 +1,10 @@
 import {
   Add,
-  AttachMoney,
   AutoFixHigh,
   CalendarMonth,
   Clear,
-  Delete,
   DriveFileRenameOutline,
-  Group,
   GroupAdd,
-  PlaceOutlined,
   TravelExplore,
 } from "@mui/icons-material";
 import PublicIcon from "@mui/icons-material/Public";
@@ -22,22 +18,19 @@ import {
   DialogTitle,
   Divider,
   FormControl,
-  FormHelperText,
   FormLabel,
   InputAdornment,
-  MenuItem,
-  Select,
   Stack,
   Switch,
   TextField,
 } from "@mui/material";
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Dayjs } from "dayjs";
 import React, { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useAutocompleteSuggestions } from "../../../../../utils/hooks/use-autocomplete-suggestion";
 import { doCreateTrip } from "../../../../../services/api";
-import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { useAutocompleteSuggestions } from "../../../../../utils/hooks/use-autocomplete-suggestion";
 
 export const CreateTripForm: React.FC = () => {
   const placesLib = useMapsLibrary("places");
@@ -104,8 +97,6 @@ export const CreateTripForm: React.FC = () => {
     defaultValues: {
       destination: "",
       dates: [null, null] as [Dayjs | null, Dayjs | null],
-      travelers: "Solo traveler",
-      budget: "Budget ($0 - $500)",
       description: "",
       visibility: false, // Default visibility to false
     },
@@ -114,7 +105,7 @@ export const CreateTripForm: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleModalClose = (value: string) => {
+  const handleModalClose = () => {
     setModalOpen(false);
   };
   const handleModalProceed = (e: React.FormEvent<HTMLFormElement>) => {
@@ -163,89 +154,86 @@ export const CreateTripForm: React.FC = () => {
       )}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full lg:col-span-4 gap-4 shadow-sm border border-neutral-400 rounded-2xl bg-white p-4"
+        className="lg:col-span-4 gap-4 shadow-xl bg-white backdrop-blur-md  border border-dashed border-gray-600 rounded-2xl w-full lg:w-200  p-4 "
       >
-        <Stack direction={"row"} gap={1} marginBottom={2} alignItems={"center"}>
-          <PlaceOutlined className="" />
-          <h1 className="text-2xl font-bold">Create a new Trip</h1>
-        </Stack>
-        <FormControl
-          className="w-full"
-          color={errors.destination ? "error" : "primary"}
-        >
-          <FormLabel className="text-sm font-semibold mb-1">
-            <TravelExplore className="mr-1" />
-            Trip Destination <span>(required)</span>
-          </FormLabel>{" "}
-          <Autocomplete
-            id="destination-autocomplete"
-            open={open}
-            onOpen={() => {
-              if (destination.length >= 2) setOpen(true);
-            }}
-            onClose={() => setOpen(false)}
-            isOptionEqualToValue={(option, value) =>
-              option.placePrediction?.placeId === value.placePrediction?.placeId
-            }
-            getOptionLabel={(option) => option.placePrediction?.mainText + ""}
-            options={suggestions}
-            loading={isLoading}
-            value={selectedPlace}
-            onChange={(_, newValue) => handlePlaceSelect(newValue)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                value={destination}
-                className=""
-                size="small"
-                fullWidth
-                placeholder="e.g Ta xua, Sapa, Da Nang"
-                variant="outlined"
-                {...register("destination", {
-                  required: "Destination is required",
-                })}
-                error={!!errors.destination}
-                helperText={
-                  errors.destination ? errors.destination.message : ""
-                }
-                onChange={handleInputChange}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon
-                        color={errors.destination ? "error" : "action"}
-                      />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <>
-                      {isLoading ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-            renderOption={(props, option) => (
-              <li {...props} key={option.placePrediction?.placeId}>
-                <Stack>
-                  <div className="font-medium">
-                    {option?.placePrediction?.mainText + ""}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {option.placePrediction?.secondaryText != null
-                      ? option.placePrediction?.secondaryText + ""
-                      : option.placePrediction?.text + ""}
-                  </div>
-                </Stack>
-              </li>
-            )}
-          />
-        </FormControl>
         <div className="grid grid-cols-1 my-4 lg:grid-cols-2 gap-4">
+          <FormControl
+            className="w-full"
+            color={errors.destination ? "error" : "primary"}
+          >
+            <FormLabel className="text-sm font-semibold mb-1">
+              <TravelExplore className="mr-1" />
+              Trip Destination <span>(required)</span>
+            </FormLabel>{" "}
+            <Autocomplete
+              id="destination-autocomplete"
+              open={open}
+              onOpen={() => {
+                if (destination.length >= 2) setOpen(true);
+              }}
+              onClose={() => setOpen(false)}
+              isOptionEqualToValue={(option, value) =>
+                option.placePrediction?.placeId ===
+                value.placePrediction?.placeId
+              }
+              getOptionLabel={(option) => option.placePrediction?.mainText + ""}
+              options={suggestions}
+              loading={isLoading}
+              value={selectedPlace}
+              onChange={(_, newValue) => handlePlaceSelect(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  value={destination}
+                  className=""
+                  size="small"
+                  fullWidth
+                  placeholder="e.g Ta xua, Sapa, Da Nang"
+                  variant="outlined"
+                  {...register("destination", {
+                    required: "Destination is required",
+                  })}
+                  error={!!errors.destination}
+                  helperText={
+                    errors.destination ? errors.destination.message : ""
+                  }
+                  onChange={handleInputChange}
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon
+                          color={errors.destination ? "error" : "action"}
+                        />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <>
+                        {isLoading ? (
+                          <CircularProgress color="inherit" size={20} />
+                        ) : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+              renderOption={(props, option) => (
+                <li {...props} key={option.placePrediction?.placeId}>
+                  <Stack>
+                    <div className="font-medium">
+                      {option?.placePrediction?.mainText + ""}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {option.placePrediction?.secondaryText != null
+                        ? option.placePrediction?.secondaryText + ""
+                        : option.placePrediction?.text + ""}
+                    </div>
+                  </Stack>
+                </li>
+              )}
+            />
+          </FormControl>
           <FormControl>
             <FormLabel className="text-sm font-semibold mb-1">
               <CalendarMonth className="mr-1" />
@@ -267,6 +255,7 @@ export const CreateTripForm: React.FC = () => {
                   onChange={(newValue) => field.onChange(newValue)}
                   slotProps={{
                     textField: {
+                      size: "small",
                       error: !!errors.dates,
                       helperText: errors.dates ? errors.dates.message : "",
                       variant: "outlined",
@@ -280,7 +269,7 @@ export const CreateTripForm: React.FC = () => {
               )}
             />
           </FormControl>
-          <FormControl>
+          {/* <FormControl>
             <FormLabel className="text-sm font-semibold mb-1">
               <Group className="mr-1" />
               Number of travelers
@@ -296,9 +285,9 @@ export const CreateTripForm: React.FC = () => {
               <MenuItem value={"4 travelers"}>4 travelers</MenuItem>
               <MenuItem value={"5+ travelers"}>5+ travelers</MenuItem>
             </Select>
-          </FormControl>
+          </FormControl> */}
         </div>
-        <FormControl className="block  my-4">
+        {/* <FormControl className="block  my-4">
           <FormLabel className="text-sm font-semibold mb-1">
             <AttachMoney className="mr-1 mb-1" />
             Travel Budget <span>(required)</span>
@@ -321,22 +310,24 @@ export const CreateTripForm: React.FC = () => {
               ? `Wow you are sooo rich !`
               : ""}
           </FormHelperText>
-        </FormControl>
+        </FormControl> */}
 
-        <FormControl className="block my-4">
-          <FormLabel className="text-sm font-semibold mb-1">
-            <Add className="mr-1 mb-1" />
-            Tell us more about your trip (optional)
-          </FormLabel>
-          <TextField
-            multiline
-            rows={3}
-            {...register("description")}
-            placeholder="Describe your trip, activities, and preferences"
-            variant="outlined"
-            className="w-full "
-          />
-        </FormControl>
+        {watch("dates") && (
+          <FormControl className="block my-4">
+            <FormLabel className="text-sm font-semibold mb-1">
+              <Add className="mr-1 mb-1" />
+              Tell us more about your trip (optional)
+            </FormLabel>
+            <TextField
+              multiline
+              rows={3}
+              {...register("description")}
+              placeholder="Describe your trip, activities, and preferences"
+              variant="outlined"
+              className="w-full "
+            />
+          </FormControl>
+        )}
         <Divider className="my-4" />
         <FormControl className="my-4 block items-center justify-between">
           <Stack
