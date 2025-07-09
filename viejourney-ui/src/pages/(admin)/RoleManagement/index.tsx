@@ -11,90 +11,44 @@ import {
   Stack,
   Avatar,
   IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
 } from "@mui/material";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
 import { LicenseInfo } from "@mui/x-license";
 import PersonIcon from "@mui/icons-material/Person";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import GroupIcon from "@mui/icons-material/Group";
 import EditRoleDialog from "./EditRoleDialog";
+import ViewUsersDialog from "./ViewUsersDialog";
+import ChangeRoleDialog from "./ChangeRoleDialog";
+import ConfirmationDialog from "./ConfirmationDialog";
+import axios from "axios";
+import { ADMIN } from "../../../services/api/url";
 
 // Set MUI Pro License
 LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
 
-// Actions Menu Component
-const ActionMenu = ({
+// Actions Component - Only Eye Icon
+const ActionComponent = ({
   roleId,
-  onEditRole,
+  onViewUsers,
 }: {
   roleId: number;
-  onEditRole: (roleId: number) => void;
+  onViewUsers: (roleId: number) => void;
 }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleViewDetail = () => {
-    console.log("View detail for role:", roleId);
-    handleClose();
-  };
-
-  const handleEditRole = () => {
-    onEditRole(roleId);
-    handleClose();
+  const handleViewUsers = () => {
+    onViewUsers(roleId);
   };
 
   return (
-    <>
-      <IconButton
-        size="small"
-        onClick={handleClick}
-        aria-controls={open ? "role-menu" : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? "true" : undefined}
-      >
-        <MoreVertIcon fontSize="small" />
-      </IconButton>
-      <Menu
-        id="role-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{
-          "aria-labelledby": "role-button",
-        }}
-        transformOrigin={{ horizontal: "right", vertical: "top" }}
-        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-      >
-        <MenuItem onClick={handleViewDetail}>
-          <ListItemIcon>
-            <VisibilityIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>View Detail</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={handleEditRole}>
-          <ListItemIcon>
-            <EditIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Edit Role</ListItemText>
-        </MenuItem>
-      </Menu>
-    </>
+    <IconButton
+      aria-label="view users"
+      onClick={handleViewUsers}
+      color="primary"
+    >
+      <VisibilityIcon />
+    </IconButton>
   );
 };
 
@@ -163,12 +117,30 @@ const systemRoles = [
   },
 ];
 
-// Move columns definition inside component to access handleEditRole
+// User interface for dialog
+interface User {
+  userId: string;
+  accountId: string;
+  email: string;
+  userName: string;
+  role: string;
+  status: string;
+  phone: string;
+  address: string;
+  createdAt: Date;
+}
+
+// Move columns definition inside component to access handlers
 const RoleManagement = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [viewUsersDialogOpen, setViewUsersDialogOpen] = useState(false);
+  const [changeRoleDialogOpen, setChangeRoleDialogOpen] = useState(false);
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<
     (typeof systemRoles)[0] | null
   >(null);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [newRole, setNewRole] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleEditRole = (roleId: number) => {
@@ -176,6 +148,55 @@ const RoleManagement = () => {
     if (role) {
       setSelectedRole(role);
       setEditDialogOpen(true);
+    }
+  };
+
+  const handleViewUsers = (roleId: number) => {
+    const role = systemRoles.find((r) => r.id === roleId);
+    if (role) {
+      setSelectedRole(role);
+      setViewUsersDialogOpen(true);
+    }
+  };
+
+  const handleChangeRole = (users: User[], newRoleValue: string) => {
+    setSelectedUsers(users);
+    setNewRole(newRoleValue);
+    setViewUsersDialogOpen(false);
+    setChangeRoleDialogOpen(true);
+  };
+
+  const handleAcceptChangeRole = () => {
+    setChangeRoleDialogOpen(false);
+    setConfirmationDialogOpen(true);
+  };
+
+  const handleConfirmChangeRole = async () => {
+    setLoading(true);
+    try {
+      // Call API to update user roles
+      for (const user of selectedUsers) {
+        await axios.patch(
+          `${import.meta.env.VITE_PRIVATE_URL}${ADMIN.CHAGE_ROLE.replace(
+            ":id",
+            user.accountId
+          )}`,
+          { role: newRole },
+          { withCredentials: true }
+        );
+      }
+
+      // Close all dialogs and reset state
+      setConfirmationDialogOpen(false);
+      setSelectedUsers([]);
+      setNewRole("");
+      setSelectedRole(null);
+
+      console.log("Roles updated successfully");
+    } catch (error) {
+      console.error("Error updating roles:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -200,6 +221,21 @@ const RoleManagement = () => {
   const handleCloseDialog = () => {
     setEditDialogOpen(false);
     setSelectedRole(null);
+  };
+
+  const handleCloseViewUsersDialog = () => {
+    setViewUsersDialogOpen(false);
+    setSelectedRole(null);
+  };
+
+  const handleCloseChangeRoleDialog = () => {
+    setChangeRoleDialogOpen(false);
+    setSelectedUsers([]);
+    setNewRole("");
+  };
+
+  const handleCloseConfirmationDialog = () => {
+    setConfirmationDialogOpen(false);
   };
 
   const columns: GridColDef[] = [
@@ -263,7 +299,7 @@ const RoleManagement = () => {
       sortable: false,
       align: "center",
       renderCell: (params) => (
-        <ActionMenu roleId={params.row.id} onEditRole={handleEditRole} />
+        <ActionComponent roleId={params.row.id} onViewUsers={handleViewUsers} />
       ),
     },
   ];
@@ -358,6 +394,33 @@ const RoleManagement = () => {
           onClose={handleCloseDialog}
           role={selectedRole}
           onSave={handleSaveRole}
+          loading={loading}
+        />
+
+        {/* View Users Dialog */}
+        <ViewUsersDialog
+          open={viewUsersDialogOpen}
+          onClose={handleCloseViewUsersDialog}
+          roleData={selectedRole}
+          onChangeRole={handleChangeRole}
+        />
+
+        {/* Change Role Dialog */}
+        <ChangeRoleDialog
+          open={changeRoleDialogOpen}
+          onClose={handleCloseChangeRoleDialog}
+          selectedUsers={selectedUsers}
+          newRole={newRole}
+          onAccept={handleAcceptChangeRole}
+        />
+
+        {/* Confirmation Dialog */}
+        <ConfirmationDialog
+          open={confirmationDialogOpen}
+          onClose={handleCloseConfirmationDialog}
+          onConfirm={handleConfirmChangeRole}
+          title="Are you sure?"
+          message="Bạn có chắc chắn muốn thay đổi role cho các user đã chọn không?"
           loading={loading}
         />
       </Box>
