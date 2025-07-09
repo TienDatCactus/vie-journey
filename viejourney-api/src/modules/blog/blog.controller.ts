@@ -217,8 +217,8 @@ export class BlogController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Manager)
   @Patch(':id/flags')
-  async cleanFlags(@Param('id') id: string) {
-    return this.blogService.cleanFlags(id);
+  async cleanFlags(@Param('id') blogId: string) {
+    return this.blogService.cleanFlags(blogId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -237,7 +237,7 @@ export class BlogController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Manager)
-  @Post(':id/flag')
+  @Post(':id/flags')
   async createFlag(
     @Param('id') id: string,
     @Body('reason') reason: string,
@@ -247,5 +247,23 @@ export class BlogController {
       throw new BadRequestException('Reason is required');
     }
     return this.blogService.createFlag(id, reason, req);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async updateMetrics(@Param('id') blogId: string, @Req() req: Request) {
+    return this.blogService.updateMetrics(blogId, req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/like')
+  async likeBlog(@Param('id') blogId: string, @Req() req) {
+    return this.blogService.postLikeBlog(req, blogId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/unlike')
+  async unlikeBlog(@Param('id') blogId: string, @Req() req) {
+    return this.blogService.unlikeBlog(req, blogId);
   }
 }

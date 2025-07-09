@@ -14,14 +14,51 @@ import { AssetsService } from '../assets/assets.service';
 import { v4 as uuidv4 } from 'uuid';
 import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 import { Request } from 'express';
+import { Like } from 'src/common/entities/like.entity';
 @Injectable()
 export class BlogService {
   constructor(
     @InjectModel('Blog') private readonly blogModel: Model<Blog>,
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
+    @InjectModel('Like') private readonly likeModel: Model<Like>,
     private readonly assetsService: AssetsService,
   ) {}
+  // Create like blog
+  async postLikeBlog(req: Request, blogId: string) {
+    try {
+      const userId = req.user?.['userId'] as string;
+      if (!userId) throw new BadRequestException('User ID not found');
+      // 1. Tạo like mới (nếu chưa tồn tại)
+      const like = await this.likeModel.create({ userId, blogId });
+
+      // 2. Thêm like vào blog
+      await this.blogModel.findByIdAndUpdate(
+        blogId,
+        { $addToSet: { likes: like._id } },
+        { new: true },
+      );
+
+      return { message: 'Blog liked successfully' };
+    } catch (error) {
+      throw new BadRequestException('Error liking blog: ' + error.message);
+    }
+  }
+
+  async unlikeBlog(req: Request, blogId: string) {
+    const userId = req.user?.['userId'] as string;
+    // 1. Xóa like trong bảng Like
+    const like = await this.likeModel.findOneAndDelete({ userId, blogId });
+
+    // 2. Nếu like tồn tại, xóa reference trong blog
+    if (like) {
+      await this.blogModel.findByIdAndUpdate(blogId, {
+        $pull: { likes: like._id },
+      });
+    }
+
+    return { message: 'Blog unliked successfully' };
+  }
 
   // list all blogs
   async findAll(paginationDto: PaginationDto) {
