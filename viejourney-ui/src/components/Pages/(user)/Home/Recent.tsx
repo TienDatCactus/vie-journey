@@ -1,31 +1,47 @@
-import { Grid2, Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
-import React from "react";
+import { Grid2, Stack } from "@mui/material";
+import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import React, { useEffect, useState } from "react";
+import { getTripList } from "../../../../services/api/trip";
+import { ITrip } from "../../../../utils/interfaces/trip";
 import { RecentCard } from "./elements";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+
 const HomeRecent: React.FC = () => {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  const fakeData = [
-    {
-      places: 5,
-      title: "Trip to Paris",
-      from: "2023-01-01",
-      to: "2023-01-10",
-      img: "",
-    },
-    {
-      places: 3,
-      title: "Weekend in New York",
-      from: "2023-02-15",
-      to: "2023-02-18",
-      img: "",
-    },
-  ];
+  // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  // const open = Boolean(anchorEl);
+  // const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  //   setAnchorEl(event.currentTarget);
+  // };
+  // const handleClose = () => {
+  //   setAnchorEl(null);
+  // };
+  const [trips, setTrips] = useState<ITrip[]>([]);
+  useEffect(() => {
+    const fetchTrip = async () => {
+      const res = await getTripList();
+      if (res) {
+        const today = dayjs().startOf("day");
+        const sevenDaysAgo = today.subtract(7, "day");
+
+        const filtered = res.filter((trip) => {
+          const tripStart = dayjs(trip.startDate).startOf("day");
+          return (
+            tripStart.isSameOrAfter(sevenDaysAgo) &&
+            tripStart.isSameOrBefore(today)
+          );
+        });
+
+        // Lấy tối đa 2 chuyến đi thỏa điều kiện
+        setTrips(filtered.slice(0, 2));
+      }
+    };
+
+    fetchTrip();
+  }, []);
 
   return (
     <div className="max-w-[1200px] py-10 w-full">
@@ -39,29 +55,34 @@ const HomeRecent: React.FC = () => {
           Recently viewed and upcoming
         </h1>
         <div>
-          <ToggleButtonGroup exclusive>
+          {/* <ToggleButtonGroup exclusive>
             <ToggleButton value="left">Recently viewed</ToggleButton>
             <ToggleButton value="center">Upcoming</ToggleButton>
-          </ToggleButtonGroup>
+          </ToggleButtonGroup> */}
         </div>
       </Stack>
 
       <Grid2 container spacing={2}>
-        {!!fakeData.slice(0, 1).length &&
-          fakeData?.map((item, index) => (
-            <Grid2 size={4} key={index}>
-              <RecentCard
-                img={item?.img}
-                places={item?.places}
-                from={item?.from}
-                title={item?.title}
-                to={item?.to}
-                key={index}
-              />
-            </Grid2>
-          ))}
-        <Grid2 size={4}>
-          <RecentCard blank={true} />
+        {trips.map((item, index) => (
+          <Grid2 size={4} key={index}>
+            <RecentCard
+              img={""}
+              places={item?.destination.location.lat}
+              from={item?.startDate}
+              title={item?.title}
+              to={item?.endDate}
+            />
+          </Grid2>
+        ))}
+        <Grid2 size={trips.length > 0 ? 4 : 12}>
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            height="200px"
+            width="100%"
+          >
+            <RecentCard blank={true} />
+          </Stack>
         </Grid2>
       </Grid2>
     </div>

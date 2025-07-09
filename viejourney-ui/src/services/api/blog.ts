@@ -161,3 +161,13 @@ export const getBlogList = async () : Promise<IBlog[]> => {
   const res = await http.get(`${BLOG.BLOGS}/home`);
   return res.data.data.blogs;
 }
+
+export const clearFlag = async (id: string) => {
+  const res = await http.patch(`${BLOG.BLOGS}/${id}/flags`);
+  return res.data;
+} 
+
+export const createFlag = async (id: string, reason: string) => {
+  const res = await http.post(`${BLOG.BLOGS}/${id}/flag`, { reason });
+  return res.data;
+};

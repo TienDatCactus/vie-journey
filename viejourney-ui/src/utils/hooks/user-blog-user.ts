@@ -1,5 +1,8 @@
 // import { enqueueSnackbar } from "notistack";
+import { enqueueSnackbar } from "notistack";
 import {
+  clearFlag,
+  createFlag,
   editBlogDraft,
   editBlogPublic,
   getBlogDraft,
@@ -49,7 +52,7 @@ function useBlogUser() {
       console.log(error);
     }
   };
-   const handleEditPublicBlog = async (id: string, data: any) => {
+  const handleEditPublicBlog = async (id: string, data: any) => {
     try {
       const res = await editBlogPublic(id, data);
       if (res) return res;
@@ -83,15 +86,19 @@ function useBlogUser() {
     }
   };
 
-  
-  const handleGetBlogList = async () => {
+  const handleCreateFlag = async (id: string, reason: string) => {
     try {
-      const res = await getBlogList();
-      return res;
+      const res = await createFlag(id, reason);
+      if (res) {
+        enqueueSnackbar("Flagged blog successful", {
+          variant: "success",
+        });
+      }
     } catch (err) {
       console.log(err);
     }
   };
+
   return {
     handleStartBlog,
     handleGetBlogDetail,
@@ -101,7 +108,8 @@ function useBlogUser() {
     handleGetBlogUserDetail,
     handleGetBlogPublicDetail,
     handleEditPublicBlog,
-    getBlogList
+    getBlogList,
+    handleCreateFlag
   };
 }
 

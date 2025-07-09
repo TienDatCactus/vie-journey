@@ -19,7 +19,7 @@ const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
         <div className="relative  w-full overflow-hidden">
           <CardMedia
             component="img"
-            className="h-full w-full rounded-md"
+            className="h-[168px] w-full rounded-md"
             image={
               img ||
               `https://placehold.co/600x400/1a1a1a/ffffff?text=${title

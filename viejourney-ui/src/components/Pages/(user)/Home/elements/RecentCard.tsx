@@ -18,7 +18,7 @@ import {
 import { CalendarIcon } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
 import React from "react";
-import { useAuthStore } from "../../../../../services/stores/useAuthStore";
+
 interface RecentCardProps {
   places?: number;
   title?: string;
@@ -41,11 +41,16 @@ const RecentCard = ({
     mouseY: number;
   } | null>(null);
 
+  const handleClose = () => {
+    setContextMenu(null);
+  };
+
+
   if (blank) {
     return (
-      <Card className="h-full flex items-center border-2 border-dashed border-neutral-500 justify-center">
+      <Card className="h-full flex items-center border-2 border-dashed border-neutral-500 justify-center p-4">
         <CardActionArea
-          href="/trip/create"
+          href="/trips/create"
           className="flex flex-col gap-2 items-center justify-center w-full h-full"
         >
           <div className="w-fit p-2 rounded-full bg-dark-200">
@@ -55,18 +60,13 @@ const RecentCard = ({
           <p className="text-center text-dark-700">
             Create a new journey to your dream destination
           </p>
-          <a className="bg-white text-dark-900 mt-2 px-2 py-1 rounded-sm border-2 ">
+          <span className="bg-white text-dark-900 mt-2 px-2 py-1 rounded-sm border-2">
             Get started
-          </a>
+          </span>
         </CardActionArea>
       </Card>
     );
   }
-  const handleClose = () => {
-    setContextMenu(null);
-  };
-
-  const { user } = useAuthStore();
 
   return (
     <Card>
@@ -93,6 +93,7 @@ const RecentCard = ({
           <ListItemText>Share</ListItemText>
         </MenuItem>
       </Menu>
+
       <div className="relative">
         <CardMedia
           component="img"
@@ -118,6 +119,7 @@ const RecentCard = ({
         </Typography>
         <div className="mask-b-from-20% mask-b-to-80%" />
       </div>
+
       <CardContent className="p-2">
         <Stack
           direction={"row"}

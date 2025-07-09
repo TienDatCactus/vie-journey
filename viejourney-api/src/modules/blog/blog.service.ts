@@ -289,7 +289,7 @@ export class BlogService {
   }
 
   // /blogs/ban-author/:id
-  async banAuthor(blogId: string, reason: string) {
+ async banAuthor(blogId: string, reason: string) {
     try {
       const blog = await this.blogModel
         .findById(blogId)
@@ -302,47 +302,47 @@ export class BlogService {
           },
         })
         .exec();
+      console.log(blog);
       if (!blog) {
         throw new NotFoundException('Blog not found');
       }
-      if (
-        blog.createdBy &&
-        blog.createdBy.userId &&
-        (blog.createdBy.userId.role === 'ADMIN' ||
-          blog.createdBy.userId.role === 'MANAGER')
-      ) {
-        throw new NotFoundException('Cannot ban admin or manager author');
-      } else if (
-        blog.createdBy &&
-        blog.createdBy.userId &&
-        blog.createdBy.userId.role === 'USER'
-      ) {
-        // Fetch the Account document to ensure 'save' is available
-        const account = await this.accountModel.findById(
-          blog.createdBy.userId._id,
-        );
-        if (account) {
-          account.status = Status.banned;
-          await account.save();
-        }
-        const userInfo = await this.userInfosModel.findById(blog.createdBy._id);
-        if (userInfo) {
-          userInfo.banReason = reason;
-          userInfo.bannedAt = new Date();
-          await userInfo.save();
-        }
-        return {
-          _id: blog._id,
-          reasonBan: userInfo ? userInfo.banReason : blog.createdBy.banReason,
-          bannedAt: userInfo ? userInfo.bannedAt : blog.createdBy.bannedAt,
-          status: account ? account.status : blog.createdBy.userId.status,
-        };
+      // if (
+      //   blog.createdBy &&
+      //   blog.createdBy.userId &&
+      //   (blog.createdBy.userId.role === 'ADMIN' ||
+      //     blog.createdBy.userId.role === 'MANAGER')
+      // ) {
+      //   throw new NotFoundException('Cannot ban admin or manager author');
+      // } else if (
+      //   blog.createdBy &&
+      //   blog.createdBy.userId &&
+      //   blog.createdBy.userId.role === 'USER'
+      // ) {
+      // Fetch the Account document to ensure 'save' is available
+      const account = await this.accountModel.findById(
+        blog.createdBy.userId._id,
+      );
+      console.log('Account found:', account);
+      if (account) {
+        account.status = Status.banned;
+        await account.save();
       }
+      const userInfo = await this.userInfosModel.findById(blog.createdBy._id);
+      if (userInfo) {
+        userInfo.banReason = reason;
+        userInfo.bannedAt = new Date();
+        await userInfo.save();
+      }
+      return {
+        _id: blog._id,
+        reasonBan: userInfo ? userInfo.banReason : blog.createdBy.banReason,
+        bannedAt: userInfo ? userInfo.bannedAt : blog.createdBy.bannedAt,
+        status: account ? account.status : blog.createdBy.userId.status,
+      };
     } catch (error) {
-      throw new NotFoundException('Blog not found');
+      throw new NotFoundException('Blog error');
     }
   }
-
   // delete blog by id
   async deleteBlogById(blogId: string) {
     const blog = await this.blogModel.findById(blogId).exec();

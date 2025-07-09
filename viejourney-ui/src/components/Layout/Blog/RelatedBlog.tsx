@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useBlogUser from "../../../utils/hooks/user-blog-user";
 import { IBlog } from "../../../utils/interfaces/blog";
-import { useNavigate } from "react-router-dom";
 
 const RelatedBlog = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
