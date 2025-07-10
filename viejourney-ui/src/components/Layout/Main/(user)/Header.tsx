@@ -84,8 +84,13 @@ const Header = () => {
             alignItems={"center"}
             gap={1}
           >
-            <TravelExploreIcon />
-            <h1 className="text-[20px]">VieJourney</h1>
+            <Link
+              to={"/"}
+              className="flex items-center gap-2 hover:scale-110 transition-all duration-200 ease-in-out"
+            >
+              <TravelExploreIcon />
+              <h1 className="text-[20px]">VieJourney</h1>
+            </Link>
             <Stack direction={"row"} gap={2} className="h-full mx-4 ">
               {!!headerNav.length &&
                 headerNav?.map((nav, index) => (
@@ -185,7 +190,7 @@ const Header = () => {
                 <Avatar /> My account
               </MenuItem>
               <MenuItem>
-                <Link to={"/12"} style={{display: "flex"}}>
+                <Link to={"/12"} style={{ display: "flex" }}>
                   <Avatar />
                   My blog
                 </Link>

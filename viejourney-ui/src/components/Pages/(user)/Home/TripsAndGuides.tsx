@@ -1,32 +1,17 @@
 import { Add } from "@mui/icons-material";
 import { Button, Divider, Grid2, Paper, Stack } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { GuideTag, TripTag } from "./elements";
+import dayjs from "dayjs";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import useBlogUser from "../../../../utils/hooks/user-blog-user";
+import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 import { IBlog } from "../../../../utils/interfaces/blog";
-import { ITrip } from "../../../../utils/interfaces/trip";
-import { getTripList } from "../../../../services/api/trip";
-const HomeTrips: React.FC = () => {
-  const [blogs, setBlogs] = useState<IBlog[]>();
-  const [trips, setTrips] = useState<ITrip[]>();
-
-  const { getBlogList } = useBlogUser();
+import { GuideTag, TripTag } from "./elements";
+const HomeTrips: React.FC<{
+  blogs?: IBlog[];
+}> = ({ blogs }) => {
+  const { trips } = useTripDetailStore();
 
   const navigate = useNavigate();
-  const fetchBlog = async () => {
-    const res = await getBlogList();
-    if (res) setBlogs(res);
-  };
-
-  const fetchTrip = async () => {
-    const res = await getTripList();
-    if (res) setTrips(res);
-  };
-  useEffect(() => {
-    fetchBlog();
-    fetchTrip();
-  }, []);
   return (
     <div className="w-full max-w-[1200px] pb-10">
       <Grid2 container spacing={2}>
@@ -49,14 +34,14 @@ const HomeTrips: React.FC = () => {
               </Link>
             </Stack>
             <Stack className="my-2 mt-4">
-              {trips && trips.length > 0 ? (
+              {!!trips && trips?.length > 0 ? (
                 trips.slice(0, 2).map((item, index) => (
                   <Stack key={index}>
                     <TripTag
                       img={""}
                       title={item?.title}
-                      from={item?.startDate}
-                      to={item?.startDate}
+                      from={dayjs(item?.startDate).format("MMM D, YYYY")}
+                      to={dayjs(item?.endDate).format("MMM D, YYYY")}
                     />
                     {index < trips.length - 1 && (
                       <Divider className="border-[--color-neutral-400] border my-4" />
@@ -75,7 +60,7 @@ const HomeTrips: React.FC = () => {
 
             <div className="flex justify-end">
               <Button variant="text" className="p-0 hover:underline">
-                See all
+                <Link to={"/profile"}> See all</Link>
               </Button>
             </div>
           </Paper>
@@ -130,7 +115,7 @@ const HomeTrips: React.FC = () => {
                 variant="text"
                 className="p-0 hover:underline"
               >
-                See all
+                <Link to={"/profile"}> See all</Link>
               </Button>
             </div>
           </Paper>

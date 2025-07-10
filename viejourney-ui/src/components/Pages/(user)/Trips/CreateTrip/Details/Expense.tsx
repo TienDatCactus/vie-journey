@@ -31,28 +31,38 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   FormControl,
+  Grid2,
   IconButton,
   InputAdornment,
   InputLabel,
+  List,
+  ListItem,
   ListItemIcon,
   ListItemText,
   MenuItem,
+  Paper,
   Select,
   Stack,
   TextField,
   Tooltip,
+  Typography,
 } from "@mui/material";
+import { BarChart } from "@mui/x-charts/BarChart";
+import { pieArcLabelClasses, PieChart } from "@mui/x-charts/PieChart";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
 import React, { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { doInviteTripMate } from "../../../../../../services/api";
 import { useSocket } from "../../../../../../services/context/socketContext";
 import { Expense } from "../../../../../../services/stores/storeInterfaces";
 import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
-import { formatCurrency } from "../../../../../../utils/handlers/utils";
-import { doInviteTripMate } from "../../../../../../services/api";
+import {
+  calculateSettlements,
+  formatCurrency,
+} from "../../../../../../utils/handlers/utils";
+import { useExpenseInsights } from "../../../../../../utils/hooks/useExpenseInsights";
 
 const expenseColumns: GridColDef[] = [
   {
@@ -574,8 +584,10 @@ const EditExpenseDialog: React.FC<{
     </React.Fragment>
   );
 };
+
 const InsightsDialog = () => {
   const [open, setOpen] = React.useState(false);
+  const { expenses, totalBudget } = useTripDetailStore();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -585,40 +597,301 @@ const InsightsDialog = () => {
     setOpen(false);
   };
 
+  const {
+    totalSpent,
+    budgetRemaining,
+    budgetData,
+    expenseByType,
+    expensesByPerson,
+    topCategories,
+  } = useExpenseInsights(expenses, totalBudget);
+
   return (
     <React.Fragment>
       <Button
         className="justify-start"
         onClick={handleClickOpen}
-        startIcon={<Insights className="text-2xl " />}
+        startIcon={<Insights className="text-2xl" />}
       >
-        <h1 className="text-base font-semibold ">Insights</h1>
+        <h1 className="text-base font-semibold">Insights</h1>
       </Button>
       <Dialog
         open={open}
         onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+        fullWidth
+        maxWidth="md"
+        aria-labelledby="expense-insights-dialog-title"
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Use Google's location service?"}
+        <DialogTitle
+          id="expense-insights-dialog-title"
+          className="flex items-center justify-between"
+        >
+          <Typography variant="h5" component="span" fontWeight={600}>
+            Expense Insights
+          </Typography>
+          <IconButton onClick={handleClose} size="small">
+            <Close />
+          </IconButton>
         </DialogTitle>
+
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Let Google help apps determine location. This means sending
-            anonymous location data to Google, even when no apps are running.
-          </DialogContentText>
+          {expenses.length === 0 ? (
+            <Box className="py-12 text-center">
+              <ReceiptLong fontSize="large" className="text-gray-400 mb-2" />
+              <Typography variant="h6">No expenses added yet</Typography>
+              <Typography variant="body2" color="textSecondary">
+                Add some expenses to see insights
+              </Typography>
+            </Box>
+          ) : (
+            <Box className="space-y-8">
+              {/* Budget Overview Card */}
+              <Paper elevation={0} className="p-4 rounded-xl bg-gray-50">
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  gutterBottom
+                  fontWeight={600}
+                >
+                  Budget Overview
+                </Typography>
+                <Grid2 container spacing={2}>
+                  {/* Budget Meter */}
+                  <Grid2
+                    size={{
+                      xs: 12,
+                      md: 6,
+                    }}
+                  >
+                    <Box sx={{ height: 200 }}>
+                      <PieChart
+                        series={[
+                          {
+                            arcLabel: (item) =>
+                              `${((item.value / totalBudget) * 100).toFixed(
+                                0
+                              )}%`,
+                            arcLabelMinAngle: 45,
+                            data: budgetData,
+                            highlightScope: {
+                              fade: "global",
+                              highlight: "item",
+                            },
+                            valueFormatter: (data) =>
+                              formatCurrency(data?.value, "en-US"),
+                            faded: {
+                              innerRadius: 30,
+                              additionalRadius: -30,
+                              color: "gray",
+                            },
+                          },
+                        ]}
+                        sx={{
+                          [`& .${pieArcLabelClasses.root}`]: {
+                            fill: "white",
+                            fontWeight: "bold",
+                          },
+                        }}
+                        height={200}
+                      />
+                    </Box>
+                  </Grid2>
+
+                  {/* Budget Details */}
+                  <Grid2
+                    size={{
+                      xs: 12,
+                      md: 6,
+                    }}
+                    className="flex flex-col justify-center"
+                  >
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Total Budget
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        className="font-bold text-green-700"
+                      >
+                        {formatCurrency(totalBudget, "en-US")}
+                      </Typography>
+
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Total Spent
+                        </Typography>
+                        <Typography
+                          variant="h5"
+                          className={
+                            totalSpent > totalBudget
+                              ? "text-red-600 font-semibold"
+                              : "text-gray-800 font-semibold"
+                          }
+                        >
+                          {formatCurrency(totalSpent, "en-US")}
+                          {totalSpent > totalBudget && (
+                            <span className="text-xs ml-2">
+                              (
+                              {((totalSpent / totalBudget - 1) * 100).toFixed(
+                                0
+                              )}
+                              % over budget)
+                            </span>
+                          )}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Remaining
+                        </Typography>
+                        <Typography
+                          variant="h5"
+                          className="font-semibold"
+                          sx={{ color: budgetRemaining > 0 ? "green" : "red" }}
+                        >
+                          {formatCurrency(budgetRemaining, "en-US")}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid2>
+                </Grid2>
+              </Paper>
+
+              {/* Spending by Category */}
+              <Paper elevation={0} className="p-4 rounded-xl bg-gray-50">
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  gutterBottom
+                  fontWeight={600}
+                >
+                  Spending by Category
+                </Typography>
+                <Grid2 container spacing={2}>
+                  {/* Pie Chart */}
+                  <Grid2 size={{ xs: 12, md: 8 }}>
+                    <Box sx={{ height: 300 }}>
+                      <PieChart
+                        series={[
+                          {
+                            data: expenseByType,
+                            valueFormatter: (data) =>
+                              formatCurrency(data.value, "en-US"),
+                            highlightScope: {
+                              fade: "global",
+                              highlight: "item",
+                            },
+                            faded: {
+                              innerRadius: 30,
+                              additionalRadius: -30,
+                              color: "gray",
+                            },
+                          },
+                        ]}
+                        height={300}
+                        hideLegend={false}
+                      />
+                    </Box>
+                  </Grid2>
+
+                  {/* Top Categories */}
+                  <Grid2 size={{ xs: 12, md: 4 }}>
+                    <Box className="h-full flex flex-col justify-center">
+                      <Typography
+                        variant="subtitle2"
+                        gutterBottom
+                        fontWeight={600}
+                      >
+                        Top Categories
+                      </Typography>
+                      <List dense disablePadding>
+                        {topCategories.map((category) => (
+                          <ListItem
+                            key={category.id}
+                            disableGutters
+                            className="px-0"
+                          >
+                            <ListItemText
+                              primary={
+                                <Box className="flex items-center gap-2">
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      width: 12,
+                                      height: 12,
+                                      borderRadius: "50%",
+                                      bgcolor: category.color,
+                                    }}
+                                  />
+                                  <Typography variant="body2">
+                                    {category.id}
+                                  </Typography>
+                                </Box>
+                              }
+                              secondary={formatCurrency(
+                                category.value,
+                                "en-US"
+                              )}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              {((category.value / totalSpent) * 100).toFixed(1)}
+                              %
+                            </Typography>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Box>
+                  </Grid2>
+                </Grid2>
+              </Paper>
+
+              {/* Who Paid What */}
+              <Paper elevation={0} className="p-4 rounded-xl bg-gray-50">
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  gutterBottom
+                  fontWeight={600}
+                >
+                  Who Paid What
+                </Typography>
+                <Box sx={{ height: 300 }}>
+                  <BarChart
+                    dataset={expensesByPerson}
+                    xAxis={[
+                      {
+                        data: expensesByPerson.map((item) => item.name),
+                      },
+                    ]}
+                    series={[
+                      {
+                        dataKey: "amount",
+                        label: "Amount Paid",
+                        valueFormatter: (value) =>
+                          formatCurrency(value || 0, "en-US"),
+                      },
+                    ]}
+                    height={300}
+                    margin={{ bottom: 70, left: 70, right: 20 }}
+                    hideLegend={true}
+                  />
+                </Box>
+              </Paper>
+            </Box>
+          )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
-          <Button onClick={handleClose} autoFocus>
-            Agree
+
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={handleClose} variant="contained" color="primary">
+            Close
           </Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
   );
 };
+
 const AddTripmateDialog = () => {
   const trip = useTripDetailStore((state) => state.trip);
   const { addTripmate } = useTripDetailStore();
@@ -880,6 +1153,7 @@ const ExpenseSection: React.FC = () => {
   const [percent, setPercent] = React.useState<number>(0);
   useEffect(() => {
     if (totalBudget) {
+      console.log(totalBudget);
       const percent = totalBudget ? (currentUsage / totalBudget) * 100 : 0;
       setPercent(percent);
     }

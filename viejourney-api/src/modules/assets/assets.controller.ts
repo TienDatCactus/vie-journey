@@ -6,12 +6,12 @@ import {
   Get,
   Post,
   Query,
-  Req,
   UploadedFile,
   UploadedFiles,
-  BadRequestException,
   HttpStatus,
   UseGuards,
+  UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { AssetsService } from './assets.service';
@@ -19,6 +19,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Request } from 'express';
 
 @Controller('assets')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -104,7 +105,6 @@ export class AssetsController {
   ) {
     return this.assetsService.addAssetSystem(file, req, type, subsection);
   }
-
   @Post('image')
   @UseInterceptors(
     FileInterceptor('file', {

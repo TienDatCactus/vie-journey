@@ -142,36 +142,6 @@ const router = createBrowserRouter([
     ],
     errorElement: <ErrorBoundary />,
   },
-  {
-    path: "/blogs",
-    element: (
-      <AuthLayout>
-        <Outlet />
-      </AuthLayout>
-    ),
-    children: [
-      {
-        path: "",
-        element: <SuspenseWrapper component={BlogList} />,
-        errorElement: <ErrorBoundary />,
-      },
-      {
-        path: ":id",
-        element: <SuspenseWrapper component={BlogDetail} />,
-        errorElement: <ErrorBoundary />,
-      },
-      {
-        path: ":id/edit",
-        element: <SuspenseWrapper component={BlogDetail} />,
-        errorElement: <ErrorBoundary />,
-      },
-      {
-        path: "create",
-        element: <SuspenseWrapper component={CreateBlog} />,
-        errorElement: <ErrorBoundary />,
-      },
-    ],
-  },
 
   {
     path: "/hotels",

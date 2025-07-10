@@ -19,14 +19,7 @@ import { UpdateTripDto } from 'src/common/dtos/update-trip.dto';
 @UseGuards(JwtAuthGuard)
 export class TripController {
   constructor(private readonly tripService: TripService) {}
-  @Get()
-  findAllByUser(@Req() req: Request) {
-    const userId = req?.user?.['userId'];
-    if (!userId) {
-      throw new Error('User ID not found in request');
-    }
-    return this.tripService.findByUser(userId);
-  }
+
   @Post('invite')
   async inviteToTrip(@Body() req: { tripId: string; email: string }) {
     return await this.tripService.inviteToTrip(req.tripId, req.email);
@@ -41,9 +34,9 @@ export class TripController {
     return await this.tripService.addToTrip(id, req.token);
   }
 
-  @Post('by-user')
+  @Get('/by-user')
   findByUser(@Req() req: Request) {
-    return this.tripService.findByUser(req.user?.['userId']);
+    return this.tripService.findByUser(req.user?.['email'] as string);
   }
   @Get(':id')
   findOne(@Param('id') id: string) {

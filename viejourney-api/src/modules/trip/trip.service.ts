@@ -84,10 +84,10 @@ export class TripService {
     }
   }
 
-  async findByUser(userId: string) {
+  async findByUser(email: string) {
     try {
       const trips = await this.tripModel.find().where({
-        userId: userId,
+        tripmates: { $in: [email] },
       });
       if (!trips || trips.length === 0) {
         throw new HttpException(

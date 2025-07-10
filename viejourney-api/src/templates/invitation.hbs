@@ -3,7 +3,7 @@
   cellpadding='0'
   cellspacing='0'
   border='0'
-  style='background-color: #f7fafc; padding: 0; margin: 0; font-family: Arial, Helvetica, sans-serif;'
+  style='background-color: #f7fafc; font-family: Arial, sans-serif;'
 >
   <tr>
     <td align='center'>
@@ -12,128 +12,61 @@
         cellpadding='0'
         cellspacing='0'
         border='0'
-        style='background-color: #ffffff; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);'
+        style='background-color: #ffffff;'
       >
         <tr>
-          <td align='center'>
-            <h1
-              style='font-size: 24px; font-weight: 700; color: #ffffff; margin: 0;'
-            >You're Invited!</h1>
-            <p style='color: #dbeafe; margin: 8px 0 0;'>Pack your bags for an
-              amazing adventure</p>
+          <td align='center' style='background-color: #3b82f6; padding: 20px;'>
+            <h1 style='font-size: 20px; color: #ffffff; margin: 0;'>You're
+              Invited!</h1>
+            <p style='color: #dbeafe; margin: 8px 0 0;'>Join an amazing
+              adventure</p>
           </td>
         </tr>
-
-        <!-- Body -->
         <tr>
-          <td style='padding: 24px;'>
-            <p style='color: #374151; margin: 0 0 24px;'>Hello there,</p>
-
-            <p style='color: #374151; margin: 0 0 24px;'>
-              You've been invited to join an exciting trip to
-              <strong style='color: #2563eb;'>{{destination}}</strong>! We'd
-              love for you to be part of this unforgettable experience.
+          <td style='padding: 20px;'>
+            <p style='margin: 0 0 16px;'>Hello there,</p>
+            <p style='margin: 0 0 16px;'>
+              You've been invited to join a trip to
+              <strong>{{destination}}</strong>!
             </p>
-
-            <!-- Trip Details -->
             <table
               width='100%'
               cellpadding='0'
               cellspacing='0'
               border='0'
-              style='background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 24px;'
+              style='border: 1px solid #e5e7eb; background: #f9fafb; margin-bottom: 16px;'
             >
               <tr>
-                <td style='padding: 16px;'>
-                  <table
-                    width='100%'
-                    cellpadding='0'
-                    cellspacing='0'
-                    border='0'
-                  >
-                    <tr>
-                      <td
-                        width='24'
-                        valign='middle'
-                        style='padding-right: 8px;'
-                      >📍</td>
-                      <td valign='middle'>
-                        <h3
-                          style='font-size: 16px; font-weight: 600; color: #1f2937; margin: 0;'
-                        >Trip Details</h3>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        colspan='2'
-                        style='color: #4b5563; padding-top: 12px;'
-                      >
-                        Destination:
-                        <strong>{{destination}}</strong>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colspan='2' style='color: #4b5563; padding-top: 4px;'>
-                        Status:
-                        <span
-                          style='font-weight: 500; color: #059669;'
-                        >Invitation Pending</span>
-                      </td>
-                    </tr>
-                  </table>
+                <td style='padding: 12px;'>
+                  <p style='margin: 0 0 8px;'>📍
+                    <strong>Trip Details</strong></p>
+                  <p style='margin: 0;'>Destination:
+                    <strong>{{destination}}</strong></p>
+                  <p style='margin: 4px 0 0;'>Status:
+                    <span style='color: #059669;'>Invitation Pending</span></p>
                 </td>
               </tr>
             </table>
-
-            <!-- CTA Button -->
-            <table
-              width='100%'
-              cellpadding='0'
-              cellspacing='0'
-              border='0'
-              style='margin-bottom: 24px;'
-            >
-              <tr>
-                <td align='center'>
-                  <a
-                    href='{{joinLink}}'
-                    style='display: inline-block; background-color: #2563eb; color: white; font-weight: 500; padding: 12px 24px; border-radius: 8px; text-decoration: none;'
-                  >Accept Invitation</a>
-                </td>
-              </tr>
-            </table>
-
-            <!-- Fallback Text -->
-            <p style='color: #6b7280; font-size: 14px; margin: 0 0 24px;'>
-              Can't see the button? Copy and paste this link into your browser:<br
-              />
-              <span
-                style='color: #3b82f6; word-break: break-word;'
-              >{{joinLink}}</span>
+            <p style='text-align: center; margin: 0 0 16px;'>
+              <a
+                href='{{joinLink}}'
+                style='display: inline-block; background: #2563eb; color: #fff; padding: 10px 20px; text-decoration: none;'
+              >Accept Invitation</a>
             </p>
-
-            <!-- Footer -->
-            <table
-              width='100%'
-              cellpadding='0'
-              cellspacing='0'
-              border='0'
-              style='border-top: 1px solid #e5e7eb; padding-top: 24px;'
-            >
-              <tr>
-                <td>
-                  <p style='color: #6b7280; font-size: 14px; margin: 0;'>
-                    This invitation was sent by a friend using Vie-Journey. If
-                    you believe you received this by mistake, please ignore this
-                    email.
-                  </p>
-                  <p style='color: #9ca3af; font-size: 12px; margin-top: 16px;'>
-                    © 2023 Vie-Journey. All rights reserved.
-                  </p>
-                </td>
-              </tr>
-            </table>
-
+            <p style='font-size: 12px; color: #6b7280; margin: 0 0 16px;'>
+              Or open this link in your browser:<br />
+              <span style='color: #2563eb;'>{{joinLink}}</span>
+            </p>
+            <hr
+              style='border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;'
+            />
+            <p style='font-size: 12px; color: #6b7280; margin: 0;'>
+              This invitation was sent via Vie-Journey. If you received this in
+              error, please ignore it.
+            </p>
+            <p style='font-size: 11px; color: #9ca3af; margin-top: 12px;'>
+              © 2023 Vie-Journey. All rights reserved.
+            </p>
           </td>
         </tr>
       </table>

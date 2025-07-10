@@ -1,20 +1,11 @@
 import { Grid2 } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { ExploreCard } from "./elements";
+import React from "react";
 import { IBlog } from "../../../../utils/interfaces/blog";
-import useBlogUser from "../../../../utils/hooks/user-blog-user";
+import { ExploreCard } from "./elements";
 
-const HomeExplore: React.FC = () => {
-  const [blogs, setBlogs] = useState<IBlog[]>();
-  const { getBlogList } = useBlogUser();
-
-  const fetchBlog = async () => {
-    const res = await getBlogList();
-    if (res) setBlogs(res);
-  };
-  useEffect(() => {
-    fetchBlog();
-  }, []);
+const HomeExplore: React.FC<{
+  blogs?: IBlog[];
+}> = ({ blogs }) => {
   return (
     <div className="max-w-[75rem] w-full pb-10">
       <div>

@@ -5,7 +5,6 @@ import ShareIcon from "@mui/icons-material/Share";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import useBlogUser from "../../../utils/hooks/user-blog-user";
 import { IBlogDetail } from "../../../utils/interfaces/blog";
 import BlogAppBar from "./BlogAppBar";
 import RelatedBlog from "./RelatedBlog";
@@ -18,17 +17,20 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
+import { useUserBlog } from "../../../services/stores/useUserBlog";
 const SideHeader: React.FC<{ id: string }> = ({ id }) => {
   const [blog, setBlog] = useState<IBlogDetail>();
   const [flagDialogOpen, setFlagDialogOpen] = useState(false);
   const [flagReason, setFlagReason] = useState("");
-  const { handleGetBlogUserDetail, handleCreateFlag } = useBlogUser();
-
-  const fetchBlog = async () => {
-    const res = await handleGetBlogUserDetail(id);
-    if (res) setBlog(res);
-  };
-
+  const { handleGetBlogUserDetail, handleCreateFlag } = useUserBlog();
+  useEffect(() => {
+    (async () => {
+      const data = await handleGetBlogUserDetail(id);
+      if (data) {
+        setBlog(data);
+      }
+    })();
+  }, []);
   const handleFlagClick = () => {
     setFlagDialogOpen(true);
   };
@@ -44,9 +46,6 @@ const SideHeader: React.FC<{ id: string }> = ({ id }) => {
       handleFlagDialogClose();
     }
   };
-  useEffect(() => {
-    fetchBlog();
-  }, [id]);
 
   return (
     <div className="mt-0 py-0 h-full relative shadow-lg">

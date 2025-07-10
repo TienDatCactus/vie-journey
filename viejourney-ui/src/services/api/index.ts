@@ -17,6 +17,7 @@ import {
 } from "./dto";
 import { setToken } from "./token";
 import { AUTH, TRIP, USER } from "./url";
+import { ITrip } from "../../utils/interfaces/trip";
 
 export const doLogin = async (data: LoginReqDTO) => {
   try {
@@ -225,4 +226,32 @@ export const doInviteTripMate = async (tripId: string, email: string) => {
     enqueueSnackbar("Failed to invite trip mate", { variant: "error" });
   }
   return false;
+};
+
+export const doGetTripList = async (): Promise<ITrip[]> => {
+  try {
+    const res = await http.get(`${TRIP.GET_TRIP}`);
+    if (!res || !res.data) {
+      console.error("No data received from getTripList");
+      return [];
+    }
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+export const doGetUserTripList = async (): Promise<ITrip[]> => {
+  try {
+    const res = await http.get(`${TRIP.GET_USER_TRIP}`);
+    if (!res || !res.data) {
+      console.error("No data received from getUserTripList");
+      return [];
+    }
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };

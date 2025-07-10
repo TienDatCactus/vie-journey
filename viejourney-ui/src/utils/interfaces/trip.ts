@@ -1,22 +1,19 @@
 export interface ITrip {
-  _id?: string;
+  _id: string;
   title: string;
   destination: {
-    id: string;
-    name: string;
+    id: string; // Google Place ID or custom ID
+    name: string; // Name of the destination
     location: {
-      lat: number;
-      lng: number;
+      lat: number; // Latitude of the destination
+      lng: number; // Longitude of the destination
     };
   };
-  startDate: string;
-  endDate: string;
+  startDate: Date;
+  endDate: Date;
   budgetRange?: string;
   tripmateRange?: string;
-  description?: string;
-  createdBy: string;
-  visibility?: boolean;
-  tripmates?: string[];
-  createdAt?: string;
-  updatedAt?: string;
+  tripmates: string[];
+  description: string;
+  visibility: boolean;
 }

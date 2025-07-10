@@ -18,9 +18,11 @@ import {
 import { CalendarIcon } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
 import React from "react";
+import { Link } from "react-router-dom";
 
 interface RecentCardProps {
-  places?: number;
+  tripId?: string;
+  place?: string;
   title?: string;
   from?: string;
   to?: string;
@@ -29,8 +31,9 @@ interface RecentCardProps {
 }
 
 const RecentCard = ({
+  tripId,
   title,
-  places,
+  place,
   to,
   from,
   img,
@@ -45,10 +48,9 @@ const RecentCard = ({
     setContextMenu(null);
   };
 
-
   if (blank) {
     return (
-      <Card className="h-full flex items-center border-2 border-dashed border-neutral-500 justify-center p-4">
+      <Card className="h-full flex items-center border-2  border-dashed border-neutral-500 justify-center p-4">
         <CardActionArea
           href="/trips/create"
           className="flex flex-col gap-2 items-center justify-center w-full h-full"
@@ -137,13 +139,18 @@ const RecentCard = ({
             <Stack direction={"row"} alignItems={"center"} spacing={1}>
               <Place className="text-neutral-600" />
               <Typography variant="body2" color="text.secondary">
-                {places} places
+                {place}
               </Typography>
             </Stack>
           </Stack>
-          <Button className="text-dark-900 bg-neutral-50" variant="contained">
-            View details
-          </Button>
+          <Link to={`/trips/edit/${tripId}`}>
+            <Button
+              className="text-dark-900 bg-neutral-300 shadow-none"
+              variant="contained"
+            >
+              View details
+            </Button>
+          </Link>
         </Stack>
       </CardContent>
     </Card>
