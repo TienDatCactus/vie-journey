@@ -9,18 +9,20 @@ import {
   Req,
   UploadedFile,
   UploadedFiles,
+  BadRequestException,
+  HttpStatus,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { AssetsService } from './assets.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/role.guard';
-import { Request } from 'express';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @Controller('assets')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.Manager)
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 

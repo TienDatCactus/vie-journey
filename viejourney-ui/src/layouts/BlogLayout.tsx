@@ -11,8 +11,6 @@ const BlogLayout: React.FC<{ children: React.ReactNode; id: string }> = ({
       sx={{
         width: "100%",
         maxWidth: "1000px",
-        maxHeight: "100vh",
-        flexWrap: "nowrap",
       }}
       p={"0px 0"}
       spacing={1}

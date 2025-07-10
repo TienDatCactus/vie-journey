@@ -55,8 +55,7 @@ interface AuthState {
   ) => Promise<AuthResponse>;
 
   // Initialization
-  loadUserFromToken: () => Promise<void>;
-  loadUserInfo: () => Promise<void>;
+  loadCurrentUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -246,44 +245,31 @@ export const useAuthStore = create<AuthState>()(
           }
         },
 
-        loadUserFromToken: async () => {
-          const cred = get().credential;
-          if (!cred?.token || get().user) return;
-
+        loadCurrentUser: async () => {
+          const { credential, user } = get();
+          if (!credential?.token || user) return;
           try {
             set({ isLoading: true });
-            if (cred.userId) {
-              const user = await doGetUser({ userId: cred.userId });
-              set({ user });
-            } else {
-              const resp = await doValidateAccessToken(cred.token);
-              if (resp?.userId) {
-                const user = await doGetUser({ userId: resp.userId });
-                set({ user });
-              } else {
+
+            let userId = credential.userId;
+            if (!userId) {
+              const resp = await doValidateAccessToken(credential.token);
+              if (!resp?.userId) {
                 set({ credential: null });
+                return;
               }
+              userId = resp.userId;
             }
-          } catch (error) {
-            console.error("Token validation failed:", error);
-            set({ credential: null });
-          } finally {
-            set({ isLoading: false });
-          }
-        },
-        loadUserInfo: async () => {
-          const cred = get().credential;
-          if (!cred?.userId) return;
 
-          try {
-            set({ isLoading: true });
-            const info = await doGetUserInfo(cred.userId);
-            if (!info) {
-              return;
-            }
-            set({ info });
-          } catch (error) {
-            console.error("Fetch user info error:", error);
+            const [user, info] = await Promise.all([
+              doGetUser({ userId }),
+              doGetUserInfo(userId),
+            ]);
+
+            set({ user, info });
+          } catch (err) {
+            console.error("loadCurrentUser failed:", err);
+            set({ credential: null });
           } finally {
             set({ isLoading: false });
           }

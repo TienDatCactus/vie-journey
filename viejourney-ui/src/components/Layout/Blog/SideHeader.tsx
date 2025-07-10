@@ -49,7 +49,7 @@ const SideHeader: React.FC<{ id: string }> = ({ id }) => {
   }, [id]);
 
   return (
-    <div className="mt-0 py-0 relative shadow-lg">
+    <div className="mt-0 py-0 h-full relative shadow-lg">
       <BlogAppBar />
       <div className="relative">
         <img
@@ -58,7 +58,7 @@ const SideHeader: React.FC<{ id: string }> = ({ id }) => {
             "https://upload.wikimedia.org/wikipedia/commons/1/1e/San_Francisco_from_the_Marin_Headlands_in_March_2019.jpg"
           }
           alt="blog-image"
-          className="w-full h-auto "
+          className="w-full h-auto object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
         <Link

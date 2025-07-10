@@ -28,6 +28,7 @@ import { ACCOUNTS } from "../../../services/api/url";
 import { Link } from "react-router-dom";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditAccountDialog from "./EditAccountDialog";
+import http from "../../../services/axios";
 
 function stringAvatar(name: string) {
   if (!name) return "";
@@ -157,10 +158,10 @@ function Accounts() {
           ACCOUNTS.FILTER_USERS +
           `?${queryParams.toString()}`;
 
-        res = await axios.get(url, { withCredentials: true });
+        res = await http.get(url, { withCredentials: true });
       } else {
         // Use regular GET API when no filters
-        res = await axios.get(
+        res = await http.get(
           import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS,
           { withCredentials: true }
         );
@@ -618,7 +619,7 @@ function Accounts() {
               disableColumnResize
               sx={{
                 "& .MuiDataGrid-cell": {
-                  borderBottom: "1px solid #f0f0f0",
+                  borderBottom: "0.0625rem solid #f0f0f0",
                   display: "flex",
                   alignItems: "center",
                 },

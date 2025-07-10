@@ -183,7 +183,7 @@ const CreateBlog: React.FC = () => {
             </Button>
 
             <Button
-              onClick={() => navigate("/trip/create")}
+              onClick={() => navigate("/trips/create")}
               startIcon={<AddLocationAlt />}
             >
               Plan a trip instead

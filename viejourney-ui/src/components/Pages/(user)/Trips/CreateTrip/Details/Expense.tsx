@@ -2,6 +2,7 @@ import {
   AttachMoney,
   BorderColor,
   CameraAlt,
+  Close,
   Delete,
   Description,
   DirectionsCar,
@@ -26,6 +27,7 @@ import {
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -44,12 +46,13 @@ import {
   Tooltip,
 } from "@mui/material";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { useSocket } from "../../../../../../services/context/socketContext";
 import { Expense } from "../../../../../../services/stores/storeInterfaces";
 import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
 import { formatCurrency } from "../../../../../../utils/handlers/utils";
+import { doInviteTripMate } from "../../../../../../services/api";
 
 const expenseColumns: GridColDef[] = [
   {
@@ -617,8 +620,10 @@ const InsightsDialog = () => {
   );
 };
 const AddTripmateDialog = () => {
-  const [open, setOpen] = React.useState(false);
-
+  const trip = useTripDetailStore((state) => state.trip);
+  const { addTripmate } = useTripDetailStore();
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -626,7 +631,29 @@ const AddTripmateDialog = () => {
   const handleClose = () => {
     setOpen(false);
   };
-
+  const {
+    formState: { errors },
+    register,
+    handleSubmit,
+  } = useForm<{
+    email: string;
+  }>();
+  const onSubmit: SubmitHandler<{ email: string }> = async (data) => {
+    const tripmateEmail = data.email.trim().toLowerCase();
+    try {
+      setLoading(true);
+      const resp = await doInviteTripMate(trip._id, tripmateEmail);
+      if (resp == true) {
+        addTripmate(tripmateEmail);
+        console.log("Invitation sent successfully");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+    handleClose();
+  };
   return (
     <React.Fragment>
       <Button
@@ -642,19 +669,68 @@ const AddTripmateDialog = () => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{"Add Tripmate"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Here you can add a tripmate to your trip.
-          </DialogContentText>
-          {/* Add form or content for adding tripmate here */}
+        <DialogTitle id="alert-dialog-title" className=" pb-0">
+          <div className="w-full flex justify-between">
+            <h1>{"Add Tripmate"}</h1>
+            <IconButton onClick={handleClose}>
+              <Close />
+            </IconButton>
+          </div>
+        </DialogTitle>
+        <DialogContent className="w-md">
+          <form onSubmit={handleSubmit(onSubmit)} className=" pt-0">
+            <TextField
+              label="Email"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              type="email"
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  message: "Invalid email address",
+                },
+                validate: {
+                  isNotExample: (value) =>
+                    value !== "example@example.com" || "Invalid email address",
+                  isNotTripmate: (value) =>
+                    !trip.tripmates.includes(value) ||
+                    "Email is already a tripmate",
+                },
+              })}
+              placeholder="Enter email address"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <GroupAdd />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {errors.email && (
+              <div className="w-full pb-2">
+                <p className="text-red-400 text-sm">{errors.email.message}</p>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading}
+              variant="contained"
+              color="primary"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <CircularProgress size={24} />
+                  <span>Sending...</span>
+                </div>
+              ) : (
+                "Send Invitation"
+              )}
+            </Button>
+          </form>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose} autoFocus>
-            Add
-          </Button>
-        </DialogActions>
       </Dialog>
     </React.Fragment>
   );

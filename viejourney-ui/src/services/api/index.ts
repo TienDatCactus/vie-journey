@@ -209,3 +209,20 @@ export const doGetUserInfo = async (userId: string) => {
   }
   return null;
 };
+
+export const doInviteTripMate = async (tripId: string, email: string) => {
+  try {
+    const resp = await http.post(`${TRIP?.INVITE}`, {
+      tripId: tripId,
+      email: email.trim().toLowerCase(),
+    });
+    if (resp) {
+      enqueueSnackbar("Trip mate invited successfully", { variant: "success" });
+      return true;
+    }
+  } catch (error) {
+    console.error("Failed to invite trip mate:", error);
+    enqueueSnackbar("Failed to invite trip mate", { variant: "error" });
+  }
+  return false;
+};

@@ -38,7 +38,7 @@ const HomeTrips: React.FC = () => {
               alignItems={"center"}
             >
               <h1 className="my-0 text-[1.5rem] font-bold">Your trips</h1>
-              <Link to="/trip/create">
+              <Link to="/trips/create">
                 <Button
                   variant="outlined"
                   className="rounded-sm"

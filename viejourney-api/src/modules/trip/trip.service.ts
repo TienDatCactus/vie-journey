@@ -50,9 +50,11 @@ export class TripService {
           return this.mailService.sendMail({
             to: email,
             subject: 'You are invited to join a trip!',
-            text: `You've been invited to join a trip to ${createTripDto.destination}. Click the link to join: ${joinLink}`,
-            html: `<p>You've been invited to join a trip to <strong>${createTripDto.destination}</strong>.</p>
-                <p><a href="${joinLink}">Click here to join the trip</a></p>`,
+            template: './invitation',
+            context: {
+              destination: createTripDto.destination.name,
+              joinLink,
+            },
           });
         }),
       );
@@ -136,5 +138,53 @@ export class TripService {
   }
   remove(id: number) {
     return `This action removes a #${id} trip`;
+  }
+  async inviteToTrip(tripId: string, email: string) {
+    console.log(email, tripId);
+    try {
+      const trip = await this.tripModel.findOne({ _id: tripId });
+      if (!trip) {
+        throw new HttpException('Trip not found', HttpStatus.NOT_FOUND);
+      }
+
+      const secret = process.env.JWT_SECRET || 'secret';
+      const token = this.jwtService.sign(
+        { sub: email, email },
+        { secret: secret },
+      );
+
+      const joinLink = `${process.env.FE_URL}/trip/${trip._id}/join?token=${token}`;
+
+      // Add await here and detailed logging
+      console.log(
+        `Attempting to send email to ${email} for trip to ${trip.destination.name}`,
+      );
+
+      const result = await this.mailService.sendMail({
+        to: email,
+        subject: 'You are invited to join a trip!',
+        template: './invitation',
+        context: {
+          destination: trip.destination.name,
+          joinLink,
+        },
+      });
+      console.log(result);
+      if (result) {
+        await this.tripModel.updateOne(
+          { _id: tripId },
+          { $addToSet: { tripmates: email } },
+        );
+      }
+      console.log('Email sent successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Failed to send invitation email:', error);
+      // Rethrow with more descriptive message
+      throw new HttpException(
+        `Failed to send invitation: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

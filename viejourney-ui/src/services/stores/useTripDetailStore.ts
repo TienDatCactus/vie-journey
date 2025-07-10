@@ -47,6 +47,8 @@ interface TripDetailStore {
   addExpense: (expense: Expense) => void;
   updateExpense: (id: string, expense: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
+
+  addTripmate: (tripmateEmail: string) => void;
 }
 
 export const useTripDetailStore = create<TripDetailStore>()(
@@ -174,6 +176,13 @@ export const useTripDetailStore = create<TripDetailStore>()(
       setTotalBudget: (budget) =>
         set(() => ({
           totalBudget: budget,
+        })),
+      addTripmate: (tripmateEmail) =>
+        set((state) => ({
+          trip: {
+            ...state.trip,
+            tripmates: [...state.trip.tripmates, tripmateEmail],
+          },
         })),
     }),
     { name: "trip-detail-storage" }
