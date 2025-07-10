@@ -162,7 +162,7 @@ export default function TravelBlog() {
             <Button
               variant="contained"
               startIcon={<Add />}
-              // onClick={handleCreateGuide}
+              href="/blogs/create"
               sx={{
                 backgroundColor: "#2c2c2c",
                 "&:hover": {
@@ -234,7 +234,7 @@ export default function TravelBlog() {
 
             <Button
               variant="contained"
-              // onClick={handleCreateFirstGuide}
+              href="/blogs/create"
               sx={{
                 backgroundColor: "#2c2c2c",
                 "&:hover": {

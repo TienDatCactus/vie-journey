@@ -11,7 +11,7 @@ const RelatedBlog = () => {
   const { getBlogList } = useUserBlog();
   useEffect(() => {
     (async () => {
-      const data = await getBlogList();
+      const data = await getBlogList({});
       if (data) {
         setBlogs(data);
       }

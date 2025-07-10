@@ -1,7 +1,6 @@
-import { create } from "zustand";
 import { enqueueSnackbar } from "notistack";
+import { create } from "zustand";
 import {
-  clearFlag,
   createFlag,
   editBlogDraft,
   editBlogPublic,
@@ -11,9 +10,8 @@ import {
   getBlogUserDetail,
   getMyBlog,
   publicBlog,
-  startBlog,
+  startBlog
 } from "../../services/api/blog";
-import { IBlog } from "../../utils/interfaces/blog";
 
 interface UserBlogStore {
   handleStartBlog: (location: string) => Promise<string | null>;

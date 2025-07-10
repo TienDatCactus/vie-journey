@@ -1,17 +1,11 @@
 
 import { CalendarToday, LocationOn } from "@mui/icons-material"
 import { Avatar, Box, Card, CardContent, Typography } from "@mui/material"
+import { ITrip } from "../../../../../../utils/interfaces/trip";
+import dayjs from "dayjs";
 
-interface TripData {
-  id: string
-  title: string
-  user: string
-  dateRange: string
-  places: number
-  backgroundImage?: string
-}
 
-const TripCard: React.FC<{ trip: TripData }> = ({ trip }) => {
+const TripCard: React.FC<{ trip: ITrip }> = ({ trip }) => {
   return (
     <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
       {/* Card Header with Background */}
@@ -23,13 +17,13 @@ const TripCard: React.FC<{ trip: TripData }> = ({ trip }) => {
           backgroundPosition: "center",
         }}
       >
-        {trip.title}
+        {trip?.title}
       </Box>
 
       {/* Card Content */}
       <CardContent className="p-4">
         <Typography variant="h6" className="font-semibold mb-3 text-gray-800">
-          {trip.title}
+          {trip?.title}
         </Typography>
 
         {/* User Info */}
@@ -45,11 +39,11 @@ const TripCard: React.FC<{ trip: TripData }> = ({ trip }) => {
             U
           </Avatar>
           <Typography variant="body2" className="text-gray-600 mr-3">
-            {trip.user}
+           User
           </Typography>
           <CalendarToday className="w-4 h-4 text-gray-400 mr-1" />
           <Typography variant="body2" className="text-gray-600">
-            {trip.dateRange}
+            {dayjs(trip?.startDate).format("YYYY-MM-DD")}
           </Typography>
         </Box>
 
@@ -57,7 +51,7 @@ const TripCard: React.FC<{ trip: TripData }> = ({ trip }) => {
         <Box className="flex items-center">
           <LocationOn className="w-4 h-4 text-gray-400 mr-1" />
           <Typography variant="body2" className="text-gray-600">
-            {trip.places} places
+            {trip?.description} places
           </Typography>
         </Box>
       </CardContent>

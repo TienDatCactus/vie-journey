@@ -18,7 +18,7 @@ const Home: React.FC = () => {
   const { getBlogList } = useUserBlog();
   useEffect(() => {
     const fetchBlogs = async () => {
-      const res = await getBlogList();
+      const res = await getBlogList({});
       if (res) {
         setBlogs(res);
       }
