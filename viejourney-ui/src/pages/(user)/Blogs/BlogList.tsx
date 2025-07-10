@@ -5,8 +5,7 @@ import { animate, motion } from "motion/react";
 import React, { useEffect, useRef, useState } from "react";
 import { AllBlogs } from "../../../components/Pages/(user)/Guides";
 import { MainLayout } from "../../../layouts";
-import { useUserBlog } from "../../../services/stores/useUserBlog";
-import { IBlog } from "../../../utils/interfaces/blog";
+import { Link } from "react-router-dom";
 const BlogList: React.FC = () => {
   const handleScroll = () => {
     const element = destRef.current;
@@ -114,10 +113,8 @@ const BlogList: React.FC = () => {
           <TextField
             className="w-2/3 my-2"
             fullWidth
-            placeholder="Search for a destination"
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-            }}
+            variant="standard"
+            placeholder="Search for a specific blog"
             slotProps={{
               input: {
                 startAdornment: (

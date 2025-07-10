@@ -3,13 +3,6 @@ import { Avatar, Box, Card, CardContent, Typography } from "@mui/material";
 import { Trip } from "../../../../../../utils/interfaces";
 import dayjs from "dayjs";
 
-import { CalendarToday, LocationOn } from "@mui/icons-material"
-import { Avatar, Box, Card, CardContent, Typography } from "@mui/material"
-import { ITrip } from "../../../../../../utils/interfaces/trip";
-import dayjs from "dayjs";
-
-
-const TripCard: React.FC<{ trip: ITrip }> = ({ trip }) => {
 const TripCard: React.FC<{ trip: Trip }> = ({ trip }) => {
   return (
     <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300">

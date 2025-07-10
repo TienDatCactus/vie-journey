@@ -163,24 +163,17 @@ export default function TravelBlog() {
               </Typography>
             </Box>
 
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              href="/blogs/create"
-              sx={{
-                backgroundColor: "#2c2c2c",
-                "&:hover": {
-                  backgroundColor: "#1a1a1a",
-                },
-                textTransform: "none",
-                fontWeight: 500,
-                px: 3,
-                py: 1,
-                borderRadius: 2,
-              }}
-            >
-              Create Guide
-            </Button>
+            <Link to={"/blogs/create"}>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                // onClick={handleCreateGuide}
+
+                className="rounded-sm bg-gray-800 hover:bg-gray-900 text-white"
+              >
+                Create Guide
+              </Button>
+            </Link>
           </Box>
 
           <Box
@@ -235,24 +228,25 @@ export default function TravelBlog() {
               Start sharing your travel experiences by creating your first guide
             </Typography>
 
-            <Button
-              variant="contained"
-              href="/blogs/create"
-              sx={{
-                backgroundColor: "#2c2c2c",
-                "&:hover": {
-                  backgroundColor: "#1a1a1a",
-                },
-                textTransform: "none",
-                fontWeight: 500,
-                px: 4,
-                py: 1.5,
-                borderRadius: 2,
-                fontSize: "16px",
-              }}
-            >
-              Create Your First Guide
-            </Button>
+            <Link to={"/blogs/create"}>
+              <Button
+                variant="contained"
+                // onClick={handleCreateFirstGuide}
+                sx={{
+                  backgroundColor: "#2c2c2c",
+                  "&:hover": {
+                    backgroundColor: "#1a1a1a",
+                  },
+                  textTransform: "none",
+                  fontWeight: 500,
+                  px: 4,
+                  py: 1.5,
+                  fontSize: "16px",
+                }}
+              >
+                Create Your First Guide
+              </Button>
+            </Link>
           </Box>
         </div>
       </Box>
