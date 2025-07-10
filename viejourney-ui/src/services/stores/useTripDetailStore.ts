@@ -1,7 +1,7 @@
 // store/useTripDetailStore.ts
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { doGetUserTripList } from "../api";
+import { doGetUserTripList, doRemoveTripMate } from "../api";
 import {
   Expense,
   Itinerary,
@@ -52,12 +52,13 @@ interface TripDetailStore {
 
   addTripmate: (tripmateEmail: string) => void;
   handleGetUserTrips: () => Promise<void>;
+  handleRemoveTripMate: (tripmateEmail: string) => Promise<void>;
 }
 
 export const useTripDetailStore = create<TripDetailStore>()(
   devtools(
     persist(
-      (set) => ({
+      (set, get) => ({
         trips: [],
         setNotes: (note) => set((state) => ({ notes: [...state.notes, note] })),
         setPlaceNotes: (notes) => set(() => ({ placeNotes: notes })),
@@ -203,6 +204,23 @@ export const useTripDetailStore = create<TripDetailStore>()(
             }
           } catch (error) {
             console.error("Failed to get user trips:", error);
+          }
+        },
+        handleRemoveTripMate: async (tripmateEmail: string) => {
+          try {
+            const res = await doRemoveTripMate(get().trip._id, tripmateEmail);
+            if (res) {
+              set((state) => ({
+                trip: {
+                  ...state.trip,
+                  tripmates: state.trip.tripmates.filter(
+                    (email) => email !== tripmateEmail
+                  ),
+                },
+              }));
+            }
+          } catch (error) {
+            console.error("Failed to remove trip mate:", error);
           }
         },
       }),

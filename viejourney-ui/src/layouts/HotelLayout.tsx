@@ -3,6 +3,7 @@ import React from "react";
 import {
   ExitToApp,
   KeyboardDoubleArrowUp,
+  KeyboardReturn,
   SettingsInputSvideo,
   ZoomOutMap,
 } from "@mui/icons-material";
@@ -36,6 +37,13 @@ const HotelLayout = ({ children }: { children: React.ReactNode }) => {
         } else if (document.exitFullscreen) {
           document.exitFullscreen();
         }
+      },
+    },
+    {
+      icon: <KeyboardReturn />,
+      name: "Return",
+      onClick: () => {
+        navigate(-1);
       },
     },
   ];

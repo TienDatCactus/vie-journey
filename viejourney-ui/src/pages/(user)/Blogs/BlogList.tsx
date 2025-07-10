@@ -6,6 +6,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { AllBlogs } from "../../../components/Pages/(user)/Guides";
 import { MainLayout } from "../../../layouts";
 import { Link } from "react-router-dom";
+import { useUserBlog } from "../../../services/stores/useUserBlog";
+import { IBlog } from "../../../utils/interfaces/blog";
 const BlogList: React.FC = () => {
   const handleScroll = () => {
     const element = destRef.current;

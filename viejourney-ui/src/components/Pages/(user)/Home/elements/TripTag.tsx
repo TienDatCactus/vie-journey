@@ -2,10 +2,10 @@ import { CalendarMonth, NavigateNext } from "@mui/icons-material";
 import { Grid2, IconButton, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import dayjs from "dayjs";
-import { ITrip } from "../../../../../utils/interfaces/trip";
 import { Link } from "react-router-dom";
+import { Trip } from "../../../../../services/stores/storeTypes";
 
-const TripTag = ({ trip }: { trip: ITrip }) => {
+const TripTag = ({ trip }: { trip: Trip }) => {
   return (
     <Stack className="w-full  shadow-none bg-inherit h-20">
       <Stack
@@ -24,7 +24,7 @@ const TripTag = ({ trip }: { trip: ITrip }) => {
             <img
               className="w-full rounded-md"
               src={
-                trip?.coverImage ||
+                // trip?.coverImage ||
                 `https://placehold.co/600x400/1a1a1a/ffffff?text=${trip?.title
                   .split(" ")
                   .join("+")}`

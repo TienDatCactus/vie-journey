@@ -17,7 +17,7 @@ import {
 } from "./dto";
 import { setToken } from "./token";
 import { AUTH, TRIP, USER } from "./url";
-import { ITrip } from "../../utils/interfaces/trip";
+import { Trip } from "../stores/storeTypes";
 
 export const doLogin = async (data: LoginReqDTO) => {
   try {
@@ -228,7 +228,7 @@ export const doInviteTripMate = async (tripId: string, email: string) => {
   return false;
 };
 
-export const doGetTripList = async (): Promise<ITrip[]> => {
+export const doGetTripList = async (): Promise<Trip[]> => {
   try {
     const res = await http.get(`${TRIP.GET_TRIP}`);
     if (!res || !res.data) {
@@ -242,7 +242,7 @@ export const doGetTripList = async (): Promise<ITrip[]> => {
   }
 };
 
-export const doGetUserTripList = async (): Promise<ITrip[]> => {
+export const doGetUserTripList = async (): Promise<Trip[]> => {
   try {
     const res = await http.get(`${TRIP.GET_USER_TRIP}`);
     if (!res || !res.data) {
@@ -253,5 +253,20 @@ export const doGetUserTripList = async (): Promise<ITrip[]> => {
   } catch (error) {
     console.error(error);
     return [];
+  }
+};
+
+export const doRemoveTripMate = async (tripId: string, email: string) => {
+  try {
+    const resp = await http.post(`${TRIP?.REMOVE_TRIP_MATE}`, {
+      tripId: tripId,
+      email: email.trim().toLowerCase(),
+    });
+    if (resp) {
+      enqueueSnackbar("Trip mate removed successfully", { variant: "success" });
+      return true;
+    }
+  } catch (error) {
+    console.error("Failed to remove trip mate:", error);
   }
 };

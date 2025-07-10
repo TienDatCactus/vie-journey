@@ -20,6 +20,17 @@ import { UpdateTripDto } from 'src/common/dtos/update-trip.dto';
 export class TripController {
   constructor(private readonly tripService: TripService) {}
 
+  @Post('/remove-tripmate')
+  async removeTripmate(
+    @Body() req: { tripId: string; email: string },
+    @Req() request: Request,
+  ) {
+    return await this.tripService.removeTripmate(
+      req.tripId,
+      req.email,
+      request,
+    );
+  }
   @Post('invite')
   async inviteToTrip(@Body() req: { tripId: string; email: string }) {
     return await this.tripService.inviteToTrip(req.tripId, req.email);

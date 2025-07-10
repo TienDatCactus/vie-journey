@@ -19,7 +19,33 @@ export class TripService {
     private readonly jwtService: JwtService,
     private readonly mailService: MailerService,
   ) {}
-
+  async removeTripmate(
+    tripId: string,
+    email: string,
+    req: Request,
+  ): Promise<Trip> {
+    const trip = await this.tripModel.findOne({ _id: tripId });
+    if (!trip) {
+      throw new HttpException('Trip not found', HttpStatus.NOT_FOUND);
+    }
+    console.log(trip.createdBy, req.user?.['userId']);
+    if (trip.createdBy.toString() !== req.user?.['userId'].toString()) {
+      throw new HttpException(
+        'Only the trip creator can remove tripmates',
+        HttpStatus.FORBIDDEN,
+      );
+    } else if (email === req.user?.['email']) {
+      throw new HttpException(
+        'You cannot remove yourself from the trip',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (!trip.tripmates.includes(email)) {
+      throw new HttpException('User not in trip', HttpStatus.NOT_FOUND);
+    }
+    trip.tripmates = trip.tripmates.filter((mate) => mate !== email);
+    return await trip.save();
+  }
   async create(createTripDto: CreateTripDto, req: Request): Promise<Trip> {
     const [startDate, endDate] =
       createTripDto.dates[0] < createTripDto.dates[1]
@@ -140,7 +166,6 @@ export class TripService {
     return `This action removes a #${id} trip`;
   }
   async inviteToTrip(tripId: string, email: string) {
-    console.log(email, tripId);
     try {
       const trip = await this.tripModel.findOne({ _id: tripId });
       if (!trip) {
@@ -156,9 +181,6 @@ export class TripService {
       const joinLink = `${process.env.FE_URL}/trip/${trip._id}/join?token=${token}`;
 
       // Add await here and detailed logging
-      console.log(
-        `Attempting to send email to ${email} for trip to ${trip.destination.name}`,
-      );
 
       const result = await this.mailService.sendMail({
         to: email,

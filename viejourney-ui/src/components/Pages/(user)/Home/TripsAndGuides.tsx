@@ -68,7 +68,7 @@ const HomeTrips: React.FC<{
               justifyContent={"space-between"}
               alignItems={"center"}
             >
-              <h1 className="my-0 text-[1.5rem] font-bold">Your guides</h1>
+              <h1 className="my-0 text-xl font-bold">Your blogs</h1>
               <div>
                 <Button
                   variant="outlined"

@@ -51,10 +51,10 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         from: `"VieJourney" <${process.env.MAIL_FROM}>`,
       },
       template: {
-        dir: join(__dirname, 'templates'),
+        dir: process.cwd() + '/src/templates',
         adapter: new HandlebarsAdapter(),
         options: {
-          strict: false, // Change to false for debugging
+          strict: false,
         },
       },
     }),

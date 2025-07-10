@@ -1,7 +1,9 @@
 import {
+  AddLink,
   AttachMoney,
   BorderColor,
   CameraAlt,
+  Clear,
   Close,
   Delete,
   Description,
@@ -31,7 +33,9 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
+  Divider,
   FormControl,
   Grid2,
   IconButton,
@@ -52,16 +56,14 @@ import {
 import { BarChart } from "@mui/x-charts/BarChart";
 import { pieArcLabelClasses, PieChart } from "@mui/x-charts/PieChart";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
+import { enqueueSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { doInviteTripMate } from "../../../../../../services/api";
 import { useSocket } from "../../../../../../services/context/socketContext";
 import { Expense } from "../../../../../../services/stores/storeInterfaces";
 import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
-import {
-  calculateSettlements,
-  formatCurrency,
-} from "../../../../../../utils/handlers/utils";
+import { formatCurrency } from "../../../../../../utils/handlers/utils";
 import { useExpenseInsights } from "../../../../../../utils/hooks/useExpenseInsights";
 
 const expenseColumns: GridColDef[] = [
@@ -894,9 +896,32 @@ const InsightsDialog = () => {
 
 const AddTripmateDialog = () => {
   const trip = useTripDetailStore((state) => state.trip);
-  const { addTripmate } = useTripDetailStore();
+  const { addTripmate, handleRemoveTripMate } = useTripDetailStore();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState({
+    open: false,
+    tripmateEmail: "",
+  });
+
+  const handleDeleteTripmate = async (tripmateEmail: string) => {
+    console.log("Deleting tripmate:", tripmateEmail);
+    try {
+      setLoading(true);
+      await handleRemoveTripMate(tripmateEmail);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+    setOpenDeleteDialog({ open: false, tripmateEmail: "" });
+  };
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog({ open: false, tripmateEmail: "" });
+  };
+  const handleOpenDeleteDialog = (tripmateEmail: string) => {
+    setOpenDeleteDialog({ open: true, tripmateEmail });
+  };
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -951,6 +976,37 @@ const AddTripmateDialog = () => {
           </div>
         </DialogTitle>
         <DialogContent className="w-md">
+          <TextField
+            value={`${window.location.origin}/trip/invite/${trip._id}`}
+            fullWidth
+            contentEditable={false}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AddLink />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Button
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `${window.location.origin}/trip/invite/${trip._id}`
+                        );
+                        enqueueSnackbar("Trip link copied to clipboard!", {
+                          variant: "success",
+                        });
+                      }}
+                    >
+                      Copy Link
+                    </Button>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          <Divider className="mt-2">OR</Divider>
           <form onSubmit={handleSubmit(onSubmit)} className=" pt-0">
             <TextField
               label="Email"
@@ -979,6 +1035,25 @@ const AddTripmateDialog = () => {
                     <GroupAdd />
                   </InputAdornment>
                 ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      variant="contained"
+                      color="primary"
+                    >
+                      {loading ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <CircularProgress size={24} />
+                          <span>Sending...</span>
+                        </div>
+                      ) : (
+                        "Send Invitation"
+                      )}
+                    </Button>
+                  </InputAdornment>
+                ),
               }}
             />
             {errors.email && (
@@ -986,24 +1061,61 @@ const AddTripmateDialog = () => {
                 <p className="text-red-400 text-sm">{errors.email.message}</p>
               </div>
             )}
-
-            <Button
-              type="submit"
-              disabled={loading}
-              variant="contained"
-              color="primary"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <CircularProgress size={24} />
-                  <span>Sending...</span>
-                </div>
-              ) : (
-                "Send Invitation"
-              )}
-            </Button>
           </form>
         </DialogContent>
+        <Divider textAlign="left">Current trip mates</Divider>
+        <List>
+          {!!trip.tripmates &&
+            trip.tripmates.length > 0 &&
+            trip?.tripmates.map((mate, index) => (
+              <React.Fragment key={index}>
+                <ListItem
+                  secondaryAction={
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleOpenDeleteDialog(mate)}
+                      color="error"
+                    >
+                      <Clear className="text-xl" />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText>
+                    <p className="text-sm text-gray-600">{mate}</p>
+                  </ListItemText>
+                </ListItem>
+                <Dialog
+                  open={
+                    openDeleteDialog.open &&
+                    openDeleteDialog.tripmateEmail === mate
+                  }
+                  onClose={handleCloseDeleteDialog}
+                  aria-labelledby="alert-dialog-title"
+                  aria-describedby="alert-dialog-description"
+                >
+                  <DialogTitle id="alert-dialog-title">
+                    Remove {mate} from trip?
+                  </DialogTitle>
+                  <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                      Are you sure you want to remove {mate} from this trip?
+                      This action cannot be undone.
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseDeleteDialog}>Disagree</Button>
+                    <Button
+                      onClick={() => handleDeleteTripmate(mate)}
+                      color="error"
+                    >
+                      Agree
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </React.Fragment>
+            ))}
+        </List>
       </Dialog>
     </React.Fragment>
   );
