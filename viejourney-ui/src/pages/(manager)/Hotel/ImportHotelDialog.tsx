@@ -22,6 +22,7 @@ import {
   CheckCircle as SuccessIcon,
   Error as ErrorIcon,
   Info as InfoIcon,
+  Download as DownloadIcon,
 } from "@mui/icons-material";
 import axios from "axios";
 import { HOTELS } from "../../../services/api/url";
@@ -60,6 +61,91 @@ const ImportHotelDialog: React.FC<ImportHotelDialogProps> = ({
     success: number;
     errors: string[];
   }>({ success: 0, errors: [] });
+
+  // Mock data for download
+  const mockHotelsData = [
+    {
+      name: "Grand Hotel Saigon",
+      description:
+        "Luxury hotel in the heart of Ho Chi Minh City with modern amenities and excellent service.",
+      rating: 4.5,
+      address: "8 Dong Khoi Street, District 1, Ho Chi Minh City",
+      coordinate: "{'latitude': 10.7769, 'longitude': 106.7009}",
+      image: ["grand-hotel-1.jpg", "grand-hotel-2.jpg", "grand-hotel-3.jpg"],
+    },
+    {
+      name: "Hanoi Pearl Hotel",
+      description:
+        "Boutique hotel offering traditional Vietnamese hospitality in the Old Quarter.",
+      rating: 4.2,
+      address: "6 Hang Be Street, Hoan Kiem District, Hanoi",
+      coordinate: "{'latitude': 21.0285, 'longitude': 105.8542}",
+      image: ["hanoi-pearl-1.jpg", "hanoi-pearl-2.jpg"],
+    },
+    {
+      name: "Da Nang Beach Resort",
+      description:
+        "Beachfront resort with stunning ocean views and world-class spa facilities.",
+      rating: 4.8,
+      address:
+        "Vo Nguyen Giap Street, Khue My Ward, Ngu Hanh Son District, Da Nang",
+      coordinate: "{'latitude': 16.0544, 'longitude': 108.2442}",
+      image: [
+        "danang-resort-1.jpg",
+        "danang-resort-2.jpg",
+        "danang-resort-3.jpg",
+        "danang-resort-4.jpg",
+      ],
+    },
+  ];
+
+  // Download functions
+  const downloadJSON = () => {
+    const dataStr = JSON.stringify(mockHotelsData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "hotel-template.json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadCSV = () => {
+    const headers = [
+      "name",
+      "description",
+      "rating",
+      "address",
+      "coordinate",
+      "image",
+    ];
+    const csvContent = [
+      headers.join(","),
+      ...mockHotelsData.map((hotel) =>
+        [
+          `"${hotel.name}"`,
+          `"${hotel.description}"`,
+          hotel.rating,
+          `"${hotel.address}"`,
+          `"${hotel.coordinate}"`,
+          `"${hotel.image.join(";")}"`, // Join multiple images with semicolon
+        ].join(",")
+      ),
+    ].join("\n");
+
+    const dataBlob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "hotel-template.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -111,12 +197,16 @@ const ImportHotelDialog: React.FC<ImportHotelDialogProps> = ({
       // Process API response
       const result = response.data;
 
+      const successCount =
+        result.success || result.imported || result.count || 0;
+      const errors = result.errors || [];
+
       setImportResults({
-        success: result.success || result.imported || 0,
-        errors: result.errors || [],
+        success: successCount,
+        errors: errors,
       });
 
-      if (result.success > 0 || result.imported > 0) {
+      if (successCount > 0) {
         setImportStatus("success");
 
         // Call onImport if provided (for backward compatibility)
@@ -356,6 +446,33 @@ const ImportHotelDialog: React.FC<ImportHotelDialogProps> = ({
                 </pre>
               </Typography>
             </Alert>
+
+            {/* Download Templates */}
+            <Box mt={2}>
+              <Typography variant="subtitle2" fontWeight="bold" mb={1}>
+                Download sample templates:
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<DownloadIcon />}
+                  onClick={downloadJSON}
+                  sx={{ textTransform: "none" }}
+                >
+                  JSON Template (3 MB)
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<DownloadIcon />}
+                  onClick={downloadCSV}
+                  sx={{ textTransform: "none" }}
+                >
+                  CSV Template (2 MB)
+                </Button>
+              </Stack>
+            </Box>
           </Box>
         </Stack>
       </DialogContent>
