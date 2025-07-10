@@ -98,9 +98,6 @@ export class Blog extends Document {
     likeCount: number;
     commentCount: number;
   };
-
-  @Prop({ required: true, type: mongoose.Types.ObjectId, ref: 'Comment' })
-  comments: Comment[];
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);

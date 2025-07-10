@@ -24,6 +24,11 @@ export class BlogService {
     @InjectModel('Like') private readonly likeModel: Model<Like>,
     private readonly assetsService: AssetsService,
   ) {}
+  // check if user has liked a blog
+  async hasUserLikedBlog(userId: string, blogId: string): Promise<boolean> {
+    const like = await this.likeModel.findOne({ userId, blogId }).exec();
+    return !!like;
+  }
   // Create like blog
   async postLikeBlog(req: Request, blogId: string) {
     try {

@@ -13,6 +13,7 @@ import { AssetsModule } from './modules/assets/assets.module';
 import { TripModule } from './modules/trip/trip.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { CommentModule } from './modules/comment/comment.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,6 +31,7 @@ import { BlogModule } from './modules/blog/blog.module';
     UserModule,
     AccountModule,
     TripModule,
+    CommentModule,
     AssetsModule,
     MailerModule.forRoot({
       transport: {

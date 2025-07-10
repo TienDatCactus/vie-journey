@@ -80,7 +80,6 @@ export class AssetsController {
   // addAsset/banner
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
