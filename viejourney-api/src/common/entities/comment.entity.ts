@@ -1,11 +1,17 @@
+import { Types } from 'mongoose';
 import { Document } from 'mongoose';
-
+import { Blog } from './blog.entity';
 export class Comment extends Document {
-  declare _id: string;
+  blogId: Blog | Types.ObjectId;
+  parentId?: Comment | null;
   content: string;
-  createdBy: string;
-  updatedBy: string;
-  blog_id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  commentBy: Types.ObjectId;
+  replies?: Types.ObjectId[];
+  totalReplies?: number;
+  totalChildren?: number;
+  likes?: Types.ObjectId[];
+  edited?: boolean;
+  editedAt?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
