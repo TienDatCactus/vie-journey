@@ -2,10 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import { Asset } from 'src/common/entities/asset.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { Request } from 'express';
 
 @Injectable()
 export class AssetsService {

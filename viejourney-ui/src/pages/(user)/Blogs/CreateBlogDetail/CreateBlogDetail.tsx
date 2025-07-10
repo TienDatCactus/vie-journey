@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { BlogCreateLayout } from "../../../../layouts";
 import { SimpleEditor } from "./../../../../../@/components/tiptap-templates/simple/simple-editor";
 import { useLocation, useParams } from "react-router-dom";
-import useBlogUser from "../../../../utils/hooks/user-blog-user";
 import { IContentItem } from "../../../../utils/interfaces/blog";
 import { enqueueSnackbar } from "notistack";
+import { useUserBlog } from "../../../../services/stores/useUserBlog";
 
 const CreateBlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,8 +13,8 @@ const CreateBlogDetail: React.FC = () => {
     handleEditBlog,
     handlePublish,
     handleGetBlogPublicDetail,
-    handleEditPublicBlog
-  } = useBlogUser();
+    handleEditPublicBlog,
+  } = useUserBlog();
   const [blog, setBlog] = useState<IContentItem>();
   const [editorContent, setEditorContent] = useState<string>("");
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
@@ -89,9 +89,8 @@ const CreateBlogDetail: React.FC = () => {
       coverImage: formData.coverImage,
     };
 
-    let res 
-    if(type === "draft") {
-
+    let res;
+    if (type === "draft") {
       res = await handleEditBlog(id ?? "", data);
     } else {
       res = await handleEditPublicBlog(id ?? "", data);

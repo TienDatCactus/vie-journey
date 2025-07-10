@@ -24,14 +24,13 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import useBlogDetail from "./container/hook";
-import { useState } from "react";
 
 export default function Blog() {
   const { id } = useParams<{ id: string }>();
-
-  const { blog, handleUpdateStatus, handleBanAuthor } = useBlogDetail({
+  const { blog, handleUpdateStatus, handleBanAuthor, handleClearFlag } = useBlogDetail({
     id: id ?? "",
   });
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -40,6 +39,7 @@ export default function Blog() {
   >(null);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
   const [banReason, setBanReason] = useState("");
+  const [clearFlagsConfirmOpen, setClearFlagsConfirmOpen] = useState(false);
 
   const handleApprove = () => {
     setConfirmAction("APPROVED");
@@ -56,9 +56,15 @@ export default function Blog() {
   };
 
   const handleClearFlags = () => {
-    // console.log("Clearing flags for post:", post.id);
+    setClearFlagsConfirmOpen(true);
   };
 
+  const confirmClearFlags = () => {
+    if (id) {
+      handleClearFlag(id);
+    }
+    setClearFlagsConfirmOpen(false);
+  };
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -257,14 +263,19 @@ export default function Blog() {
                   ) : (
                     <></>
                   )}
-                  <Button
-                    variant="outlined"
-                    startIcon={<ClearAll />}
-                    onClick={handleClearFlags}
-                    className="w-full"
-                  >
-                    Clear Flags
-                  </Button>
+
+                  {blog?.flags && blog.flags.length > 0 ? (
+                    <Button
+                      variant="outlined"
+                      startIcon={<ClearAll />}
+                      onClick={handleClearFlags}
+                      className="w-full"
+                    >
+                      Clear Flags
+                    </Button>
+                  ) : (
+                    <></>
+                  )}
 
                   <Divider className="my-3" />
 
@@ -283,6 +294,35 @@ export default function Blog() {
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={clearFlagsConfirmOpen}
+        onClose={() => setClearFlagsConfirmOpen(false)}
+      >
+        <DialogTitle>Confirm Clear Flags</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to <strong>clear all flags</strong> for this
+            blog?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setClearFlagsConfirmOpen(false)}
+            color="inherit"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmClearFlags}
+            color="warning"
+            variant="contained"
+          >
+            Clear Flags
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={banDialogOpen} onClose={() => setBanDialogOpen(false)}>
         <DialogTitle>Ban Author</DialogTitle>
         <DialogContent>

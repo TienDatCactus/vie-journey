@@ -18,12 +18,12 @@ import { CreateAccountDto } from 'src/common/dtos/create-account.dto';
 import { UpdateUserInfoDto } from 'src/common/dtos/update-userinfo.dto';
 import { Role } from 'src/common/enums/role.enum';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/role.guard';
 import { UserService } from '../userinfo/user.service';
 import { AdminService } from './admin.service';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+@Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.Admin)
-@Controller('admin')
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
@@ -76,7 +76,6 @@ export class AdminController {
       userId: query.userId,
       email: query.email,
     };
-
     const pagination =
       query.page && query.pageSize
         ? {
@@ -84,7 +83,8 @@ export class AdminController {
             pageSize: parseInt(query.pageSize),
           }
         : undefined;
-
+    const resp = await this.userService.getAllUser(filter, pagination);
+    console.log(resp);
     return this.userService.getAllUser(filter, pagination);
   }
 

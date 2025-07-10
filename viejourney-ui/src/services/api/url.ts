@@ -44,8 +44,8 @@ export const ADMIN = {
 };
 export const TRIP = {
   INVITE: "/trip/invite",
-  GET_TRIPS: "/trip",
   GET_TRIP: "/trip",
+  GET_USER_TRIP: "/trip/by-user",
   CREATE_TRIP: "/trip",
   UPDATE_TRIP: "/trip/update",
   DELETE_TRIP: "/trip/delete",

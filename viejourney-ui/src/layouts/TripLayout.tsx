@@ -1,7 +1,14 @@
+import {
+  AccountBalanceWallet,
+  ArrowBack,
+  DirectionsTransit,
+  LensBlur,
+  NoteAltOutlined,
+  PlaceOutlined,
+  ScheduleOutlined,
+} from "@mui/icons-material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import MailIcon from "@mui/icons-material/Mail";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Button, Stack } from "@mui/material";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
@@ -15,6 +22,9 @@ import { CSSObject, styled, Theme } from "@mui/material/styles";
 import * as React from "react";
 import { TripHeader } from "../components/Layout";
 import { TripMap } from "../components/Pages/(user)/Trips";
+import { useTripDetailStore } from "../services/stores/useTripDetailStore";
+import { getDatesBetween } from "../utils/handlers/utils";
+import { Link, useNavigate } from "react-router-dom";
 
 const drawerWidth = 200;
 
@@ -57,14 +67,29 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 const TripLayout = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+  const [open, setOpen] = React.useState(false);
+  const { trip } = useTripDetailStore();
+  const [dates, setDates] = React.useState<string[]>([]);
+  React.useEffect(() => {
+    setDates(getDatesBetween(trip?.startDate || "", trip?.endDate || ""));
+  }, [trip.startDate, trip.endDate]);
   const handleDrawerOpen = () => {
     setOpen(true);
   };
 
   const handleDrawerClose = () => {
     setOpen(false);
+  };
+  const iconMap: Record<string, React.ReactElement> = {
+    Notes: <NoteAltOutlined />,
+    Transits: <DirectionsTransit />,
+    Places: <PlaceOutlined />,
+    Itinerary: <ScheduleOutlined />,
   };
 
   return (
@@ -92,9 +117,35 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
             <Divider />
             {/* Your sidebar menu items */}
             <List>
-              {["Inbox", "Starred", "Send email", "Drafts"].map(
+              <ListItem disablePadding sx={{ display: "block" }}>
+                <ListItemButton
+                  onClick={handleBack}
+                  sx={{
+                    minHeight: 48,
+                    px: 2.5,
+                    justifyContent: open ? "initial" : "center",
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      justifyContent: "center",
+                      mr: open ? 3 : "auto",
+                    }}
+                  >
+                    <ArrowBack />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={"Return"}
+                    sx={{
+                      opacity: open ? 1 : 0,
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+              {["Notes", "Transits", "Places", "Itinerary"].map(
                 (text, index) => (
-                  <a href="#placeNotes" key={text} className="">
+                  <a href={`#${text.toLowerCase()}`} key={index} className="">
                     <ListItem disablePadding sx={{ display: "block" }}>
                       <ListItemButton
                         sx={{
@@ -110,7 +161,7 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
                             mr: open ? 3 : "auto",
                           }}
                         >
-                          {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                          {iconMap[text]}
                         </ListItemIcon>
                         <ListItemText
                           primary={text}
@@ -124,10 +175,41 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
                 )
               )}
             </List>
-            <Divider />
+            <Divider className="border-dashed border-gray-800" />
+            <List className="max-h-[calc(100vh-200px)] overflow-y-auto overflow-x-hidden">
+              {!!dates &&
+                dates.length > 0 &&
+                dates.map((text, index) => (
+                  <ListItem key={text} disablePadding sx={{ display: "block" }}>
+                    <a href={`#${index}`}>
+                      <ListItemButton
+                        className="flex items-center justify-center"
+                        sx={{
+                          minHeight: 48,
+                          px: 2.5,
+                        }}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            minWidth: 0,
+                            justifyContent: "center",
+                            mr: open ? 3 : "auto",
+                          }}
+                        >
+                          <LensBlur />
+                        </ListItemIcon>
+                        <ListItemText sx={{ opacity: open ? 1 : 0 }}>
+                          <span className=" text-xs">{text}</span>
+                        </ListItemText>
+                      </ListItemButton>
+                    </a>
+                  </ListItem>
+                ))}
+            </List>
+            <Divider className="border-dashed border-gray-800" />
             <List>
-              {["All mail", "Trash", "Spam"].map((text, index) => (
-                <ListItem key={text} disablePadding sx={{ display: "block" }}>
+              <ListItem disablePadding sx={{ display: "block" }}>
+                <a href="#budget">
                   <ListItemButton
                     sx={{
                       minHeight: 48,
@@ -142,21 +224,21 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
                         mr: open ? 3 : "auto",
                       }}
                     >
-                      {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                      <AccountBalanceWallet />
                     </ListItemIcon>
                     <ListItemText
-                      primary={text}
+                      primary={"Budget"}
                       sx={{
                         opacity: open ? 1 : 0,
                       }}
                     />
                   </ListItemButton>
-                </ListItem>
-              ))}
+                </a>
+              </ListItem>
             </List>
           </div>
           <Button
-            className="bg-neutral-300 lg:h-15 text-gray-600"
+            className="bg-neutral-300 lg:h-15 rounded-none text-gray-600"
             onClick={open ? handleDrawerClose : handleDrawerOpen}
           >
             {!open ? <ChevronRightIcon /> : <ChevronLeftIcon />}

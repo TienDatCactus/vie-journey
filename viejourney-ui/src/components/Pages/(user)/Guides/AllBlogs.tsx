@@ -2,17 +2,17 @@ import { Button, Grid2 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import GuideCard from "./_elements/GuideCard";
 import { IBlog } from "../../../../utils/interfaces/blog";
-import useBlogUser from "../../../../utils/hooks/user-blog-user";
+import { useUserBlog } from "../../../../services/stores/useUserBlog";
 const AllBlogs: React.FC = () => {
   const [blogs, setBlogs] = useState<IBlog[]>();
-  const { getBlogList } = useBlogUser();
-
-  const fetchBlog = async () => {
-    const res = await getBlogList();
-    if (res) setBlogs(res);
-  };
+  const { getBlogList } = useUserBlog();
   useEffect(() => {
-    fetchBlog();
+    (async () => {
+      const data = await getBlogList();
+      if (data) {
+        setBlogs(data);
+      }
+    })();
   }, []);
   return (
     <div className="w-full max-w-[1200px] ">

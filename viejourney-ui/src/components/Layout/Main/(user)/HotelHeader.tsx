@@ -9,6 +9,7 @@ import {
   useScrollTrigger,
 } from "@mui/material";
 import React from "react";
+import { Link } from "react-router-dom";
 interface Props {
   window?: () => Window;
   children?: React.ReactElement<unknown>;
@@ -42,7 +43,9 @@ const HotelHeader: React.FC = () => {
               </h1>
             </div>
             <ul className="gap-8 *:text-sm *:hover:underline *:cursor-pointer ">
-              <li>Home</li>
+              <li>
+                <Link to={"/"}>Home</Link>
+              </li>
               <li>Rooms</li>
               <li>Facilities</li>
               <li>Offers</li>

@@ -5,7 +5,6 @@ import {
   ButtonGroup,
   Chip,
   CircularProgress,
-  InputAdornment,
   Stack,
   TextField,
 } from "@mui/material";
@@ -14,9 +13,9 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../../../../layouts";
 import { useAutocompleteSuggestions } from "../../../../utils/hooks/use-autocomplete-suggestion";
-import useBlogUser from "../../../../utils/hooks/user-blog-user";
+import { useUserBlog } from "../../../../services/stores/useUserBlog";
 const CreateBlog: React.FC = () => {
-  const { handleStartBlog } = useBlogUser();
+  const { handleStartBlog } = useUserBlog();
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState<string>("");
   const [selectedPlace, setSelectedPlace] = useState<{
@@ -183,7 +182,7 @@ const CreateBlog: React.FC = () => {
             </Button>
 
             <Button
-              onClick={() => navigate("/trip/create")}
+              onClick={() => navigate("/trips/create")}
               startIcon={<AddLocationAlt />}
             >
               Plan a trip instead

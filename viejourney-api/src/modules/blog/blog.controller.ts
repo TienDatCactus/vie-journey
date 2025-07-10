@@ -18,12 +18,12 @@ import { BlogService } from './blog.service';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/role.guard';
 import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 import { CreateBlogDto } from 'src/common/dtos/create-blog.dto';
 import { StartBlogDto } from 'src/common/dtos/start-blog.dto';
 import { UpdateBlogDraftDto } from 'src/common/dtos/update-blog-draft.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @Controller('blogs')
 export class BlogController {
@@ -36,6 +36,7 @@ export class BlogController {
   async getAllBlogs(@Query() paginationDto: PaginationDto) {
     return this.blogService.findAll(paginationDto);
   }
+
   @Get('home')
   async getAllApprovedBlogs(
     @Query('page') page?: string,
