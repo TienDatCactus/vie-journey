@@ -100,12 +100,13 @@ const BlogList: React.FC = () => {
   }, [searchQuery]);
   return (
     <MainLayout>
-      <div className="w-full max-w-[1200px] py-6">
+      <div className="w-full max-w-[75rem]  py-6">
         <Stack
           direction={"column"}
           justifyContent={"center"}
           alignItems={"center"}
           className=" mx-auto"
+          gap={1}
         >
           <h1 className="font-bold my-2 text-[40px]">
             Explore Vietnam's travel guides and itineraries
@@ -127,6 +128,13 @@ const BlogList: React.FC = () => {
               },
             }}
           />
+          <Link
+            to={"/blogs/create"}
+            className="text-gray-500 hover:text-black transition-all duration-400 ease-in-out hover:scale-110"
+          >
+            Write your own blogs and share your travel experiences with the
+            world.
+          </Link>
           <p className="my-2">Or browse our most popular destinations: </p>
           <Stack direction={"row"} className="flex-wrap " gap={2}>
             {!!destinations.length &&

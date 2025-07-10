@@ -5,14 +5,9 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-interface GuideTagProps {
-  img: string;
-  title: string;
-  likes: number;
-  views: number;
-}
+import { IBlog } from "../../../../../utils/interfaces/blog";
 
-const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
+const BlogTag = ({ blog }: { blog: IBlog }) => {
   return (
     <Card className="w-full">
       <div className="p-2 ">
@@ -21,8 +16,8 @@ const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
             component="img"
             className="h-[168px] w-full rounded-md"
             image={
-              img ||
-              `https://placehold.co/600x400/1a1a1a/ffffff?text=${title
+              blog?.coverImage ||
+              `https://placehold.co/600x400/1a1a1a/ffffff?text=${blog?.title
                 .split(" ")
                 .join("+")}`
             }
@@ -31,12 +26,13 @@ const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
             gutterBottom
             variant="h5"
             component="div"
-            className="text-[1.125rem] my-1 absolute bottom-2 left-2 text-white"
+            className="text-base  my-1 absolute bottom-2 left-2 text-gray-200  truncate"
           >
-            {title}
+            {blog?.summary}
           </Typography>
         </div>
-        <CardContent className="pb-2 px-0">
+        <CardContent className="pb-2 pt-1 px-0">
+          <h1 className="text-lg ">{blog?.title}</h1>
           <Stack
             spacing={1}
             alignItems={"center"}
@@ -48,13 +44,13 @@ const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
               <IconButton className="p-1">
                 <FavoriteBorderIcon className="text-base " />
               </IconButton>
-              <p className="m-0 text-sm">{likes}</p>
+              <p className="m-0 text-sm">{blog?.metrics?.likeCount}</p>
             </Stack>
             <Stack direction={"row"} alignItems={"center"}>
               <IconButton className="p-1">
                 <VisibilityIcon className="text-base" />
               </IconButton>
-              <p className="m-0 text-sm">{views}</p>
+              <p className="m-0 text-sm">{blog?.metrics?.viewCount}</p>
             </Stack>
           </Stack>
         </CardContent>
@@ -63,4 +59,4 @@ const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
   );
 };
 
-export default GuideTag;
+export default BlogTag;

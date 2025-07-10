@@ -16,13 +16,18 @@ const GuideCard = (props: IBlog) => {
   };
 
   return (
-    <Card sx={{ maxWidth: 345 }} elevation={0} key={props._id} className="">
+    <Card
+      sx={{ maxWidth: 345 }}
+      elevation={0}
+      key={props._id}
+      className="border border-dashed border-neutral-300 hover:border-neutral-500 transition-all"
+    >
       <div className="overflow-hidden ">
         <CardMedia
           component="img"
           image={props.coverImage || "https://placehold.co/600x400"}
           alt="green iguana"
-          className="duration-200 ease-in-out lg:h-60  hover:scale-115 cursor-pointer  transition-all"
+          className="duration-200 ease-in-out lg:h-60  hover:scale-105 cursor-pointer  transition-all"
           onClick={handleNavigate}
         />
       </div>

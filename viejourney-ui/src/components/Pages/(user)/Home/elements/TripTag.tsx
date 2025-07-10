@@ -2,15 +2,10 @@ import { CalendarMonth, NavigateNext } from "@mui/icons-material";
 import { Grid2, IconButton, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import dayjs from "dayjs";
+import { ITrip } from "../../../../../utils/interfaces/trip";
+import { Link } from "react-router-dom";
 
-interface TripTagProps {
-  img: string;
-  title: string;
-  from: string;
-  to: string;
-}
-
-const TripTag = ({ img, title, from, to }: TripTagProps) => {
+const TripTag = ({ trip }: { trip: ITrip }) => {
   return (
     <Stack className="w-full  shadow-none bg-inherit h-20">
       <Stack
@@ -29,8 +24,8 @@ const TripTag = ({ img, title, from, to }: TripTagProps) => {
             <img
               className="w-full rounded-md"
               src={
-                img ||
-                `https://placehold.co/600x400/1a1a1a/ffffff?text=${title
+                trip?.coverImage ||
+                `https://placehold.co/600x400/1a1a1a/ffffff?text=${trip?.title
                   .split(" ")
                   .join("+")}`
               }
@@ -43,7 +38,7 @@ const TripTag = ({ img, title, from, to }: TripTagProps) => {
               component="div"
               className="text-[18px]"
             >
-              {title}
+              {trip?.title}
             </Typography>
             <Stack direction={"row"} alignItems={"center"} spacing={1}>
               <CalendarMonth className="text-base text-neutral-700" />
@@ -52,15 +47,17 @@ const TripTag = ({ img, title, from, to }: TripTagProps) => {
                 color="text.secondary"
                 className="text-sm"
               >
-                {dayjs(from).format("MMM DD, YYYY")} -{" "}
-                {dayjs(to).format("MMM DD, YYYY")}
+                {dayjs(trip?.startDate).format("MMM DD, YYYY")} -{" "}
+                {dayjs(trip?.endDate).format("MMM DD, YYYY")}
               </Typography>
             </Stack>
           </Grid2>
           <Grid2 size={1} direction={"row"} alignItems={"center"}>
-            <IconButton>
-              <NavigateNext className="text-base" />
-            </IconButton>
+            <Link to={`/trips/edit/${trip?._id}`}>
+              <IconButton>
+                <NavigateNext className="text-base" />
+              </IconButton>
+            </Link>
           </Grid2>
         </Grid2>
       </Stack>

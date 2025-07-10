@@ -1,6 +1,7 @@
 export interface ITrip {
   _id: string;
   title: string;
+  coverImage?: string; // URL of the cover image
   destination: {
     id: string; // Google Place ID or custom ID
     name: string; // Name of the destination

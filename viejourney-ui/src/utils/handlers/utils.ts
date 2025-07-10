@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { animate } from "motion/react";
 
 export function getDatesBetween(startDate: Date, endDate: Date): string[] {
   const start = dayjs(startDate);
@@ -163,3 +164,14 @@ export function getTypeColor(type: string): string {
 
   return colorMap[type] || colorMap.Other;
 }
+
+export const smoothScrollTo = (targetY: number) => {
+  const currentY = window.scrollY;
+  animate(currentY, targetY, {
+    duration: 0.8,
+    ease: "easeInOut",
+    onUpdate(latest) {
+      window.scrollTo(0, latest);
+    },
+  });
+};
