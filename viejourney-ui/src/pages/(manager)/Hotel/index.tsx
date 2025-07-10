@@ -44,7 +44,7 @@ interface Hotel {
   rating: number;
   address: string;
   coordinate: string;
-  image: string[];
+  images: string[]; // Changed from 'image' to 'images' to match backend
 }
 
 // Interface for API response
@@ -55,7 +55,7 @@ interface HotelApiResponse {
   rating: number;
   address: string;
   coordinate: string;
-  image: string[];
+  images: string[]; // Changed from 'image' to 'images' to match backend
 }
 
 // Actions Menu Component
@@ -169,9 +169,9 @@ const HotelManagement = () => {
           rating: hotel.rating,
           address: hotel.address,
           coordinate: hotel.coordinate,
-          // Parse image array if it's a string
-          image: Array.isArray(hotel.image)
-            ? hotel.image
+          // Parse images array if it's a string
+          images: Array.isArray(hotel.images)
+            ? hotel.images
                 .map((img: string) => {
                   // If image is in format "['img1.jpg', 'img2.jpg']", parse it
                   if (img.startsWith("[") && img.endsWith("]")) {
@@ -184,7 +184,7 @@ const HotelManagement = () => {
                   return img;
                 })
                 .flat()
-            : hotel.image || [],
+            : hotel.images || [],
         }));
 
         setHotels(processedHotels);
@@ -236,17 +236,44 @@ const HotelManagement = () => {
           )
         );
       } else {
-        // Add new hotel
-        const newHotel: Hotel = {
-          _id: Date.now().toString(),
-          name: hotelData.name || "",
-          description: hotelData.description || "",
-          rating: hotelData.rating || 0,
-          address: hotelData.address || "",
-          coordinate: hotelData.coordinate || "",
-          image: hotelData.image || [],
+        // Add new hotel - Call CREATE_HOTEL API
+        console.log("Calling CREATE_HOTEL API with payload:", hotelData);
+
+        const response = await axios.post(
+          import.meta.env.VITE_PRIVATE_URL + HOTELS.CREATE_HOTEL,
+          hotelData,
+          { withCredentials: true }
+        );
+
+        console.log("CREATE_HOTEL API response:", response.data);
+
+        // Refresh hotel list after successful creation
+        const fetchHotels = async () => {
+          try {
+            const result = await axios.get(
+              import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
+              { withCredentials: true }
+            );
+
+            const processedHotels = result.data.map(
+              (hotel: HotelApiResponse) => ({
+                ...hotel,
+                coordinate:
+                  typeof hotel.coordinate === "object"
+                    ? JSON.stringify(hotel.coordinate)
+                    : hotel.coordinate,
+                // Ensure images field is properly handled
+                images: hotel.images || [],
+              })
+            );
+
+            setHotels(processedHotels);
+          } catch (error) {
+            console.error("Error refreshing hotels:", error);
+          }
         };
-        setHotels((prev) => [...prev, newHotel]);
+
+        await fetchHotels();
       }
 
       setAddDialogOpen(false);
@@ -254,6 +281,8 @@ const HotelManagement = () => {
       setSelectedHotel(null);
     } catch (error) {
       console.error("Error saving hotel:", error);
+      // Show error message to user
+      alert("Failed to save hotel. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -277,8 +306,8 @@ const HotelManagement = () => {
           rating: hotel.rating,
           address: hotel.address,
           coordinate: hotel.coordinate,
-          image: Array.isArray(hotel.image)
-            ? hotel.image
+          images: Array.isArray(hotel.images)
+            ? hotel.images
                 .map((img: string) => {
                   if (img.startsWith("[") && img.endsWith("]")) {
                     try {
@@ -290,7 +319,7 @@ const HotelManagement = () => {
                   return img;
                 })
                 .flat()
-            : hotel.image || [],
+            : hotel.images || [],
         }));
 
         setHotels(processedHotels);
@@ -339,8 +368,8 @@ const HotelManagement = () => {
           rating: hotel.rating,
           address: hotel.address,
           coordinate: hotel.coordinate,
-          image: Array.isArray(hotel.image)
-            ? hotel.image
+          images: Array.isArray(hotel.images)
+            ? hotel.images
                 .map((img: string) => {
                   if (img.startsWith("[") && img.endsWith("]")) {
                     try {
@@ -352,7 +381,7 @@ const HotelManagement = () => {
                   return img;
                 })
                 .flat()
-            : hotel.image || [],
+            : hotel.images || [],
         }));
 
         setHotels(processedHotels);
@@ -391,8 +420,8 @@ const HotelManagement = () => {
           rating: hotel.rating,
           address: hotel.address,
           coordinate: hotel.coordinate,
-          image: Array.isArray(hotel.image)
-            ? hotel.image
+          images: Array.isArray(hotel.images)
+            ? hotel.images
                 .map((img: string) => {
                   if (img.startsWith("[") && img.endsWith("]")) {
                     try {
@@ -404,7 +433,7 @@ const HotelManagement = () => {
                   return img;
                 })
                 .flat()
-            : hotel.image || [],
+            : hotel.images || [],
         }));
 
         setHotels(processedHotels);

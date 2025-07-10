@@ -18,7 +18,7 @@ export const routeTitles: Record<string, string> = {
   "/admin/accounts": "Manage Accounts - VieJourney",
   "/admin/accounts/detail/:id": "Account Details - VieJourney",
   "/admin/media": "Media Manager - VieJourney",
-  "/trip/create": "Create Trip - VieJourney",
+  "/trips/create": "Create Trip - VieJourney",
   "/trip/:id": "Trip Details - VieJourney",
   // fallback:
   "*": "VieJourney - Explore Vietnam",

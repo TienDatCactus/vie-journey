@@ -54,6 +54,7 @@ interface ItineraryProps {
 }
 interface DaySectionProps {
   date: string;
+  index: number;
 }
 const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
   const { toggleEditItinerary } = useTripDetailStore();
@@ -583,7 +584,7 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
   }
 
   return (
-    <div className="bg-white p-4 my-2 rounded ">
+    <div id={props?.index + ""} className="bg-white p-4 my-2 rounded ">
       <div
         className="flex items-center justify-between cursor-pointer group"
         onClick={toggleExpand}
@@ -675,7 +676,7 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
           {!!generatedDates?.length &&
             generatedDates?.map((date, index) => (
               <>
-                <DaySection date={date} key={index} />
+                <DaySection date={date} index={index} key={index} />
                 {index >= 0 && <Divider />}
               </>
             ))}

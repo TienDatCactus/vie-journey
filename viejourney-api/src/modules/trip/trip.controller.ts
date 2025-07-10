@@ -20,6 +20,10 @@ import { UpdateTripDto } from 'src/common/dtos/update-trip.dto';
 export class TripController {
   constructor(private readonly tripService: TripService) {}
 
+  @Post('invite')
+  async inviteToTrip(@Body() req: { tripId: string; email: string }) {
+    return await this.tripService.inviteToTrip(req.tripId, req.email);
+  }
   @Post()
   async create(@Req() req: Request, @Body() createTripDto: CreateTripDto) {
     return await this.tripService.create(createTripDto, req);
@@ -30,13 +34,9 @@ export class TripController {
     return await this.tripService.addToTrip(id, req.token);
   }
 
-  @Get()
-  findAll() {
-    return this.tripService.findAll();
-  }
-  @Post('/:userId')
-  findByUser(@Body() req: { userId: string }) {
-    return this.tripService.findByUser(req.userId);
+  @Get('/by-user')
+  findByUser(@Req() req: Request) {
+    return this.tripService.findByUser(req.user?.['email'] as string);
   }
   @Get(':id')
   findOne(@Param('id') id: string) {

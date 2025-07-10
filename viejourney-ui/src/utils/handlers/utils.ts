@@ -99,3 +99,67 @@ export function formatCurrency(
     maximumFractionDigits: 2,
   }).format(value);
 }
+
+export function calculateSettlements(
+  balances: { name: string; balance: number }[]
+) {
+  // Filter out people with zero balance (they're settled)
+  const nonZeroBalances = balances.filter((b) => Math.abs(b.balance) > 0.01);
+
+  // Sort by balance (descending)
+  const sortedBalances = [...nonZeroBalances].sort(
+    (a, b) => a.balance - b.balance
+  );
+
+  const settlements: { from: string; to: string; amount: number }[] = [];
+
+  // Greedy algorithm to minimize number of transactions
+  while (sortedBalances.length > 1) {
+    const debtor = sortedBalances[0]; // Person who owes the most (most negative balance)
+    const creditor = sortedBalances[sortedBalances.length - 1]; // Person who is owed the most
+
+    const amount = Math.min(Math.abs(debtor.balance), creditor.balance);
+
+    if (amount > 0.01) {
+      // Only add settlements for non-trivial amounts
+      settlements.push({
+        from: debtor.name,
+        to: creditor.name,
+        amount: amount,
+      });
+    }
+
+    // Update balances
+    debtor.balance += amount;
+    creditor.balance -= amount;
+
+    // Re-sort or remove settled people
+    if (Math.abs(debtor.balance) < 0.01) {
+      sortedBalances.shift();
+    }
+
+    if (Math.abs(creditor.balance) < 0.01) {
+      sortedBalances.pop();
+    }
+  }
+
+  return settlements;
+}
+export function getTypeColor(type: string): string {
+  const colorMap: Record<string, string> = {
+    Flights: "#3b82f6",
+    Lodging: "#6366f1",
+    "Car rental": "#22c55e",
+    Transit: "#f97316",
+    Food: "#f59e0b",
+    Drinks: "#a855f7",
+    Sightseeing: "#06b6d4",
+    Activities: "#ec4899",
+    Shopping: "#8b5cf6",
+    Gas: "#ef4444",
+    Groceries: "#14b8a6",
+    Other: "#6b7280",
+  };
+
+  return colorMap[type] || colorMap.Other;
+}

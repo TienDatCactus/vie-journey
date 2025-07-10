@@ -1,6 +1,7 @@
 // store/useTripDetailStore.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { doGetUserTripList } from "../api";
 import {
   Expense,
   Itinerary,
@@ -12,6 +13,7 @@ import { Trip } from "./storeTypes";
 
 interface TripDetailStore {
   trip: Trip;
+  trips: Trip[];
   setTrip: (trip: Trip) => void;
   //   trip: Trip | null;
   notes: NoteData[];
@@ -47,6 +49,9 @@ interface TripDetailStore {
   addExpense: (expense: Expense) => void;
   updateExpense: (id: string, expense: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
+
+  addTripmate: (tripmateEmail: string) => void;
+  handleGetUserTrips: () => Promise<void>;
 }
 
 export const useTripDetailStore = create<TripDetailStore>()(
@@ -143,7 +148,7 @@ export const useTripDetailStore = create<TripDetailStore>()(
       addExpense: (expense) =>
         set((state) => ({
           expenses: [...state.expenses, expense],
-          currentUsage: state.currentUsage + expense.amount,
+          currentUsage: Number(state.currentUsage) + Number(expense.amount),
         })),
       updateExpense: (id, updated) =>
         set((state) => {
@@ -153,7 +158,7 @@ export const useTripDetailStore = create<TripDetailStore>()(
           return {
             expenses: updatedExpenses,
             currentUsage: updatedExpenses.reduce(
-              (total, expense) => total + expense.amount,
+              (total, expense) => Number(total) + Number(expense.amount),
               0
             ),
           };
@@ -165,7 +170,7 @@ export const useTripDetailStore = create<TripDetailStore>()(
           return {
             expenses: updatedExpenses,
             currentUsage: updatedExpenses.reduce(
-              (total, expense) => total + expense.amount,
+              (total, expense) => Number(total) + Number(expense.amount),
               0
             ),
           };
@@ -175,6 +180,25 @@ export const useTripDetailStore = create<TripDetailStore>()(
         set(() => ({
           totalBudget: budget,
         })),
+      addTripmate: (tripmateEmail) =>
+        set((state) => ({
+          trip: {
+            ...state.trip,
+            tripmates: [...state.trip.tripmates, tripmateEmail],
+          },
+        })),
+      handleGetUserTrips: async () => {
+        try {
+          const res = await doGetUserTripList();
+          if (res) {
+            set({ trips: res });
+          } else {
+            console.error("No data received from getUserTrips");
+          }
+        } catch (error) {
+          console.error("Failed to get user trips:", error);
+        }
+      },
     }),
     { name: "trip-detail-storage" }
   )

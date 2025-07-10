@@ -23,7 +23,7 @@ const Dashboard = lazy(() => import("../../pages/(user)/Dashboard/Dashboard"));
 const Hotels = lazy(() => import("../../pages/(user)/Hotels/Hotels"));
 const CreateTrip = lazy(() => import("../../pages/(user)/Trip/CreateTrip"));
 const CreateTripDetails = lazy(
-  () => import("../../pages/(user)/Trip/CreateTripDetails/CreateTripDetails")
+  () => import("../../pages/(user)/Trip/CreateTripDetails")
 );
 const BlogList = lazy(() => import("../../pages/(user)/Blogs/BlogList"));
 const BlogDetail = lazy(
@@ -141,36 +141,6 @@ const router = createBrowserRouter([
       },
     ],
     errorElement: <ErrorBoundary />,
-  },
-  {
-    path: "/blogs",
-    element: (
-      <AuthLayout>
-        <Outlet />
-      </AuthLayout>
-    ),
-    children: [
-      {
-        path: "",
-        element: <SuspenseWrapper component={BlogList} />,
-        errorElement: <ErrorBoundary />,
-      },
-      {
-        path: ":id",
-        element: <SuspenseWrapper component={BlogDetail} />,
-        errorElement: <ErrorBoundary />,
-      },
-      {
-        path: ":id/edit",
-        element: <SuspenseWrapper component={BlogDetail} />,
-        errorElement: <ErrorBoundary />,
-      },
-      {
-        path: "create",
-        element: <SuspenseWrapper component={CreateBlog} />,
-        errorElement: <ErrorBoundary />,
-      },
-    ],
   },
 
   {
