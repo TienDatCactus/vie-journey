@@ -13,6 +13,9 @@ import { AssetsModule } from './modules/assets/assets.module';
 import { TripModule } from './modules/trip/trip.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { join } from 'path';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -44,6 +47,13 @@ import { BlogModule } from './modules/blog/blog.module';
       },
       defaults: {
         from: `"VieJourney" <${process.env.MAIL_FROM}>`,
+      },
+      template: {
+        dir: join(__dirname, 'templates'),
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: false, // Change to false for debugging
+        },
       },
     }),
     AuthModule,

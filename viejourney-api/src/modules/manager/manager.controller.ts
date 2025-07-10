@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -15,10 +16,14 @@ import { CreateHotelDto } from 'src/common/dtos/create-hotel.dto';
 import { UpdateHotelDto } from 'src/common/dtos/update-hotel.dto';
 import * as XLSX from 'xlsx';
 import { HotelService } from '../hotel/hotel.service';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { Role } from 'src/common/enums/role.enum';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @Controller('manager')
-// @UseGuards(JwtAuthGuard, RolesGuard)
-// @Roles(Role.Manager)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.Manager)
 export class ManagerController {
   constructor(private readonly hotelService: HotelService) {}
 

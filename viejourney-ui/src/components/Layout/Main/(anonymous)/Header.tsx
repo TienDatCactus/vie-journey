@@ -8,6 +8,7 @@ import {
   TextField,
 } from "@mui/material";
 import React from "react";
+import { Link } from "react-router-dom";
 const headerNav: Array<{ name: string; link: string }> = [
   {
     name: "Home",
@@ -51,9 +52,11 @@ const Header = () => {
       }`}
     >
       <Stack className="h-full" direction={"row"} alignItems={"center"} gap={1}>
-        <TravelExploreIcon
-          className={`text-[40px] ${isScrolled ? "text-white" : ""}`}
-        />
+        <Link to={"/"} className="flex items-center gap-2">
+          <TravelExploreIcon
+            className={`text-[40px] ${isScrolled ? "text-white" : ""}`}
+          />
+        </Link>
         <h1 className={`text-[20px] ${isScrolled ? "text-white" : ""}`}>
           VieJourney
         </h1>

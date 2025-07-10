@@ -6,17 +6,20 @@ import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import React from "react";
+import { Author } from "../../../../../utils/interfaces/blog";
+import { useNavigate } from "react-router-dom";
 interface ExploreCardProps {
+  id: string;
   img: string;
   title: string;
   description: string;
-  author: string;
+  author: Author;
   liked: number;
   views: number;
 }
 
 const ExploreCard = ({
+  id,
   img,
   title,
   description,
@@ -27,9 +30,13 @@ const ExploreCard = ({
   const randomColor = () => {
     return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   };
+  const navigate = useNavigate();
+  const handleCardClick = () => {
+    navigate(`/blogs/${id}`); 
+  };
   return (
     <Card className="lg:w-full ">
-      <CardActionArea>
+      <CardActionArea onClick={handleCardClick}>
         <CardMedia
           component="img"
           className="lg:h-40 object-cover"
@@ -59,9 +66,9 @@ const ExploreCard = ({
           >
             <Stack direction={"row"} alignItems={"center"} gap={1}>
               <Avatar sx={{ bgcolor: randomColor(), width: 34, height: 34 }}>
-                {author.split("")[0]}
+                {author.name.split("")[0]}
               </Avatar>
-              <Typography variant="body2">{author}</Typography>
+              <Typography variant="body2">{author.name}</Typography>
             </Stack>
             <Stack direction={"row"} alignItems={"center"} gap={1}>
               <Stack direction={"row"} gap={1}>

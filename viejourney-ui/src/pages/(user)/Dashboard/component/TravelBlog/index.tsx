@@ -25,13 +25,13 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { IMyBlog } from "../../../../../utils/interfaces/blog";
-import useBlogUser from "../../../../../utils/hooks/user-blog-user";
 import { ImagePlusIcon } from "../../../../../../@/components/tiptap-icons/image-plus-icon";
+import { useUserBlog } from "../../../../../services/stores/useUserBlog";
 
 export default function TravelBlog() {
   const [myBlogs, setMyBlogs] = useState<IMyBlog[]>([]);
   const [loading, setLoading] = useState(true);
-  const { handleGetMyBlogs } = useBlogUser();
+  const { handleGetMyBlogs } = useUserBlog();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -277,16 +277,7 @@ export default function TravelBlog() {
 
       <Grid2 container spacing={3}>
         {myBlogs.map((blog) => (
-          <Grid2
-            size={{
-              xs: 12,
-              sm: 6,
-              md: 4,
-              lg: 3,
-              xl: 2,
-            }}
-            key={blog._id}
-          >
+          <Grid2 size={3} key={blog._id}>
             <Card
               className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer"
               onClick={() => navigate(`/blogs/${blog._id}`)}

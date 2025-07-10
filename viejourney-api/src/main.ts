@@ -28,8 +28,8 @@ async function bootstrap() {
       },
     }),
   );
-
-  // Initialize Passport with session support
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('strict routing', true);
   app.use(passport.initialize());
   app.use(passport.session());
   await app.listen(process.env.PORT ?? 5000);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { banAuthor, getBlogDetail, updateStatusBlog } from "../../../../services/api/blog";
+import { banAuthor, clearFlag, getBlogDetail, updateStatusBlog } from "../../../../services/api/blog";
 import { IBlogDetail } from "../../../../utils/interfaces/blog";
 import { enqueueSnackbar } from "notistack";
 
@@ -46,11 +46,24 @@ function useBlogDetail({ id }: { id: string }) {
       
     }
   }
+    const handleClearFlag = async (id: string) => {
+    try {
+      const res = await clearFlag(id);
+      if (res) {
+        enqueueSnackbar("Clear flag blog successful", {
+          variant: "success",
+        });
+      }
+      handleGetBlogDetail();
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
     handleGetBlogDetail();
     
   }, []);
-  return { blog, handleUpdateStatus, handleBanAuthor};
+  return { blog, handleUpdateStatus, handleBanAuthor, handleClearFlag};
 }
 
 export default useBlogDetail;

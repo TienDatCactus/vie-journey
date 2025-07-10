@@ -18,7 +18,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { isLoading, credential, user } = useAuthStore();
   const isAuthenticated = !!credential?.userId;
   const isVerified = user?.status === "ACTIVE";
-
+  console.log(isAuthenticated);
+  console.log(requireAuth);
   useEffect(() => {
     if (!requireAuth) return;
     if (!isAuthenticated) {
@@ -38,7 +39,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (requireAuth && !isAuthenticated) {
-    // Not authenticated, redirect to login
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 

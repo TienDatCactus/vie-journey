@@ -23,7 +23,7 @@ const HomeCall: React.FC = () => {
         </Stack>
       </div>
       <div className="flex justify-end items-start">
-        <Link to="/trip/create">
+        <Link to="/trips/create">
           <Button
             className="bg-neutral-100 px-6 py-4 text-dark-700 font-semibold text-base"
             endIcon={<DoubleArrow />}

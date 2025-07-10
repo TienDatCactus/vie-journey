@@ -18,93 +18,17 @@ import { CreateAccountDto } from 'src/common/dtos/create-account.dto';
 import { UpdateUserInfoDto } from 'src/common/dtos/update-userinfo.dto';
 import { Role } from 'src/common/enums/role.enum';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/role.guard';
 import { UserService } from '../userinfo/user.service';
 import { AdminService } from './admin.service';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+@Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.Admin)
-@Controller('admin')
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly userService: UserService,
   ) {}
-
-  @Get('assets/landing')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
-  async getAllBannersBySubsection() {
-    return this.adminService.fetchAllBannersBySubsection();
-  }
-
-  @Get('banner/subsection')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
-  async getSubsection() {
-    return this.adminService.getSubsection();
-  }
-
-  @Get('assets')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  async getAssetsByType(
-    @Query('type') type: string,
-    @Query('subsection') subsection?: string,
-  ) {
-    return this.adminService.getAssetsByType(type, subsection);
-  }
-  @Delete('assets/delete')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
-  async deleteAssetById(@Query('id') id: string) {
-    return this.adminService.deleteAssetById(id);
-  }
-
-  @Post('update-asset')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB
-      },
-      fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(new BadRequestException('Chỉ chấp nhận file ảnh!'), false);
-        }
-        cb(null, true);
-      },
-    }),
-  )
-  updateAsset(
-    @UploadedFile() file: Express.Multer.File,
-    @Body('publicId') publicId: string,
-  ) {
-    return this.adminService.updateAssetById(publicId, file);
-  }
-
-  // addAsset/banner
-  @Post('assets')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB
-      },
-      fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(new BadRequestException('Chỉ chấp nhận file ảnh!'), false);
-        }
-        cb(null, true);
-      },
-    }),
-  )
-  addAssetBanner(
-    @UploadedFile() file: Express.Multer.File,
-    @Body('userId') userId: string,
-    @Body('type') type: string,
-    @Body('subsection') subsection?: string,
-  ) {
-    return this.adminService.addAssetSystem(file, userId, type, subsection);
-  }
 
   @Get('accounts')
   async getAllAccounts() {
@@ -152,7 +76,6 @@ export class AdminController {
       userId: query.userId,
       email: query.email,
     };
-
     const pagination =
       query.page && query.pageSize
         ? {
@@ -160,7 +83,8 @@ export class AdminController {
             pageSize: parseInt(query.pageSize),
           }
         : undefined;
-
+    const resp = await this.userService.getAllUser(filter, pagination);
+    console.log(resp);
     return this.userService.getAllUser(filter, pagination);
   }
 

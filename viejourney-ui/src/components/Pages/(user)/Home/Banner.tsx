@@ -18,7 +18,7 @@ const HomeBanner: React.FC = () => {
           Continue exploring your dream destinations or plan your next
           adventure.
         </p>
-        <Link to="/trip/create">
+        <Link to="/trips/create">
           <Button
             endIcon={<Add />}
             className="bg-neutral-50 text-black px-4 py-2"

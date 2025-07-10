@@ -1,25 +1,28 @@
-import React, { useEffect, useState } from "react";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import useBlogUser from "../../../utils/hooks/user-blog-user";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { IBlog } from "../../../utils/interfaces/blog";
+import { useUserBlog } from "../../../services/stores/useUserBlog";
 
 const RelatedBlog = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [blogs, setBlogs] = useState<IBlog[]>();
-  const { getBlogList } = useBlogUser();
-
-  const fetchBlog = async () => {
-    const res = await getBlogList();
-    if (res) setBlogs(res);
-  };
+  const { getBlogList } = useUserBlog();
   useEffect(() => {
-    fetchBlog();
+    (async () => {
+      const data = await getBlogList();
+      if (data) {
+        setBlogs(data);
+      }
+    })();
   }, []);
-
+  const navigate = useNavigate();
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % Math.max(1, (blogs?.length ?? 0) - 2));
+    setCurrentSlide(
+      (prev) => (prev + 1) % Math.max(1, (blogs?.length ?? 0) - 2)
+    );
   };
 
   const prevSlide = () => {
@@ -61,6 +64,7 @@ const RelatedBlog = () => {
             {blogs?.map((blog) => (
               <div
                 key={blog._id}
+                onClick={() => navigate(`/blogs/${blog._id}`)}
                 className="flex-shrink-0 w-1/3 bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer"
               >
                 {/* Image Container */}

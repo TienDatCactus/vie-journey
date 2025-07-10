@@ -156,7 +156,7 @@ export interface IMyBlog {
   metrics: BlogMetrics;
 }
 
-interface Author {
+export interface Author {
   name: string;
   email: string;
 }

@@ -8,9 +8,9 @@ const HomeMap = () => {
       <div className="w-full h-[300px] mb-4  relative">
         <Map
           position="relative"
-          defaultZoom={20}
+          defaultZoom={18}
           detailed={false}
-          className="w-full h-full "
+          className="w-full h-full rounded-md shadow-md drop-shadow-md"
         />
         {/* Stats overlay */}
         <div className="z-20 absolute top-2 right-2 p-2 flex items-center gap-2 bg-gray-400/10 rounded-md bg-clip-padding backdrop-blur-sm border border-gray-100">
