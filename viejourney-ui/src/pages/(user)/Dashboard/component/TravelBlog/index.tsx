@@ -278,13 +278,7 @@ export default function TravelBlog() {
       <Grid2 container spacing={3}>
         {myBlogs.map((blog) => (
           <Grid2
-            size={{
-              xs: 12,
-              sm: 6,
-              md: 4,
-              lg: 3,
-              xl: 2,
-            }}
+            size={3}
             key={blog._id}
           >
             <Card

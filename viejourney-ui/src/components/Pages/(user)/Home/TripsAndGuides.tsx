@@ -1,37 +1,32 @@
 import { Add } from "@mui/icons-material";
 import { Button, Divider, Grid2, Paper, Stack } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { GuideTag, TripTag } from "./elements";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useBlogUser from "../../../../utils/hooks/user-blog-user";
+import { IBlog } from "../../../../utils/interfaces/blog";
+import { ITrip } from "../../../../utils/interfaces/trip";
+import { getTripList } from "../../../../services/api/trip";
 const HomeTrips: React.FC = () => {
-  const fakeData1 = [
-    {
-      title: "Trip to Paris",
-      from: "2023-01-01",
-      to: "2023-01-10",
-      img: "",
-    },
-    {
-      title: "Weekend in New York",
-      from: "2023-02-15",
-      to: "2023-02-18",
-      img: "",
-    },
-  ];
-  const fakeData2 = [
-    {
-      img: "",
-      title: "Exploring London",
-      likes: 120,
-      views: 3000,
-    },
-    {
-      img: "",
-      title: "Adventures in Tokyo",
-      likes: 200,
-      views: 5000,
-    },
-  ];
+  const [blogs, setBlogs] = useState<IBlog[]>();
+  const [trips, setTrips] = useState<ITrip[]>();
+
+  const { getBlogList } = useBlogUser();
+
+  const navigate = useNavigate();
+  const fetchBlog = async () => {
+    const res = await getBlogList();
+    if (res) setBlogs(res);
+  };
+
+  const fetchTrip = async () => {
+    const res = await getTripList();
+    if (res) setTrips(res);
+  };
+  useEffect(() => {
+    fetchBlog();
+    fetchTrip();
+  }, []);
   return (
     <div className="w-full max-w-[1200px] pb-10">
       <Grid2 container spacing={2}>
@@ -54,21 +49,30 @@ const HomeTrips: React.FC = () => {
               </Link>
             </Stack>
             <Stack className="my-2 mt-4">
-              {!!fakeData1.length &&
-                fakeData1?.map((item, index) => (
+              {trips && trips.length > 0 ? (
+                trips.slice(0, 2).map((item, index) => (
                   <Stack key={index}>
                     <TripTag
-                      img={item?.img}
+                      img={""}
                       title={item?.title}
-                      from={item?.from}
-                      to={item?.to}
+                      from={item?.startDate}
+                      to={item?.startDate}
                     />
-                    {index < fakeData1?.length - 1 && (
+                    {index < trips.length - 1 && (
                       <Divider className="border-[--color-neutral-400] border my-4" />
                     )}
                   </Stack>
-                ))}
+                ))
+              ) : (
+                <Paper
+                  elevation={0}
+                  className="bg-[--color-neutral-100] text-gray-600 text-sm italic py-4 px-2 text-center"
+                >
+                  You haven’t planned any trips yet. Start by creating one!
+                </Paper>
+              )}
             </Stack>
+
             <div className="flex justify-end">
               <Button variant="text" className="p-0 hover:underline">
                 See all
@@ -77,8 +81,7 @@ const HomeTrips: React.FC = () => {
           </Paper>
         </Grid2>
         <Grid2 size={6}>
-          {" "}
-          <Paper className="bg-[--color-neutral-200] p-4  h-[21.25rem] max-h-[400px] overflow-auto">
+          <Paper className="bg-[--color-neutral-200] p-4  h-[21.25rem] max-h-[400px] overflow">
             <Stack
               direction={"row"}
               justifyContent={"space-between"}
@@ -88,6 +91,7 @@ const HomeTrips: React.FC = () => {
               <div>
                 <Button
                   variant="outlined"
+                  onClick={() => navigate("/blogs/create")}
                   className="rounded-sm"
                   startIcon={<Add />}
                 >
@@ -96,20 +100,36 @@ const HomeTrips: React.FC = () => {
               </div>
             </Stack>
             <Grid2 container spacing={2} className="my-2 mt-4">
-              {!!fakeData2.length &&
-                fakeData2?.map((item, index) => (
+              {blogs && blogs.length > 0 ? (
+                blogs.slice(0, 2).map((item, index) => (
                   <Grid2 size={6} key={index}>
                     <GuideTag
-                      img={item?.img}
+                      img={item?.coverImage}
                       title={item?.title}
-                      likes={item?.likes}
-                      views={item?.views}
+                      likes={item?.metrics.likeCount}
+                      views={item?.metrics.viewCount}
                     />
                   </Grid2>
-                ))}
+                ))
+              ) : (
+                <Grid2 size={12}>
+                  <Paper
+                    elevation={0}
+                    className="bg-[--color-neutral-100] text-gray-600 text-sm italic py-4 px-2 text-center"
+                  >
+                    You haven’t created any guides yet. Share your travel
+                    experiences!
+                  </Paper>
+                </Grid2>
+              )}
             </Grid2>
+
             <div className="flex justify-end">
-              <Button variant="text" className="p-0 hover:underline">
+              <Button
+                onClick={() => navigate("/blogs")}
+                variant="text"
+                className="p-0 hover:underline"
+              >
                 See all
               </Button>
             </div>

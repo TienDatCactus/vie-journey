@@ -29,6 +29,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
+  // list all blogs
+  @Get('manager')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
+  async getAllBlogs(@Query() paginationDto: PaginationDto) {
+    return this.blogService.findAll(paginationDto);
+  }
+
   @Get('home')
   async getAllApprovedBlogs(
     @Query('page') page?: string,
@@ -166,13 +174,6 @@ export class BlogController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Manager)
-  @Get('manager')
-  async getManagerBlogs() {
-    return this.blogService.findAll();
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Manager)
   @Get('manager/:id')
   async getManagerBlogById(@Param('id') id: string) {
     return this.blogService.findOneBlogById(id);
@@ -224,8 +225,8 @@ export class BlogController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Manager)
   @Post('ban-author/:id')
-  async banAuthor(@Param('id') id: string, @Body('reason') reason: string) {
-    return this.blogService.banAuthor(id, reason);
+  async banAuthor(@Param('id') blogId: string, @Body('reason') reason: string) {
+    return this.blogService.banAuthor(blogId, reason);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -235,8 +236,7 @@ export class BlogController {
     return this.blogService.deleteBlogById(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Manager)
+  @UseGuards(JwtAuthGuard)
   @Post(':id/flag')
   async createFlag(
     @Param('id') id: string,
@@ -247,5 +247,12 @@ export class BlogController {
       throw new BadRequestException('Reason is required');
     }
     return this.blogService.createFlag(id, reason, req);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Manager)
+  async updateMetrics(@Param('id') blogId: string, @Req() req: Request) {
+    return this.blogService.updateMetrics(blogId, req);
   }
 }

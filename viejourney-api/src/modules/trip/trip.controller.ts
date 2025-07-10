@@ -20,6 +20,14 @@ import { UpdateTripDto } from 'src/common/dtos/update-trip.dto';
 export class TripController {
   constructor(private readonly tripService: TripService) {}
 
+  @Get()
+  findAllByUser(@Req() req: Request) {
+    const userId = req?.user?.['userId'];
+    if (!userId) {
+      throw new Error('User ID not found in request');
+    }
+    return this.tripService.findByUser(req?.user?.['id']);
+  }
   @Post()
   async create(@Req() req: Request, @Body() createTripDto: CreateTripDto) {
     return await this.tripService.create(createTripDto, req);
