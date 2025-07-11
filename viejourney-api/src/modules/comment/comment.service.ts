@@ -92,16 +92,27 @@ export class CommentService {
     return comment;
   }
 
-  async getComments(blogId: string, parentId?: string, limit = 10, skip = 0) {
+  async getComments(
+    blogId: string,
+    parentId?: string,
+    limit?: number,
+    skip?: number,
+  ) {
     const query: any = { blogId: new Types.ObjectId(blogId) };
     if (parentId) {
       query.parentId = new Types.ObjectId(parentId);
     } else {
-      // Lấy comment gốc (parentId là null hoặc không tồn tại)
       query.$or = [{ parentId: null }, { parentId: { $exists: false } }];
     }
-    // Lấy comment gốc hoặc reply theo parentId
-    return this.commentModel
+
+    // Gán giá trị mặc định nếu không truyền vào
+    const limitValue = limit !== undefined ? limit : 10;
+    const skipValue = skip !== undefined ? skip : 0;
+
+    // Lấy toàn bộ comments từ đầu đến skip+limit
+    const totalToFetch = skipValue + limitValue;
+
+    const comments = await this.commentModel
       .find(query)
       .populate({
         path: 'commentBy',
@@ -113,18 +124,19 @@ export class CommentService {
         },
       })
       .sort({ createdAt: 1 })
-      .skip(skip)
-      .limit(limit)
-      .lean()
-      .then((comments) =>
-        comments.map((comment) => ({
-          ...comment,
-          commentBy: {
-            ...comment.commentBy,
-            avatar: comment.commentBy?.avatar?.url || null, // Nếu không có avatar thì là null
-          },
-        })),
-      );
+      .limit(totalToFetch)
+      .lean();
+
+    // Map lại dữ liệu avatar
+    const mappedComments = comments.map((comment) => ({
+      ...comment,
+      commentBy: {
+        ...comment.commentBy,
+        avatar: comment.commentBy?.avatar?.url || null,
+      },
+    }));
+
+    return mappedComments;
   }
 
   async editComment(commentId: string, userId: string, content: string) {

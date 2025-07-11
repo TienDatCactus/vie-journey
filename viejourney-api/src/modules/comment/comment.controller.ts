@@ -33,10 +33,18 @@ export class CommentController {
   async getComments(
     @Query('blogId') blogId: string,
     @Query('parentId') parentId: string,
-    @Query('limit') limit: number = 10,
-    @Query('skip') skip: number = 0,
+    @Query('limit') limit?: string,
+    @Query('skip') skip?: string,
   ) {
-    return this.commentService.getComments(blogId, parentId, limit, skip);
+    // Chuyển đổi sang number, nếu không truyền thì dùng giá trị mặc định
+    const limitNumber = limit !== undefined ? parseInt(limit, 10) : 10;
+    const skipNumber = skip !== undefined ? parseInt(skip, 10) : 0;
+    return this.commentService.getComments(
+      blogId,
+      parentId,
+      limitNumber,
+      skipNumber,
+    );
   }
 
   @Patch(':id')
