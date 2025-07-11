@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { LoginForm, RegisterForm } from "../../../components/Auth";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 
 const Access: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user, credential } = useAuthStore();
   const location = useLocation();
   const [path] = useState<string>(location?.pathname);
-  if (user) {
+  if (user || credential) {
     return <Navigate to="/" replace />;
   }
 
@@ -46,19 +46,19 @@ const Access: React.FC = () => {
           </h1>
           <span className="font-light text-black no-underline">
             Or{" "}
-            <a
-              href={checkPath()?.link}
+            <Link
+              to={checkPath()?.link}
               className="text-[#3f61d3] font-medium hover:underline no-underline"
             >
               {checkPath()?.subTitle}
-            </a>{" "}
+            </Link>{" "}
             Or{" "}
-            <a
-              href="/"
+            <Link
+              to="/"
               className="text-[#3f61d3] font-medium hover:underline no-underline"
             >
               go home
-            </a>
+            </Link>
           </span>
         </div>
         {checkPath()?.form}

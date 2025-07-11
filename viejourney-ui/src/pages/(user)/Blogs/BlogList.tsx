@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import SearchIcon from "@mui/icons-material/Search";
-import { Chip, InputAdornment, Stack, TextField } from "@mui/material";
+import { Button, Chip, InputAdornment, Stack, TextField } from "@mui/material";
 import { animate, motion } from "motion/react";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AllBlogs } from "../../../components/Pages/(user)/Guides";
 import { MainLayout } from "../../../layouts";
+import { Link } from "react-router-dom";
+import { useUserBlog } from "../../../services/stores/useUserBlog";
+import { IBlog } from "../../../utils/interfaces/blog";
 const BlogList: React.FC = () => {
   const handleScroll = () => {
     const element = destRef.current;
@@ -48,14 +52,62 @@ const BlogList: React.FC = () => {
     "My Tho",
   ];
   const destRef = useRef<HTMLDivElement | null>(null);
+
+  const [blogs, setBlogs] = useState<IBlog[]>();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [params, setParams] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
+  });
+  const { getBlogList } = useUserBlog();
+  useEffect(() => {
+    fetchData(params);
+  }, []);
+
+  const fetchData = async (params: any) => {
+    const data = await getBlogList(params);
+    if (data) {
+      setBlogs(data);
+    }
+  };
+
+  const handleShowMore = () => {
+    const newParam = {
+      ...params,
+      limit: params.limit + 10,
+    };
+
+    setParams(newParam);
+    fetchData(newParam);
+  };
+
+  const handleSearchChange = (search: string) => {
+    const newParams = {
+      ...params,
+      search,
+    };
+    setParams(newParams);
+    fetchData(newParams);
+  };
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      handleSearchChange(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
   return (
     <MainLayout>
-      <div className="w-full max-w-[1200px] py-6">
+      <div className="w-full max-w-[75rem]  py-6">
         <Stack
           direction={"column"}
           justifyContent={"center"}
           alignItems={"center"}
           className=" mx-auto"
+          gap={1}
         >
           <h1 className="font-bold my-2 text-[40px]">
             Explore Vietnam's travel guides and itineraries
@@ -63,7 +115,8 @@ const BlogList: React.FC = () => {
           <TextField
             className="w-2/3 my-2"
             fullWidth
-            placeholder="Search for a destination"
+            variant="standard"
+            placeholder="Search for a specific blog"
             slotProps={{
               input: {
                 startAdornment: (
@@ -74,6 +127,13 @@ const BlogList: React.FC = () => {
               },
             }}
           />
+          <Link
+            to={"/blogs/create"}
+            className="text-gray-500 hover:text-black transition-all duration-400 ease-in-out hover:scale-110"
+          >
+            Write your own blogs and share your travel experiences with the
+            world.
+          </Link>
           <p className="my-2">Or browse our most popular destinations: </p>
           <Stack direction={"row"} className="flex-wrap " gap={2}>
             {!!destinations.length &&
@@ -96,7 +156,17 @@ const BlogList: React.FC = () => {
         </Stack>
       </div>
       {/* guides cards */}
-      <AllBlogs />
+      <AllBlogs blogs={blogs ?? []} />
+      <div className="flex justify-center mt-6">
+        <Button
+          variant="outlined"
+          onClick={handleShowMore}
+          color="primary"
+          className="rounded-4xl py-2 px-10 border-[#d9d9d9] text-[#495057] font-semibold"
+        >
+          See more
+        </Button>
+      </div>
       <motion.div
         className="w-full max-w-[1200px] pb-10"
         ref={destRef}

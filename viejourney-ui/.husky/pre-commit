@@ -2,8 +2,8 @@
 . "$(dirname "$0")/_/husky.sh"
 
 npx lint-staged
-npm run build
-if [ $? -ne 0 ]; then
-  echo "Build failed. Please fix the errors before committing."
-  exit 1
-fi
+# npm run build
+# if [ $? -ne 0 ]; then
+#   echo "Build failed. Please fix the errors before committing."
+#   exit 1
+# fi

@@ -34,6 +34,8 @@ interface ErrorHandlerOptions {
   defaultSystemErrorMessage?: string;
   logger?: (message: string, error?: any) => void;
   authErrorExceptions?: string[];
+  noRedirectPaths?: string[];
+  noSnackbarPaths?: string[];
 }
 
 // Track recent snackbar messages to prevent duplicates
@@ -179,6 +181,7 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
       "Invalid email or password",
       "Thông tin đăng nhập không chính xác",
     ],
+    noRedirectPaths = ["/trips/invite", "trips/plan"],
   } = options;
 
   // Vietnamese error messages by status code
@@ -258,7 +261,12 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
         });
       } else {
         localStorage.removeItem("token");
-        if (redirectOnUnauthorized) {
+        const currentPath = window.location.pathname;
+        const shouldRedirect =
+          redirectOnUnauthorized &&
+          !noRedirectPaths.some((path) => currentPath.includes(path));
+
+        if (shouldRedirect) {
           showDebouncedSnackbar(
             "Your session has expired. Please log in again.",
             {
@@ -274,6 +282,14 @@ const createErrorHandler = (options: ErrorHandlerOptions = {}) => {
               window.location.replace(loginRedirectPath);
             }, 1000);
           }
+        } else {
+          showDebouncedSnackbar(
+            "Your session has expired, but you can continue working. Some features may be limited.",
+            {
+              variant: "warning",
+              autoHideDuration: 5000,
+            }
+          );
         }
       }
 

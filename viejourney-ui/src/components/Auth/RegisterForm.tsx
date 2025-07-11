@@ -16,6 +16,7 @@ const RegisterForm: React.FC = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<{
     email: string;
@@ -90,7 +91,11 @@ const RegisterForm: React.FC = () => {
           type="password"
           size="small"
           error={!!errors.rePassword}
-          {...register("rePassword", { required: true })}
+          {...register("rePassword", {
+            required: true,
+            validate: (value) =>
+              value === watch("password") || "Passwords do not match",
+          })}
           className="w-full *:text-sm rounded-sm"
           placeholder="Re-enter your password"
         />

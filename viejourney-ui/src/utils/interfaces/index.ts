@@ -1,6 +1,5 @@
 export interface Account {
   _id: string;
-
   email: string;
   role: "USER" | "ADMIN" | "MANAGER";
   status: "ACTIVE" | "INACTIVE" | "BANNED";
@@ -10,20 +9,20 @@ export interface Trip {
   _id: string;
   title: string;
   destination: {
-    id: string;
-    name: string;
+    id: string; // Google Place ID or custom ID
+    name: string; // Name of the destination
     location: {
-      lat: number;
-      lng: number;
+      lat: number; // Latitude of the destination
+      lng: number; // Longitude of the destination
     };
   };
   startDate: Date;
   endDate: Date;
-  budgetRange?: string;
-  tripmateRange?: string;
   tripmates: string[];
-  description: string;
   visibility: boolean;
+  createdBy: Partial<UserInfo>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface UserInfo extends Account {

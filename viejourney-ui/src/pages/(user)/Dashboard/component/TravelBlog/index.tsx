@@ -1,32 +1,31 @@
-import { useEffect, useState } from "react";
 import {
+  Add,
+  CalendarToday,
+  Delete,
+  Edit,
+  LocationOn,
+  Public,
+  Share,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
   Card,
   CardContent,
   CardMedia,
-  Typography,
   Chip,
-  Box,
-  Grid,
   Container,
-  Skeleton,
-  IconButton,
-  Tooltip,
-  Button,
   Grid2,
+  IconButton,
+  Skeleton,
+  Tooltip,
+  Typography,
 } from "@mui/material";
-import {
-  LocationOn,
-  CalendarToday,
-  Edit,
-  Delete,
-  Share,
-  Add,
-  Public,
-} from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import { IMyBlog } from "../../../../../utils/interfaces/blog";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ImagePlusIcon } from "../../../../../../@/components/tiptap-icons/image-plus-icon";
 import { useUserBlog } from "../../../../../services/stores/useUserBlog";
+import { IMyBlog } from "../../../../../utils/interfaces/blog";
 
 export default function TravelBlog() {
   const [myBlogs, setMyBlogs] = useState<IMyBlog[]>([]);
@@ -72,9 +71,16 @@ export default function TravelBlog() {
   };
 
   const LoadingSkeleton = () => (
-    <Grid container spacing={3} className="mt-4">
+    <Grid2 container spacing={3} className="mt-4">
       {[1, 2, 3, 4, 5, 6].map((item) => (
-        <Grid item xs={12} sm={6} md={4} key={item}>
+        <Grid2
+          size={{
+            xs: 12,
+            sm: 6,
+            lg: 4,
+          }}
+          key={item}
+        >
           <Card className="h-full">
             <Skeleton variant="rectangular" height={200} />
             <CardContent>
@@ -98,9 +104,9 @@ export default function TravelBlog() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
       ))}
-    </Grid>
+    </Grid2>
   );
 
   if (loading) {
@@ -134,7 +140,6 @@ export default function TravelBlog() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
-              mb: 6,
             }}
           >
             <Box>
@@ -143,7 +148,6 @@ export default function TravelBlog() {
                 sx={{
                   fontWeight: "bold",
                   color: "#1a1a1a",
-                  mb: 1,
                 }}
               >
                 Travel Guides
@@ -159,40 +163,33 @@ export default function TravelBlog() {
               </Typography>
             </Box>
 
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              // onClick={handleCreateGuide}
-              sx={{
-                backgroundColor: "#2c2c2c",
-                "&:hover": {
-                  backgroundColor: "#1a1a1a",
-                },
-                textTransform: "none",
-                fontWeight: 500,
-                px: 3,
-                py: 1,
-                borderRadius: 2,
-              }}
-            >
-              Create Guide
-            </Button>
+            <Link to={"/blogs/create"}>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                // onClick={handleCreateGuide}
+
+                className="rounded-sm bg-gray-800 hover:bg-gray-900 text-white"
+              >
+                Create Guide
+              </Button>
+            </Link>
           </Box>
 
           <Box
             sx={{
               display: "flex",
+
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
               minHeight: "400px",
               textAlign: "center",
+              gap: 2,
             }}
           >
             <Box
               sx={{
-                mb: 3,
-                p: 3,
                 borderRadius: "50%",
                 backgroundColor: "#f5f5f5",
                 display: "flex",
@@ -201,9 +198,9 @@ export default function TravelBlog() {
               }}
             >
               <Public
+                className="text-gray-400"
                 sx={{
                   fontSize: 60,
-                  color: "#bbb",
                   strokeWidth: 1,
                 }}
               />
@@ -211,10 +208,10 @@ export default function TravelBlog() {
 
             <Typography
               variant="h6"
+              className="text-2xl"
               sx={{
                 fontWeight: 600,
                 color: "#333",
-                mb: 2,
               }}
             >
               No guides yet
@@ -224,7 +221,6 @@ export default function TravelBlog() {
               variant="body1"
               sx={{
                 color: "#666",
-                mb: 4,
                 maxWidth: "400px",
                 lineHeight: 1.6,
               }}
@@ -232,24 +228,25 @@ export default function TravelBlog() {
               Start sharing your travel experiences by creating your first guide
             </Typography>
 
-            <Button
-              variant="contained"
-              // onClick={handleCreateFirstGuide}
-              sx={{
-                backgroundColor: "#2c2c2c",
-                "&:hover": {
-                  backgroundColor: "#1a1a1a",
-                },
-                textTransform: "none",
-                fontWeight: 500,
-                px: 4,
-                py: 1.5,
-                borderRadius: 2,
-                fontSize: "16px",
-              }}
-            >
-              Create Your First Guide
-            </Button>
+            <Link to={"/blogs/create"}>
+              <Button
+                variant="contained"
+                // onClick={handleCreateFirstGuide}
+                sx={{
+                  backgroundColor: "#2c2c2c",
+                  "&:hover": {
+                    backgroundColor: "#1a1a1a",
+                  },
+                  textTransform: "none",
+                  fontWeight: 500,
+                  px: 4,
+                  py: 1.5,
+                  fontSize: "16px",
+                }}
+              >
+                Create Your First Guide
+              </Button>
+            </Link>
           </Box>
         </div>
       </Box>

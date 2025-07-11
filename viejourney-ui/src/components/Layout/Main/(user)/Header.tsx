@@ -98,12 +98,12 @@ const Header = () => {
                     key={index}
                     className="h-full transition-all duration-200 ease-in-out hover:scale-125"
                   >
-                    <a
+                    <Link
                       className="no-underline text-[12px] text-[#5b5b5b] font-medium"
-                      href={nav.link}
+                      to={nav.link}
                     >
                       {nav.name}
-                    </a>
+                    </Link>
                   </div>
                 ))}
             </Stack>

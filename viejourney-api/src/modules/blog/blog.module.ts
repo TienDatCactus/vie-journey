@@ -10,6 +10,8 @@ import { AccountSchema } from 'src/infrastructure/database/account.schema';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { UserInfosSchema } from 'src/infrastructure/database/userinfo.schema';
 import { AssetsModule } from '../assets/assets.module';
+import { Like } from 'src/common/entities/like.entity';
+import { LikeSchema } from 'src/infrastructure/database/like.schema';
 
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { AssetsModule } from '../assets/assets.module';
       { name: Blog.name, schema: BlogSchema },
       { name: Account.name, schema: AccountSchema },
       { name: UserInfos.name, schema: UserInfosSchema },
+      { name: Like.name, schema: LikeSchema },
     ]),
     forwardRef(() => AuthModule),
     AssetsModule,
