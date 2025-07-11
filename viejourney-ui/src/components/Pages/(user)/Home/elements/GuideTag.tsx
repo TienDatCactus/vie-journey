@@ -1,3 +1,4 @@
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { IconButton, Stack } from "@mui/material";
@@ -5,14 +6,28 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
+import { useEffect, useState } from "react";
+import { useUserBlog } from "../../../../../services/stores/useUserBlog";
 interface GuideTagProps {
+  id: string;
   img: string;
   title: string;
   likes: number;
   views: number;
 }
 
-const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
+const GuideTag = ({ id, img, title, likes, views }: GuideTagProps) => {
+  const [isLiked, setIsLiked] = useState<boolean>(false);
+
+  const { handleCheckIsLike } = useUserBlog();
+
+  useEffect(() => {
+    (async () => {
+      const liked = await handleCheckIsLike(id);
+      setIsLiked(!!liked);
+    })();
+  }, [id]);
+
   return (
     <Card className="w-full">
       <div className="p-2 ">
@@ -46,7 +61,14 @@ const GuideTag = ({ img, title, likes, views }: GuideTagProps) => {
           >
             <Stack direction={"row"} alignItems={"center"}>
               <IconButton className="p-1">
-                <FavoriteBorderIcon className="text-base " />
+                {isLiked ? (
+                  <FavoriteIcon
+                    className="cursor-pointer hover:scale-110 transition-all duration-300"
+                    sx={{ color: "red" }}
+                  />
+                ) : (
+                  <FavoriteBorderIcon className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600" />
+                )}
               </IconButton>
               <p className="m-0 text-sm">{likes}</p>
             </Stack>

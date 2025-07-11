@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { enqueueSnackbar } from "notistack";
 import { create } from "zustand";
 import {
+  checkLike,
   createFlag,
   editBlogDraft,
   editBlogPublic,
@@ -9,8 +11,10 @@ import {
   getBlogPublic,
   getBlogUserDetail,
   getMyBlog,
+  likeBlog,
   publicBlog,
-  startBlog
+  startBlog,
+  unlikeBlog,
 } from "../../services/api/blog";
 
 interface UserBlogStore {
@@ -23,6 +27,10 @@ interface UserBlogStore {
   handleGetMyBlogs: () => Promise<any>;
   handleGetBlogUserDetail: (id: string) => Promise<any>;
   handleCreateFlag: (id: string, reason: string) => Promise<void>;
+  handleLikeBlog: (id: string) => Promise<any>;
+  handleUnlikeBlog: (id: string) => Promise<any>;
+  handleCheckIsLike: (id: string) => Promise<any>;
+
   getBlogList: typeof getBlogList;
 }
 
@@ -101,6 +109,31 @@ export const useUserBlog = create<UserBlogStore>((set, get) => ({
       }
     } catch (error) {
       console.error("handleCreateFlag error:", error);
+    }
+  },
+
+  handleLikeBlog: async (id: string) => {
+    try {
+      await likeBlog(id);
+    } catch (error) {
+      console.error("handleCreateFlag error:", error);
+    }
+  },
+
+  handleUnlikeBlog: async (id: string) => {
+    try {
+      await unlikeBlog(id);
+    } catch (error) {
+      console.error("handleCreateFlag error:", error);
+    }
+  },
+  handleCheckIsLike: async (id: string): Promise<boolean> => {
+    try {
+      const res = await checkLike(id); 
+      return !!res?.liked; 
+    } catch (error) {
+      console.error("handleCheckIsLike error:", error);
+      return false;
     }
   },
 

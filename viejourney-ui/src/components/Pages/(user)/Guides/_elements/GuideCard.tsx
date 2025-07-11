@@ -1,3 +1,4 @@
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Avatar, IconButton, Stack } from "@mui/material";
@@ -7,12 +8,24 @@ import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
 import { IBlog } from "../../../../../utils/interfaces/blog";
+import { useUserBlog } from "../../../../../services/stores/useUserBlog";
+import { useEffect, useState } from "react";
 
 const GuideCard = (props: IBlog) => {
   const navigate = useNavigate();
+  const [isLiked, setIsLiked] = useState<boolean>(false);
+
+  const { handleCheckIsLike } = useUserBlog();
+
+  useEffect(() => {
+    (async () => {
+      const liked = await handleCheckIsLike(props._id);
+      setIsLiked(!!liked);
+    })();
+  }, [props._id]);
 
   const handleNavigate = () => {
-    navigate(`/blogs/${props._id}`); // 🔗 Điều hướng tới trang chi tiết
+    navigate(`/blogs/${props._id}`);
   };
 
   return (
@@ -49,7 +62,16 @@ const GuideCard = (props: IBlog) => {
           <Stack direction={"row"} gap={1}>
             <Stack direction={"row"} alignItems={"center"}>
               <IconButton>
-                <FavoriteBorderIcon className="text-[18px]" />
+                {isLiked ? (
+                  <FavoriteIcon
+                    className="cursor-pointer hover:scale-110 transition-all duration-300"
+                    sx={{ color: "red" }}
+                  />
+                ) : (
+                  <FavoriteBorderIcon
+                    className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600"
+                  />
+                )}
               </IconButton>
               <p className="m-0">{props.metrics.likeCount} </p>
             </Stack>

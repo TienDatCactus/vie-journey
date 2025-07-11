@@ -89,6 +89,7 @@ const HomeTrips: React.FC<{
                 blogs.slice(0, 2).map((item, index) => (
                   <Grid2 size={6} key={index}>
                     <GuideTag
+                      id={item?._id}
                       img={item?.coverImage}
                       title={item?.title}
                       likes={item?.metrics.likeCount}
