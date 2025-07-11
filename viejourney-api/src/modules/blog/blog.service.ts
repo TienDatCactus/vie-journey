@@ -14,14 +14,65 @@ import { AssetsService } from '../assets/assets.service';
 import { v4 as uuidv4 } from 'uuid';
 import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 import { Request } from 'express';
+import { Like } from 'src/common/entities/like.entity';
 @Injectable()
 export class BlogService {
   constructor(
     @InjectModel('Blog') private readonly blogModel: Model<Blog>,
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
+    @InjectModel('Like') private readonly likeModel: Model<Like>,
     private readonly assetsService: AssetsService,
   ) {}
+  // check if user has liked a blog
+  async hasUserLikedBlog(userId: string, blogId: string): Promise<boolean> {
+    const like = await this.likeModel.findOne({ userId, blogId }).exec();
+    return !!like;
+  }
+  // Create like blog
+  // Hàm like blog
+  async postLikeBlog(req: Request, blogId: string) {
+    try {
+      const userId = req.user?.['userId'] as string;
+      if (!userId) throw new BadRequestException('User ID not found');
+      // 1. Tạo like mới (nếu chưa tồn tại)
+      const like = await this.likeModel.create({ userId, blogId });
+
+      // 2. Thêm like vào blog và tăng likeCount
+      await this.blogModel.findByIdAndUpdate(
+        blogId,
+        {
+          $addToSet: { likes: like._id },
+          $inc: { 'metrics.likeCount': 1 }, // Tăng likeCount lên 1
+        },
+        { new: true },
+      );
+
+      return {
+        like: like,
+        message: 'Blog liked successfully',
+      };
+    } catch (error) {
+      throw new BadRequestException('Error liking blog: ' + error.message);
+    }
+  }
+
+  // Hàm unlike blog
+  async unlikeBlog(req: Request, blogId: string) {
+    const userId = req.user?.['userId'] as string;
+    // 1. Xóa like trong bảng Like
+    const like = await this.likeModel.findOneAndDelete({ userId, blogId });
+
+    // 2. Nếu like tồn tại, xóa reference trong blog và giảm likeCount
+    if (like) {
+      await this.blogModel.findByIdAndUpdate(blogId, {
+        $pull: { likes: like._id },
+        $inc: { 'metrics.likeCount': -1 }, // Giảm likeCount đi 1
+      });
+    }
+
+    return { message: 'Blog unliked successfully' };
+  }
 
   // list all blogs
   async findAll(paginationDto: PaginationDto) {
@@ -289,40 +340,37 @@ export class BlogService {
   }
 
   // /blogs/ban-author/:id
- async banAuthor(blogId: string, reason: string) {
-    try {
-      const blog = await this.blogModel
-        .findById(blogId)
-        .populate({
-          path: 'createdBy',
-          populate: {
-            path: 'userId', // userId là ref tới Account
-            model: 'Account',
-            select: 'role', // chỉ lấy trường role nếu muốn
-          },
-        })
-        .exec();
-      console.log(blog);
-      if (!blog) {
-        throw new NotFoundException('Blog not found');
-      }
-      // if (
-      //   blog.createdBy &&
-      //   blog.createdBy.userId &&
-      //   (blog.createdBy.userId.role === 'ADMIN' ||
-      //     blog.createdBy.userId.role === 'MANAGER')
-      // ) {
-      //   throw new NotFoundException('Cannot ban admin or manager author');
-      // } else if (
-      //   blog.createdBy &&
-      //   blog.createdBy.userId &&
-      //   blog.createdBy.userId.role === 'USER'
-      // ) {
-      // Fetch the Account document to ensure 'save' is available
+  async banAuthor(blogId: string, reason: string) {
+    const blog = await this.blogModel
+      .findById(blogId)
+      .populate({
+        path: 'createdBy',
+        populate: {
+          path: 'userId',
+          model: 'Account',
+          select: 'role',
+        },
+      })
+      .exec();
+
+    if (!blog) {
+      throw new NotFoundException('Blog not found');
+    }
+    if (
+      blog.createdBy &&
+      blog.createdBy.userId &&
+      (blog.createdBy.userId.role === 'ADMIN' ||
+        blog.createdBy.userId.role === 'MANAGER')
+    ) {
+      throw new BadRequestException('Cannot ban admin or manager author');
+    } else if (
+      blog.createdBy &&
+      blog.createdBy.userId &&
+      blog.createdBy.userId.role === 'USER'
+    ) {
       const account = await this.accountModel.findById(
         blog.createdBy.userId._id,
       );
-      console.log('Account found:', account);
       if (account) {
         account.status = Status.banned;
         await account.save();
@@ -339,9 +387,9 @@ export class BlogService {
         bannedAt: userInfo ? userInfo.bannedAt : blog.createdBy.bannedAt,
         status: account ? account.status : blog.createdBy.userId.status,
       };
-    } catch (error) {
-      throw new NotFoundException('Blog error');
     }
+    // Nếu không rơi vào các trường hợp trên
+    throw new BadRequestException('Invalid blog author');
   }
   // delete blog by id
   async deleteBlogById(blogId: string) {
