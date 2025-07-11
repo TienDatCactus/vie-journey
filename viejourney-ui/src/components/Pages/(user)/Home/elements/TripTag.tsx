@@ -53,7 +53,7 @@ const TripTag = ({ trip }: { trip: Trip }) => {
             </Stack>
           </Grid2>
           <Grid2 size={1} direction={"row"} alignItems={"center"}>
-            <Link to={`/trips/edit/${trip?._id}`}>
+            <Link to={`/trips/plan/${trip?._id}`}>
               <IconButton>
                 <NavigateNext className="text-base" />
               </IconButton>

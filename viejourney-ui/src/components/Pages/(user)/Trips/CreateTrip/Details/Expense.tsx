@@ -977,7 +977,7 @@ const AddTripmateDialog = () => {
         </DialogTitle>
         <DialogContent className="w-md">
           <TextField
-            value={`${window.location.origin}/trip/invite/${trip._id}`}
+            value={`${window.location.origin}/trips/invite/${trip._id}`}
             fullWidth
             contentEditable={false}
             slotProps={{
@@ -992,7 +992,7 @@ const AddTripmateDialog = () => {
                     <Button
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          `${window.location.origin}/trip/invite/${trip._id}`
+                          `${window.location.origin}/trips/invite/${trip._id}`
                         );
                         enqueueSnackbar("Trip link copied to clipboard!", {
                           variant: "success",

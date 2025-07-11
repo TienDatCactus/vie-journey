@@ -4,6 +4,8 @@ import { AuthLayout } from "../../layouts";
 import ErrorBoundary from "../handlers/errors/ErrorBoundary";
 import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
+import InviteRedirect from "../../pages/(user)/Trip/TripInvite";
+import TripJoinViaEmail from "../../pages/(user)/Trip/TripJoinViaEmail";
 // Anonymous routes
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
 const VerifyScreen = lazy(
@@ -220,22 +222,51 @@ const router = createBrowserRouter([
   },
   {
     path: "/trips",
-    element: (
-      <AuthLayout>
-        <Outlet />
-      </AuthLayout>
-    ),
     errorElement: <ErrorBoundary />,
     children: [
       {
-        path: "create",
-        element: <SuspenseWrapper component={CreateTrip} requireAuth={true} />,
+        path: ":id",
+        element: (
+          <AuthLayout>
+            <SuspenseWrapper component={CreateTripDetails} requireAuth={true} />
+          </AuthLayout>
+        ),
       },
       {
-        path: "edit/:id",
+        path: "create",
         element: (
-          <SuspenseWrapper component={CreateTripDetails} requireAuth={true} />
+          <AuthLayout>
+            <SuspenseWrapper component={CreateTrip} requireAuth={true} />
+          </AuthLayout>
         ),
+      },
+      {
+        path: "plan",
+        caseSensitive: true,
+        element: (
+          <AuthLayout>
+            <Outlet />
+          </AuthLayout>
+        ),
+        children: [
+          {
+            path: ":id",
+            element: (
+              <SuspenseWrapper
+                component={CreateTripDetails}
+                requireAuth={true}
+              />
+            ),
+          },
+        ],
+      },
+      {
+        path: "invite/:id",
+        element: <InviteRedirect />,
+      },
+      {
+        path: ":tripId/join",
+        element: <TripJoinViaEmail />,
       },
     ],
   },

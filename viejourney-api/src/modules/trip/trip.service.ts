@@ -9,12 +9,14 @@ import { UpdateTripDto } from 'src/common/dtos/update-trip.dto';
 import { Plan, TripPlan } from 'src/common/entities/plan.entity';
 import { Trip } from 'src/common/entities/trip.entity';
 import { AccountService } from '../account/account.service';
+import { UserInfos } from 'src/common/entities/userInfos.entity';
 
 @Injectable()
 export class TripService {
   constructor(
     @InjectModel('Trip') private readonly tripModel: Model<Trip>,
     @InjectModel('Plan') private readonly planModel: Model<TripPlan>,
+    @InjectModel('User') private readonly userModel: Model<UserInfos>,
     private readonly accountService: AccountService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailerService,
@@ -28,7 +30,6 @@ export class TripService {
     if (!trip) {
       throw new HttpException('Trip not found', HttpStatus.NOT_FOUND);
     }
-    console.log(trip.createdBy, req.user?.['userId']);
     if (trip.createdBy.toString() !== req.user?.['userId'].toString()) {
       throw new HttpException(
         'Only the trip creator can remove tripmates',
@@ -51,6 +52,7 @@ export class TripService {
       createTripDto.dates[0] < createTripDto.dates[1]
         ? [createTripDto.dates[0], createTripDto.dates[1]]
         : [createTripDto.dates[1], createTripDto.dates[0]];
+    console.log(req.user?.['userId']);
     const newTrip = new this.tripModel({
       title: `Trip to ${createTripDto.destination.name}`,
       destination: createTripDto.destination,
@@ -69,10 +71,13 @@ export class TripService {
         createTripDto.inviteEmails.map((email) => {
           const secret = process.env.JWT_SECRET || 'secret';
           const token = this.jwtService.sign(
-            { sub: email, email },
-            { secret: secret },
+            { sub: email, email: email, tripId: saved._id },
+            {
+              secret: secret,
+              expiresIn: '24h',
+            },
           );
-          const joinLink = `${process.env.FE_URL}/trip/${saved._id}/join?token=${token}`;
+          const joinLink = `${process.env.FE_URL}/trips/${saved._id}/join?token=${token}`;
           return this.mailService.sendMail({
             to: email,
             subject: 'You are invited to join a trip!',
@@ -87,7 +92,58 @@ export class TripService {
     }
     return saved;
   }
+  async validateInvite(tripId: string, token: string) {
+    let decodedToken;
+    try {
+      if (!token) {
+        throw new HttpException(
+          'No invitation token provided',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const secret = process.env.JWT_SECRET || 'secret';
+      decodedToken = this.jwtService.verify(token, {
+        secret: secret,
+      });
+      console.log('Decoded token:', decodedToken);
+      console.log(tripId);
+      if (decodedToken.tripId !== tripId) {
+        throw new HttpException(
+          'Invalid invitation token for this trip',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      // Check if token is expired
+      if (new Date() > new Date(decodedToken.expiresAt)) {
+        throw new HttpException(
+          'Invitation token has expired',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      // 2. Get the trip details
+      const trip = await this.tripModel.findById(tripId);
+      if (!trip) {
+        throw new HttpException('Trip not found', HttpStatus.NOT_FOUND);
+      }
+      // 3. Check if the email already exists in your system
+      const email = decodedToken.email;
+      const existingUser = await this.userModel.findOne({ email });
+      return {
+        valid: true,
+        trip: trip,
+        userExists: !!existingUser,
+        email: email,
+      };
+    } catch (error) {
+      console.error('Error validating invitation token:', error);
+      throw new HttpException(
+        'Error validating invitation token: ' + error.message,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 
+  // Register the route
   async addToTrip(tripId: string, token: string) {
     const trip = await this.tripModel.findOne({ _id: tripId });
     if (!trip) {
@@ -129,7 +185,6 @@ export class TripService {
   findAll() {
     return `This action returns all trip`;
   }
-
   findOne(id: string) {
     const trip = this.tripModel.findOne({
       _id: id,
@@ -141,7 +196,6 @@ export class TripService {
       );
     return trip;
   }
-
   update(id: number, updateTripDto: UpdateTripDto) {
     return `This action updates a #${id} trip`;
   }
@@ -174,11 +228,11 @@ export class TripService {
 
       const secret = process.env.JWT_SECRET || 'secret';
       const token = this.jwtService.sign(
-        { sub: email, email },
+        { sub: email, email, tripId: trip._id },
         { secret: secret },
       );
 
-      const joinLink = `${process.env.FE_URL}/trip/${trip._id}/join?token=${token}`;
+      const joinLink = `${process.env.FE_URL}/trips/${trip._id}/join?token=${token}`;
 
       // Add await here and detailed logging
 
@@ -208,5 +262,10 @@ export class TripService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+  async findPlanByTripId(tripId: string): Promise<TripPlan | null> {
+    return this.planModel
+      .findOne({ tripId: new Types.ObjectId(tripId) })
+      .exec();
   }
 }

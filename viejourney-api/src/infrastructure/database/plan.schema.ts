@@ -9,6 +9,9 @@ class Note {
 
   @Prop({ required: true })
   text: string;
+
+  @Prop({ required: false })
+  by?: string;
 }
 
 @Schema({ _id: false })
@@ -87,8 +90,6 @@ class Place {
   note: String;
   @Prop({ required: false })
   visited: Boolean;
-  @Prop({ required: false })
-  isEditing: Boolean;
 }
 
 @Schema({ _id: false })
@@ -116,6 +117,9 @@ class PlaceDetails {
 
   @Prop()
   cost?: number;
+
+  @Prop()
+  createdBy?: string;
 }
 
 @Schema({ _id: false })
@@ -137,9 +141,6 @@ class Itinerary {
 
   @Prop()
   updatedAt?: string;
-
-  @Prop()
-  isEditing?: boolean;
 }
 
 @Schema({ _id: false })
