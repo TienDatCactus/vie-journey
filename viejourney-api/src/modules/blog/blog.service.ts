@@ -301,8 +301,7 @@ export class BlogService {
       summary: blog.summary,
       coverImage: blog.coverImage,
       status: blog.status,
-      tripId: blog.tripId,
-      destination: blog.tripId?.description,
+      destination: blog.destination?.location,
       flags: blog.flags || [],
       createdAt: blog.createdAt,
     };

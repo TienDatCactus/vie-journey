@@ -22,8 +22,8 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Request } from 'express';
 
 @Controller('assets')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.Manager)
+// @UseGuards(JwtAuthGuard, RolesGuard)
+// @Roles(Role.Manager)
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
@@ -82,7 +82,7 @@ export class AssetsController {
 
   // addAsset/banner
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -176,5 +176,11 @@ export class AssetsController {
     } catch (error) {
       throw new BadRequestException('Lỗi khi upload ảnh: ' + error.message);
     }
+  }
+
+  @Get('userContent')
+  @UseGuards(JwtAuthGuard)
+  async getAllUserContentAssets() {
+    return await this.assetsService.getAllUserContentAssets();
   }
 }

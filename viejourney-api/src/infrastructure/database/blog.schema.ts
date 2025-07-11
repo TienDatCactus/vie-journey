@@ -27,9 +27,6 @@ export class Blog extends Document {
   @Prop({ required: false }) // Cloudinary URL or asset reference
   coverImage: string;
 
-  @Prop({ type: mongoose.Types.ObjectId, ref: 'Trip', required: false })
-  tripId: Trip | null;
-
   @Prop({
     type: {
       location: { type: String, default: null },
