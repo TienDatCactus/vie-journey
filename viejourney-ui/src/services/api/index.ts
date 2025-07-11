@@ -178,7 +178,7 @@ export const doCreateTrip = async (data: CreateTripDto) => {
         return null;
       }
       enqueueSnackbar("Trip created successfully", { variant: "success" });
-      window.location.href = `/trips/edit/${trip?._id}`;
+      window.location.href = `/trips/plan/${trip?._id}`;
       return trip;
     }
   } catch (error) {
@@ -268,5 +268,34 @@ export const doRemoveTripMate = async (tripId: string, email: string) => {
     }
   } catch (error) {
     console.error("Failed to remove trip mate:", error);
+  }
+};
+
+export const doGetPlanByTripId = async (tripId: string) => {
+  try {
+    const resp = await http.get(`${TRIP?.GET_PLAN_BY_TRIP_ID}/${tripId}`);
+    if (!resp || !resp.data) {
+      console.error("No data received from getPlanByTripId");
+      return null;
+    }
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get plan by trip ID:", error);
+  }
+  return null;
+};
+
+export const doValidateInvite = async (tripId: string, token: string) => {
+  try {
+    const resp = await http.post(TRIP?.VALIDATE_INVITE, {
+      tripId: tripId,
+      token: token,
+    });
+    if (resp.data) {
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to validate invite:", error);
+    return null;
   }
 };

@@ -1,7 +1,7 @@
 // store/useTripDetailStore.ts
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { doGetUserTripList, doRemoveTripMate } from "../api";
+import { doGetPlanByTripId, doGetUserTripList, doRemoveTripMate } from "../api";
 import {
   Expense,
   Itinerary,
@@ -53,6 +53,7 @@ interface TripDetailStore {
   addTripmate: (tripmateEmail: string) => void;
   handleGetUserTrips: () => Promise<void>;
   handleRemoveTripMate: (tripmateEmail: string) => Promise<void>;
+  handleGetPlanByTripId: () => Promise<void>;
 }
 
 export const useTripDetailStore = create<TripDetailStore>()(
@@ -221,6 +222,26 @@ export const useTripDetailStore = create<TripDetailStore>()(
             }
           } catch (error) {
             console.error("Failed to remove trip mate:", error);
+          }
+        },
+        handleGetPlanByTripId: async () => {
+          try {
+            const res = await doGetPlanByTripId(get().trip._id);
+            if (res) {
+              const plan = res.plan;
+              set(() => ({
+                totalBudget: plan.budget,
+                expenses: plan.expenses,
+                itineraries: plan.itineraries,
+                notes: plan.notes,
+                placeNotes: plan.places,
+                transits: plan.transits,
+              }));
+            } else {
+              console.error("No data received from getPlanByTripId");
+            }
+          } catch (error) {
+            console.error("Failed to get plan by trip ID:", error);
           }
         },
       }),

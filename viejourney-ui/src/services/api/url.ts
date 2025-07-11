@@ -43,6 +43,8 @@ export const ADMIN = {
   CHAGE_ROLE: "/admin/:id/role",
 };
 export const TRIP = {
+  VALIDATE_INVITE: "/trip/validate-invite",
+  GET_PLAN_BY_TRIP_ID: "/trip/plan",
   REMOVE_TRIP_MATE: "/trip/remove-tripmate",
   INVITE: "/trip/invite",
   GET_TRIP: "/trip",
