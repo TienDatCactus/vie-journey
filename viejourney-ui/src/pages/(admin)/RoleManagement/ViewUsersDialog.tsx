@@ -17,8 +17,7 @@ import {
   Alert,
 } from "@mui/material";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
-import axios from "axios";
-import { ACCOUNTS } from "../../../services/api/url";
+import { doFilterUsers } from "../../../services/api";
 
 interface User {
   userId: string;
@@ -38,6 +37,7 @@ interface ViewUsersDialogProps {
   roleData: {
     id: number;
     role: string;
+    apiRole: string;
     description: string;
     users: number;
   } | null;
@@ -56,6 +56,47 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
   const [newRole, setNewRole] = useState("");
   const [error, setError] = useState("");
 
+  // Create and manage style element for z-index override
+  useEffect(() => {
+    let styleElement: HTMLStyleElement | null = null;
+
+    if (open) {
+      // Create style element when dialog opens
+      styleElement = document.createElement("style");
+      styleElement.id = "view-users-dialog-styles";
+      styleElement.textContent = `
+        .MuiDialog-root .MuiPopover-root {
+          z-index: 1400 !important;
+        }
+        .MuiDialog-root .MuiMenu-root {
+          z-index: 1400 !important;
+        }
+        .MuiDialog-root .MuiSelect-root .MuiMenu-paper {
+          z-index: 1400 !important;
+        }
+        .MuiDialog-root .MuiMenu-paper {
+          z-index: 1400 !important;
+        }
+        .MuiDialog-root .MuiPopover-paper {
+          z-index: 1400 !important;
+        }
+      `;
+      document.head.appendChild(styleElement);
+    }
+
+    return () => {
+      // Cleanup style element when dialog closes or component unmounts
+      if (styleElement && document.head.contains(styleElement)) {
+        document.head.removeChild(styleElement);
+      }
+      // Also remove any existing style with the same ID
+      const existingStyle = document.getElementById("view-users-dialog-styles");
+      if (existingStyle) {
+        document.head.removeChild(existingStyle);
+      }
+    };
+  }, [open]);
+
   const roles = [
     { value: "USER", label: "User" },
     { value: "MANAGER", label: "Manager" },
@@ -70,20 +111,16 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
 
   const fetchUsersByRole = async () => {
     if (!roleData) return;
-    
+
     setLoading(true);
     setError("");
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_PRIVATE_URL}${ACCOUNTS.FILTER_USERS}`,
-        {
-          params: { role: roleData.role.toUpperCase() },
-          withCredentials: true,
-        }
-      );
+      const response = await doFilterUsers({
+        role: roleData.apiRole,
+      });
 
-      if (response.data.status === "success") {
-        setUsers(response.data.data.users);
+      if (response.status === "success") {
+        setUsers(response.data.users);
       } else {
         setError("Không thể tải danh sách người dùng");
       }
@@ -99,7 +136,7 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
     if (checked) {
       setSelectedUsers([...selectedUsers, user]);
     } else {
-      setSelectedUsers(selectedUsers.filter(u => u.userId !== user.userId));
+      setSelectedUsers(selectedUsers.filter((u) => u.userId !== user.userId));
     }
   };
 
@@ -139,13 +176,15 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
       renderHeader: () => (
         <Checkbox
           checked={selectedUsers.length === users.length && users.length > 0}
-          indeterminate={selectedUsers.length > 0 && selectedUsers.length < users.length}
+          indeterminate={
+            selectedUsers.length > 0 && selectedUsers.length < users.length
+          }
           onChange={(e) => handleSelectAll(e.target.checked)}
         />
       ),
       renderCell: (params) => (
         <Checkbox
-          checked={selectedUsers.some(u => u.userId === params.row.userId)}
+          checked={selectedUsers.some((u) => u.userId === params.row.userId)}
           onChange={(e) => handleUserSelect(params.row, e.target.checked)}
         />
       ),
@@ -169,7 +208,31 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
   ];
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      sx={{
+        zIndex: 1300,
+        "& .MuiDialog-container": {
+          zIndex: 1300,
+        },
+        "& .MuiBackdrop-root": {
+          zIndex: 1299,
+        },
+      }}
+      PaperProps={{
+        sx: {
+          zIndex: 1301,
+          position: "relative",
+          overflow: "visible", // Allow dropdown to overflow
+        },
+      }}
+      disableEnforceFocus
+      disableAutoFocus
+      disableScrollLock
+    >
       <DialogTitle>
         <Typography variant="h6" fontWeight="bold">
           Danh sách người dùng - {roleData?.role}
@@ -178,14 +241,14 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
           {roleData?.description}
         </Typography>
       </DialogTitle>
-      
-      <DialogContent>
+
+      <DialogContent sx={{ overflow: "visible" }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
-        
+
         <Grid2 container spacing={2} sx={{ mb: 3 }}>
           <Grid2 size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth>
@@ -194,9 +257,31 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
                 value={newRole}
                 label="Chọn role mới"
                 onChange={(e) => setNewRole(e.target.value)}
+                sx={{
+                  "& .MuiSelect-select": {
+                    zIndex: 1,
+                  },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      zIndex: 1400,
+                      position: "absolute",
+                    },
+                  },
+                  anchorOrigin: {
+                    vertical: "bottom",
+                    horizontal: "left",
+                  },
+                  transformOrigin: {
+                    vertical: "top",
+                    horizontal: "left",
+                  },
+                  disablePortal: true, // Keep dropdown within dialog
+                }}
               >
                 {roles
-                  .filter(role => role.value !== roleData?.role.toUpperCase())
+                  .filter((role) => role.value !== roleData?.apiRole)
                   .map((role) => (
                     <MenuItem key={role.value} value={role.value}>
                       {role.label}
@@ -237,13 +322,13 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
           </Box>
         )}
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 3 }}>
         <Button onClick={handleClose} variant="outlined">
           Cancel
         </Button>
-        <Button 
-          onClick={handleEdit} 
+        <Button
+          onClick={handleEdit}
           variant="contained"
           disabled={selectedUsers.length === 0 || !newRole}
         >

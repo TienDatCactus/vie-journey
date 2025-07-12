@@ -16,7 +16,7 @@ import {
   VerifyReqDTO,
 } from "./dto";
 import { setToken } from "./token";
-import { AUTH, TRIP, USER } from "./url";
+import { AUTH, TRIP, USER, ACCOUNTS, HOTELS, ADMIN } from "./url";
 import { Trip } from "../stores/storeTypes";
 
 export const doLogin = async (data: LoginReqDTO) => {
@@ -297,5 +297,212 @@ export const doValidateInvite = async (tripId: string, token: string) => {
   } catch (error) {
     console.error("Failed to validate invite:", error);
     return null;
+  }
+};
+
+// ============ ACCOUNT MANAGEMENT APIs ============
+
+export const doGetAllUsers = async () => {
+  try {
+    const resp = await http.get(ACCOUNTS.GET_ACCOUNTS);
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get all users:", error);
+    throw error;
+  }
+};
+
+export const doFilterUsers = async (filter: {
+  role?: string;
+  status?: string;
+  username?: string;
+  email?: string;
+}) => {
+  try {
+    const resp = await http.get(ACCOUNTS.FILTER_USERS, {
+      params: filter,
+    });
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to filter users:", error);
+    throw error;
+  }
+};
+
+export const doUpdateAccountStatus = async (
+  accountId: string,
+  active: boolean
+) => {
+  try {
+    const resp = await http.patch(
+      ACCOUNTS.UPDATE_STATUS.replace(":id", accountId),
+      { active }
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to update account status:", error);
+    throw error;
+  }
+};
+
+export const doUpdateUserRole = async (accountId: string, role: string) => {
+  try {
+    const resp = await http.patch(
+      ADMIN.UPDATE_USER_ROLE.replace(":id", accountId),
+      {
+        role,
+      }
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to update user role:", error);
+    throw error;
+  }
+};
+
+export const doBulkUpdateUserRoles = async (
+  userIds: string[],
+  role: string
+) => {
+  try {
+    const resp = await http.patch(ADMIN.BULK_UPDATE_USER_ROLES, {
+      userIds,
+      role,
+    });
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to bulk update user roles:", error);
+    throw error;
+  }
+};
+
+export const doGetUserDetail = async (userId: string) => {
+  try {
+    const resp = await http.get(
+      ACCOUNTS.GET_USER_DETAIL.replace(":id", userId)
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get user detail:", error);
+    throw error;
+  }
+};
+
+export const doDeleteUser = async (userId: string) => {
+  try {
+    const resp = await http.delete(ACCOUNTS.DELETE_USER.replace(":id", userId));
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to delete user:", error);
+    throw error;
+  }
+};
+
+export const doUpdateUserInfo = async (
+  userId: string,
+  data: {
+    fullName: string;
+    dob: string;
+    phone: string;
+    address: string;
+  }
+) => {
+  try {
+    const resp = await http.patch(
+      ACCOUNTS.UPDATE_USER_INFO.replace(":id", userId),
+      data
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to update user info:", error);
+    throw error;
+  }
+};
+
+// ============ HOTEL MANAGEMENT APIs ============
+
+export const doGetAllHotels = async () => {
+  try {
+    const resp = await http.get(HOTELS.GET_HOTELS);
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get all hotels:", error);
+    throw error;
+  }
+};
+
+export const doGetHotelById = async (hotelId: string) => {
+  try {
+    const resp = await http.get(HOTELS.GET_HOTEL.replace(":id", hotelId));
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get hotel by id:", error);
+    throw error;
+  }
+};
+
+export const doCreateHotel = async (hotelData: {
+  name: string;
+  address: string;
+  city: string;
+  description?: string;
+  rating?: number;
+}) => {
+  try {
+    const resp = await http.post(HOTELS.CREATE_HOTEL, hotelData);
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to create hotel:", error);
+    throw error;
+  }
+};
+
+export const doUpdateHotel = async (
+  hotelId: string,
+  hotelData: {
+    hotelId: string;
+    name?: string;
+    address?: string;
+    city?: string;
+    description?: string;
+    rating?: number;
+  }
+) => {
+  try {
+    const resp = await http.patch(
+      HOTELS.UPDATE_HOTEL.replace(":id", hotelId),
+      hotelData
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to update hotel:", error);
+    throw error;
+  }
+};
+
+export const doDeleteHotel = async (hotelId: string) => {
+  try {
+    const resp = await http.delete(HOTELS.DELETE_HOTEL.replace(":id", hotelId));
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to delete hotel:", error);
+    throw error;
+  }
+};
+
+export const doImportHotels = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const resp = await http.post(HOTELS.IMPORT_HOTEL, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to import hotels:", error);
+    throw error;
   }
 };

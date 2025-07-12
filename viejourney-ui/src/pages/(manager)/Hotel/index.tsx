@@ -31,8 +31,13 @@ import AddHotelDialog from "./AddHotelDialog";
 import EditHotelDialog from "./EditHotelDialog";
 import ImportHotelDialog from "./ImportHotelDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
-import axios from "axios";
-import { HOTELS } from "../../../services/api/url";
+import {
+  doGetAllHotels,
+  doCreateHotel,
+  doUpdateHotel,
+  doDeleteHotel,
+  doImportHotels,
+} from "../../../services/api";
 
 // Set MUI Pro License
 LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
@@ -156,13 +161,10 @@ const HotelManagement = () => {
     const fetchHotels = async () => {
       setLoading(true);
       try {
-        const result = await axios.get(
-          import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
-          { withCredentials: true }
-        );
+        const result = await doGetAllHotels();
 
         // Process the response data to match our interface
-        const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
+        const processedHotels = result.map((hotel: HotelApiResponse) => ({
           _id: hotel._id,
           name: hotel.name,
           description: hotel.description,
@@ -239,33 +241,22 @@ const HotelManagement = () => {
         // Add new hotel - Call CREATE_HOTEL API
         console.log("Calling CREATE_HOTEL API with payload:", hotelData);
 
-        const response = await axios.post(
-          import.meta.env.VITE_PRIVATE_URL + HOTELS.CREATE_HOTEL,
-          hotelData,
-          { withCredentials: true }
-        );
-
-        console.log("CREATE_HOTEL API response:", response.data);
+        const response = await doCreateHotel(hotelData as any);
 
         // Refresh hotel list after successful creation
         const fetchHotels = async () => {
           try {
-            const result = await axios.get(
-              import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
-              { withCredentials: true }
-            );
+            const result = await doGetAllHotels();
 
-            const processedHotels = result.data.map(
-              (hotel: HotelApiResponse) => ({
-                ...hotel,
-                coordinate:
-                  typeof hotel.coordinate === "object"
-                    ? JSON.stringify(hotel.coordinate)
-                    : hotel.coordinate,
-                // Ensure images field is properly handled
-                images: hotel.images || [],
-              })
-            );
+            const processedHotels = result.map((hotel: HotelApiResponse) => ({
+              ...hotel,
+              coordinate:
+                typeof hotel.coordinate === "object"
+                  ? JSON.stringify(hotel.coordinate)
+                  : hotel.coordinate,
+              // Ensure images field is properly handled
+              images: hotel.images || [],
+            }));
 
             setHotels(processedHotels);
           } catch (error) {
@@ -294,10 +285,7 @@ const HotelManagement = () => {
     const fetchHotels = async () => {
       setLoading(true);
       try {
-        const result = await axios.get(
-          import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
-          { withCredentials: true }
-        );
+        const result = await doGetAllHotels();
 
         const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
           _id: hotel._id,
@@ -356,10 +344,7 @@ const HotelManagement = () => {
     const fetchHotels = async () => {
       setLoading(true);
       try {
-        const result = await axios.get(
-          import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
-          { withCredentials: true }
-        );
+        const result = await doGetAllHotels();
 
         const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
           _id: hotel._id,
@@ -408,10 +393,7 @@ const HotelManagement = () => {
     const fetchHotels = async () => {
       setLoading(true);
       try {
-        const result = await axios.get(
-          import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTELS,
-          { withCredentials: true }
-        );
+        const result = await doGetAllHotels();
 
         const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
           _id: hotel._id,

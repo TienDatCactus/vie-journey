@@ -16,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CreateAccountDto } from 'src/common/dtos/create-account.dto';
 import { UpdateUserInfoDto } from 'src/common/dtos/update-userinfo.dto';
+import { BulkUpdateRoleDto } from 'src/common/dtos/bulk-update-role.dto';
 import { Role } from 'src/common/enums/role.enum';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UserService } from '../userinfo/user.service';
@@ -154,5 +155,24 @@ export class AdminController {
   @Patch('users/:id/unban')
   async unbanUser(@Param('id') id: string) {
     return this.adminService.unbanUser(id);
+  }
+
+  @Patch('users/bulk-update-roles')
+  async bulkUpdateUserRoles(@Body() bulkUpdateRoleDto: BulkUpdateRoleDto) {
+    const validRoles = ['USER', 'ADMIN', 'MANAGER'];
+    if (!validRoles.includes(bulkUpdateRoleDto.role)) {
+      throw new BadRequestException(
+        `Invalid role. Must be one of: ${validRoles.join(', ')}`,
+      );
+    }
+
+    if (!bulkUpdateRoleDto.userIds || bulkUpdateRoleDto.userIds.length === 0) {
+      throw new BadRequestException('At least one userId is required');
+    }
+
+    return this.adminService.bulkUpdateUserRoles(
+      bulkUpdateRoleDto.userIds,
+      bulkUpdateRoleDto.role,
+    );
   }
 }

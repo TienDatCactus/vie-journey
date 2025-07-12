@@ -23,8 +23,7 @@ import EditRoleDialog from "./EditRoleDialog";
 import ViewUsersDialog from "./ViewUsersDialog";
 import ChangeRoleDialog from "./ChangeRoleDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
-import axios from "axios";
-import { ADMIN } from "../../../services/api/url";
+import { doBulkUpdateUserRoles } from "../../../services/api";
 
 // Set MUI Pro License
 LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
@@ -80,6 +79,7 @@ const systemRoles = [
   {
     id: 1,
     role: "Regular User",
+    apiRole: "USER", // API role constant
     description: "Regular user with basic content creation privileges",
     users: 1247,
     permissions: ["Content Management (1)", "Comment Management (1)"],
@@ -89,6 +89,7 @@ const systemRoles = [
   {
     id: 2,
     role: "Content Manager",
+    apiRole: "MANAGER", // API role constant
     description: "Content & asset manager with moderation capabilities",
     users: 23,
     permissions: [
@@ -103,6 +104,7 @@ const systemRoles = [
   {
     id: 3,
     role: "Administrator",
+    apiRole: "ADMIN", // API role constant
     description: "Supervisor with full system access and control",
     users: 5,
     permissions: [
@@ -174,17 +176,10 @@ const RoleManagement = () => {
   const handleConfirmChangeRole = async () => {
     setLoading(true);
     try {
-      // Call API to update user roles
-      for (const user of selectedUsers) {
-        await axios.patch(
-          `${import.meta.env.VITE_PRIVATE_URL}${ADMIN.CHAGE_ROLE.replace(
-            ":id",
-            user.accountId
-          )}`,
-          { role: newRole },
-          { withCredentials: true }
-        );
-      }
+      // Call bulk API to update user roles
+      // Note: API expects userIds (UserInfos ID), not accountIds
+      const userIds = selectedUsers.map((user) => user.userId);
+      const result = await doBulkUpdateUserRoles(userIds, newRole);
 
       // Close all dialogs and reset state
       setConfirmationDialogOpen(false);
@@ -192,7 +187,21 @@ const RoleManagement = () => {
       setNewRole("");
       setSelectedRole(null);
 
-      console.log("Roles updated successfully");
+      console.log("Bulk roles updated successfully:", result);
+
+      // Log summary for debugging
+      if (result.summary) {
+        const { successCount, totalRequested, failedCount } = result.summary;
+        console.log(`Updated ${successCount}/${totalRequested} users`);
+
+        if (failedCount > 0 && result.failed) {
+          console.warn(`${failedCount} users failed to update:`, result.failed);
+          // You could show a toast notification here for failed updates
+        }
+
+        // You could show a success toast notification here
+        // Example: showToast(`Successfully updated ${successCount} users to ${newRole}`)
+      }
     } catch (error) {
       console.error("Error updating roles:", error);
     } finally {
@@ -420,7 +429,7 @@ const RoleManagement = () => {
           onClose={handleCloseConfirmationDialog}
           onConfirm={handleConfirmChangeRole}
           title="Are you sure?"
-          message="Bạn có chắc chắn muốn thay đổi role cho các user đã chọn không?"
+          message={`Bạn có chắc chắn muốn thay đổi role cho ${selectedUsers.length} user(s) đã chọn không? Thao tác này sẽ sử dụng Bulk Update API.`}
           loading={loading}
         />
       </Box>
