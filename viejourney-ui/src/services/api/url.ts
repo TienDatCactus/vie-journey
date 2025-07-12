@@ -60,3 +60,7 @@ export const BLOG = {
   LIST_BLOGS: "/blogs/manager",
   BLOGS: "/blogs",
 };
+
+export const COMMENT = {
+  COMMENTS: "/comments"
+}
