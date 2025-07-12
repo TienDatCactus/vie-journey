@@ -1,3 +1,4 @@
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Avatar, Divider, Stack } from "@mui/material";
@@ -8,6 +9,8 @@ import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import { Author } from "../../../../../utils/interfaces/blog";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useUserBlog } from "../../../../../services/stores/useUserBlog";
 interface ExploreCardProps {
   id: string;
   img: string;
@@ -32,8 +35,18 @@ const ExploreCard = ({
   };
   const navigate = useNavigate();
   const handleCardClick = () => {
-    navigate(`/blogs/${id}`); 
+    navigate(`/blogs/${id}`);
   };
+  const [isLiked, setIsLiked] = useState<boolean>(false);
+
+  const { handleCheckIsLike } = useUserBlog();
+
+  useEffect(() => {
+    (async () => {
+      const liked = await handleCheckIsLike(id);
+      setIsLiked(!!liked);
+    })();
+  }, [id]);
   return (
     <Card className="lg:w-full ">
       <CardActionArea onClick={handleCardClick}>
@@ -72,7 +85,14 @@ const ExploreCard = ({
             </Stack>
             <Stack direction={"row"} alignItems={"center"} gap={1}>
               <Stack direction={"row"} gap={1}>
-                <FavoriteBorderIcon fontSize="small" />
+                {isLiked ? (
+                  <FavoriteIcon
+                    className="cursor-pointer hover:scale-110 transition-all duration-300"
+                    sx={{ color: "red" }}
+                  />
+                ) : (
+                  <FavoriteBorderIcon className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600" />
+                )}
                 <Typography variant="body2" color="text.secondary">
                   {liked}
                 </Typography>

@@ -30,6 +30,7 @@ export class BlogService {
     return !!like;
   }
   // Create like blog
+  // Hàm like blog
   async postLikeBlog(req: Request, blogId: string) {
     try {
       const userId = req.user?.['userId'] as string;
@@ -37,28 +38,36 @@ export class BlogService {
       // 1. Tạo like mới (nếu chưa tồn tại)
       const like = await this.likeModel.create({ userId, blogId });
 
-      // 2. Thêm like vào blog
+      // 2. Thêm like vào blog và tăng likeCount
       await this.blogModel.findByIdAndUpdate(
         blogId,
-        { $addToSet: { likes: like._id } },
+        {
+          $addToSet: { likes: like._id },
+          $inc: { 'metrics.likeCount': 1 }, // Tăng likeCount lên 1
+        },
         { new: true },
       );
 
-      return { message: 'Blog liked successfully' };
+      return {
+        like: like,
+        message: 'Blog liked successfully',
+      };
     } catch (error) {
       throw new BadRequestException('Error liking blog: ' + error.message);
     }
   }
 
+  // Hàm unlike blog
   async unlikeBlog(req: Request, blogId: string) {
     const userId = req.user?.['userId'] as string;
     // 1. Xóa like trong bảng Like
     const like = await this.likeModel.findOneAndDelete({ userId, blogId });
 
-    // 2. Nếu like tồn tại, xóa reference trong blog
+    // 2. Nếu like tồn tại, xóa reference trong blog và giảm likeCount
     if (like) {
       await this.blogModel.findByIdAndUpdate(blogId, {
         $pull: { likes: like._id },
+        $inc: { 'metrics.likeCount': -1 }, // Giảm likeCount đi 1
       });
     }
 

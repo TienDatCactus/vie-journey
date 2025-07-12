@@ -172,3 +172,18 @@ export const createFlag = async (id: string, reason: string) => {
   const res = await http.post(`${BLOG.BLOGS}/${id}/flag`, { reason });
   return res.data;
 };
+
+export const likeBlog = async (id: string) => {
+  const res = await http.post(`${BLOG.BLOGS}/${id}/like`);
+  return res.data;
+};
+
+export const unlikeBlog = async (id: string) => {
+  const res = await http.post(`${BLOG.BLOGS}/${id}/unlike`);
+  return res.data;
+};
+
+export const checkLike = async (id: string) => {
+  const res = await http.get(`${BLOG.BLOGS}/${id}/like`);
+  return res.data;
+};
