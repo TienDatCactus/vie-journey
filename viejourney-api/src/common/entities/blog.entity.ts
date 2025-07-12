@@ -11,7 +11,6 @@ export class Blog extends Document {
   summary?: string;
   tags?: string[];
   coverImage?: string;
-  tripId?: Trip | null;
   destination?: {
     location: string | null;
     placeId: string | null;
