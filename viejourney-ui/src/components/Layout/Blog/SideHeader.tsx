@@ -193,7 +193,7 @@ const SideHeader: React.FC<{ id: string }> = ({ id }) => {
         <PlaceToVisit />
         */}
 
-        <Comment />
+        <Comment id={id}/>
       </div>
       <RelatedBlog />
     </div>
