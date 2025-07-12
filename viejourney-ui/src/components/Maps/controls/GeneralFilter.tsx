@@ -172,7 +172,7 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="absolute space-y-1 top-2 right-2 z-10 p-2 w-full max-w-80"
+          className="absolute space-y-1  top-2 right-2 z-10 p-2 w-full max-w-80"
         >
           {/* Replace your TextField with this Autocomplete */}{" "}
           <Autocomplete
@@ -236,7 +236,7 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
               </li>
             )}
           />
-          <div className=" relative bg-white  py-2">
+          <div className=" relative bg-white rounded-md py-2">
             <div className="grid grid-cols-1 overflow-auto max-h-40 ">
               {PLACE_CATEGORIES.map((category) => (
                 <Tooltip key={category.id} title={category.label}>

@@ -1,9 +1,15 @@
-import { Grid2, Stack } from "@mui/material";
+import {
+  Button,
+  Grid2,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 import { RecentCard } from "./elements";
 
@@ -12,7 +18,7 @@ dayjs.extend(isSameOrBefore);
 
 const HomeRecent: React.FC = () => {
   const { trips } = useTripDetailStore();
-
+  const navigate = useNavigate();
   return (
     <div className="max-w-[1200px] py-10 w-full">
       <Stack
@@ -25,16 +31,19 @@ const HomeRecent: React.FC = () => {
           Recently viewed and upcoming
         </h1>
         <div>
-          {/* <ToggleButtonGroup exclusive>
-            <ToggleButton value="left">Recently viewed</ToggleButton>
-            <ToggleButton value="center">Upcoming</ToggleButton>
-          </ToggleButtonGroup> */}
+          <Button
+            variant="text"
+            className="underline"
+            onClick={() => navigate("/profile")}
+          >
+            See all
+          </Button>
         </div>
       </Stack>
 
       {!!trips && trips?.length > 0 && (
         <Grid2 container spacing={2}>
-          {trips.map((item, index) => (
+          {trips.slice(0, 2).map((item, index) => (
             <Grid2 size={4} key={index}>
               <RecentCard
                 tripId={item?._id}

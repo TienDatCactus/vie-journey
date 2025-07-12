@@ -65,13 +65,13 @@ const Header = () => {
             {!!headerNav.length &&
               headerNav?.map((nav, index) => (
                 <div className="h-full transition-all duration-200 ease-in-out hover:scale-125">
-                  <a
+                  <Link
                     key={index}
                     className="no-underline text-[12px] text-[#5b5b5b] font-medium"
-                    href={nav.link}
+                    to={nav.link}
                   >
                     {nav.name}
-                  </a>
+                  </Link>
                 </div>
               ))}
           </Stack>
@@ -107,17 +107,14 @@ const Header = () => {
           ""
         )}
         <ButtonGroup variant="contained" aria-label="Disabled button group">
-          <Button
-            size="small"
-            className="bg-white "
-            variant="outlined"
-            href="/auth/login"
-          >
-            Login
-          </Button>
-          <Button size="small" href="/auth/register">
-            SignUp
-          </Button>
+          <Link to="/auth/login">
+            <Button size="small" className="bg-white " variant="outlined">
+              Login
+            </Button>
+          </Link>
+          <Link to="/auth/register">
+            <Button size="small">SignUp</Button>
+          </Link>
         </ButtonGroup>
       </Stack>
     </div>

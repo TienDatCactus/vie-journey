@@ -1,3 +1,5 @@
+import { UserInfo } from "../../utils/interfaces";
+
 // types/trip.ts
 export interface Trip {
   _id: string;
@@ -12,11 +14,11 @@ export interface Trip {
   };
   startDate: Date;
   endDate: Date;
-  budgetRange?: string;
-  tripmateRange?: string;
   tripmates: string[];
-  description: string;
   visibility: boolean;
+  createdBy: Partial<UserInfo>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Note {

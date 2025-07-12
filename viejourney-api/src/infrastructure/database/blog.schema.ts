@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { UserInfos } from './userinfo.schema';
 import { Trip } from './trip.schema';
+import { Like } from './like.schema';
 
 @Schema({
   versionKey: false,
@@ -49,8 +50,11 @@ export class Blog extends Document {
   @Prop({ required: true, type: mongoose.Types.ObjectId, ref: 'UserInfos' })
   updatedBy: UserInfos;
 
-  @Prop({ type: [mongoose.Types.ObjectId], ref: 'UserInfos', required: false }) // Array of UserInfos IDs
-  likes: mongoose.Types.ObjectId[];
+  @Prop({
+    type: [{ type: mongoose.Types.ObjectId, ref: 'Like' }],
+    required: false,
+  }) // Array of Like IDs
+  likes: Like[];
 
   @Prop({
     type: String,
@@ -94,9 +98,6 @@ export class Blog extends Document {
     likeCount: number;
     commentCount: number;
   };
-
-  @Prop({ required: true, type: mongoose.Types.ObjectId, ref: 'Comment' })
-  comments: Comment[];
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);

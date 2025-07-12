@@ -70,7 +70,7 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate(-1);
+    navigate("/home");
   };
   const [open, setOpen] = React.useState(false);
   const { trip } = useTripDetailStore();
@@ -176,7 +176,7 @@ const TripLayout = ({ children }: { children: React.ReactNode }) => {
               )}
             </List>
             <Divider className="border-dashed border-gray-800" />
-            <List className="max-h-[calc(100vh-200px)] overflow-y-auto overflow-x-hidden">
+            <List className="max-h-100 overflow-y-auto overflow-x-hidden">
               {!!dates &&
                 dates.length > 0 &&
                 dates.map((text, index) => (

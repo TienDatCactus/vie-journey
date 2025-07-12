@@ -47,6 +47,9 @@ export const ADMIN = {
   BULK_UPDATE_USER_ROLES: "/admin/users/bulk-update-roles",
 };
 export const TRIP = {
+  VALIDATE_INVITE: "/trip/validate-invite",
+  GET_PLAN_BY_TRIP_ID: "/trip/plan",
+  REMOVE_TRIP_MATE: "/trip/remove-tripmate",
   INVITE: "/trip/invite",
   GET_TRIP: "/trip",
   GET_USER_TRIP: "/trip/by-user",

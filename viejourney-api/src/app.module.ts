@@ -13,6 +13,7 @@ import { AssetsModule } from './modules/assets/assets.module';
 import { TripModule } from './modules/trip/trip.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { CommentModule } from './modules/comment/comment.module';
 import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
@@ -33,6 +34,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
     UserModule,
     AccountModule,
     TripModule,
+    CommentModule,
     AssetsModule,
     MailerModule.forRoot({
       transport: {
@@ -49,10 +51,10 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         from: `"VieJourney" <${process.env.MAIL_FROM}>`,
       },
       template: {
-        dir: join(__dirname, 'templates'),
+        dir: process.cwd() + '/src/templates',
         adapter: new HandlebarsAdapter(),
         options: {
-          strict: false, // Change to false for debugging
+          strict: false,
         },
       },
     }),

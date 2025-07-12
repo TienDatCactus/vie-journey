@@ -17,7 +17,7 @@ import {
 } from "./dto";
 import { setToken } from "./token";
 import { AUTH, TRIP, USER, ACCOUNTS, HOTELS, ADMIN } from "./url";
-import { ITrip } from "../../utils/interfaces/trip";
+import { Trip } from "../stores/storeTypes";
 
 export const doLogin = async (data: LoginReqDTO) => {
   try {
@@ -178,7 +178,7 @@ export const doCreateTrip = async (data: CreateTripDto) => {
         return null;
       }
       enqueueSnackbar("Trip created successfully", { variant: "success" });
-      window.location.href = `/trips/edit/${trip?._id}`;
+      window.location.href = `/trips/plan/${trip?._id}`;
       return trip;
     }
   } catch (error) {
@@ -228,7 +228,7 @@ export const doInviteTripMate = async (tripId: string, email: string) => {
   return false;
 };
 
-export const doGetTripList = async (): Promise<ITrip[]> => {
+export const doGetTripList = async (): Promise<Trip[]> => {
   try {
     const res = await http.get(`${TRIP.GET_TRIP}`);
     if (!res || !res.data) {
@@ -242,7 +242,7 @@ export const doGetTripList = async (): Promise<ITrip[]> => {
   }
 };
 
-export const doGetUserTripList = async (): Promise<ITrip[]> => {
+export const doGetUserTripList = async (): Promise<Trip[]> => {
   try {
     const res = await http.get(`${TRIP.GET_USER_TRIP}`);
     if (!res || !res.data) {
@@ -253,6 +253,50 @@ export const doGetUserTripList = async (): Promise<ITrip[]> => {
   } catch (error) {
     console.error(error);
     return [];
+  }
+};
+
+export const doRemoveTripMate = async (tripId: string, email: string) => {
+  try {
+    const resp = await http.post(`${TRIP?.REMOVE_TRIP_MATE}`, {
+      tripId: tripId,
+      email: email.trim().toLowerCase(),
+    });
+    if (resp) {
+      enqueueSnackbar("Trip mate removed successfully", { variant: "success" });
+      return true;
+    }
+  } catch (error) {
+    console.error("Failed to remove trip mate:", error);
+  }
+};
+
+export const doGetPlanByTripId = async (tripId: string) => {
+  try {
+    const resp = await http.get(`${TRIP?.GET_PLAN_BY_TRIP_ID}/${tripId}`);
+    if (!resp || !resp.data) {
+      console.error("No data received from getPlanByTripId");
+      return null;
+    }
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get plan by trip ID:", error);
+  }
+  return null;
+};
+
+export const doValidateInvite = async (tripId: string, token: string) => {
+  try {
+    const resp = await http.post(TRIP?.VALIDATE_INVITE, {
+      tripId: tripId,
+      token: token,
+    });
+    if (resp.data) {
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to validate invite:", error);
+    return null;
   }
 };
 

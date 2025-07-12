@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BlogResponse,
   IBlog,
@@ -157,8 +158,8 @@ export const getBlogUserDetail = async (id: string): Promise<IBlogDetail> => {
   return res.data;
 };
 
-export const getBlogList = async (): Promise<IBlog[]> => {
-  const res = await http.get(`${BLOG.BLOGS}/home`);
+export const getBlogList = async (params: any): Promise<IBlog[]> => {
+  const res = await http.get(`${BLOG.BLOGS}/home`, { params });
   return res.data.data.blogs;
 };
 

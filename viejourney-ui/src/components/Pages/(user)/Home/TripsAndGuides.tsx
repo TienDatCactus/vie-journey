@@ -5,7 +5,8 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 import { IBlog } from "../../../../utils/interfaces/blog";
-import { GuideTag, TripTag } from "./elements";
+import { TripTag } from "./elements";
+import BlogTag from "./elements/GuideTag";
 const HomeTrips: React.FC<{
   blogs?: IBlog[];
 }> = ({ blogs }) => {
@@ -16,7 +17,7 @@ const HomeTrips: React.FC<{
     <div className="w-full max-w-[1200px] pb-10">
       <Grid2 container spacing={2}>
         <Grid2 size={6}>
-          <Paper className="flex flex-col justify-between bg-white p-4 h-[21.25rem] max-h-[25rem]">
+          <Paper className="flex flex-col justify-between bg-white p-4 h-90 max-h-100">
             <Stack
               direction={"row"}
               justifyContent={"space-between"}
@@ -37,12 +38,7 @@ const HomeTrips: React.FC<{
               {!!trips && trips?.length > 0 ? (
                 trips.slice(0, 2).map((item, index) => (
                   <Stack key={index}>
-                    <TripTag
-                      img={""}
-                      title={item?.title}
-                      from={dayjs(item?.startDate).format("MMM D, YYYY")}
-                      to={dayjs(item?.endDate).format("MMM D, YYYY")}
-                    />
+                    <TripTag trip={item} />
                     {index < trips.length - 1 && (
                       <Divider className="border-[--color-neutral-400] border my-4" />
                     )}
@@ -66,13 +62,13 @@ const HomeTrips: React.FC<{
           </Paper>
         </Grid2>
         <Grid2 size={6}>
-          <Paper className="bg-[--color-neutral-200] p-4  h-[21.25rem] max-h-[400px] overflow">
+          <Paper className="bg-neutral-50 p-4  h-90 max-h-100 overflow-y-auto">
             <Stack
               direction={"row"}
               justifyContent={"space-between"}
               alignItems={"center"}
             >
-              <h1 className="my-0 text-[1.5rem] font-bold">Your guides</h1>
+              <h1 className="my-0 text-xl font-bold">Your blogs</h1>
               <div>
                 <Button
                   variant="outlined"
@@ -84,16 +80,11 @@ const HomeTrips: React.FC<{
                 </Button>
               </div>
             </Stack>
-            <Grid2 container spacing={2} className="my-2 mt-4">
+            <Grid2 container spacing={2} className="my-2 mt-4 ">
               {blogs && blogs.length > 0 ? (
                 blogs.slice(0, 2).map((item, index) => (
                   <Grid2 size={6} key={index}>
-                    <GuideTag
-                      img={item?.coverImage}
-                      title={item?.title}
-                      likes={item?.metrics.likeCount}
-                      views={item?.metrics.viewCount}
-                    />
+                    <BlogTag blog={item} />
                   </Grid2>
                 ))
               ) : (

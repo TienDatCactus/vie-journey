@@ -1,35 +1,28 @@
+import { CalendarToday, LocationOn } from "@mui/icons-material";
+import { Avatar, Box, Card, CardContent, Typography } from "@mui/material";
+import { Trip } from "../../../../../../utils/interfaces";
+import dayjs from "dayjs";
 
-import { CalendarToday, LocationOn } from "@mui/icons-material"
-import { Avatar, Box, Card, CardContent, Typography } from "@mui/material"
-
-interface TripData {
-  id: string
-  title: string
-  user: string
-  dateRange: string
-  places: number
-  backgroundImage?: string
-}
-
-const TripCard: React.FC<{ trip: TripData }> = ({ trip }) => {
+const TripCard: React.FC<{ trip: Trip }> = ({ trip }) => {
   return (
     <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
       {/* Card Header with Background */}
       <Box
         className="h-40 flex items-center justify-center text-white font-semibold text-xl"
         sx={{
-          background: "linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%)",
+          background:
+            "linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
-        {trip.title}
+        {trip?.title}
       </Box>
 
       {/* Card Content */}
       <CardContent className="p-4">
         <Typography variant="h6" className="font-semibold mb-3 text-gray-800">
-          {trip.title}
+          {trip?.title}
         </Typography>
 
         {/* User Info */}
@@ -45,24 +38,25 @@ const TripCard: React.FC<{ trip: TripData }> = ({ trip }) => {
             U
           </Avatar>
           <Typography variant="body2" className="text-gray-600 mr-3">
-            {trip.user}
+            {trip.tripmates.length} Tripmates
           </Typography>
           <CalendarToday className="w-4 h-4 text-gray-400 mr-1" />
-          <Typography variant="body2" className="text-gray-600">
-            {trip.dateRange}
-          </Typography>
+          <h2 className="text-gray-600">
+            {dayjs(trip.startDate).format("MMM D, YYYY")} -{" "}
+            {dayjs(trip.endDate).format("MMM D, YYYY")}
+          </h2>
         </Box>
 
         {/* Places Info */}
         <Box className="flex items-center">
           <LocationOn className="w-4 h-4 text-gray-400 mr-1" />
           <Typography variant="body2" className="text-gray-600">
-            {trip.places} places
+            Trip to {trip.destination.name}
           </Typography>
         </Box>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
 export default TripCard;

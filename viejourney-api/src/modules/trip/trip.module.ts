@@ -10,6 +10,8 @@ import { TripSchema } from 'src/infrastructure/database/trip.schema';
 import { Trip } from 'src/common/entities/trip.entity';
 import { PlanStateService } from './plan-state/plan-state.service';
 import { TripPlanSchema } from 'src/infrastructure/database/plan.schema';
+import { UserModule } from '../userinfo/user.module';
+import { UserInfosSchema } from 'src/infrastructure/database/userinfo.schema';
 
 @Module({
   imports: [
@@ -19,10 +21,12 @@ import { TripPlanSchema } from 'src/infrastructure/database/plan.schema';
         name: 'Plan',
         schema: TripPlanSchema,
       },
+      { name: 'User', schema: UserInfosSchema },
     ]),
     JwtModule,
     AccountModule,
     forwardRef(() => AuthModule),
+    UserModule,
   ],
   controllers: [TripController],
   providers: [TripService, TripGateway, PlanStateService],

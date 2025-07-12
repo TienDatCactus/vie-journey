@@ -3,6 +3,7 @@ import { Document } from 'mongoose';
 export class Trip extends Document {
   declare _id: string;
   title: string;
+  coverImage?: string;
   destination: {
     id: string;
     name: string;

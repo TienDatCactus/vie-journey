@@ -1,5 +1,5 @@
 import React from "react";
-import { useRouteError, isRouteErrorResponse } from "react-router-dom";
+import { useRouteError, isRouteErrorResponse, Link } from "react-router-dom";
 
 const ErrorBoundary: React.FC = () => {
   const error = useRouteError();
@@ -37,9 +37,9 @@ const ErrorBoundary: React.FC = () => {
             />
           </div>
           <div>
-            <a href="/" className="font-medium underline code ">
+            <Link to="/" className="font-medium underline code ">
               BACK TO HOME
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -52,6 +52,7 @@ export interface PlaceDetails {
 export interface Note {
   id: string;
   text: string;
+  by?: string;
 }
 
 export interface Transit {
@@ -113,8 +114,10 @@ export interface Itinerary {
     }; // Location coordinates
     time?: string; // ISO time string
     cost?: number;
+    by?: string;
   };
   note: string;
+  createdBy?: string; // User ID of the creator
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
 }

@@ -143,7 +143,7 @@ const RecentCard = ({
               </Typography>
             </Stack>
           </Stack>
-          <Link to={`/trips/edit/${tripId}`}>
+          <Link to={`/trips/plan/${tripId}`}>
             <Button
               className="text-dark-900 bg-neutral-300 shadow-none"
               variant="contained"
