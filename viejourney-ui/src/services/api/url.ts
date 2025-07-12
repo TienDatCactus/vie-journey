@@ -22,9 +22,12 @@ export const USER = {
 
 export const ACCOUNTS = {
   GET_ACCOUNTS: "/admin/users",
+  GET_USER_DETAIL: "/admin/users/:id",
   FILTER_USERS: "/admin/users/filter",
   PAGINATE_ACCOUNTS: "/admin/userInfo/paginate",
   UPDATE_STATUS: "/admin/accounts/updateActive/:id",
+  DELETE_USER: "/admin/userInfo/:id",
+  UPDATE_USER_INFO: "/admin/userInfo/:id",
 };
 
 export const HOTELS = {
@@ -40,7 +43,8 @@ export const ADMIN = {
   GET_ASSET: "/admin/assets",
   UPDATE_ASSET: "/admin/update-asset",
   DELETE_ASSET: "/admin/assets/delete",
-  CHAGE_ROLE: "/admin/:id/role",
+  UPDATE_USER_ROLE: "/admin/users/:id/role",
+  BULK_UPDATE_USER_ROLES: "/admin/users/bulk-update-roles",
 };
 export const TRIP = {
   INVITE: "/trip/invite",

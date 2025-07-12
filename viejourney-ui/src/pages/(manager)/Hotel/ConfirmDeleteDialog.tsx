@@ -14,8 +14,7 @@ import {
   Warning as WarningIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import axios from "axios";
-import { HOTELS } from "../../../services/api/url";
+import { doDeleteHotel } from "../../../services/api";
 
 interface ConfirmDeleteDialogProps {
   open: boolean;
@@ -44,11 +43,7 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
     setError(null);
 
     try {
-      await axios.delete(
-        import.meta.env.VITE_PRIVATE_URL +
-          HOTELS.DELETE_HOTEL.replace(":id", hotelId),
-        { withCredentials: true }
-      );
+      await doDeleteHotel(hotelId);
 
       // Call onConfirm if provided (for backward compatibility)
       if (onConfirm) {

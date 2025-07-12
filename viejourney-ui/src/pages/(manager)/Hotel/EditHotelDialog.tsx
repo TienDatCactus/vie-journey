@@ -19,8 +19,7 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import axios from "axios";
-import { HOTELS } from "../../../services/api/url";
+import { doUpdateHotel } from "../../../services/api";
 
 interface Hotel {
   _id: string;
@@ -124,12 +123,7 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
         rating: formData.rating,
       };
 
-      await axios.patch(
-        import.meta.env.VITE_PRIVATE_URL +
-          HOTELS.UPDATE_HOTEL.replace(":id", hotel._id),
-        payload,
-        { withCredentials: true }
-      );
+      await doUpdateHotel(hotel._id, payload);
 
       // Call onSave if provided (for backward compatibility)
       if (onSave) {
