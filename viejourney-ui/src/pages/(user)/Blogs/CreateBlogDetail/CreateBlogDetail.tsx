@@ -61,11 +61,13 @@ const CreateBlogDetail: React.FC = () => {
     }
   };
   useEffect(() => {
-    if (type == "public") {
-      fetchBlogPublicDetail();
-    } else {
-      fetchBlogDraftDetail();
-    }
+    (async () => {
+      if (type == "public") {
+        await fetchBlogPublicDetail();
+      } else {
+        await fetchBlogDraftDetail();
+      }
+    })();
   }, [id]);
 
   const handleContentChange = (html: string) => {
@@ -90,7 +92,7 @@ const CreateBlogDetail: React.FC = () => {
     };
 
     let res;
-    if (type === "draft") {
+    if (type === "DRAFT") {
       res = await handleEditBlog(id ?? "", data);
     } else {
       res = await handleEditPublicBlog(id ?? "", data);

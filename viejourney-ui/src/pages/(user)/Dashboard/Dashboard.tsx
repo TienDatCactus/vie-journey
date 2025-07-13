@@ -39,7 +39,7 @@ const Dashboard: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string>("");
-  const { info, loadUserInfo, credential } = useAuthStore();
+  const { info, loadCurrentUser, credential } = useAuthStore();
   const [uploading, setUploading] = React.useState(false);
   const menuItems = [
     { id: 0, label: "Overview" },
@@ -82,9 +82,8 @@ const Dashboard: React.FC = () => {
           });
           return;
         }
-        await editUserAvatar(credential.userId, selectedFile);
-
-        loadUserInfo();
+        const res = await editUserAvatar(credential.userId, selectedFile);
+        if (res) await loadCurrentUser();
         enqueueSnackbar("Updated image successful", {
           variant: "success",
         });

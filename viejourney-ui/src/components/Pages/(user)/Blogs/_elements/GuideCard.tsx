@@ -6,12 +6,12 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import { useNavigate } from "react-router-dom";
-import { IBlog } from "../../../../../utils/interfaces/blog";
-import { useUserBlog } from "../../../../../services/stores/useUserBlog";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUserBlog } from "../../../../../services/stores/useUserBlog";
+import { IRelatedBlogs } from "../../../../../utils/interfaces/blog";
 
-const GuideCard = (props: IBlog) => {
+const BlogCard = (props: IRelatedBlogs) => {
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState<boolean>(false);
 
@@ -73,9 +73,7 @@ const GuideCard = (props: IBlog) => {
                     sx={{ color: "red" }}
                   />
                 ) : (
-                  <FavoriteBorderIcon
-                    className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600"
-                  />
+                  <FavoriteBorderIcon className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600" />
                 )}
               </IconButton>
               <p className="m-0">{props.metrics.likeCount} </p>
@@ -93,4 +91,4 @@ const GuideCard = (props: IBlog) => {
   );
 };
 
-export default GuideCard;
+export default BlogCard;

@@ -134,7 +134,8 @@ export class BlogController {
       },
     }),
   )
-  async updateBlogDraft(
+  @Patch('update-draft/:id')
+  async updateBlogDraftById(
     @Param('id') id: string,
     @Body() dto: UpdateBlogDraftDto,
     @UploadedFile() coverImage: Express.Multer.File,
@@ -160,6 +161,7 @@ export class BlogController {
       },
     }),
   )
+  @Patch('edit-published/:id')
   async editPublishedBlog(
     @Param('id') id: string,
     @Body() dto: UpdateBlogDraftDto,

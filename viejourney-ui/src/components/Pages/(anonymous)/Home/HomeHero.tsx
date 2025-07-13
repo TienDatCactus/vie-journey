@@ -2,6 +2,7 @@ import { DoubleArrow } from "@mui/icons-material";
 import { Button, Stack } from "@mui/material";
 import React from "react";
 import bg from "/images/banner.jpg";
+import { Link } from "react-router-dom";
 const HomeHero: React.FC = () => {
   return (
     <div className="w-full relative">
@@ -25,14 +26,15 @@ const HomeHero: React.FC = () => {
             you go next?
           </p>
         </div>
-        <Button
-          variant="contained"
-          className="bg-white text-black lg:text-lg px-4 lg:px-6 lg:py-4 font-semibold shadow-lg  hover:bg-gray-200 transition-colors"
-          href="/trips/create"
-          endIcon={<DoubleArrow />}
-        >
-          Plan Now
-        </Button>
+        <Link to="/trips/create">
+          <Button
+            variant="contained"
+            className="bg-white text-black lg:text-lg px-4 lg:px-6 lg:py-4 font-semibold shadow-lg  hover:bg-gray-200 transition-colors"
+            endIcon={<DoubleArrow />}
+          >
+            Plan Now
+          </Button>
+        </Link>
       </Stack>
     </div>
   );

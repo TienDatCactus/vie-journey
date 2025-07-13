@@ -1,10 +1,5 @@
-import {
-  Button,
-  Grid2,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material";
+import { ArrowForward } from "@mui/icons-material";
+import { Button, Grid2, Stack } from "@mui/material";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -32,9 +27,10 @@ const HomeRecent: React.FC = () => {
         </h1>
         <div>
           <Button
-            variant="text"
-            className="underline"
+            variant="contained"
+            className="rounded-sm bg-gray-100 text-gray-500 transition-all duration-200 hover:bg-gray-200 hover:text-black"
             onClick={() => navigate("/profile")}
+            endIcon={<ArrowForward />}
           >
             See all
           </Button>
@@ -44,7 +40,7 @@ const HomeRecent: React.FC = () => {
       {!!trips && trips?.length > 0 && (
         <Grid2 container spacing={2}>
           {trips.slice(0, 2).map((item, index) => (
-            <Grid2 size={4} key={index}>
+            <Grid2 size={trips.length > 1 ? 4 : 6} key={index}>
               <RecentCard
                 tripId={item?._id}
                 img={""}
@@ -55,7 +51,7 @@ const HomeRecent: React.FC = () => {
               />
             </Grid2>
           ))}
-          <Grid2 size={trips.length > 0 ? 4 : 12}>
+          <Grid2 size={trips.length > 1 ? 4 : 6}>
             <RecentCard blank={true} />
           </Grid2>
         </Grid2>
@@ -76,7 +72,7 @@ const HomeRecent: React.FC = () => {
             <span> Try </span>
             <Link to={"/trips/create"} className="hover:underline">
               creating
-            </Link>{" "}
+            </Link>
             <span>a new trip!</span>
           </Stack>
         </Stack>

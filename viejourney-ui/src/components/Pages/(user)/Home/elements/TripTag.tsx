@@ -19,10 +19,12 @@ const TripTag = ({ trip }: { trip: Trip }) => {
           spacing={2}
           alignItems={"center"}
           flexDirection={"row"}
+          className="w-full h-full"
         >
-          <Grid2 size={3}>
+          <Grid2 size={2}>
             <img
-              className="w-full rounded-md"
+              className="w-20 h-20 rounded-md object-cover"
+              alt={trip?.title}
               src={
                 // trip?.coverImage ||
                 `https://placehold.co/600x400/1a1a1a/ffffff?text=${trip?.title
@@ -31,33 +33,39 @@ const TripTag = ({ trip }: { trip: Trip }) => {
               }
             />
           </Grid2>
-          <Grid2 size={8} className="p-0 flex-grow">
-            <Typography
-              gutterBottom
-              variant="h5"
-              component="div"
-              className="text-[18px]"
+          <Grid2 size={10} className="p-0 flex-grow">
+            <Stack
+              direction={"row"}
+              alignItems={"center"}
+              justifyContent={"space-between"}
             >
-              {trip?.title}
-            </Typography>
-            <Stack direction={"row"} alignItems={"center"} spacing={1}>
-              <CalendarMonth className="text-base text-neutral-700" />
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                className="text-sm"
-              >
-                {dayjs(trip?.startDate).format("MMM DD, YYYY")} -{" "}
-                {dayjs(trip?.endDate).format("MMM DD, YYYY")}
-              </Typography>
+              <div>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  className="text-[18px]"
+                >
+                  {trip?.title}
+                </Typography>
+                <Stack direction={"row"} alignItems={"center"} spacing={1}>
+                  <CalendarMonth className="text-base text-neutral-700" />
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    className="text-sm"
+                  >
+                    {dayjs(trip?.startDate).format("MMM DD, YYYY")} -{" "}
+                    {dayjs(trip?.endDate).format("MMM DD, YYYY")}
+                  </Typography>
+                </Stack>
+              </div>
+              <Link to={`/trips/plan/${trip?._id}`}>
+                <IconButton>
+                  <NavigateNext className="text-base" />
+                </IconButton>
+              </Link>
             </Stack>
-          </Grid2>
-          <Grid2 size={1} direction={"row"} alignItems={"center"}>
-            <Link to={`/trips/plan/${trip?._id}`}>
-              <IconButton>
-                <NavigateNext className="text-base" />
-              </IconButton>
-            </Link>
           </Grid2>
         </Grid2>
       </Stack>

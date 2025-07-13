@@ -1,33 +1,41 @@
-import { Add } from "@mui/icons-material";
-import { Button, Divider, Grid2, Paper, Stack } from "@mui/material";
-import dayjs from "dayjs";
+import { Add, AirplaneTicket } from "@mui/icons-material";
+import {
+  Button,
+  Divider,
+  Grid2,
+  IconButton,
+  Paper,
+  Stack,
+} from "@mui/material";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
-import { IBlog } from "../../../../utils/interfaces/blog";
+import { IRelatedBlogs } from "../../../../utils/interfaces/blog";
 import { TripTag } from "./elements";
 import BlogTag from "./elements/GuideTag";
 const HomeTrips: React.FC<{
-  blogs?: IBlog[];
+  blogs?: IRelatedBlogs[];
 }> = ({ blogs }) => {
   const { trips } = useTripDetailStore();
 
   const navigate = useNavigate();
   return (
-    <div className="w-full max-w-[1200px] pb-10">
+    <div className="w-full max-w-[1200px] py-10">
       <Grid2 container spacing={2}>
         <Grid2 size={6}>
-          <Paper className="flex flex-col justify-between bg-white p-4 h-90 max-h-100">
+          <Paper elevation={0} className=" bg-white p-4 h-90 max-h-100">
             <Stack
               direction={"row"}
               justifyContent={"space-between"}
               alignItems={"center"}
             >
-              <h1 className="my-0 text-[1.5rem] font-bold">Your trips</h1>
+              <Link to={"/profile"}>
+                <h1 className="my-0 text-2xl hover:underline">Recent trips</h1>
+              </Link>
               <Link to="/trips/create">
                 <Button
-                  variant="outlined"
-                  className="rounded-sm"
+                  variant="contained"
+                  className="rounded-sm bg-gray-100 text-gray-500 transition-all duration-200 hover:bg-gray-200 hover:text-black"
                   startIcon={<Add />}
                 >
                   Plan new trip
@@ -35,7 +43,7 @@ const HomeTrips: React.FC<{
               </Link>
             </Stack>
             <Stack className="my-2 mt-4">
-              {!!trips && trips?.length > 0 ? (
+              {!!trips && trips?.length < 0 ? (
                 trips.slice(0, 2).map((item, index) => (
                   <Stack key={index}>
                     <TripTag trip={item} />
@@ -45,38 +53,54 @@ const HomeTrips: React.FC<{
                   </Stack>
                 ))
               ) : (
-                <Paper
-                  elevation={0}
-                  className="bg-[--color-neutral-100] text-gray-600 text-sm italic py-4 px-2 text-center"
+                <Stack
+                  className="w-full h-full "
+                  direction={"column"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                  gap={1}
                 >
-                  You haven’t planned any trips yet. Start by creating one!
-                </Paper>
+                  <IconButton className="w-fit bg-gray-100 p-4">
+                    <AirplaneTicket />
+                  </IconButton>
+                  <h1 className="text-xl text-gray-500">
+                    You haven’t planned any trips yet.
+                  </h1>
+                  <p className="text-base text-gray-400">
+                    Start planning your next adventure!
+                  </p>
+                  <Button
+                    variant="outlined"
+                    className="w-fit rounded-sm bg-white border-gray-300 mt-4 text-gray-800"
+                  >
+                    Plan your first trip
+                  </Button>
+                </Stack>
               )}
             </Stack>
-
-            <div className="flex justify-end">
-              <Button variant="text" className="p-0 hover:underline">
-                <Link to={"/profile"}> See all</Link>
-              </Button>
-            </div>
           </Paper>
         </Grid2>
+
         <Grid2 size={6}>
-          <Paper className="bg-neutral-50 p-4  h-90 max-h-100 overflow-y-auto">
+          <Paper elevation={0} className=" p-4  h-90 max-h-100 overflow-y-auto">
             <Stack
               direction={"row"}
               justifyContent={"space-between"}
               alignItems={"center"}
             >
-              <h1 className="my-0 text-xl font-bold">Your blogs</h1>
+              <Link to={"/profile"}>
+                <h1 className="my-0 text-2xl hover:underline">
+                  Your Travel Blogs
+                </h1>
+              </Link>
               <div>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   onClick={() => navigate("/blogs/create")}
-                  className="rounded-sm"
+                  className="rounded-sm bg-gray-100 text-gray-500 transition-all duration-200 hover:bg-gray-200 hover:text-black"
                   startIcon={<Add />}
                 >
-                  Create new guide
+                  Write new blog
                 </Button>
               </div>
             </Stack>
@@ -88,27 +112,31 @@ const HomeTrips: React.FC<{
                   </Grid2>
                 ))
               ) : (
-                <Grid2 size={12}>
-                  <Paper
-                    elevation={0}
-                    className="bg-[--color-neutral-100] text-gray-600 text-sm italic py-4 px-2 text-center"
+                <Stack
+                  className="w-full h-full "
+                  direction={"column"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                  gap={1}
+                >
+                  <IconButton className="w-fit bg-gray-100 p-4">
+                    <AirplaneTicket />
+                  </IconButton>
+                  <h1 className="text-xl text-gray-500">
+                    You haven't created any blogs yet.
+                  </h1>
+                  <p className="text-base text-gray-400">
+                    Share your travel experiences!
+                  </p>
+                  <Button
+                    variant="outlined"
+                    className="w-fit rounded-sm bg-white border-gray-300 mt-4 text-gray-800"
                   >
-                    You haven’t created any guides yet. Share your travel
-                    experiences!
-                  </Paper>
-                </Grid2>
+                    Write your first blog
+                  </Button>
+                </Stack>
               )}
             </Grid2>
-
-            <div className="flex justify-end">
-              <Button
-                onClick={() => navigate("/blogs")}
-                variant="text"
-                className="p-0 hover:underline"
-              >
-                <Link to={"/profile"}> See all</Link>
-              </Button>
-            </div>
           </Paper>
         </Grid2>
       </Grid2>

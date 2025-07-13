@@ -36,7 +36,7 @@ interface NotificationSettings {
 }
 
 export default function ProfileSettings({ userInfo }: { userInfo: UserInfo }) {
-  const { loadUserInfo } = useAuthStore();
+  const { loadCurrentUser } = useAuthStore();
 
   const [profileData, setProfileData] = useState<IUserInfoUpdate>({
     fullName: userInfo?.fullName,
@@ -87,8 +87,8 @@ export default function ProfileSettings({ userInfo }: { userInfo: UserInfo }) {
 
   const handleSaveChanges = async () => {
     try {
-      await updateUserInfo(userInfo._id || " ", profileData);
-      loadUserInfo();
+      const res = await updateUserInfo(userInfo._id || " ", profileData);
+      if (res) await loadCurrentUser();
       enqueueSnackbar("Update profile successful", {
         variant: "success",
       });
