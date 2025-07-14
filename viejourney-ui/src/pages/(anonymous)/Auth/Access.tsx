@@ -4,10 +4,11 @@ import { LoginForm, RegisterForm } from "../../../components/Auth";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 
 const Access: React.FC = () => {
-  const { user, credential } = useAuthStore();
+  const { user, info } = useAuthStore();
   const location = useLocation();
   const [path] = useState<string>(location?.pathname);
-  if (user || credential) {
+  console.log(user, info);
+  if (user || info) {
     return <Navigate to="/" replace />;
   }
 

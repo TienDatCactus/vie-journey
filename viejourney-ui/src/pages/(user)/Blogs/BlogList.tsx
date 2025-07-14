@@ -13,7 +13,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AllBlogs } from "../../../components/Pages/(user)/Blogs";
 import { MainLayout } from "../../../layouts";
-import { useUserBlog } from "../../../services/stores/useUserBlog";
+import { useUserBlog } from "../../../services/stores/useBlogStore";
 import CardSkeleton from "../../../utils/handlers/loading/CardSkeleton";
 import { IRelatedBlogs } from "../../../utils/interfaces/blog";
 const BlogList: React.FC = () => {

@@ -2,7 +2,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUserBlog } from "../../../services/stores/useUserBlog";
+import { useUserBlog } from "../../../services/stores/useBlogStore";
 import { IRelatedBlogs } from "../../../utils/interfaces/blog";
 import { Button } from "@mui/material";
 

@@ -98,6 +98,11 @@ const router = createBrowserRouter([
   {
     path: "/auth",
     errorElement: <ErrorBoundary />,
+    element: (
+      <AuthLayout>
+        <Outlet />
+      </AuthLayout>
+    ),
     children: [
       {
         path: "",

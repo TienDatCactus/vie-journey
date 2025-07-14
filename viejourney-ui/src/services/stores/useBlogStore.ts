@@ -15,9 +15,9 @@ import {
   publicBlog,
   startBlog,
   unlikeBlog,
-} from "../../services/api/blog";
+} from "../api/blog";
 
-interface UserBlogStore {
+interface BlogStore {
   handleStartBlog: (location: string) => Promise<string | null>;
   handleGetBlogDetail: (id: string) => Promise<any>;
   handleGetBlogPublicDetail: (id: string) => Promise<any>;
@@ -30,11 +30,10 @@ interface UserBlogStore {
   handleLikeBlog: (id: string) => Promise<any>;
   handleUnlikeBlog: (id: string) => Promise<any>;
   handleCheckIsLike: (id: string) => Promise<any>;
-
-  getBlogList: typeof getBlogList;
+  handleGetBlogList: (params: any) => Promise<any>;
 }
 
-export const useUserBlog = create<UserBlogStore>((set, get) => ({
+export const useUserBlog = create<BlogStore>((set, get) => ({
   handleStartBlog: async (location: string) => {
     try {
       const res = await startBlog(location);
@@ -136,6 +135,11 @@ export const useUserBlog = create<UserBlogStore>((set, get) => ({
       return false;
     }
   },
-
-  getBlogList,
+  handleGetBlogList: async (params: any) => {
+    try {
+      return await getBlogList(params);
+    } catch (error) {
+      console.error("handleGetBlogList error:", error);
+    }
+  },
 }));

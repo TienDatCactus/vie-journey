@@ -8,7 +8,7 @@ import {
 } from "../../../components/Pages/(user)/Home";
 import { MainLayout } from "../../../layouts";
 import { useTripDetailStore } from "../../../services/stores/useTripDetailStore";
-import { useUserBlog } from "../../../services/stores/useUserBlog";
+import { useUserBlog } from "../../../services/stores/useBlogStore";
 import { IRelatedBlogs } from "../../../utils/interfaces/blog";
 
 const Home: React.FC = () => {
