@@ -1,5 +1,6 @@
 import { MainLayout } from "../../../layouts";
 
+import { useEffect, useState } from "react";
 import {
   HomeAdvert,
   HomeBanner,
@@ -8,35 +9,34 @@ import {
   HomeHero,
   HomeTestimonial,
 } from "../../../components/Pages/(anonymous)/Home";
-import { useEffect, useState } from "react";
 import { useAssetsStore } from "../../../services/stores/useAssets";
-import { getLandingAssets } from "../../../services/api/asset";
 
 const Home = () => {
-  const { assets, doGetAssets } = useAssetsStore();
+  const { doGetAssets } = useAssetsStore();
   const [loading, setLoading] = useState(false);
+  const [assets, setAssets] = useState<any>(null);
+
   useEffect(() => {
-    const getLandingAssets = async () => {
+    const fetchAssets = async () => {
       try {
         setLoading(true);
-        await doGetAssets();
+        const response = await doGetAssets();
+        setAssets(response);
       } catch (error) {
-        console.error(error);
+        console.error("Lỗi khi load asset trang chủ:", error);
       } finally {
         setLoading(false);
       }
     };
-    getLandingAssets();
-  }, [getLandingAssets]);
-
-  console.log(assets);
+    fetchAssets();
+  }, [doGetAssets]);
   return (
     <MainLayout>
-      <HomeHero />
-      <HomeAdvert />
-      <HomeGuides />
-      <HomeBanner />
-      <HomeTestimonial />
+      <HomeHero img={assets?.hero[0]?.url} />
+      {assets?.intro && <HomeAdvert imgs={assets.intro} />}
+      {assets?.destination && <HomeGuides imgs={assets?.destination} />}
+      {assets?.destination && <HomeBanner imgs={assets?.destination} />}
+      {assets?.destination && <HomeTestimonial imgs={assets?.destination} />}
       <HomeCall />
     </MainLayout>
   );

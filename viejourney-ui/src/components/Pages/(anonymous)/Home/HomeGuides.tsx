@@ -2,7 +2,7 @@ import { Button, Chip } from "@mui/material";
 import React from "react";
 import cardmedia from "/images/lake-storm-morning-8k-mr.jpg";
 import { DoubleArrow } from "@mui/icons-material";
-const HomeGuides: React.FC = () => {
+const HomeGuides: React.FC<{ imgs?: any[] }> = ({ imgs = [] }) => {
   const guideCards: Array<{
     title: string;
     img: string;
@@ -11,19 +11,19 @@ const HomeGuides: React.FC = () => {
   }> = [
     {
       title: "Guide to Paris",
-      img: cardmedia,
+      img: imgs[0]?.url ?? cardmedia,
       tags: ["city", "culture"],
       mins: 15,
     },
     {
       title: "Exploring the Alps",
-      img: cardmedia,
+      img: imgs[1]?.url ?? cardmedia,
       tags: ["mountains", "hiking"],
       mins: 20,
     },
     {
       title: "Beach Getaways",
-      img: cardmedia,
+      img: imgs[2]?.url ?? cardmedia,
       tags: ["beach", "relaxation"],
       mins: 10,
     },
