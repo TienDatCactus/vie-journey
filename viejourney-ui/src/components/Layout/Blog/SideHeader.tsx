@@ -87,7 +87,7 @@ const SideHeader: React.FC<{ id: string }> = ({ id }) => {
             "https://upload.wikimedia.org/wikipedia/commons/1/1e/San_Francisco_from_the_Marin_Headlands_in_March_2019.jpg"
           }
           alt="blog-image"
-          className="w-full h-auto object-cover"
+          className="w-full h-120 object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
         <Link

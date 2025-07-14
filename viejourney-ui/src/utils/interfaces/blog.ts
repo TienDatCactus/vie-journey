@@ -58,7 +58,7 @@ export interface IBlogPost {
   viewCount: number;
   likeCount: number;
   commentCount: number;
-  status: "APPROVED" | "PENDING" | "REJECTED";
+  status: "APPROVED" | "PENDING" | "REJECTED" | "DRAFT";
   flags: number;
   createdAt: string;
   updatedAt: string;

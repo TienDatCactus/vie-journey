@@ -169,7 +169,9 @@ const CreateBlog: React.FC = () => {
                 const newBlogId = await handleStartBlog(destination);
                 setLoading(false);
                 if (newBlogId) {
-                  navigate(`/blogs/edit/${newBlogId}`);
+                  navigate(`/blogs/edit/${newBlogId}`, {
+                    state: { type: "draft" },
+                  });
                 } else {
                   console.error("Failed to create blog.");
                 }
