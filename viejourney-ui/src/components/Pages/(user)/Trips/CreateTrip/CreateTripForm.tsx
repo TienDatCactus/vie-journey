@@ -31,6 +31,8 @@ import React, { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { doCreateTrip } from "../../../../../services/api";
 import { useAutocompleteSuggestions } from "../../../../../utils/hooks/use-autocomplete-suggestion";
+import { enqueueSnackbar } from "notistack";
+import { useAuthStore } from "../../../../../services/stores/useAuthStore";
 
 export const CreateTripForm: React.FC = () => {
   const placesLib = useMapsLibrary("places");
@@ -86,7 +88,7 @@ export const CreateTripForm: React.FC = () => {
       setOpen(false);
     }
   };
-  console.log(destinationId, destinationLocation);
+  const { user } = useAuthStore();
   const {
     handleSubmit,
     register,
@@ -104,7 +106,6 @@ export const CreateTripForm: React.FC = () => {
   const handleModalOpen = () => {
     setModalOpen(true);
   };
-
   const handleModalClose = () => {
     setModalOpen(false);
   };
@@ -116,7 +117,27 @@ export const CreateTripForm: React.FC = () => {
       .filter((e) => e.toString().trim() !== "")
       .map((email) => email.toString().trim());
     if (emails.length === 0) return;
-
+    if (emails.some((email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+      enqueueSnackbar("Please enter valid email addresses.", {
+        variant: "error",
+        autoHideDuration: 3000,
+      });
+      return;
+    }
+    if (emails.some((email) => inviteEmails.includes(email))) {
+      enqueueSnackbar("Some emails are already added.", {
+        variant: "warning",
+        autoHideDuration: 3000,
+      });
+      return;
+    }
+    if (user?.email && emails.includes(user?.email)) {
+      enqueueSnackbar("You cannot invite yourself.", {
+        variant: "warning",
+        autoHideDuration: 3000,
+      });
+      return;
+    }
     setInviteEmails((prevEmails) => [...prevEmails, ...emails]);
     setModalOpen(false);
   };

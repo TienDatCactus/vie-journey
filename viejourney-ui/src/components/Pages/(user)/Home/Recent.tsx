@@ -1,9 +1,10 @@
-import { Grid2, Stack } from "@mui/material";
+import { ArrowForward } from "@mui/icons-material";
+import { Button, Grid2, Stack } from "@mui/material";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 import { RecentCard } from "./elements";
 
@@ -12,7 +13,7 @@ dayjs.extend(isSameOrBefore);
 
 const HomeRecent: React.FC = () => {
   const { trips } = useTripDetailStore();
-
+  const navigate = useNavigate();
   return (
     <div className="max-w-[1200px] py-10 w-full">
       <Stack
@@ -21,21 +22,23 @@ const HomeRecent: React.FC = () => {
         alignItems={"center"}
         className="mb-4"
       >
-        <h1 className="text-[1.875rem] font-bold">
-          Recently viewed and upcoming
-        </h1>
+        <h1 className="text-2xl font-semibold">Current & Upcoming</h1>
         <div>
-          {/* <ToggleButtonGroup exclusive>
-            <ToggleButton value="left">Recently viewed</ToggleButton>
-            <ToggleButton value="center">Upcoming</ToggleButton>
-          </ToggleButtonGroup> */}
+          <Button
+            variant="contained"
+            className="rounded-sm bg-gray-100 text-gray-500 transition-all duration-200 hover:bg-gray-200 hover:text-black"
+            onClick={() => navigate("/profile")}
+            endIcon={<ArrowForward />}
+          >
+            See all
+          </Button>
         </div>
       </Stack>
 
       {!!trips && trips?.length > 0 && (
         <Grid2 container spacing={2}>
-          {trips.map((item, index) => (
-            <Grid2 size={4} key={index}>
+          {trips.slice(0, 2).map((item, index) => (
+            <Grid2 size={trips.length > 1 ? 4 : 6} key={index}>
               <RecentCard
                 tripId={item?._id}
                 img={""}
@@ -46,7 +49,7 @@ const HomeRecent: React.FC = () => {
               />
             </Grid2>
           ))}
-          <Grid2 size={trips.length > 0 ? 4 : 12}>
+          <Grid2 size={trips.length > 1 ? 4 : 6}>
             <RecentCard blank={true} />
           </Grid2>
         </Grid2>
@@ -67,7 +70,7 @@ const HomeRecent: React.FC = () => {
             <span> Try </span>
             <Link to={"/trips/create"} className="hover:underline">
               creating
-            </Link>{" "}
+            </Link>
             <span>a new trip!</span>
           </Stack>
         </Stack>

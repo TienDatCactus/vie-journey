@@ -1,7 +1,7 @@
 import { Warning } from "@mui/icons-material";
-import { Button, CircularProgress } from "@mui/material";
+import { Backdrop, Button, CircularProgress } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -18,14 +18,23 @@ import { useSocket } from "../../../../services/context/socketContext";
 import { useAuthStore } from "../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 import { useDirectionStore } from "../../../../services/stores/useDirectionStore";
+import { useAssetsStore } from "../../../../services/stores/useAssets";
 
 const CreateTripDetails: React.FC = () => {
+  const { doGetUserAssets } = useAssetsStore();
   const { user, info } = useAuthStore();
   const { setTrip } = useTripDetailStore();
   const { id } = useParams<{ id: string }>();
   const { setSocket, socketLoading, setSocketLoading, socketDisconnected } =
     useSocket();
   const [reason, setReason] = useState<string | null>(null);
+
+  const location = useLocation();
+  const isFromInvite = location.state?.invite === true;
+  const [open, setOpen] = React.useState(isFromInvite);
+  const handleClose = () => {
+    setOpen(false);
+  };
   const {
     deleteNote,
     updateTransit,
@@ -44,6 +53,8 @@ const CreateTripDetails: React.FC = () => {
     addPlaceNote,
     deletePlaceNote,
     updatePlaceNote,
+
+    handleGetPlanByTripId,
   } = useTripDetailStore();
   const { addPlaceId } = useDirectionStore();
 
@@ -171,12 +182,16 @@ const CreateTripDetails: React.FC = () => {
   }, [id, user?.email]);
   useEffect(() => {
     const fetchTripDetails = async () => {
-      if (!id) {
-        return;
-      }
-      const resp = await doGetTrip(id);
-      if (resp) {
-        setTrip(resp);
+      if (!id) return;
+
+      try {
+        const resp = await doGetTrip(id);
+        if (resp) {
+          setTrip(resp);
+          await handleGetPlanByTripId();
+        }
+      } catch (error) {
+        console.error("Error fetching trip:", error);
       }
     };
     fetchTripDetails();
@@ -186,8 +201,29 @@ const CreateTripDetails: React.FC = () => {
       console.log("Socket disconnected");
     }
   }, [socketDisconnected]);
+  useEffect(() => {
+    (async () => {
+      await doGetUserAssets();
+    })();
+  }, []);
   return (
     <>
+      {isFromInvite && (
+        <Backdrop
+          open={open}
+          sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        >
+          <div className="flex flex-col items-center justify-center gap-3">
+            <h1 className="text-3xl font-semibold">Invitation Link</h1>
+            <p className="text-center text-lg">
+              You are invited to join a trip. Click continue to join the trip.
+            </p>
+            <Button variant="contained" color="primary" onClick={handleClose}>
+              Continue
+            </Button>
+          </div>
+        </Backdrop>
+      )}
       {socketLoading && (
         <div className="fixed inset-0 flex flex-col gap-2 items-center justify-center bg-gray-200/50 z-50 text-center">
           <CircularProgress />

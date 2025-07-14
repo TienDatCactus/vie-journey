@@ -234,7 +234,10 @@ export class AuthService {
   async refresh(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      throw new NotFoundException('Refresh token not found');
+      throw new HttpException(
+        'Refresh token not found',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
 
     try {

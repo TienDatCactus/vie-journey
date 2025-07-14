@@ -16,8 +16,8 @@ import {
   VerifyReqDTO,
 } from "./dto";
 import { setToken } from "./token";
-import { AUTH, TRIP, USER } from "./url";
-import { ITrip } from "../../utils/interfaces/trip";
+import { AUTH, TRIP, USER, ACCOUNTS, HOTELS, ADMIN, ASSET } from "./url";
+import { Trip } from "../stores/storeTypes";
 
 export const doLogin = async (data: LoginReqDTO) => {
   try {
@@ -178,7 +178,7 @@ export const doCreateTrip = async (data: CreateTripDto) => {
         return null;
       }
       enqueueSnackbar("Trip created successfully", { variant: "success" });
-      window.location.href = `/trips/edit/${trip?._id}`;
+      window.location.href = `/trips/plan/${trip?._id}`;
       return trip;
     }
   } catch (error) {
@@ -228,7 +228,7 @@ export const doInviteTripMate = async (tripId: string, email: string) => {
   return false;
 };
 
-export const doGetTripList = async (): Promise<ITrip[]> => {
+export const doGetTripList = async (): Promise<Trip[]> => {
   try {
     const res = await http.get(`${TRIP.GET_TRIP}`);
     if (!res || !res.data) {
@@ -242,7 +242,7 @@ export const doGetTripList = async (): Promise<ITrip[]> => {
   }
 };
 
-export const doGetUserTripList = async (): Promise<ITrip[]> => {
+export const doGetUserTripList = async (): Promise<Trip[]> => {
   try {
     const res = await http.get(`${TRIP.GET_USER_TRIP}`);
     if (!res || !res.data) {
@@ -254,4 +254,325 @@ export const doGetUserTripList = async (): Promise<ITrip[]> => {
     console.error(error);
     return [];
   }
+};
+
+export const doRemoveTripMate = async (tripId: string, email: string) => {
+  try {
+    const resp = await http.post(`${TRIP?.REMOVE_TRIP_MATE}`, {
+      tripId: tripId,
+      email: email.trim().toLowerCase(),
+    });
+    if (resp) {
+      enqueueSnackbar("Trip mate removed successfully", { variant: "success" });
+      return true;
+    }
+  } catch (error) {
+    console.error("Failed to remove trip mate:", error);
+  }
+};
+
+export const doGetPlanByTripId = async (tripId: string) => {
+  try {
+    const resp = await http.get(`${TRIP?.GET_PLAN_BY_TRIP_ID}/${tripId}`);
+    if (!resp || !resp.data) {
+      console.error("No data received from getPlanByTripId");
+      return null;
+    }
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get plan by trip ID:", error);
+  }
+  return null;
+};
+
+export const doValidateInvite = async (tripId: string, token: string) => {
+  try {
+    const resp = await http.post(TRIP?.VALIDATE_INVITE, {
+      tripId: tripId,
+      token: token,
+    });
+    if (resp.data) {
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to validate invite:", error);
+    return null;
+  }
+};
+
+// ============ ACCOUNT MANAGEMENT APIs ============
+
+export const doGetAllUsers = async () => {
+  try {
+    const resp = await http.get(ACCOUNTS.GET_ACCOUNTS);
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get all users:", error);
+    throw error;
+  }
+};
+
+export const doFilterUsers = async (filter: {
+  role?: string;
+  status?: string;
+  username?: string;
+  email?: string;
+}) => {
+  try {
+    const resp = await http.get(ACCOUNTS.FILTER_USERS, {
+      params: filter,
+    });
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to filter users:", error);
+    throw error;
+  }
+};
+
+export const doUpdateAccountStatus = async (
+  accountId: string,
+  active: boolean
+) => {
+  try {
+    const resp = await http.patch(
+      ACCOUNTS.UPDATE_STATUS.replace(":id", accountId),
+      { active }
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to update account status:", error);
+    throw error;
+  }
+};
+
+export const doUpdateUserRole = async (accountId: string, role: string) => {
+  try {
+    const resp = await http.patch(
+      ADMIN.UPDATE_USER_ROLE.replace(":id", accountId),
+      {
+        role,
+      }
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to update user role:", error);
+    throw error;
+  }
+};
+
+export const doBulkUpdateUserRoles = async (
+  userIds: string[],
+  role: string
+) => {
+  try {
+    const resp = await http.patch(ADMIN.BULK_UPDATE_USER_ROLES, {
+      userIds,
+      role,
+    });
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to bulk update user roles:", error);
+    throw error;
+  }
+};
+
+export const doGetUserDetail = async (userId: string) => {
+  try {
+    const resp = await http.get(
+      ACCOUNTS.GET_USER_DETAIL.replace(":id", userId)
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get user detail:", error);
+    throw error;
+  }
+};
+
+export const doDeleteUser = async (userId: string) => {
+  try {
+    const resp = await http.delete(ACCOUNTS.DELETE_USER.replace(":id", userId));
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to delete user:", error);
+    throw error;
+  }
+};
+
+export const doUpdateUserInfo = async (
+  userId: string,
+  data: {
+    fullName: string;
+    dob: string;
+    phone: string;
+    address: string;
+  }
+) => {
+  try {
+    const resp = await http.patch(
+      ACCOUNTS.UPDATE_USER_INFO.replace(":id", userId),
+      data
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to update user info:", error);
+    throw error;
+  }
+};
+
+// ============ HOTEL MANAGEMENT APIs ============
+
+export const doGetAllHotels = async () => {
+  try {
+    const resp = await http.get(HOTELS.GET_HOTELS);
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get all hotels:", error);
+    throw error;
+  }
+};
+
+export const doGetHotelById = async (hotelId: string) => {
+  try {
+    const resp = await http.get(HOTELS.GET_HOTEL.replace(":id", hotelId));
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to get hotel by id:", error);
+    throw error;
+  }
+};
+
+export const doCreateHotel = async (hotelData: {
+  name: string;
+  address: string;
+  city: string;
+  description?: string;
+  rating?: number;
+}) => {
+  try {
+    const resp = await http.post(HOTELS.CREATE_HOTEL, hotelData);
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to create hotel:", error);
+    throw error;
+  }
+};
+
+export const doUpdateHotel = async (
+  hotelId: string,
+  hotelData: {
+    hotelId: string;
+    name?: string;
+    address?: string;
+    city?: string;
+    description?: string;
+    rating?: number;
+  }
+) => {
+  try {
+    const resp = await http.patch(
+      HOTELS.UPDATE_HOTEL.replace(":id", hotelId),
+      hotelData
+    );
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to update hotel:", error);
+    throw error;
+  }
+};
+
+export const doDeleteHotel = async (hotelId: string) => {
+  try {
+    const resp = await http.delete(HOTELS.DELETE_HOTEL.replace(":id", hotelId));
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to delete hotel:", error);
+    throw error;
+  }
+};
+
+export const doImportHotels = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const resp = await http.post(HOTELS.IMPORT_HOTEL, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to import hotels:", error);
+    throw error;
+  }
+};
+
+export const doGetUserContentAssets = async () => {
+  try {
+    const resp = await http.get(`${ASSET.GET_USER_ASSETS}`);
+    if (resp) {
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to get user content assets:", error);
+  }
+  return [];
+};
+
+export const updateTripDates = async (
+  tripId: string,
+  startDate: string,
+  endDate: string
+) => {
+  try {
+    const resp = await http.post(`${TRIP?.UPDATE_TRIP_DATES}`, {
+      tripId: tripId,
+      startDate: startDate,
+      endDate: endDate,
+    });
+    if (resp.status > 200 && resp.status < 300) {
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to update trip dates:", error);
+  }
+};
+
+export const doAddContentAsset = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", "CONTENT");
+    const res = await http.post(ASSET.UPLOAD, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    if (res.status >= 200 && res.status < 300) {
+      enqueueSnackbar("Asset uploaded successfully", { variant: "success" });
+      return res.data;
+    }
+  } catch (error) {
+    console.error(error);
+    enqueueSnackbar("Failed to upload asset", { variant: "error" });
+  }
+};
+
+export const doUpdateTripCover = async (tripId: string, assetId: string) => {
+  try {
+    const resp = await http.post(`${TRIP?.UPDATE_TRIP_COVER}`, {
+      tripId: tripId,
+      assetId: assetId,
+    });
+    if (resp.status >= 200 && resp.status < 300) {
+      enqueueSnackbar("Trip cover updated successfully", {
+        variant: "success",
+      });
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to update trip cover:", error);
+    enqueueSnackbar("Failed to update trip cover", { variant: "error" });
+  }
+  return null;
 };

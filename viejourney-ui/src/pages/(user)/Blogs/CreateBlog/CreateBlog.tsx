@@ -9,11 +9,11 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../../../../layouts";
 import { useAutocompleteSuggestions } from "../../../../utils/hooks/use-autocomplete-suggestion";
-import { useUserBlog } from "../../../../services/stores/useUserBlog";
+import { useUserBlog } from "../../../../services/stores/useBlogStore";
 const CreateBlog: React.FC = () => {
   const { handleStartBlog } = useUserBlog();
   const [loading, setLoading] = useState(false);
@@ -55,6 +55,22 @@ const CreateBlog: React.FC = () => {
     },
     mode: "onChange",
   });
+
+  const onSubmit: SubmitHandler<{ destination: string }> = async (data) => {
+    try {
+      setLoading(true);
+      if (!data.destination.trim()) return;
+      const newBlogId = await handleStartBlog(data.destination);
+      console.log(newBlogId);
+      if (newBlogId) {
+        navigate(`/blogs/edit/${newBlogId}`);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <MainLayout>
       <div className="max-w-[125rem] flex flex-col items-center justify-center h-screen mx-auto">
@@ -76,9 +92,7 @@ const CreateBlog: React.FC = () => {
           </p>
         </div>
         <form
-          onSubmit={handleSubmit((data) => {
-            console.log("Form submitted with data:", data);
-          })}
+          onSubmit={handleSubmit(onSubmit)}
           className="shadow-md  p-4 bg-white w-full max-w-xl mt-8"
         >
           <Stack
@@ -163,22 +177,10 @@ const CreateBlog: React.FC = () => {
           </div>
           <ButtonGroup fullWidth className="flex justify-end mt-4">
             <Button
-              onClick={async () => {
-                if (!destination.trim()) return;
-                setLoading(true);
-                const newBlogId = await handleStartBlog(destination);
-                setLoading(false);
-                if (newBlogId) {
-                  navigate(`/blogs/edit/${newBlogId}`, {
-                    state: { type: "draft" },
-                  });
-                } else {
-                  console.error("Failed to create blog.");
-                }
-              }}
               variant="contained"
               startIcon={<Draw />}
-              disabled={loading}
+              loading={loading}
+              type="submit"
             >
               {loading ? "Creating..." : "Create Blog"}
             </Button>

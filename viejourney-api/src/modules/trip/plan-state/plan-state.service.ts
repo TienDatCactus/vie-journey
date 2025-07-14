@@ -50,6 +50,11 @@ export class PlanStateService {
     tripId: string,
     section: T,
     item: AddPayload<T>,
+    user?: {
+      id: string;
+      email: string;
+      fullName: string;
+    },
   ): string {
     const plan = this.getOrCreatePlan(tripId);
     if (section === 'budget') {
@@ -61,6 +66,15 @@ export class PlanStateService {
         throw new Error('Invalid budget payload');
       }
     }
+    // Add user info to notes
+    if (section === 'notes' && user) {
+      (item as any).by = user.fullName || user.email;
+    }
+    if (section === 'itineraries' && user) {
+      (item as any).createdBy = user.fullName || user.email;
+      (item as any).createdAt = new Date().toISOString();
+    }
+
     if (!Array.isArray(plan[section])) {
       throw new Error(
         `Section ${section} is not an array and cannot add items to it`,
@@ -80,6 +94,7 @@ export class PlanStateService {
     tripId: string,
     section: T,
     item: UpdatePayload<T>,
+    user?: string,
   ) {
     const plan = this.getOrCreatePlan(tripId);
 
@@ -132,7 +147,7 @@ export class PlanStateService {
   async savePlan(tripId: string) {
     const state = this.planStates.get(tripId);
     if (!state) return;
-    console.log(`[DEBUG] Memory state before saving (Trip ${tripId}):`);
+    console.log(JSON.stringify(state.plan, null, 1));
     try {
       this.savingStatus.set(tripId, true);
       this.emitSaveStatus(tripId, 'saving');

@@ -1,7 +1,13 @@
 // store/useTripDetailStore.ts
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
-import { doGetUserTripList } from "../api";
+import { devtools, persist } from "zustand/middleware";
+import {
+  doGetPlanByTripId,
+  doGetUserTripList,
+  doRemoveTripMate,
+  doUpdateTripCover,
+  updateTripDates,
+} from "../api";
 import {
   Expense,
   Itinerary,
@@ -52,154 +58,261 @@ interface TripDetailStore {
 
   addTripmate: (tripmateEmail: string) => void;
   handleGetUserTrips: () => Promise<void>;
+  handleRemoveTripMate: (tripmateEmail: string) => Promise<void>;
+  handleGetPlanByTripId: () => Promise<void>;
+  handleUpdateTripDates: (startDate: string, endDate: string) => Promise<void>;
+  handleUpdateTripCover: (assetId: string | null) => Promise<void>;
 }
 
 export const useTripDetailStore = create<TripDetailStore>()(
   devtools(
-    (set, get) => ({
-      notes: [],
-      itineraries: [],
-      expenses: [],
-      placeNotes: [],
-      totalBudget: 0,
-      currentUsage: 0,
-      trip: {} as Trip,
-      addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
-      updateNote: (id, content) =>
-        set((state) => ({
-          notes: state.notes.map((n) => (n.id === id ? { ...n, content } : n)),
-        })),
-      toggleEditNote: (id) =>
-        set((state) => ({
-          notes: state.notes.map((n) =>
-            n.id === id ? { ...n, isEditing: !n.isEditing } : n
-          ),
-        })),
-      deleteNote: (id) =>
-        set((state) => ({
-          notes: state.notes.filter((n) => n.id !== id),
-        })),
-      transits: [],
-      addTransit: (transit) =>
-        set((state) => ({ transits: [...state.transits, transit] })),
-      updateTransit: (id, updated) =>
-        set((state) => ({
-          transits: state.transits.map((t) =>
-            t.id === id ? { ...t, ...updated } : t
-          ),
-        })),
-      toggleEditTransit: (id) =>
-        set((state) => ({
-          transits: state.transits.map((t) =>
-            t.id === id ? { ...t, isEditing: !t.isEditing } : t
-          ),
-        })),
-      deleteTransit: (id) =>
-        set((state) => ({
-          transits: state.transits.filter((t) => t.id !== id),
-        })),
-
-      // Place notes implementation
-      addPlaceNote: (note) =>
-        set((state) => ({
-          placeNotes: [...state.placeNotes, note],
-        })),
-
-      updatePlaceNote: (id, note, visited) =>
-        set((state) => ({
-          placeNotes: state.placeNotes.map((n) =>
-            n.id === id ? { ...n, note, visited } : n
-          ),
-        })),
-
-      toggleEditPlaceNotes: (id) =>
-        set((state) => ({
-          placeNotes: state.placeNotes.map((n) =>
-            n.id === id ? { ...n, isEditing: !n.isEditing } : n
-          ),
-        })),
-
-      deletePlaceNote: (id) =>
-        set((state) => ({
-          placeNotes: state.placeNotes.filter((n) => n.id !== id),
-        })),
-
-      setTrip: (trip) => set(() => ({ trip })),
-      addItinerary: (itinerary) =>
-        set((state) => ({
-          itineraries: [...state.itineraries, itinerary],
-        })),
-      updateItinerary: (id, updated) =>
-        set((state) => ({
-          itineraries: state.itineraries.map((i) =>
-            i.id === id ? { ...i, ...updated } : i
-          ),
-        })),
-      deleteItinerary: (id) =>
-        set((state) => ({
-          itineraries: state.itineraries.filter((i) => i.id !== id),
-        })),
-      toggleEditItinerary: (id) =>
-        set((state) => ({
-          itineraries: state.itineraries.map((i) =>
-            i.id === id ? { ...i, isEditing: !i.isEditing } : i
-          ),
-        })),
-      addExpense: (expense) =>
-        set((state) => ({
-          expenses: [...state.expenses, expense],
-          currentUsage: Number(state.currentUsage) + Number(expense.amount),
-        })),
-      updateExpense: (id, updated) =>
-        set((state) => {
-          const updatedExpenses = state.expenses.map((e) =>
-            e.id === id ? { ...e, ...updated } : e
-          );
-          return {
-            expenses: updatedExpenses,
-            currentUsage: updatedExpenses.reduce(
-              (total, expense) => Number(total) + Number(expense.amount),
-              0
+    persist(
+      (set, get) => ({
+        trips: [],
+        setNotes: (note) => set((state) => ({ notes: [...state.notes, note] })),
+        setPlaceNotes: (notes) => set(() => ({ placeNotes: notes })),
+        notes: [],
+        itineraries: [],
+        expenses: [],
+        placeNotes: [],
+        totalBudget: 0,
+        currentUsage: 0,
+        trip: {} as Trip,
+        addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
+        updateNote: (id, content) =>
+          set((state) => ({
+            notes: state.notes.map((n) =>
+              n.id === id ? { ...n, content } : n
             ),
-          };
-        }),
-
-      deleteExpense: (id) =>
-        set((state) => {
-          const updatedExpenses = state.expenses.filter((e) => e.id !== id);
-          return {
-            expenses: updatedExpenses,
-            currentUsage: updatedExpenses.reduce(
-              (total, expense) => Number(total) + Number(expense.amount),
-              0
+          })),
+        toggleEditNote: (id) =>
+          set((state) => ({
+            notes: state.notes.map((n) =>
+              n.id === id ? { ...n, isEditing: !n.isEditing } : n
             ),
-          };
-        }),
+          })),
+        deleteNote: (id) =>
+          set((state) => ({
+            notes: state.notes.filter((n) => n.id !== id),
+          })),
+        transits: [],
+        addTransit: (transit) =>
+          set((state) => ({ transits: [...state.transits, transit] })),
+        updateTransit: (id, updated) =>
+          set((state) => ({
+            transits: state.transits.map((t) =>
+              t.id === id ? { ...t, ...updated } : t
+            ),
+          })),
+        toggleEditTransit: (id) =>
+          set((state) => ({
+            transits: state.transits.map((t) =>
+              t.id === id ? { ...t, isEditing: !t.isEditing } : t
+            ),
+          })),
+        deleteTransit: (id) =>
+          set((state) => ({
+            transits: state.transits.filter((t) => t.id !== id),
+          })),
 
-      setTotalBudget: (budget) =>
-        set(() => ({
-          totalBudget: budget,
-        })),
-      addTripmate: (tripmateEmail) =>
-        set((state) => ({
-          trip: {
-            ...state.trip,
-            tripmates: [...state.trip.tripmates, tripmateEmail],
-          },
-        })),
-      handleGetUserTrips: async () => {
-        try {
-          const res = await doGetUserTripList();
-          if (res) {
-            set({ trips: res });
-          } else {
-            console.error("No data received from getUserTrips");
+        // Place notes implementation
+        addPlaceNote: (note) =>
+          set((state) => ({
+            placeNotes: [...state.placeNotes, note],
+          })),
+
+        updatePlaceNote: (id, note, visited) =>
+          set((state) => ({
+            placeNotes: state.placeNotes.map((n) =>
+              n.id === id ? { ...n, note, visited } : n
+            ),
+          })),
+
+        toggleEditPlaceNotes: (id) =>
+          set((state) => ({
+            placeNotes: state.placeNotes.map((n) =>
+              n.id === id ? { ...n, isEditing: !n.isEditing } : n
+            ),
+          })),
+
+        deletePlaceNote: (id) =>
+          set((state) => ({
+            placeNotes: state.placeNotes.filter((n) => n.id !== id),
+          })),
+
+        setTrip: (trip) => set(() => ({ trip })),
+        addItinerary: (itinerary) =>
+          set((state) => ({
+            itineraries: [...state.itineraries, itinerary],
+          })),
+        updateItinerary: (id, updated) =>
+          set((state) => ({
+            itineraries: state.itineraries.map((i) =>
+              i.id === id ? { ...i, ...updated } : i
+            ),
+          })),
+        deleteItinerary: (id) =>
+          set((state) => ({
+            itineraries: state.itineraries.filter((i) => i.id !== id),
+          })),
+        toggleEditItinerary: (id) =>
+          set((state) => ({
+            itineraries: state.itineraries.map((i) =>
+              i.id === id ? { ...i, isEditing: !i.isEditing } : i
+            ),
+          })),
+        addExpense: (expense) =>
+          set((state) => ({
+            expenses: [...state.expenses, expense],
+            currentUsage: Number(state.currentUsage) + Number(expense.amount),
+          })),
+        updateExpense: (id, updated) =>
+          set((state) => {
+            const updatedExpenses = state.expenses.map((e) =>
+              e.id === id ? { ...e, ...updated } : e
+            );
+            return {
+              expenses: updatedExpenses,
+              currentUsage: updatedExpenses.reduce(
+                (total, expense) => Number(total) + Number(expense.amount),
+                0
+              ),
+            };
+          }),
+
+        deleteExpense: (id) =>
+          set((state) => {
+            const updatedExpenses = state.expenses.filter((e) => e.id !== id);
+            return {
+              expenses: updatedExpenses,
+              currentUsage: updatedExpenses.reduce(
+                (total, expense) => Number(total) + Number(expense.amount),
+                0
+              ),
+            };
+          }),
+
+        setTotalBudget: (budget) =>
+          set(() => ({
+            totalBudget: budget,
+          })),
+        addTripmate: (tripmateEmail) =>
+          set((state) => ({
+            trip: {
+              ...state.trip,
+              tripmates: [...state.trip.tripmates, tripmateEmail],
+            },
+          })),
+        handleGetUserTrips: async () => {
+          try {
+            const res = await doGetUserTripList();
+            if (res) {
+              set({ trips: res });
+            } else {
+              console.error("No data received from getUserTrips");
+            }
+          } catch (error) {
+            console.error("Failed to get user trips:", error);
           }
-        } catch (error) {
-          console.error("Failed to get user trips:", error);
-        }
-      },
-    }),
-    { name: "trip-detail-storage" }
+        },
+        handleRemoveTripMate: async (tripmateEmail: string) => {
+          try {
+            const res = await doRemoveTripMate(get().trip._id, tripmateEmail);
+            if (res) {
+              set((state) => ({
+                trip: {
+                  ...state.trip,
+                  tripmates: state.trip.tripmates.filter(
+                    (email) => email !== tripmateEmail
+                  ),
+                },
+              }));
+            }
+          } catch (error) {
+            console.error("Failed to remove trip mate:", error);
+          }
+        },
+        handleGetPlanByTripId: async () => {
+          try {
+            const res = await doGetPlanByTripId(get().trip._id);
+            if (res) {
+              const plan = res.plan;
+              set(() => ({
+                totalBudget: plan.budget,
+                expenses: plan.expenses,
+                itineraries: plan.itineraries,
+                notes: plan.notes,
+                placeNotes: plan.places,
+                transits: plan.transits,
+              }));
+            } else {
+              console.error("No data received from getPlanByTripId");
+            }
+          } catch (error) {
+            console.error("Failed to get plan by trip ID:", error);
+          }
+        },
+        handleUpdateTripDates: async (startDate: string, endDate: string) => {
+          const trip = get().trip;
+          if (!trip._id) {
+            console.error("Trip ID is not available");
+            return;
+          }
+          try {
+            const updatedTrip = await updateTripDates(
+              trip._id,
+              startDate,
+              endDate
+            );
+            if (updatedTrip) {
+              set({
+                trip: {
+                  ...trip,
+                  startDate: updatedTrip.startDate,
+                  endDate: updatedTrip.endDate,
+                },
+              });
+            } else {
+              console.error("Failed to update trip dates");
+            }
+          } catch (error) {
+            console.error("Error updating trip dates:", error);
+          }
+        },
+        handleUpdateTripCover: async (assetId: string | null) => {
+          const trip = get().trip;
+          if (!trip._id) {
+            console.error("Trip ID is not available");
+            return;
+          }
+          if (!assetId) {
+            console.error("Asset ID is not provided");
+            return;
+          }
+          try {
+            const updatedTrip = await doUpdateTripCover(trip._id, assetId);
+            console.log("Updated trip cover:", updatedTrip);
+            if (updatedTrip) {
+              set({
+                trip: {
+                  ...trip,
+                  coverImage: updatedTrip.coverImage,
+                },
+              });
+            } else {
+              console.error("Failed to update trip cover");
+            }
+          } catch (error) {
+            console.error("Error updating trip cover:", error);
+          }
+        },
+      }),
+      {
+        name: "trip-detail-storage",
+        partialize: (state) => ({
+          trips: state.trips,
+        }),
+      }
+    )
   )
 );

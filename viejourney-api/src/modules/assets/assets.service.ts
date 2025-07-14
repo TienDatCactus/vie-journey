@@ -20,6 +20,26 @@ export class AssetsService {
     });
   }
 
+  // Lấy tất cả asset của user có type là CONTENT
+  async getAllUserContentAssets(userId: string) {
+    try {
+      console.log('userId: ', userId);
+      const assets = await this.assetModel
+        .find({
+          assetOwner: 'USER',
+          userId: new Types.ObjectId(userId),
+          type: { $regex: /^CONTENT$/i }, // không phân biệt hoa thường
+        })
+        .exec();
+      console.log('assets: ', assets);
+      return assets;
+    } catch (error) {
+      throw new BadRequestException(
+        `Error fetching user content assets: ${error.message}`,
+      );
+    }
+  }
+
   async addAssetSystem(
     file: Express.Multer.File,
     req: Request,
@@ -27,11 +47,23 @@ export class AssetsService {
     subsection?: string | null,
   ) {
     const userId = req.user?.['userId'] as string;
+    const roles = req.user?.['role'] as string;
+    console.log('Role: ', roles);
+
     if (!file) {
       throw new BadRequestException('File upload is required');
     }
+
+    // Kiểm tra role
+    const isAdmin = Array.isArray(roles)
+      ? roles.includes('ADMIN')
+      : roles === 'ADMIN';
+
+    let assetOwner = isAdmin ? 'SYSTEM' : 'USER';
+    let publicIdPrefix = isAdmin ? 'system' : 'user';
+
     // Nếu là asset của hệ thống (cần subsection)
-    if (type.toUpperCase() === 'BANNER') {
+    if (type.toUpperCase() === 'BANNER' && isAdmin) {
       if (!subsection) {
         throw new BadRequestException('Subsection is required');
       }
@@ -55,7 +87,7 @@ export class AssetsService {
 
     // 1. Upload ảnh mới
     const uploadResult = await this.uploadImage(file, {
-      public_id: `system/${userId}/${uuidv4()}`,
+      public_id: `${publicIdPrefix}/${userId}/${uuidv4()}`,
       folder: `vie-journey/${type.toLocaleLowerCase()}/${subsection ? subsection.toLocaleLowerCase() : ''}`,
     });
 
@@ -63,7 +95,7 @@ export class AssetsService {
     const newAsset = new this.assetModel({
       userId: new Types.ObjectId(userId),
       type: type.toLocaleUpperCase(),
-      assetOwner: 'SYSTEM',
+      assetOwner: assetOwner,
       subsection: subsection ? subsection.toLocaleUpperCase() : null,
       url: uploadResult.secure_url,
       publicId: uploadResult.public_id,

@@ -7,37 +7,31 @@ import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
-import { useUserBlog } from "../../../../../services/stores/useUserBlog";
-interface GuideTagProps {
-  id: string;
-  img: string;
-  title: string;
-  likes: number;
-  views: number;
-}
+import { useUserBlog } from "../../../../../services/stores/useBlogStore";
+import { IRelatedBlogs } from "../../../../../utils/interfaces/blog";
 
-const GuideTag = ({ id, img, title, likes, views }: GuideTagProps) => {
+const BlogTag = ({ blog }: { blog: IRelatedBlogs }) => {
   const [isLiked, setIsLiked] = useState<boolean>(false);
 
   const { handleCheckIsLike } = useUserBlog();
 
   useEffect(() => {
     (async () => {
-      const liked = await handleCheckIsLike(id);
+      const liked = await handleCheckIsLike(blog._id);
       setIsLiked(!!liked);
     })();
-  }, [id]);
+  }, [blog._id]);
 
   return (
-    <Card className="w-full">
-      <div className="p-2 ">
+    <Card className="w-full bg-neutral-200" elevation={0}>
+      <div className="p-2 pb-0">
         <div className="relative  w-full overflow-hidden">
           <CardMedia
             component="img"
-            className="h-[168px] w-full rounded-md"
+            className="h-40 w-full rounded-md"
             image={
-              img ||
-              `https://placehold.co/600x400/1a1a1a/ffffff?text=${title
+              blog?.coverImage ||
+              `https://placehold.co/600x400/1a1a1a/ffffff?text=${blog?.title
                 .split(" ")
                 .join("+")}`
             }
@@ -46,37 +40,40 @@ const GuideTag = ({ id, img, title, likes, views }: GuideTagProps) => {
             gutterBottom
             variant="h5"
             component="div"
-            className="text-[1.125rem] my-1 absolute bottom-2 left-2 text-white"
+            className="text-base  my-1 absolute bottom-2 left-2 text-gray-200  truncate"
           >
-            {title}
+            {blog?.summary}
           </Typography>
         </div>
-        <CardContent className="pb-2 px-0">
-          <Stack
-            spacing={1}
-            alignItems={"center"}
-            justifyContent={"space-between"}
-            direction={"row"}
-            className="text-[#7d7d7d]"
-          >
-            <Stack direction={"row"} alignItems={"center"}>
-              <IconButton className="p-1">
-                {isLiked ? (
-                  <FavoriteIcon
-                    className="cursor-pointer hover:scale-110 transition-all duration-300"
-                    sx={{ color: "red" }}
-                  />
-                ) : (
-                  <FavoriteBorderIcon className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600" />
-                )}
-              </IconButton>
-              <p className="m-0 text-sm">{likes}</p>
-            </Stack>
-            <Stack direction={"row"} alignItems={"center"}>
-              <IconButton className="p-1">
-                <VisibilityIcon className="text-base" />
-              </IconButton>
-              <p className="m-0 text-sm">{views}</p>
+        <CardContent className="pb-2 pt-1 px-0">
+          <Stack direction={"row"} justifyContent={"space-between"}>
+            <h1 className="text-lg ">{blog?.title}</h1>
+            <Stack
+              spacing={1}
+              alignItems={"center"}
+              justifyContent={"space-between"}
+              direction={"row"}
+              className="text-[#7d7d7d]"
+            >
+              <Stack direction={"row"} alignItems={"center"}>
+                <IconButton className="p-1">
+                  {isLiked ? (
+                    <FavoriteIcon
+                      className="cursor-pointer text-base hover:scale-110 transition-all duration-300"
+                      sx={{ color: "red" }}
+                    />
+                  ) : (
+                    <FavoriteBorderIcon className="cursor-pointer text-base hover:scale-110 transition-all duration-300 text-gray-600" />
+                  )}
+                </IconButton>
+                <p className="m-0 text-sm">{blog?.metrics?.likeCount}</p>
+              </Stack>
+              <Stack direction={"row"} alignItems={"center"}>
+                <IconButton className="p-1">
+                  <VisibilityIcon className="text-base" />
+                </IconButton>
+                <p className="m-0 text-sm">{blog?.metrics?.viewCount}</p>
+              </Stack>
             </Stack>
           </Stack>
         </CardContent>
@@ -85,4 +82,4 @@ const GuideTag = ({ id, img, title, likes, views }: GuideTagProps) => {
   );
 };
 
-export default GuideTag;
+export default BlogTag;

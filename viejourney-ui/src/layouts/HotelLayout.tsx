@@ -1,37 +1,81 @@
 import React from "react";
 // import Header from "../components/Layout/(anonymous)/Header";
-import { VerticalAlignTop } from "@mui/icons-material";
-import { Divider, Fab } from "@mui/material";
-import { animate } from "motion/react";
+import {
+  ExitToApp,
+  KeyboardDoubleArrowUp,
+  KeyboardReturn,
+  SettingsInputSvideo,
+  ZoomOutMap,
+} from "@mui/icons-material";
+import { Divider, SpeedDial, SpeedDialAction } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { Footer, HotelAuthHeader } from "../components/Layout";
+import { smoothScrollTo } from "../utils/handlers/utils";
 
 const HotelLayout = ({ children }: { children: React.ReactNode }) => {
-  const smoothScrollTo = (targetY: number) => {
-    const currentY = window.scrollY;
-
-    animate(currentY, targetY, {
-      duration: 0.8,
-      ease: "easeInOut",
-      onUpdate(latest) {
-        window.scrollTo(0, latest);
+  const navigate = useNavigate();
+  const actions = [
+    {
+      icon: <KeyboardDoubleArrowUp />,
+      name: "Back to top",
+      onClick: () => smoothScrollTo(0),
+    },
+    {
+      icon: <ExitToApp />,
+      name: "Back to home",
+      onClick: () => {
+        navigate("/home");
       },
-    });
-  };
+    },
+    {
+      icon: <ZoomOutMap />,
+      name: "Fullscreen",
+      onClick: () => {
+        const elem = document.documentElement;
+        if (!document.fullscreenElement && elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      },
+    },
+    {
+      icon: <KeyboardReturn />,
+      name: "Return",
+      onClick: () => {
+        navigate(-1);
+      },
+    },
+  ];
+
   return (
     <div>
       <HotelAuthHeader />
       <main className="flex flex-col items-center mx-auto justify-center bg-neutral-100">
         {children}
       </main>
-      <Fab
-        size="small"
-        color="primary"
-        aria-label="add"
-        className="fixed bottom-4 right-4"
-        onClick={() => smoothScrollTo(0)}
+      <SpeedDial
+        sx={{
+          position: "fixed",
+          bottom: 100,
+          right: 15,
+          zIndex: 1000,
+        }}
+        ariaLabel="SpeedDial tooltip example"
+        icon={<SettingsInputSvideo />}
+        FabProps={{ className: "bg-[#0042da] text-white" }}
       >
-        <VerticalAlignTop />
-      </Fab>
+        {actions.map((action) => (
+          <SpeedDialAction
+            onClick={action.onClick}
+            key={action.name}
+            icon={action.icon}
+            slotProps={{
+              tooltip: { title: action.name },
+            }}
+          />
+        ))}
+      </SpeedDial>
       <Divider />
       <Footer />
     </div>

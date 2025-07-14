@@ -7,8 +7,8 @@ import {
   IBlogQuery,
   IBlogRes,
   IContentItem,
-  IMyBlog,
   IQueryParam,
+  IRelatedBlogs,
 } from "../../utils/interfaces/blog";
 import http from "../axios/index";
 import { BLOG } from "./url";
@@ -109,7 +109,7 @@ export const editBlogDraft = async (id: string, data: any) => {
     formData.append("tags", tag);
   });
 
-  const res = await http.patch(`${BLOG.BLOGS}/draft/${id}`, formData, {
+  const res = await http.patch(`${BLOG.BLOGS}/update-draft/${id}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -148,7 +148,7 @@ export const publicBlog = async (id: string) => {
   return res.data;
 };
 
-export const getMyBlog = async (): Promise<IMyBlog[]> => {
+export const getMyBlog = async (): Promise<IBlog[]> => {
   const res = await http.get(`${BLOG.BLOGS}/my-blogs`);
   return res.data?.blogs;
 };
@@ -158,7 +158,7 @@ export const getBlogUserDetail = async (id: string): Promise<IBlogDetail> => {
   return res.data;
 };
 
-export const getBlogList = async (params: any): Promise<IBlog[]> => {
+export const getBlogList = async (params: any): Promise<IRelatedBlogs[]> => {
   const res = await http.get(`${BLOG.BLOGS}/home`, { params });
   return res.data.data.blogs;
 };

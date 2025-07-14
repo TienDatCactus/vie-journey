@@ -23,12 +23,16 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import axios from "axios";
-import { ACCOUNTS } from "../../../services/api/url";
+import {
+  doGetAllUsers,
+  doFilterUsers,
+  doUpdateAccountStatus,
+  doDeleteUser,
+  doUpdateUserInfo,
+} from "../../../services/api";
 import { Link } from "react-router-dom";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditAccountDialog from "./EditAccountDialog";
-import http from "../../../services/axios";
 
 function stringAvatar(name: string) {
   if (!name) return "";
@@ -120,6 +124,25 @@ function Accounts() {
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Debounce hook
+  const useDebounce = (value: string, delay: number) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value, delay]);
+
+    return debouncedValue;
+  };
+
+  const debouncedSearch = useDebounce(search, 500); // 500ms delay
+
   const fetchAccounts = async (params?: {
     search?: string;
     roleFilter?: string;
@@ -140,68 +163,50 @@ function Accounts() {
 
       if (hasFilters) {
         // Use filter API when filters are applied
-        const queryParams = new URLSearchParams();
+        const filterParams: any = {};
 
         if (params?.search || search) {
-          queryParams.append("username", params?.search || search);
-          queryParams.append("email", params?.search || search);
+          const searchTerm = params?.search || search;
+          // Detect if search term looks like email (contains @)
+          if (searchTerm.includes("@")) {
+            filterParams.email = searchTerm;
+          } else {
+            filterParams.username = searchTerm;
+          }
         }
         if (params?.roleFilter || roleFilter) {
-          queryParams.append("role", params?.roleFilter || roleFilter);
+          filterParams.role = params?.roleFilter || roleFilter;
         }
         if (params?.statusFilter || statusFilter) {
-          queryParams.append("status", params?.statusFilter || statusFilter);
+          filterParams.status = params?.statusFilter || statusFilter;
         }
 
-        const url =
-          import.meta.env.VITE_PRIVATE_URL +
-          ACCOUNTS.FILTER_USERS +
-          `?${queryParams.toString()}`;
-
-        res = await http.get(url, { withCredentials: true });
+        res = await doFilterUsers(filterParams);
       } else {
         // Use regular GET API when no filters
-        res = await http.get(
-          import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS,
-          { withCredentials: true }
-        );
+        res = await doGetAllUsers();
       }
 
-      // Handle response based on API type
-      if (hasFilters) {
-        // Filter API response: { status, message, data: { users, total } }
-        if (res.data.status === "success" && res.data.data?.users) {
-          const transformedUsers = res.data.data.users.map((user: any) => ({
-            _id: user.userId,
-            fullName: user.userName,
-            userId: {
-              _id: user.accountId,
-              email: user.email,
-              role: user.role,
-              status: user.status,
-              createdAt: user.createdAt,
-            },
-            phone: user.phone,
-            address: user.address,
+      // Both APIs return the same structure: { status, message, data: { users, total } }
+      if (res.status === "success" && res.data?.users) {
+        const transformedUsers = res.data.users.map((user: any) => ({
+          _id: user.userId,
+          fullName: user.userName,
+          userId: {
+            _id: user.accountId,
+            email: user.email,
+            role: user.role,
+            status: user.status,
             createdAt: user.createdAt,
-            flaggedCount: 0,
-          }));
-          setUsers(transformedUsers);
-        } else {
-          setUsers([]);
-        }
-      } else {
-        // Regular API response: array directly
-        const transformedUsers = (res.data || []).map((user: any) => ({
-          _id: user._id,
-          fullName: user.fullName,
-          userId: user.userId,
+          },
           phone: user.phone,
           address: user.address,
           createdAt: user.createdAt,
-          flaggedCount: user.flaggedCount || 0,
+          flaggedCount: 0,
         }));
         setUsers(transformedUsers);
+      } else {
+        setUsers([]);
       }
     } catch (err) {
       console.error("Error fetching accounts:", err);
@@ -211,9 +216,9 @@ function Accounts() {
   };
 
   useEffect(() => {
-    fetchAccounts({ search, roleFilter, statusFilter });
+    fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
     // eslint-disable-next-line
-  }, [search, roleFilter, statusFilter]);
+  }, [debouncedSearch, roleFilter, statusFilter]);
 
   const rows = users.map((user: any, index) => ({
     id: user._id || index,
@@ -226,7 +231,7 @@ function Accounts() {
       // Update UI first (optimistic update)
       setUsers((prev) =>
         prev.map((u: any) =>
-          u._id === accountId
+          u.userId._id === accountId
             ? {
                 ...u,
                 userId: {
@@ -241,16 +246,11 @@ function Accounts() {
       // Call API to update on server
       const active = newStatus === "Active";
 
-      await axios.patch(
-        import.meta.env.VITE_PRIVATE_URL +
-          ACCOUNTS.UPDATE_STATUS.replace(":id", accountId),
-        { active },
-        { withCredentials: true }
-      );
+      await doUpdateAccountStatus(accountId, active);
     } catch (err) {
       console.error("Error updating status:", err);
       // Revert on error by refetching data
-      fetchAccounts({ search, roleFilter, statusFilter });
+      fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
     }
   };
 
@@ -263,7 +263,7 @@ function Accounts() {
       minWidth: 250,
       renderCell: (params: any) => (
         <Link
-          to={`detail/${params.row._id}`}
+          to={`detail/${params.row.userId._id}`}
           style={{ textDecoration: "none", color: "inherit" }}
         >
           <Stack direction="row" alignItems="center" spacing={2}>
@@ -345,7 +345,9 @@ function Accounts() {
             value={
               params.row.userId?.status === "ACTIVE" ? "Active" : "Inactive"
             }
-            onChange={(e) => handleStatusChange(params.row._id, e.target.value)}
+            onChange={(e) =>
+              handleStatusChange(params.row.userId._id, e.target.value)
+            }
             sx={{
               fontWeight: 500,
               "& .MuiSelect-select": {
@@ -433,12 +435,9 @@ function Accounts() {
     const user = users[deleteIdx] as Record<string, any>;
     setLoadingDelete(true);
     try {
-      await axios.delete(
-        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + user._id,
-        { withCredentials: true }
-      );
+      await doDeleteUser(user._id);
       // Refresh data after delete
-      fetchAccounts({ search, roleFilter, statusFilter });
+      fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
       setOpenDelete(false);
       setLoadingDelete(false);
       setDeleteIdx(null);
@@ -457,13 +456,9 @@ function Accounts() {
     const user = users[editIdx] as Record<string, any>;
     setLoadingEdit(true);
     try {
-      await axios.patch(
-        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + user._id,
-        data,
-        { withCredentials: true }
-      );
+      await doUpdateUserInfo(user._id, data);
       // Refresh data after edit
-      fetchAccounts({ search, roleFilter, statusFilter });
+      fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
       setLoadingEdit(false);
       setOpenEdit(false);
       setEditIdx(null);
@@ -531,6 +526,13 @@ function Accounts() {
                   startAdornment: (
                     <InputAdornment position="start">
                       <SearchIcon color="action" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: search !== debouncedSearch && (
+                    <InputAdornment position="end">
+                      <Typography variant="caption" color="text.secondary">
+                        Searching...
+                      </Typography>
                     </InputAdornment>
                   ),
                 }}

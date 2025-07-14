@@ -18,7 +18,7 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
-import { useUserBlog } from "../../../services/stores/useUserBlog";
+import { useUserBlog } from "../../../services/stores/useBlogStore";
 import Comment from "./Comment";
 const SideHeader: React.FC<{ id: string }> = ({ id }) => {
   const [blog, setBlog] = useState<IBlogDetail>();
@@ -193,7 +193,7 @@ const SideHeader: React.FC<{ id: string }> = ({ id }) => {
         <PlaceToVisit />
         */}
 
-        <Comment id={id}/>
+        <Comment id={id} />
       </div>
       <RelatedBlog />
     </div>

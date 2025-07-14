@@ -9,6 +9,7 @@ import {
 } from "@mui/icons-material";
 import { AppBar, Button, Divider, Stack, Toolbar } from "@mui/material";
 import type React from "react";
+import { Link } from "react-router-dom";
 
 const BlogCreateHeader: React.FC<{
   onSaveDraft: () => void;
@@ -33,9 +34,11 @@ const BlogCreateHeader: React.FC<{
           spacing={2}
           className="h-full px-4"
         >
-          <Button className="text-dark-800" startIcon={<ArrowBack />} href="/">
-            Back to Home
-          </Button>
+          <Link to="/home">
+            <Button className="text-dark-800" startIcon={<ArrowBack />}>
+              Back to Home
+            </Button>
+          </Link>
           <Divider flexItem orientation="vertical" />
           <Stack
             direction="row"

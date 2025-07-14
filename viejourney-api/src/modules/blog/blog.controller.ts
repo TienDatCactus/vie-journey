@@ -134,7 +134,7 @@ export class BlogController {
       },
     }),
   )
-  async updateBlogDraft(
+  async updateBlogDraftById(
     @Param('id') id: string,
     @Body() dto: UpdateBlogDraftDto,
     @UploadedFile() coverImage: Express.Multer.File,

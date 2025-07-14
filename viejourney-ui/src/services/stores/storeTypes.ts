@@ -1,3 +1,5 @@
+import { UserInfo } from "../../utils/interfaces";
+
 // types/trip.ts
 export interface Trip {
   _id: string;
@@ -10,13 +12,17 @@ export interface Trip {
       lng: number; // Longitude of the destination
     };
   };
+  coverImage?: {
+    _id?: string; // Optional ID for the cover image
+    url: string; // URL of the cover image
+  };
   startDate: Date;
   endDate: Date;
-  budgetRange?: string;
-  tripmateRange?: string;
   tripmates: string[];
-  description: string;
   visibility: boolean;
+  createdBy: Partial<UserInfo>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Note {
