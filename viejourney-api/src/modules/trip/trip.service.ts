@@ -179,9 +179,16 @@ export class TripService {
 
   async findByUser(email: string) {
     try {
-      const trips = await this.tripModel.find().where({
-        tripmates: { $in: [email] },
-      });
+      const trips = await this.tripModel
+        .find()
+        .where({
+          tripmates: { $in: [email] },
+        })
+        .populate({
+          path: 'coverImage',
+          model: 'Asset',
+          select: 'url',
+        });
       if (!trips || trips.length === 0) {
         throw new HttpException(
           'No trips found for this user',

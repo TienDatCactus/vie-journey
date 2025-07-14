@@ -6,7 +6,7 @@ import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUserBlog } from "../../../../../services/stores/useUserBlog";
+import { useUserBlog } from "../../../../../services/stores/useBlogStore";
 import { IRelatedBlogs } from "../../../../../utils/interfaces/blog";
 
 const ExploreCard: React.FC<{ item: IRelatedBlogs }> = ({ item }) => {

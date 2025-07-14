@@ -4,7 +4,7 @@ import { SimpleEditor } from "./../../../../../@/components/tiptap-templates/sim
 import { useLocation, useParams } from "react-router-dom";
 import { IContentItem } from "../../../../utils/interfaces/blog";
 import { enqueueSnackbar } from "notistack";
-import { useUserBlog } from "../../../../services/stores/useUserBlog";
+import { useUserBlog } from "../../../../services/stores/useBlogStore";
 
 const CreateBlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

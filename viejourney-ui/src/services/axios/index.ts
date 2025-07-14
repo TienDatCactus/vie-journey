@@ -64,6 +64,32 @@ const onRefreshFailure = () => {
   refreshSubscribers = [];
 };
 
+// Add these constants at the top of your axios/index.ts file
+let refreshAttempts = 0;
+const MAX_REFRESH_ATTEMPTS = 1;
+const LOGIN_REDIRECT_PATH = "/auth/login";
+const AUTH_ENDPOINTS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh",
+  "/auth/oauth-success",
+];
+
+// Function to clear session data and redirect
+function clearSession() {
+  localStorage.removeItem("token");
+  refreshAttempts = 0;
+  isRefreshing = false;
+  onRefreshFailure(); // Clear subscribers
+
+  const isLoginPage = window.location.pathname.includes("/auth/login");
+  if (!isLoginPage) {
+    // Set a flag to prevent redirect loops
+    localStorage.setItem("auth_redirect", "true");
+    window.location.replace(LOGIN_REDIRECT_PATH);
+  }
+}
+
 /**
  * Show snackbar message with debouncing to prevent duplicates
  * @param message The message to display
@@ -389,18 +415,29 @@ http.interceptors.response.use(
 
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
-      const isAuthEndpoint = [
-        "/auth/login",
-        "/auth/register",
-        "/auth/refresh",
-        "/auth/oauth-success",
-      ].some((endpoint) => originalRequest.url?.includes(endpoint));
+      const isAuthEndpoint = AUTH_ENDPOINTS.some((endpoint) =>
+        originalRequest.url?.includes(endpoint)
+      );
 
       if (isAuthEndpoint) {
         console.log(
           "Auth endpoint returned 401, not attempting refresh",
           originalRequest.url
         );
+
+        // If refresh token endpoint fails with 401, clear session and redirect to login
+        if (originalRequest.url?.includes("/auth/refresh")) {
+          console.warn("Refresh token failed with 401, logging out");
+          clearSession();
+        }
+
+        return handleError(error);
+      }
+
+      // Check if we've already tried refreshing too many times
+      if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
+        console.warn("Maximum refresh attempts reached, logging out");
+        clearSession();
         return handleError(error);
       }
 
@@ -412,32 +449,53 @@ http.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // If a refresh is already in progress, wait for it
+        // If a refresh is already in progress, wait for it with a timeout
         if (isRefreshing) {
-          return new Promise((resolve) => {
+          return await new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+              reject(new Error("Token refresh timeout"));
+            }, 10000); // 10 second timeout
+
             subscribeTokenRefresh((token) => {
+              clearTimeout(timeoutId);
+              if (!token) {
+                reject(error);
+                return;
+              }
+
               originalRequest.headers.Authorization = `Bearer ${token}`;
               resolve(http(originalRequest));
             });
           });
         }
 
+        // Start refresh process
         isRefreshing = true;
+        refreshAttempts++;
+
         const refreshResult = await refreshToken();
+
         if (refreshResult && refreshResult.accessToken) {
+          // Store the new token
+          localStorage.setItem("token", refreshResult.accessToken);
+
           // Update Authorization header
           originalRequest.headers.Authorization = `Bearer ${refreshResult.accessToken}`;
           onTokenRefreshed(refreshResult.accessToken);
           isRefreshing = false;
           return http(originalRequest);
         } else {
+          // Invalid refresh response
+          console.error("Token refresh failed: Invalid response");
+          clearSession();
           onRefreshFailure();
-          isRefreshing = false;
           return handleError(error);
         }
       } catch (refreshError) {
+        console.error("Token refresh error:", refreshError);
         isRefreshing = false;
         onRefreshFailure();
+        clearSession();
         return handleError(error);
       }
     }

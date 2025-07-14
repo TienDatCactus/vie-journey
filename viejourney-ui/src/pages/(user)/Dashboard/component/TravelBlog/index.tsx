@@ -24,7 +24,7 @@ import {
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ImagePlusIcon } from "../../../../../../@/components/tiptap-icons/image-plus-icon";
-import { useUserBlog } from "../../../../../services/stores/useUserBlog";
+import { useUserBlog } from "../../../../../services/stores/useBlogStore";
 import CardSkeleton from "../../../../../utils/handlers/loading/CardSkeleton";
 import { IBlog } from "../../../../../utils/interfaces/blog";
 import dayjs from "dayjs";
