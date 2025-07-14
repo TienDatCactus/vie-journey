@@ -37,15 +37,13 @@ export const useAssetsStore = create<AssetsState>((set) => ({
   },
   doGetAssets: async () => {
     try {
-      const assets = await getLandingAssets(); // Adjust the API endpoint as needed
-      if (!assets || !Array.isArray(assets)) {
-        throw new Error("Failed to fetch assets");
-      }
-      set({ assets: assets });
+      const response = await getLandingAssets();
+       return response;
     } catch (error) {
-      console.error(error);
+      console.error("Lỗi khi lấy danh sách assets:", error);
     }
   },
+
   doGetUserAssets: async () => {
     try {
       const userAssets = await doGetUserContentAssets();
