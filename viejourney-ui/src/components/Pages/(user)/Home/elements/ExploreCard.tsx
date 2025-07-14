@@ -1,91 +1,54 @@
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import { Avatar, Divider, Stack } from "@mui/material";
+import { Chip } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import { Author } from "../../../../../utils/interfaces/blog";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-interface ExploreCardProps {
-  id: string;
-  img: string;
-  title: string;
-  description: string;
-  author: Author;
-  liked: number;
-  views: number;
-}
+import { useUserBlog } from "../../../../../services/stores/useUserBlog";
+import { IRelatedBlogs } from "../../../../../utils/interfaces/blog";
 
-const ExploreCard = ({
-  id,
-  img,
-  title,
-  description,
-  author,
-  liked,
-  views,
-}: ExploreCardProps) => {
-  const randomColor = () => {
-    return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-  };
+const ExploreCard: React.FC<{ item: IRelatedBlogs }> = ({ item }) => {
   const navigate = useNavigate();
   const handleCardClick = () => {
-    navigate(`/blogs/${id}`); 
+    navigate(`/blogs/${item._id}`);
   };
-  return (
-    <Card className="lg:w-full ">
-      <CardActionArea onClick={handleCardClick}>
-        <CardMedia
-          component="img"
-          className="lg:h-40 object-cover"
-          image={
-            img ||
-            `https://placehold.co/600x400/1a1a1a/ffffff?text=${title
-              .split(" ")
-              .join("+")}`
-          }
-          alt="green iguana"
-        />
-        <CardContent className="p-0">
-          <div className="p-2">
-            <Typography gutterBottom variant="h5" component="div">
-              {title}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              {description}
-            </Typography>
-          </div>
-          <Divider className="border-[#ccc]" />
-          <Stack
-            className="p-2"
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"space-between"}
-          >
-            <Stack direction={"row"} alignItems={"center"} gap={1}>
-              <Avatar sx={{ bgcolor: randomColor(), width: 34, height: 34 }}>
-                {author.name.split("")[0]}
-              </Avatar>
-              <Typography variant="body2">{author.name}</Typography>
-            </Stack>
-            <Stack direction={"row"} alignItems={"center"} gap={1}>
-              <Stack direction={"row"} gap={1}>
-                <FavoriteBorderIcon fontSize="small" />
-                <Typography variant="body2" color="text.secondary">
-                  {liked}
-                </Typography>
-              </Stack>
+  const [isLiked, setIsLiked] = useState<boolean>(false);
 
-              <Stack direction={"row"} gap={1}>
-                <VisibilityIcon fontSize="small" />
-                <Typography variant="body2" color="text.secondary">
-                  {views}
-                </Typography>
-              </Stack>
-            </Stack>
-          </Stack>
+  const { handleCheckIsLike } = useUserBlog();
+
+  useEffect(() => {
+    (async () => {
+      const liked = await handleCheckIsLike(item._id);
+      setIsLiked(!!liked);
+    })();
+  }, [item._id]);
+  console.log("ExploreCard", item);
+  return (
+    <Card elevation={0} className="lg:w-full shadow-sm">
+      <CardActionArea onClick={handleCardClick}>
+        <div className="relative z-20">
+          <Chip
+            className="absolute top-2 left-2 z-10 bg-gray-50"
+            label={item?.tags[0]}
+          />
+          <CardMedia
+            component="img"
+            className="lg:h-50 w-full object-cover z-0"
+            image={
+              item?.coverImage ||
+              `https://placehold.co/600x400/1a1a1a/ffffff?text=${item?.title
+                ?.split(" ")
+                ?.join("+")}`
+            }
+            alt="green iguana"
+          />
+        </div>
+        <CardContent className="p-2 pb-0">
+          <Typography gutterBottom variant="h5" className="text-xl ">
+            {item.title}
+          </Typography>
         </CardContent>
       </CardActionArea>
     </Card>

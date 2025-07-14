@@ -30,21 +30,25 @@ export class BlogService {
     return !!like;
   }
   // Create like blog
+  // Hàm like blog
   async postLikeBlog(req: Request, blogId: string) {
     try {
       const userId = req.user?.['userId'] as string;
       if (!userId) throw new BadRequestException('User ID not found');
-      // 1. Tạo like mới (nếu chưa tồn tại)
       const like = await this.likeModel.create({ userId, blogId });
-
-      // 2. Thêm like vào blog
       await this.blogModel.findByIdAndUpdate(
         blogId,
-        { $addToSet: { likes: like._id } },
+        {
+          $addToSet: { likes: like._id },
+          $inc: { 'metrics.likeCount': 1 }, // Tăng likeCount lên 1
+        },
         { new: true },
       );
 
-      return { message: 'Blog liked successfully' };
+      return {
+        like: like,
+        message: 'Blog liked successfully',
+      };
     } catch (error) {
       throw new BadRequestException('Error liking blog: ' + error.message);
     }
@@ -55,10 +59,11 @@ export class BlogService {
     // 1. Xóa like trong bảng Like
     const like = await this.likeModel.findOneAndDelete({ userId, blogId });
 
-    // 2. Nếu like tồn tại, xóa reference trong blog
+    // 2. Nếu like tồn tại, xóa reference trong blog và giảm likeCount
     if (like) {
       await this.blogModel.findByIdAndUpdate(blogId, {
         $pull: { likes: like._id },
+        $inc: { 'metrics.likeCount': -1 }, // Giảm likeCount đi 1
       });
     }
 
@@ -116,7 +121,6 @@ export class BlogService {
     ]);
     const totalPages = Math.ceil(totalItems / pageSize);
 
-    // Nếu vượt quá số trang, trả về mảng rỗng và thông báo hợp lý
     if (page > totalPages && totalItems > 0) {
       return {
         data: [],
@@ -190,29 +194,49 @@ export class BlogService {
       const totalBlogs = await this.blogModel.countDocuments(query);
       const totalPages = Math.ceil(totalBlogs / limitNum);
 
-      // Get blogs with pagination and populate author info
       const blogs = await this.blogModel
         .find(query)
-        .populate({
-          path: 'createdBy',
-          populate: {
-            path: 'userId',
-            select: 'email',
-          },
-          select: 'fullName userId',
-        })
-        .select(
-          'title summary coverImage location tags status metrics createdAt updatedAt',
-        )
+
         .sort({ updatedAt: -1, createdAt: -1 }) // Show latest first
         .skip(skip)
         .limit(limitNum)
         .exec();
+      const populateAuthors = await Promise.all(
+        blogs.map(async (blog) => {
+          const createBy = await this.userInfosModel
+            .findOne({ userId: blog.createdBy })
+            .populate('userId', 'email')
+            .exec();
+          const updatedBy = await this.userInfosModel
+            .findOne({ userId: blog.updatedBy })
+            .populate('userId', 'email')
+            .exec();
+          console.log('blog.createdBy:', blog.createdBy);
+          console.log('createBy:', createBy);
+          console.log('blog.updatedBy:', blog.updatedBy);
+          console.log('updatedBy:', updatedBy);
+          return {
+            ...blog.toObject(),
+            createdBy: {
+              _id: createBy?._id,
+              fullName: createBy?.fullName || 'Unknown',
+              email: createBy?.userId?.email || '',
+              avatar: createBy?.avatar?.url || null,
+            },
+            updatedBy: {
+              _id: updatedBy?._id,
+              fullName: updatedBy?.fullName || 'Unknown',
+              email: updatedBy?.userId?.email || '',
+              avatar: updatedBy?.avatar?.url || null,
+            },
+          };
+        }),
+      );
 
       return {
         status: 'success',
         data: {
-          blogs: blogs.map((blog) => ({
+          blogs: populateAuthors.map((blog) => ({
             _id: blog._id,
             title: blog.title,
             summary: blog.summary,
@@ -220,8 +244,10 @@ export class BlogService {
             location: blog.destination?.location,
             tags: blog.tags,
             author: {
-              name: blog.createdBy?.fullName || 'Unknown',
-              email: blog.createdBy?.userId?.email || '',
+              _id: blog?._id,
+              fullName: blog?.createdBy?.fullName || 'Unknown',
+              email: blog?.createdBy?.email || '',
+              avatar: blog?.createdBy?.avatar || null,
             },
             metrics: {
               viewCount: blog.metrics?.viewCount || 0,
@@ -292,8 +318,7 @@ export class BlogService {
       summary: blog.summary,
       coverImage: blog.coverImage,
       status: blog.status,
-      tripId: blog.tripId,
-      destination: blog.tripId?.description,
+      destination: blog.destination?.location,
       flags: blog.flags || [],
       createdAt: blog.createdAt,
     };
@@ -471,11 +496,9 @@ export class BlogService {
         .exec();
       if (!user) throw new NotFoundException('User not found');
 
-      // Generate title with format: Location + Guide
       const title = `${location} Guide`;
 
       let coverImageUrl = '';
-      // Handle file upload for cover image if provided
       if (file) {
         const uploadResult = await this.assetsService.uploadImage(file, {
           public_id: `users/${userId}/BLOG_COVERS/${uuidv4()}`,
@@ -494,8 +517,8 @@ export class BlogService {
           location,
           placeId: null,
         },
-        createdBy: user._id,
-        updatedBy: user._id,
+        createdBy: user.userId,
+        updatedBy: user.userId,
         likes: [],
         status: 'DRAFT', // Default status for user-created blogs
         metrics: {
@@ -533,12 +556,11 @@ export class BlogService {
       const blog = await this.blogModel
         .findOne({
           _id: blogId,
-          createdBy: user._id,
+          createdBy: user.userId,
           status: 'DRAFT',
         })
         .populate('createdBy')
         .exec();
-
       if (!blog) {
         throw new NotFoundException(
           'Draft blog not found or you do not have permission to edit this blog',
@@ -761,7 +783,7 @@ export class BlogService {
       const blog = await this.blogModel
         .findOne({
           _id: blogId,
-          createdBy: user._id,
+          createdBy: user.userId,
           status: { $in: ['PENDING', 'APPROVED', 'REJECTED'] }, // Allow editing published/reviewed blogs
         })
         .exec();

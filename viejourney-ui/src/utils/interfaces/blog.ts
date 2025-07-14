@@ -1,4 +1,3 @@
-
 export interface IQueryParam {
   search: string;
   page: number;
@@ -120,7 +119,7 @@ export interface IBlogDraft {
   blogId: string;
   title: string;
   location: string;
-  status:  string;
+  status: string;
   message: string;
 }
 
@@ -134,26 +133,14 @@ export interface IContentItem {
   location: string;
   status: string;
   slug?: string;
-  createdAt: string; 
-  updatedAt: string; 
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface BlogMetrics {
   viewCount: number;
   likeCount: number;
   commentCount: number;
-}
-
-export interface IMyBlog {
-  _id: string;
-  title: string;
-  summary: string;
-  coverImage: string;
-  location: string;
-  status: string
-  createdAt: string; 
-  updatedAt: string;
-  metrics: BlogMetrics;
 }
 
 export interface Author {
@@ -163,11 +150,44 @@ export interface Author {
 export interface IBlog {
   _id: string;
   title: string;
+  content: string;
   summary: string;
+  tags: string[];
   coverImage: string;
-  tags: string[]; // array of strings
-  author: Author;
-  metrics: BlogMetrics;
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
+  tripId: string | null;
+  destination: {
+    location: string;
+    placeId: string | null;
+  };
+  createdBy: string;
+  updatedBy: string;
+  likes: string[];
+  status: "APPROVED" | "PENDING" | "REJECTED";
+  flags: any[];
+  metrics: {
+    viewCount: number;
+    likeCount: number;
+    commentCount: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IRelatedBlogs {
+  author: {
+    name: string;
+    email: string;
+  };
+  coverImage: string;
+  createdAt: string;
+  metrics: {
+    viewCount: number;
+    likeCount: number;
+    commentCount: number;
+  };
+  summary: string;
+  tags: string[];
+  title: string;
+  updatedAt: string;
+  _id: string;
 }

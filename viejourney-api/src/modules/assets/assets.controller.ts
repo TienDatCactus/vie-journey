@@ -22,14 +22,14 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Request } from 'express';
 
 @Controller('assets')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.Manager)
+// @UseGuards(JwtAuthGuard, RolesGuard)
+// @Roles(Role.Manager)
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
   @Get('landing')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  // @Roles(Role.Admin)
   async getAllBannersBySubsection() {
     return this.assetsService.fetchAllBannersBySubsection();
   }
@@ -82,7 +82,7 @@ export class AssetsController {
 
   // addAsset/banner
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -96,7 +96,7 @@ export class AssetsController {
       },
     }),
   )
-  addAssetBanner(
+  addModularAsset(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
     @Body('type') type: string,
@@ -176,5 +176,12 @@ export class AssetsController {
     } catch (error) {
       throw new BadRequestException('Lỗi khi upload ảnh: ' + error.message);
     }
+  }
+
+  @Get('content/by-user')
+  @UseGuards(JwtAuthGuard)
+  async getAllUserContentAssets(@Req() req: Request) {
+    const userId = req.user?.['userId'];
+    return await this.assetsService.getAllUserContentAssets(userId);
   }
 }

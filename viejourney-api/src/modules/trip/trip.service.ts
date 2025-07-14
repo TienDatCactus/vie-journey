@@ -10,6 +10,8 @@ import { Plan, TripPlan } from 'src/common/entities/plan.entity';
 import { Trip } from 'src/common/entities/trip.entity';
 import { AccountService } from '../account/account.service';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
+import { Account } from 'src/common/entities/account.entity';
+import { Asset } from 'src/common/entities/asset.entity';
 
 @Injectable()
 export class TripService {
@@ -17,6 +19,8 @@ export class TripService {
     @InjectModel('Trip') private readonly tripModel: Model<Trip>,
     @InjectModel('Plan') private readonly planModel: Model<TripPlan>,
     @InjectModel('User') private readonly userModel: Model<UserInfos>,
+    @InjectModel('Account') private readonly accountModel: Model<Account>,
+    @InjectModel('Asset') private readonly assetModel: Model<Asset>,
     private readonly accountService: AccountService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailerService,
@@ -125,14 +129,21 @@ export class TripService {
       if (!trip) {
         throw new HttpException('Trip not found', HttpStatus.NOT_FOUND);
       }
-      // 3. Check if the email already exists in your system
       const email = decodedToken.email;
+      if (!email) {
+        throw new HttpException(
+          'Email not found in token',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const existingUser = await this.userModel.findOne({ email });
+      const tripmateExists = trip.tripmates.includes(email);
       return {
         valid: true,
         trip: trip,
         userExists: !!existingUser,
         email: email,
+        tripmateExists: tripmateExists ? email : undefined,
       };
     } catch (error) {
       console.error('Error validating invitation token:', error);
@@ -186,9 +197,16 @@ export class TripService {
     return `This action returns all trip`;
   }
   findOne(id: string) {
-    const trip = this.tripModel.findOne({
-      _id: id,
-    });
+    const trip = this.tripModel
+      .findOne({
+        _id: id,
+      })
+      .populate({
+        path: 'coverImage',
+        model: 'Asset',
+        select: 'url',
+      })
+      .exec();
     if (!trip)
       throw new HttpException(
         `No trip found with id ${id}`,
@@ -267,5 +285,50 @@ export class TripService {
     return this.planModel
       .findOne({ tripId: new Types.ObjectId(tripId) })
       .exec();
+  }
+  async updatePlanDates(tripId: string, startDate: Date, endDate: Date) {
+    console.log(
+      `Updating plan dates for trip ${tripId}: ${startDate} to ${endDate}`,
+    );
+    const updatedPlan = await this.tripModel
+      .findOneAndUpdate(
+        { _id: new Types.ObjectId(tripId) },
+        {
+          startDate: startDate,
+          endDate: endDate,
+        },
+        { new: true },
+      )
+      .exec();
+    return updatedPlan;
+  }
+  async updateTripCoverImage(tripId: string, assetId: string, userId: string) {
+    try {
+      const asset = await this.assetModel.findOne({
+        _id: new Types.ObjectId(assetId),
+        userId: new Types.ObjectId(userId),
+      });
+      if (!asset) {
+        throw new HttpException('Asset not found', HttpStatus.NOT_FOUND);
+      }
+      const updatedTrip = await this.tripModel
+        .findOneAndUpdate(
+          { _id: new Types.ObjectId(tripId) },
+          { coverImage: asset?._id },
+          { new: true },
+        )
+        .populate({
+          path: 'coverImage',
+          model: 'Asset',
+          select: 'url',
+        })
+        .exec();
+      if (!updatedTrip) {
+        throw new HttpException('Trip not found', HttpStatus.NOT_FOUND);
+      }
+      return updatedTrip;
+    } catch (error) {
+      console.error(error);
+    }
   }
 }

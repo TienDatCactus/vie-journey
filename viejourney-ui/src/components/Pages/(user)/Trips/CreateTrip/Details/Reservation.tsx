@@ -4,18 +4,18 @@ import {
   EmojiTransportation,
   Explore,
   ModeOfTravel,
-  MoreHoriz,
   Tour,
   TransferWithinAStation,
 } from "@mui/icons-material";
 import { Chip, Divider, IconButton } from "@mui/material";
 import React from "react";
-import { Link } from "react-router-dom";
 import {
   ReservationNotes,
   ReservationPlaces,
   ReservationTransits,
 } from "./elements";
+import { formatCurrency } from "../../../../../../utils/handlers/utils";
+import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
 const Reservation: React.FC = () => {
   const reservationItems = [
     { icon: <EditNote />, label: "Notes", to: "#notes" },
@@ -25,6 +25,7 @@ const Reservation: React.FC = () => {
     { icon: <AccountBalanceWallet />, label: "Budget", to: "#budget" },
   ];
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { totalBudget } = useTripDetailStore();
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -53,11 +54,13 @@ const Reservation: React.FC = () => {
           </ul>
         </div>
         <div className="col-span-12 lg:col-span-3 bg-neutral-100 p-4  rounded-lg  flex flex-col  justify-between">
-          <h1 className="text-base font-semibold text-dark-900">Budgeting</h1>
-          <data>0,00 US$</data>
+          <h1 className="text-lg font-semibold text-green-500">Budget</h1>
+          <data className="font-mono text-lg">
+            {formatCurrency(totalBudget, "en-US")}
+          </data>
           <a
             href={"#budget"}
-            className="no-underline font-semibold text-dark-700 text-sm cursor-pointer hover:text-dark-500"
+            className="no-underline font-semibold text-dark-700 text-sm cursor-pointer hover:text-dark-500 "
           >
             View details
           </a>

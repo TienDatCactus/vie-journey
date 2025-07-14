@@ -1,13 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import SearchIcon from "@mui/icons-material/Search";
-import { Button, Chip, InputAdornment, Stack, TextField } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Chip,
+  InputAdornment,
+  Stack,
+  TextField,
+} from "@mui/material";
 import { animate, motion } from "motion/react";
 import React, { useEffect, useRef, useState } from "react";
-import { AllBlogs } from "../../../components/Pages/(user)/Guides";
-import { MainLayout } from "../../../layouts";
 import { Link } from "react-router-dom";
+import { AllBlogs } from "../../../components/Pages/(user)/Blogs";
+import { MainLayout } from "../../../layouts";
 import { useUserBlog } from "../../../services/stores/useUserBlog";
-import { IBlog } from "../../../utils/interfaces/blog";
+import CardSkeleton from "../../../utils/handlers/loading/CardSkeleton";
+import { IRelatedBlogs } from "../../../utils/interfaces/blog";
 const BlogList: React.FC = () => {
   const handleScroll = () => {
     const element = destRef.current;
@@ -52,46 +60,54 @@ const BlogList: React.FC = () => {
     "My Tho",
   ];
   const destRef = useRef<HTMLDivElement | null>(null);
-
-  const [blogs, setBlogs] = useState<IBlog[]>();
+  const [blogs, setBlogs] = useState<IRelatedBlogs[]>();
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const [params, setParams] = useState({
-    page: 1,
-    limit: 10,
-    search: "",
-  });
-  const { getBlogList } = useUserBlog();
-  useEffect(() => {
-    fetchData(params);
-  }, []);
-
   const fetchData = async (params: any) => {
+    try {
+      setLoading(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
     const data = await getBlogList(params);
     if (data) {
       setBlogs(data);
     }
   };
 
-  const handleShowMore = () => {
+  const [params, setParams] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
+  });
+
+  const handleShowMore = async () => {
     const newParam = {
       ...params,
       limit: params.limit + 10,
     };
 
     setParams(newParam);
-    fetchData(newParam);
+    await fetchData(newParam);
   };
 
-  const handleSearchChange = (search: string) => {
+  const handleSearchChange = async (search: string) => {
     const newParams = {
       ...params,
       search,
     };
     setParams(newParams);
-    fetchData(newParams);
+    await fetchData(newParams);
   };
-
+  const { getBlogList } = useUserBlog();
+  useEffect(() => {
+    (async () => {
+      await fetchData(params);
+    })();
+  }, []);
+  console.log(blogs);
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       handleSearchChange(searchQuery);
@@ -99,6 +115,10 @@ const BlogList: React.FC = () => {
 
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
+  if (loading) {
+    return <CardSkeleton />;
+  }
+
   return (
     <MainLayout>
       <div className="w-full max-w-[75rem]  py-6">
@@ -156,7 +176,20 @@ const BlogList: React.FC = () => {
         </Stack>
       </div>
       {/* guides cards */}
-      <AllBlogs blogs={blogs ?? []} />
+      {!!blogs && blogs.length > 0 ? (
+        <AllBlogs blogs={blogs ?? []} />
+      ) : (
+        <div className="relative w-full max-w-[75rem] mx-auto flex flex-col justify-center items-center">
+          <div className="inset-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute  w-full h-full flex justify-center items-center ">
+            <Alert severity="error" className=" text-center">
+              No blogs currently available
+            </Alert>
+          </div>
+          <div className="w-full max-w-[75rem] mx-auto flex justify-center items-center">
+            <CardSkeleton count={3} />
+          </div>
+        </div>
+      )}
       <div className="flex justify-center mt-6">
         <Button
           variant="outlined"

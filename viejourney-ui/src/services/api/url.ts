@@ -22,9 +22,12 @@ export const USER = {
 
 export const ACCOUNTS = {
   GET_ACCOUNTS: "/admin/users",
+  GET_USER_DETAIL: "/admin/users/:id",
   FILTER_USERS: "/admin/users/filter",
   PAGINATE_ACCOUNTS: "/admin/userInfo/paginate",
   UPDATE_STATUS: "/admin/accounts/updateActive/:id",
+  DELETE_USER: "/admin/userInfo/:id",
+  UPDATE_USER_INFO: "/admin/userInfo/:id",
 };
 
 export const HOTELS = {
@@ -40,9 +43,12 @@ export const ADMIN = {
   GET_ASSET: "/admin/assets",
   UPDATE_ASSET: "/admin/update-asset",
   DELETE_ASSET: "/admin/assets/delete",
-  CHAGE_ROLE: "/admin/:id/role",
+  UPDATE_USER_ROLE: "/admin/users/:id/role",
+  BULK_UPDATE_USER_ROLES: "/admin/users/bulk-update-roles",
 };
 export const TRIP = {
+  UPDATE_TRIP_DATES: "/trip/update-dates",
+  UPDATE_TRIP_COVER: "/trip/update-cover-image",
   VALIDATE_INVITE: "/trip/validate-invite",
   GET_PLAN_BY_TRIP_ID: "/trip/plan",
   REMOVE_TRIP_MATE: "/trip/remove-tripmate",
@@ -55,11 +61,16 @@ export const TRIP = {
 };
 
 export const ASSET = {
-  UPLOAD: "/assets/image",
+  GET_USER_ASSETS: "/assets/content/by-user",
+  UPLOAD: "/assets",
   LANDING: "/assets/landing",
 };
 
 export const BLOG = {
   LIST_BLOGS: "/blogs/manager",
   BLOGS: "/blogs",
+};
+
+export const COMMENT = {
+  COMMENTS: "/comments",
 };

@@ -24,8 +24,7 @@ import {
   Info as InfoIcon,
   Download as DownloadIcon,
 } from "@mui/icons-material";
-import axios from "axios";
-import { HOTELS } from "../../../services/api/url";
+import { doImportHotels } from "../../../services/api";
 
 interface Hotel {
   _id: string;
@@ -179,23 +178,13 @@ const ImportHotelDialog: React.FC<ImportHotelDialogProps> = ({
       }, 200);
 
       // Call API
-      const response = await axios.post(
-        import.meta.env.VITE_PRIVATE_URL + HOTELS.IMPORT_HOTEL,
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const result = await doImportHotels(selectedFile);
 
       // Clear progress interval and set to 100%
       clearInterval(progressInterval);
       setImportProgress(100);
 
       // Process API response
-      const result = response.data;
 
       const successCount =
         result.success || result.imported || result.count || 0;

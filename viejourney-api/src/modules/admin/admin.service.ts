@@ -212,4 +212,111 @@ export class AdminService {
       throw new BadRequestException('Failed to unban user: ' + error.message);
     }
   }
+
+  async bulkUpdateUserRoles(userIds: string[], newRole: string): Promise<{
+    success: Array<{
+      userId: string;
+      accountId: string;
+      email: string;
+      userName: string;
+      oldRole: string;
+      newRole: string;
+      status: string;
+    }>;
+    failed: Array<{
+      userId: string;
+      reason: string;
+    }>;
+    summary: {
+      totalRequested: number;
+      successCount: number;
+      failedCount: number;
+    };
+  }> {
+    const validRoles = ['USER', 'ADMIN', 'MANAGER'];
+    if (!validRoles.includes(newRole)) {
+      throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
+    }
+
+    const success: Array<{
+      userId: string;
+      accountId: string;
+      email: string;
+      userName: string;
+      oldRole: string;
+      newRole: string;
+      status: string;
+    }> = [];
+
+    const failed: Array<{
+      userId: string;
+      reason: string;
+    }> = [];
+
+    for (const userId of userIds) {
+      try {
+        // Find user info by userInfo ID
+        const userInfo = await this.userInfosModel.findById(userId);
+        if (!userInfo) {
+          failed.push({
+            userId,
+            reason: 'User not found'
+          });
+          continue;
+        }
+
+        // Find account by userId reference
+        const account = await this.accountModel.findById(userInfo.userId);
+        if (!account) {
+          failed.push({
+            userId,
+            reason: 'Account not found'
+          });
+          continue;
+        }
+
+        // Prevent changing admin roles unless done by another admin
+        if (account.role === 'ADMIN' && newRole !== 'ADMIN') {
+          failed.push({
+            userId,
+            reason: 'Cannot change admin role to non-admin role'
+          });
+          continue;
+        }
+
+        // Store old role for response
+        const oldRole = account.role;
+
+        // Update account role
+        account.role = newRole as any;
+        await account.save();
+
+        success.push({
+          userId: userInfo._id.toString(),
+          accountId: account._id.toString(),
+          email: account.email,
+          userName: userInfo.fullName || 'Unknown',
+          oldRole,
+          newRole,
+          status: account.status
+        });
+
+      } catch (error) {
+        failed.push({
+          userId,
+          reason: `Error updating user: ${error.message}`
+        });
+      }
+    }
+
+    return {
+      success,
+      failed,
+      summary: {
+        totalRequested: userIds.length,
+        successCount: success.length,
+        failedCount: failed.length
+      }
+    };
+  }
 }

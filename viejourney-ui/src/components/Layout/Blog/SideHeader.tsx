@@ -1,5 +1,6 @@
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import EmojiFlagsIcon from "@mui/icons-material/EmojiFlags";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShareIcon from "@mui/icons-material/Share";
 import dayjs from "dayjs";
@@ -18,19 +19,32 @@ import {
   TextField,
 } from "@mui/material";
 import { useUserBlog } from "../../../services/stores/useUserBlog";
+import Comment from "./Comment";
 const SideHeader: React.FC<{ id: string }> = ({ id }) => {
   const [blog, setBlog] = useState<IBlogDetail>();
   const [flagDialogOpen, setFlagDialogOpen] = useState(false);
   const [flagReason, setFlagReason] = useState("");
-  const { handleGetBlogUserDetail, handleCreateFlag } = useUserBlog();
+  const [isLiked, setIsLiked] = useState<boolean>(false);
+
+  const {
+    handleGetBlogUserDetail,
+    handleCreateFlag,
+    handleCheckIsLike,
+    handleUnlikeBlog,
+    handleLikeBlog,
+  } = useUserBlog();
   useEffect(() => {
     (async () => {
       const data = await handleGetBlogUserDetail(id);
       if (data) {
         setBlog(data);
       }
+
+      const liked = await handleCheckIsLike(id);
+      setIsLiked(!!liked);
     })();
-  }, []);
+  }, [id]);
+
   const handleFlagClick = () => {
     setFlagDialogOpen(true);
   };
@@ -46,6 +60,22 @@ const SideHeader: React.FC<{ id: string }> = ({ id }) => {
       handleFlagDialogClose();
     }
   };
+
+  const handleToggleLike = async () => {
+    try {
+      if (isLiked) {
+        await handleUnlikeBlog(id);
+        setIsLiked(false);
+      } else {
+        await handleLikeBlog(id);
+        setIsLiked(true);
+      }
+    } catch (error) {
+      console.error("Toggle like error:", error);
+    }
+  };
+
+  if (!blog) return <div>Loading...</div>;
 
   return (
     <div className="mt-0 py-0 h-full relative shadow-lg">
@@ -94,7 +124,20 @@ const SideHeader: React.FC<{ id: string }> = ({ id }) => {
             <div className="btn-follow bg-[#1565C0] font-bold text-white px-3 py-1 text-sm rounded-full cursor-pointer hover:bg-[#1565C0]/80 transition-all duration-300">
               Follow
             </div>
-            <FavoriteBorderIcon className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600" />
+
+            {isLiked ? (
+              <FavoriteIcon
+                onClick={handleToggleLike}
+                className="cursor-pointer hover:scale-110 transition-all duration-300"
+                sx={{ color: "red" }}
+              />
+            ) : (
+              <FavoriteBorderIcon
+                onClick={handleToggleLike}
+                className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600"
+              />
+            )}
+
             <IconButton onClick={handleFlagClick}>
               <EmojiFlagsIcon className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600" />
             </IconButton>
@@ -148,7 +191,9 @@ const SideHeader: React.FC<{ id: string }> = ({ id }) => {
         <PlaceToVisit />
         <PlaceToVisit />
         <PlaceToVisit />
-        <Comment /> */}
+        */}
+
+        <Comment id={id}/>
       </div>
       <RelatedBlog />
     </div>

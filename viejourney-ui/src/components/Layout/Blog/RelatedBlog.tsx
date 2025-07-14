@@ -2,12 +2,13 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { IBlog } from "../../../utils/interfaces/blog";
 import { useUserBlog } from "../../../services/stores/useUserBlog";
+import { IRelatedBlogs } from "../../../utils/interfaces/blog";
+import { Button } from "@mui/material";
 
 const RelatedBlog = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [blogs, setBlogs] = useState<IBlog[]>();
+  const [blogs, setBlogs] = useState<IRelatedBlogs[]>();
   const { getBlogList } = useUserBlog();
   useEffect(() => {
     (async () => {
@@ -17,6 +18,7 @@ const RelatedBlog = () => {
       }
     })();
   }, []);
+  console.log(blogs);
   const navigate = useNavigate();
 
   const nextSlide = () => {
@@ -39,13 +41,13 @@ const RelatedBlog = () => {
 
       <div className="relative">
         {/* Navigation Arrows */}
-        <button
+        <Button
           onClick={prevSlide}
           className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
           style={{ marginLeft: "-20px" }}
         >
           <ArrowBackIosIcon fontSize="small" className="text-gray-600" />
-        </button>
+        </Button>
 
         <button
           onClick={nextSlide}

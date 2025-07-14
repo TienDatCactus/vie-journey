@@ -1,4 +1,13 @@
-import { Close, Edit, ExpandMore, Explore, Upload } from "@mui/icons-material";
+import {
+  Clear,
+  Close,
+  CloudUpload,
+  Edit,
+  ExpandMore,
+  Explore,
+  Save,
+  Upload,
+} from "@mui/icons-material";
 import {
   Accordion,
   AccordionDetails,
@@ -15,7 +24,9 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Radio,
   Stack,
+  styled,
   Tab,
   Tabs,
 } from "@mui/material";
@@ -23,8 +34,19 @@ import * as React from "react";
 
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
+import { useAssetsStore } from "../../../../../../services/stores/useAssets";
 import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
-
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -42,7 +64,7 @@ function CustomTabPanel(props: TabPanelProps) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && <Box sx={{ px: 0, pt: 2 }}>{children}</Box>}
     </div>
   );
 }
@@ -55,36 +77,100 @@ function a11yProps(index: number) {
 }
 const Header: React.FC = () => {
   const [value, setValue] = React.useState(0);
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
   const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [image, setImage] = React.useState<File | null>(null);
+  const { doAddUserAsset, userAssets } = useAssetsStore();
+  const trip = useTripDetailStore((state) => state.trip);
+  const { handleUpdateTripCover } = useTripDetailStore();
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
   const handleClickOpen = () => {
     setOpen(true);
   };
 
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
   const handleClose = () => {
     setOpen(false);
   };
 
-  const trip = useTripDetailStore((state) => state.trip);
+  const handleUploadAsset = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      setImage(file);
+      // useAssetsStore.getState().doAddUserAsset(file);
+    }
+  };
+  const handleSaveAsset = async () => {
+    try {
+      setLoading(true);
+      if (image) {
+        await doAddUserAsset(image);
+        setImage(null);
+        handleClose();
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleAccept = async (
+    date: [dayjs.Dayjs | null, dayjs.Dayjs | null]
+  ) => {
+    try {
+      setLoading(true);
+      const startDate = dayjs(date[0]).toISOString();
+      const endDate = dayjs(date[1]).toISOString();
+      console.log("Selected dates:", startDate, endDate);
+      if (startDate && endDate) {
+        await useTripDetailStore
+          .getState()
+          .handleUpdateTripDates(startDate, endDate);
+      }
+      handleClose();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleSelectImage = async (assetId: string) => {
+    try {
+      setLoading(true);
+      await handleUpdateTripCover(assetId);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <section>
       <div className="z-10 relative w-full lg:h-[17.5rem]">
-        <img
-          src="/images/placeholders/main-placeholder.jpg"
-          alt=""
-          className="w-full h-[17.5rem] object-cover"
-        />
+        <div>
+          <img
+            src={
+              trip?.coverImage?.url ||
+              "/images/placeholders/main-placeholder.jpg"
+            }
+            onError={(e) => {
+              e.currentTarget.src = "/images/placeholders/main-placeholder.jpg";
+            }}
+            alt=""
+            className="w-full h-[17.5rem] object-cover"
+          />
+          <div className="absolute bottom-0 left-0 w-full h-[10rem] bg-gradient-to-t from-neutral-900 to-transparent"></div>
+        </div>
         <IconButton
           onClick={handleClickOpen}
-          className="absolute top-4 right-4 bg-neutral-50/20"
+          className="absolute top-4 right-4 group hover:bg-neutral-200 bg-neutral-50/20"
         >
-          <Edit className="text-neutral-200 " />
+          <Edit className="text-neutral-200 group-hover:text-neutral-900" />
         </IconButton>
-        <div className="absolute bottom-0 left-0 w-full h-[10rem] bg-gradient-to-t from-neutral-900 to-transparent"></div>
         <div className="absolute -bottom-10 left-1/2 -translate-x-1/2  lg:w-3/4 lg:h-[12rem] rounded-2xl shadow-md bg-white *:text-neutral-800 p-4 flex flex-col justify-between itemce">
           <div className="hover:bg-neutral-300 w-fit p-2 rounded-md transition-all duration-200">
             <h1 className="text-4xl font-bold">{trip?.title}</h1>
@@ -96,6 +182,8 @@ const Header: React.FC = () => {
           >
             <div>
               <DateRangePicker
+                loading={loading}
+                onAccept={handleAccept}
                 slotProps={{
                   textField: {
                     variant: "standard",
@@ -119,7 +207,11 @@ const Header: React.FC = () => {
                     },
                   },
                 }}
-                defaultValue={[dayjs(trip?.startDate), dayjs(trip?.endDate)]}
+                value={
+                  trip?.startDate && trip?.endDate
+                    ? [dayjs(trip.startDate), dayjs(trip.endDate)]
+                    : [null, null]
+                }
               />
             </div>
             <AvatarGroup
@@ -132,7 +224,7 @@ const Header: React.FC = () => {
               }}
               max={trip?.tripmates?.length || 1}
             >
-              {trip?.tripmates?.map((mate, index) => (
+              {trip?.tripmates?.map((mate: string, index: number) => (
                 <Avatar
                   key={index}
                   alt={mate}
@@ -268,7 +360,7 @@ const Header: React.FC = () => {
             </IconButton>
           </Stack>
         </DialogTitle>
-        <DialogContent className="">
+        <DialogContent>
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs
               value={value}
@@ -281,36 +373,152 @@ const Header: React.FC = () => {
           </Box>
           <CustomTabPanel value={value} index={0}>
             <div className="flex flex-col items-center justify-center gap-4 p-4">
-              <img
-                src="/images/svg/undraw_upload-image_tpmp.svg"
-                alt="upload image"
-                className="lg:w-100 h-auto mx-auto"
-              />
-              <h1 className="text-3xl font-semibold">Upload your photos</h1>
-              <p className="text-base text-neutral-600">
-                You haven't uploaded any photos
-              </p>
-              <Button startIcon={<Upload />} variant="contained" className="">
-                Upload your photos
-              </Button>
+              {image ? (
+                <div className="flex relative flex-col items-center border border-dashed border-gray-500 p-4 rounded-lg ">
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt="uploaded"
+                    className="lg:w-80 h-auto mx-auto"
+                  />
+                  <IconButton
+                    onClick={() => setImage(null)}
+                    className="absolute -top-5 -right-5"
+                    color="error"
+                  >
+                    <Clear className="text-3xl" />
+                  </IconButton>
+                </div>
+              ) : (
+                <>
+                  <img
+                    src="/images/svg/undraw_upload-image_tpmp.svg"
+                    alt="upload image"
+                    className="lg:w-80 h-auto mx-auto"
+                  />
+                  <h1 className="text-3xl font-semibold">Upload your photos</h1>
+                  <p className="text-base text-neutral-600">
+                    You haven't uploaded any photos
+                  </p>
+                </>
+              )}
+
+              <div
+                className={`flex ${
+                  image ? "gap-2" : "flex-col gap-4"
+                } *:rounded-sm`}
+              >
+                <Button
+                  component="label"
+                  role={undefined}
+                  variant="outlined"
+                  loading={loading}
+                  tabIndex={-1}
+                  startIcon={<CloudUpload />}
+                >
+                  Upload files
+                  <VisuallyHiddenInput
+                    type="file"
+                    onChange={handleUploadAsset}
+                    accept="image/*"
+                    multiple
+                  />
+                </Button>
+                {image && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSaveAsset}
+                    loading={loading}
+                    startIcon={<Save />}
+                  >
+                    Save
+                  </Button>
+                )}
+              </div>
             </div>
           </CustomTabPanel>
           <CustomTabPanel value={value} index={1}>
-            <Stack
-              className="grid lg:grid-cols-3"
-              flexWrap="wrap"
-              gap={2}
-              justifyContent="center"
-            >
-              {Array.from({ length: 12 }).map((_, index) => (
-                <img
-                  key={index}
-                  src="/images/placeholders/main-placeholder.jpg"
-                  alt={`placeholder-${index}`}
-                  className="w-full h-auto object-cover  cursor-pointer hover:opacity-80 transition-opacity duration-200"
-                />
-              ))}
-            </Stack>
+            {!!userAssets && userAssets?.length > 0 ? (
+              <Stack
+                className="grid lg:grid-cols-3"
+                flexWrap="wrap"
+                gap={1}
+                justifyContent="center"
+              >
+                {userAssets.map((asset, index) => {
+                  const isSelected = selectedId == asset?._id;
+                  return (
+                    <Box
+                      key={asset._id}
+                      component="label"
+                      sx={{
+                        position: "relative",
+                        cursor: "pointer",
+                        borderRadius: 2,
+                        overflow: "hidden",
+                        border: isSelected
+                          ? "3px solid #1976d2"
+                          : "border border-dashed border-gray-300",
+                        transition: "border 0.2s",
+                      }}
+                      onClick={() => setSelectedId(asset?._id || null)}
+                    >
+                      <Radio
+                        checked={isSelected}
+                        onChange={() => setSelectedId(asset?._id || null)}
+                        value={asset?._id}
+                        sx={{ display: "none" }} // ẩn radio
+                      />
+                      <Box
+                        component="img"
+                        src={asset.url}
+                        alt={`placeholder-${index}`}
+                        className="w-full h-60 object-cover cursor-pointer hover:opacity-80 transition-opacity duration-200  rounded-lg "
+                        sx={{
+                          width: 150,
+                          height: 100,
+                          objectFit: "cover",
+                          filter: isSelected ? "brightness(0.85)" : "none",
+                        }}
+                      />
+                    </Box>
+                  );
+                })}
+              </Stack>
+            ) : (
+              <Stack className="flex flex-col items-center justify-center gap-4 p-4">
+                <IconButton className="bg-neutral-200 hover:bg-neutral-300 transition-colors duration-200 p-4 h-fit w-fit">
+                  <Upload />
+                </IconButton>
+                <h1 className="text-3xl font-semibold">No photos available</h1>
+                <p className="text-base text-neutral-600">
+                  You haven't uploaded any photos
+                </p>
+              </Stack>
+            )}
+            {selectedId && (
+              <div className="*:rounded-sm flex items-center justify-end gap-2 p-2">
+                <Button
+                  color="error"
+                  variant="outlined"
+                  loading={loading}
+                  startIcon={<Clear />}
+                  onClick={() => setSelectedId(null)}
+                >
+                  Remove
+                </Button>
+
+                <Button
+                  variant="contained"
+                  color="primary"
+                  loading={loading}
+                  onClick={() => handleSelectImage(selectedId)}
+                  startIcon={<Save />}
+                >
+                  Set as Cover Image
+                </Button>
+              </div>
+            )}
           </CustomTabPanel>
         </DialogContent>
       </Dialog>

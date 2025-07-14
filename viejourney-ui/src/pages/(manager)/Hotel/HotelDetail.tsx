@@ -28,8 +28,7 @@ import {
   Star as StarIcon,
   Image as ImageIcon,
 } from "@mui/icons-material";
-import axios from "axios";
-import { HOTELS } from "../../../services/api/url";
+import { doGetHotelById } from "../../../services/api";
 import EditHotelDialog from "./EditHotelDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 
@@ -62,14 +61,9 @@ const HotelDetail: React.FC = () => {
 
       setLoading(true);
       try {
-        const result = await axios.get(
-          import.meta.env.VITE_PRIVATE_URL +
-            HOTELS.GET_HOTEL.replace(":id", id),
-          { withCredentials: true }
-        );
+        const hotelData = await doGetHotelById(id);
 
         // Process the response data
-        const hotelData = result.data;
         const processedHotel: Hotel = {
           _id: hotelData._id,
           name: hotelData.name,
@@ -122,12 +116,7 @@ const HotelDetail: React.FC = () => {
 
     setLoading(true);
     try {
-      const result = await axios.get(
-        import.meta.env.VITE_PRIVATE_URL + HOTELS.GET_HOTEL.replace(":id", id),
-        { withCredentials: true }
-      );
-
-      const hotelData = result.data;
+      const hotelData = await doGetHotelById(id);
       const processedHotel: Hotel = {
         _id: hotelData._id,
         name: hotelData.name,

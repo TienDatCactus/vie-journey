@@ -17,7 +17,7 @@ import {
   Container,
   Grid2,
   IconButton,
-  Skeleton,
+  Stack,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -25,10 +25,12 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ImagePlusIcon } from "../../../../../../@/components/tiptap-icons/image-plus-icon";
 import { useUserBlog } from "../../../../../services/stores/useUserBlog";
-import { IMyBlog } from "../../../../../utils/interfaces/blog";
+import CardSkeleton from "../../../../../utils/handlers/loading/CardSkeleton";
+import { IBlog } from "../../../../../utils/interfaces/blog";
+import dayjs from "dayjs";
 
 export default function TravelBlog() {
-  const [myBlogs, setMyBlogs] = useState<IMyBlog[]>([]);
+  const [myBlogs, setMyBlogs] = useState<IBlog[]>([]);
   const [loading, setLoading] = useState(true);
   const { handleGetMyBlogs } = useUserBlog();
   const navigate = useNavigate();
@@ -49,14 +51,6 @@ export default function TravelBlog() {
     fetchBlogs();
   }, []);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "published":
@@ -70,45 +64,6 @@ export default function TravelBlog() {
     }
   };
 
-  const LoadingSkeleton = () => (
-    <Grid2 container spacing={3} className="mt-4">
-      {[1, 2, 3, 4, 5, 6].map((item) => (
-        <Grid2
-          size={{
-            xs: 12,
-            sm: 6,
-            lg: 4,
-          }}
-          key={item}
-        >
-          <Card className="h-full">
-            <Skeleton variant="rectangular" height={200} />
-            <CardContent>
-              <Skeleton variant="text" height={32} width="80%" />
-              <Skeleton
-                variant="text"
-                height={20}
-                width="60%"
-                className="mt-2"
-              />
-              <Skeleton
-                variant="text"
-                height={16}
-                width="100%"
-                className="mt-2"
-              />
-              <Skeleton variant="text" height={16} width="90%" />
-              <Box className="flex justify-between items-center mt-4">
-                <Skeleton variant="rectangular" width={80} height={24} />
-                <Skeleton variant="text" width={100} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid2>
-      ))}
-    </Grid2>
-  );
-
   if (loading) {
     return (
       <Container maxWidth="lg" className="py-8">
@@ -119,7 +74,7 @@ export default function TravelBlog() {
         >
           My Travel Blogs
         </Typography>
-        <LoadingSkeleton />
+        <CardSkeleton />
       </Container>
     );
   }
@@ -167,8 +122,6 @@ export default function TravelBlog() {
               <Button
                 variant="contained"
                 startIcon={<Add />}
-                // onClick={handleCreateGuide}
-
                 className="rounded-sm bg-gray-800 hover:bg-gray-900 text-white"
               >
                 Create Guide
@@ -254,7 +207,7 @@ export default function TravelBlog() {
   }
 
   return (
-    <Container maxWidth="lg" className="py-8">
+    <Box className="max-w-[125rem] mx-auto bg-gray-50  my-4">
       <Box className="mb-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -274,9 +227,9 @@ export default function TravelBlog() {
 
       <Grid2 container spacing={3}>
         {myBlogs.map((blog) => (
-          <Grid2 size={3} key={blog._id}>
+          <Grid2 size={4} key={blog._id}>
             <Card
-              className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+              className="h-full hover:shadow-lg  transition-shadow duration-300 cursor-pointer"
               onClick={() => navigate(`/blogs/${blog._id}`)}
             >
               <CardMedia
@@ -288,10 +241,10 @@ export default function TravelBlog() {
               />
 
               <CardContent className="flex-1 flex flex-col">
-                <Box className="flex justify-between items-start mb-2">
+                <Box className="flex justify-between items-start">
                   <Chip
                     label={blog.status}
-                    color={getStatusColor(blog.status) as any}
+                    color={getStatusColor(blog?.status || "draft")}
                     size="small"
                     className="capitalize"
                   />
@@ -301,7 +254,7 @@ export default function TravelBlog() {
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (blog.status === "DRAFT") {
+                          if (blog.status.toLowerCase() === "draft") {
                             navigate(`/blogs/edit/${blog._id}`, {
                               state: { type: "draft" },
                             });
@@ -345,7 +298,7 @@ export default function TravelBlog() {
                 <Typography
                   variant="h6"
                   component="h2"
-                  className="mb-2 font-semibold line-clamp-2"
+                  className=" font-semibold line-clamp-2"
                 >
                   {blog.title}
                 </Typography>
@@ -357,26 +310,33 @@ export default function TravelBlog() {
                   {blog.summary}
                 </Typography>
 
-                <Box className="flex items-center mb-2 text-gray-500">
-                  <LocationOn fontSize="small" className="mr-1" />
-                  <Typography variant="body2" className="truncate">
-                    {blog.location}
-                  </Typography>
-                </Box>
-
-                <Box className="flex items-center justify-between text-gray-500 text-sm">
-                  <Box className="flex items-center">
-                    <CalendarToday fontSize="small" className="mr-1" />
-                    <Typography variant="caption">
-                      {formatDate(blog.createdAt)}
+                <Stack
+                  direction={"row"}
+                  alignItems={"center"}
+                  justifyContent={"space-between"}
+                  className="mt-auto"
+                >
+                  <Box className="flex items-center  text-gray-500">
+                    <LocationOn fontSize="small" className="mr-1" />
+                    <Typography variant="body2" className="truncate">
+                      {blog.destination.location}
                     </Typography>
                   </Box>
-                </Box>
+
+                  <Box className="flex items-center justify-between text-gray-500 text-sm">
+                    <Box className="flex items-center">
+                      <CalendarToday fontSize="small" className="mr-1" />
+                      <Typography variant="body2">
+                        {dayjs(blog.createdAt).format("MMM D, YYYY")}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Stack>
               </CardContent>
             </Card>
           </Grid2>
         ))}
       </Grid2>
-    </Container>
+    </Box>
   );
 }

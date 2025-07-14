@@ -20,11 +20,15 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminLayout } from "../../../layouts";
-import { ACCOUNTS } from "../../../services/api/url";
+import {
+  doGetUserDetail,
+  doDeleteUser,
+  doUpdateAccountStatus,
+  doUpdateUserInfo,
+} from "../../../services/api";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditAccountDialog from "./EditAccountDialog";
 
@@ -169,12 +173,7 @@ const AccountDetail = () => {
     const fetchAccountDetail = async () => {
       try {
         if (!id) return;
-        const endpoint = ACCOUNTS.GET_ACCOUNTS + id;
-        const res = await axios.get(
-          import.meta.env.VITE_PRIVATE_URL + endpoint,
-          { withCredentials: true }
-        );
-        const data = res.data?.data || res.data || null;
+        const data = await doGetUserDetail(id);
         setUser(data);
       } catch (err) {
         console.log("ERROR: " + err);
@@ -187,10 +186,7 @@ const AccountDetail = () => {
     if (!id) return;
     setLoadingDelete(true);
     try {
-      await axios.delete(
-        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
-        { withCredentials: true }
-      );
+      await doDeleteUser(id);
       setLoadingDelete(false);
       setOpenDelete(false);
       navigate("/admin/accounts");
@@ -203,18 +199,10 @@ const AccountDetail = () => {
     if (!id) return;
     setLoadingEdit(true);
     try {
-      await axios.patch(
-        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
-        { active },
-        { withCredentials: true }
-      );
+      await doUpdateAccountStatus(id, active);
       setLoadingEdit(false);
       // Reload lại user
-      const res = await axios.get(
-        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
-        { withCredentials: true }
-      );
-      const updated = res.data?.data || res.data || null;
+      const updated = await doGetUserDetail(id);
       setUser(updated);
     } catch (err) {
       setLoadingEdit(false);
@@ -230,19 +218,11 @@ const AccountDetail = () => {
     if (!id) return;
     setLoadingEdit(true);
     try {
-      await axios.patch(
-        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
-        data,
-        { withCredentials: true }
-      );
+      await doUpdateUserInfo(id, data);
       setLoadingEdit(false);
       setOpenEdit(false);
       // Reload lại user
-      const res = await axios.get(
-        import.meta.env.VITE_PRIVATE_URL + ACCOUNTS.GET_ACCOUNTS + id,
-        { withCredentials: true }
-      );
-      const updated = res.data?.data || res.data || null;
+      const updated = await doGetUserDetail(id);
       setUser(updated);
     } catch (err) {
       setLoadingEdit(false);

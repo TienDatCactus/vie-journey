@@ -18,8 +18,10 @@ import { useSocket } from "../../../../services/context/socketContext";
 import { useAuthStore } from "../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 import { useDirectionStore } from "../../../../services/stores/useDirectionStore";
+import { useAssetsStore } from "../../../../services/stores/useAssets";
 
 const CreateTripDetails: React.FC = () => {
+  const { doGetUserAssets } = useAssetsStore();
   const { user, info } = useAuthStore();
   const { setTrip } = useTripDetailStore();
   const { id } = useParams<{ id: string }>();
@@ -194,12 +196,16 @@ const CreateTripDetails: React.FC = () => {
     };
     fetchTripDetails();
   }, [id]);
-
   useEffect(() => {
     if (socketDisconnected == true) {
       console.log("Socket disconnected");
     }
   }, [socketDisconnected]);
+  useEffect(() => {
+    (async () => {
+      await doGetUserAssets();
+    })();
+  }, []);
   return (
     <>
       {isFromInvite && (

@@ -669,7 +669,11 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
                 },
               },
             }}
-            defaultValue={[dayjs(trip?.startDate), dayjs(trip?.endDate)]}
+            value={
+              trip?.startDate && trip?.endDate
+                ? [dayjs(trip.startDate), dayjs(trip.endDate)]
+                : [null, null]
+            }
           />
         </Stack>
         <ul className="list-none py-2 ">

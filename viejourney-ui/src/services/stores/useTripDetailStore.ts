@@ -1,7 +1,13 @@
 // store/useTripDetailStore.ts
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { doGetPlanByTripId, doGetUserTripList, doRemoveTripMate } from "../api";
+import {
+  doGetPlanByTripId,
+  doGetUserTripList,
+  doRemoveTripMate,
+  doUpdateTripCover,
+  updateTripDates,
+} from "../api";
 import {
   Expense,
   Itinerary,
@@ -54,6 +60,8 @@ interface TripDetailStore {
   handleGetUserTrips: () => Promise<void>;
   handleRemoveTripMate: (tripmateEmail: string) => Promise<void>;
   handleGetPlanByTripId: () => Promise<void>;
+  handleUpdateTripDates: (startDate: string, endDate: string) => Promise<void>;
+  handleUpdateTripCover: (assetId: string | null) => Promise<void>;
 }
 
 export const useTripDetailStore = create<TripDetailStore>()(
@@ -242,6 +250,60 @@ export const useTripDetailStore = create<TripDetailStore>()(
             }
           } catch (error) {
             console.error("Failed to get plan by trip ID:", error);
+          }
+        },
+        handleUpdateTripDates: async (startDate: string, endDate: string) => {
+          const trip = get().trip;
+          if (!trip._id) {
+            console.error("Trip ID is not available");
+            return;
+          }
+          try {
+            const updatedTrip = await updateTripDates(
+              trip._id,
+              startDate,
+              endDate
+            );
+            if (updatedTrip) {
+              set({
+                trip: {
+                  ...trip,
+                  startDate: updatedTrip.startDate,
+                  endDate: updatedTrip.endDate,
+                },
+              });
+            } else {
+              console.error("Failed to update trip dates");
+            }
+          } catch (error) {
+            console.error("Error updating trip dates:", error);
+          }
+        },
+        handleUpdateTripCover: async (assetId: string | null) => {
+          const trip = get().trip;
+          if (!trip._id) {
+            console.error("Trip ID is not available");
+            return;
+          }
+          if (!assetId) {
+            console.error("Asset ID is not provided");
+            return;
+          }
+          try {
+            const updatedTrip = await doUpdateTripCover(trip._id, assetId);
+            console.log("Updated trip cover:", updatedTrip);
+            if (updatedTrip) {
+              set({
+                trip: {
+                  ...trip,
+                  coverImage: updatedTrip.coverImage,
+                },
+              });
+            } else {
+              console.error("Failed to update trip cover");
+            }
+          } catch (error) {
+            console.error("Error updating trip cover:", error);
           }
         },
       }),

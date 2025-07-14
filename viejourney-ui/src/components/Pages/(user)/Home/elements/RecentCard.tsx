@@ -51,21 +51,20 @@ const RecentCard = ({
   if (blank) {
     return (
       <Card className="h-full flex items-center border-2  border-dashed border-neutral-500 justify-center p-4">
-        <CardActionArea
-          href="/trips/create"
-          className="flex flex-col gap-2 items-center justify-center w-full h-full"
-        >
-          <div className="w-fit p-2 rounded-full bg-dark-200">
-            <Add className="text-dark-600" />
-          </div>
-          <h1 className="text-2xl font-semibold">Plan a new trip</h1>
-          <p className="text-center text-dark-700">
-            Create a new journey to your dream destination
-          </p>
-          <span className="bg-white text-dark-900 mt-2 px-2 py-1 rounded-sm border-2">
-            Get started
-          </span>
-        </CardActionArea>
+        <Link to="/trips/create" className="w-full h-full ">
+          <CardActionArea className="flex flex-col gap-2 items-center justify-center w-full h-full">
+            <div className="w-fit p-2 rounded-full bg-dark-200">
+              <Add className="text-dark-600" />
+            </div>
+            <h1 className="text-2xl font-semibold">Plan a new trip</h1>
+            <p className="text-center text-dark-700">
+              Create a new journey to your dream destination
+            </p>
+            <span className="bg-white text-dark-900 mt-2 px-2 py-1 rounded-sm border-2">
+              Get started
+            </span>
+          </CardActionArea>
+        </Link>
       </Card>
     );
   }
@@ -123,12 +122,13 @@ const RecentCard = ({
       </div>
 
       <CardContent className="p-2">
-        <Stack
-          direction={"row"}
-          alignItems={"center"}
-          justifyContent={"space-between"}
-        >
-          <Stack direction={"column"} gap={1} justifyContent={"space-evenly"}>
+        <Stack direction={"column"} className="mb-2">
+          <Stack
+            direction={"column"}
+            gap={1}
+            className="py-2"
+            justifyContent={"space-evenly"}
+          >
             <Stack direction={"row"} alignItems={"center"} spacing={1}>
               <CalendarIcon className="text-neutral-600" />
               <Typography variant="body2" color="text.secondary">
@@ -145,8 +145,9 @@ const RecentCard = ({
           </Stack>
           <Link to={`/trips/plan/${tripId}`}>
             <Button
-              className="text-dark-900 bg-neutral-300 shadow-none"
-              variant="contained"
+              fullWidth
+              className="text-dark-900 rounded-sm border-gray-300 hover:bg-gray-100 shadow-none"
+              variant="outlined"
             >
               View details
             </Button>

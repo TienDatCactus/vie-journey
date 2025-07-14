@@ -22,6 +22,8 @@ import { UserInfosSchema } from 'src/infrastructure/database/userinfo.schema';
         schema: TripPlanSchema,
       },
       { name: 'User', schema: UserInfosSchema },
+      { name: 'Account', schema: 'AccountSchema' }, // Assuming you have an AccountSchema defined
+      { name: 'Asset', schema: 'AssetSchema' }, // Assuming you have an AssetSchema defined
     ]),
     JwtModule,
     AccountModule,
