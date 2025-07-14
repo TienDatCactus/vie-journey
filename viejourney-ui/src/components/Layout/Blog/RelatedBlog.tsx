@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserBlog } from "../../../services/stores/useUserBlog";
 import { IRelatedBlogs } from "../../../utils/interfaces/blog";
+import { Button } from "@mui/material";
 
 const RelatedBlog = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -40,13 +41,13 @@ const RelatedBlog = () => {
 
       <div className="relative">
         {/* Navigation Arrows */}
-        <button
+        <Button
           onClick={prevSlide}
           className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
           style={{ marginLeft: "-20px" }}
         >
           <ArrowBackIosIcon fontSize="small" className="text-gray-600" />
-        </button>
+        </Button>
 
         <button
           onClick={nextSlide}

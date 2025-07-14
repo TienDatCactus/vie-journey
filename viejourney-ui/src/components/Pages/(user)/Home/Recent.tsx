@@ -22,9 +22,7 @@ const HomeRecent: React.FC = () => {
         alignItems={"center"}
         className="mb-4"
       >
-        <h1 className="text-[1.875rem] font-bold">
-          Recently viewed and upcoming
-        </h1>
+        <h1 className="text-2xl font-semibold">Current & Upcoming</h1>
         <div>
           <Button
             variant="contained"

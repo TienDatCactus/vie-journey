@@ -1,8 +1,12 @@
 import {
+  CalendarMonthOutlined,
   Check,
+  DoneAll,
   ErrorOutline,
+  Group,
   Login,
   PersonAdd,
+  Place,
   VerifiedUser,
 } from "@mui/icons-material";
 import {
@@ -11,7 +15,9 @@ import {
   Card,
   CircularProgress,
   Divider,
+  IconButton,
   Paper,
+  Stack,
   Step,
   StepLabel,
   Stepper,
@@ -19,9 +25,16 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { doValidateInvite } from "../../../../services/api";
 import { useAuthStore } from "../../../../services/stores/useAuthStore";
+import { Account } from "../../../../utils/interfaces";
+import dayjs from "dayjs";
 
 enum JoinStatus {
   VALIDATING = "validating",
@@ -35,31 +48,13 @@ const TripJoinViaEmail: React.FC = () => {
   const { tripId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, credential } = useAuthStore();
+  const { user, credential, loadCurrentUser } = useAuthStore();
   const [status, setStatus] = useState<JoinStatus>(JoinStatus.VALIDATING);
   const [loading, setLoading] = useState(true);
   const [tripInfo, setTripInfo] = useState<any>(null);
   const [activeStep, setActiveStep] = useState(0);
-
   const token = searchParams.get("token");
-
   // Check if user is already authenticated
-  useEffect(() => {
-    if (credential?.userId && user && status === JoinStatus.TOKEN_VALID) {
-      setStatus(JoinStatus.SUCCESS);
-      setActiveStep(1);
-
-      enqueueSnackbar("Successfully authenticated! Redirecting to trip...", {
-        variant: "success",
-      });
-
-      setTimeout(() => {
-        navigate(`/trips/plan/${tripId}`);
-      }, 2000);
-    }
-  }, [credential, user, status, tripId, navigate]);
-
-  // Validate the invitation token
   useEffect(() => {
     const validateInviteToken = async () => {
       if (!tripId || !token) {
@@ -71,7 +66,7 @@ const TripJoinViaEmail: React.FC = () => {
       try {
         const response = await doValidateInvite(tripId, token);
         if (response) {
-          setTripInfo(response.trip);
+          setTripInfo(response);
         }
 
         // Set token valid status
@@ -88,6 +83,37 @@ const TripJoinViaEmail: React.FC = () => {
 
     validateInviteToken();
   }, [tripId, token]);
+
+  useEffect(() => {
+    if (!user && credential?.userId) {
+      (async () => {
+        await loadCurrentUser();
+      })();
+    }
+    console.log(user);
+    console.log(tripInfo);
+    if (
+      credential?.userId &&
+      user?.email == tripInfo?.tripmateExists &&
+      status === JoinStatus.TOKEN_VALID
+    ) {
+      setStatus(JoinStatus.SUCCESS);
+      setActiveStep(1);
+
+      enqueueSnackbar("Successfully authenticated! Redirecting to trip...", {
+        variant: "success",
+      });
+    }
+  }, [credential, user, status, tripId]);
+
+  // Validate the invitation token
+  useEffect(() => {
+    if (status === JoinStatus.SUCCESS) {
+      setTimeout(() => {
+        navigate(`/trips/plan/${tripId}`);
+      }, 2000);
+    }
+  }, [status, tripId]);
 
   // Steps for the stepper
   const steps = [
@@ -187,77 +213,146 @@ const TripJoinViaEmail: React.FC = () => {
             <Box className="py-4">
               {tripInfo && (
                 <Box className="text-center">
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 3,
-                      bgcolor: "success.light",
-                      color: "success.contrastText",
-                      borderRadius: 2,
-                      mb: 3,
-                    }}
+                  <IconButton
+                    color="success"
+                    className="bg-green-100 w-fit h-fit p-4 mb-2"
                   >
-                    <Check sx={{ fontSize: 40, mb: 1 }} />
-                    <Typography variant="h6" gutterBottom>
-                      Invitation Valid!
-                    </Typography>
-                  </Paper>
+                    <DoneAll color="success" sx={{ fontSize: 40 }} />
+                  </IconButton>
+                  <Typography variant="h6" gutterBottom>
+                    Invitation Valid!
+                  </Typography>
 
-                  <Typography variant="h6" className="mb-2">
+                  <Typography
+                    variant="h6"
+                    className="mb-2 text-gray-500 text-base"
+                  >
                     You've been invited to join
                   </Typography>
-                  <Typography variant="h5" className="font-bold mb-4">
-                    {tripInfo.name}
-                  </Typography>
 
-                  <Paper elevation={1} sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+                  <Paper
+                    elevation={0}
+                    className="bg-gray-100 p-2 my-4 rounded-md"
+                  >
+                    <Typography
+                      variant="h5"
+                      className="text-start text-base font-bold"
+                    >
+                      {tripInfo.trip.title}
+                    </Typography>
                     <Box
                       sx={{
                         display: "flex",
                         justifyContent: "space-between",
-                        mb: 2,
+                        mt: 2,
                       }}
                     >
-                      <Typography variant="body2" color="text.secondary">
-                        Dates
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {tripInfo.startDate &&
-                          new Date(
-                            tripInfo.startDate
-                          ).toLocaleDateString()}{" "}
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        color="text.secondary"
+                      >
+                        <CalendarMonthOutlined className="text-xl" />
+                        <Typography variant="body2">Dates</Typography>
+                      </Stack>
+                      <Typography
+                        variant="body1"
+                        fontWeight={500}
+                        className="text-sm"
+                      >
+                        {tripInfo.trip.startDate &&
+                          dayjs(tripInfo.trip.startDate).format(
+                            "MMM D, YYYY"
+                          )}{" "}
                         -{" "}
-                        {tripInfo.endDate &&
-                          new Date(tripInfo.endDate).toLocaleDateString()}
+                        {tripInfo.trip.endDate &&
+                          dayjs(tripInfo.trip.endDate).format("MMM D, YYYY")}
                       </Typography>
                     </Box>
 
                     <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        my: 2,
+                      }}
                     >
-                      <Typography variant="body2" color="text.secondary">
-                        Destination
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        color="text.secondary"
+                      >
+                        <Place className="text-xl" />
+                        <Typography variant="body2" color="text.secondary">
+                          Destination
+                        </Typography>
+                      </Stack>
+                      <Typography
+                        variant="body1"
+                        fontWeight={500}
+                        className="text-sm"
+                      >
+                        {tripInfo.trip.destination?.name || "Not specified"}
                       </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {tripInfo.destination?.name || "Not specified"}
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 1,
+                      }}
+                    >
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        color="text.secondary"
+                      >
+                        <Group className="text-xl" />
+                        <Typography variant="body2" color="text.secondary">
+                          Travelers
+                        </Typography>
+                      </Stack>
+                      <Typography
+                        variant="body1"
+                        fontWeight={500}
+                        className="text-sm"
+                      >
+                        {tripInfo.trip.tripmates.length || "Not specified"}{" "}
+                        people
                       </Typography>
                     </Box>
                   </Paper>
 
                   {user ? (
                     // User is already logged in, proceed to success
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      onClick={() => {
-                        setActiveStep(1);
-                        setStatus(JoinStatus.SUCCESS);
-                      }}
-                      size="large"
-                    >
-                      Join Trip
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={() => {
+                          setActiveStep(1);
+                          setStatus(JoinStatus.SUCCESS);
+                        }}
+                        className="rounded-sm bg-black hover:bg-black/80 text-white"
+                        size="large"
+                      >
+                        Join Trip
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => {
+                          window.close();
+                        }}
+                        className="rounded-sm text-gray-500 border-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                        size="large"
+                      >
+                        Maybe Later
+                      </Button>
+                    </div>
                   ) : (
                     // User needs to authenticate - redirect to login page
                     <Box
@@ -266,7 +361,7 @@ const TripJoinViaEmail: React.FC = () => {
                       <Button
                         startIcon={<Login />}
                         variant="contained"
-                        color="primary"
+                        className="rounded-sm bg-black hover:bg-black/80 text-white"
                         fullWidth
                         onClick={() => navigate("/auth/login")}
                         size="large"
@@ -274,8 +369,10 @@ const TripJoinViaEmail: React.FC = () => {
                         Sign In to Join
                       </Button>
                       <Typography variant="body2" color="text.secondary">
-                        You'll need to sign in or create an account to join this
-                        trip.
+                        {(user as unknown as Account)?.email ==
+                        tripInfo?.tripmateExists
+                          ? "You're already invited to this trip."
+                          : "You'll need to sign in or create an account to join this trip."}
                       </Typography>
                     </Box>
                   )}
@@ -292,20 +389,29 @@ const TripJoinViaEmail: React.FC = () => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  bgcolor: "success.light",
-                  color: "success.contrastText",
                   borderRadius: 2,
                 }}
               >
-                <Check sx={{ fontSize: 60, mb: 2 }} />
+                <IconButton
+                  color="success"
+                  className="bg-green-100 w-fit h-fit p-4 mb-2"
+                >
+                  <Check sx={{ fontSize: 60 }} />
+                </IconButton>
                 <Typography variant="h5" gutterBottom fontWeight={500}>
                   Successfully Joined Trip!
                 </Typography>
-                <Typography variant="body1">
+                <Typography variant="body1" className="text-gray-600">
                   Redirecting you to the trip page...
                 </Typography>
                 <CircularProgress size={20} sx={{ mt: 2, color: "inherit" }} />
               </Paper>
+              <Link
+                to={`/trips/plan/${tripId}`}
+                className="mt-4 inline-block text-blue-500 hover:underline"
+              >
+                If not redirected, click here to view the trip
+              </Link>
             </Box>
           )}
         </Card>

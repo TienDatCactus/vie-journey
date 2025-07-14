@@ -21,14 +21,17 @@ export class AssetsService {
   }
 
   // Lấy tất cả asset của user có type là CONTENT
-  async getAllUserContentAssets() {
+  async getAllUserContentAssets(userId: string) {
     try {
+      console.log('userId: ', userId);
       const assets = await this.assetModel
         .find({
           assetOwner: 'USER',
+          userId: new Types.ObjectId(userId),
           type: { $regex: /^CONTENT$/i }, // không phân biệt hoa thường
         })
         .exec();
+      console.log('assets: ', assets);
       return assets;
     } catch (error) {
       throw new BadRequestException(

@@ -129,8 +129,8 @@ export const useUserBlog = create<UserBlogStore>((set, get) => ({
   },
   handleCheckIsLike: async (id: string): Promise<boolean> => {
     try {
-      const res = await checkLike(id); 
-      return !!res?.liked; 
+      const res = await checkLike(id);
+      return !!res?.liked;
     } catch (error) {
       console.error("handleCheckIsLike error:", error);
       return false;

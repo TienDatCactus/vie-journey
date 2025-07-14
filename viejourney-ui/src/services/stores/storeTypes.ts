@@ -12,6 +12,10 @@ export interface Trip {
       lng: number; // Longitude of the destination
     };
   };
+  coverImage?: {
+    _id?: string; // Optional ID for the cover image
+    url: string; // URL of the cover image
+  };
   startDate: Date;
   endDate: Date;
   tripmates: string[];

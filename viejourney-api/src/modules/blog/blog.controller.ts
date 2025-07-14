@@ -134,7 +134,6 @@ export class BlogController {
       },
     }),
   )
-  @Patch('update-draft/:id')
   async updateBlogDraftById(
     @Param('id') id: string,
     @Body() dto: UpdateBlogDraftDto,
@@ -161,7 +160,6 @@ export class BlogController {
       },
     }),
   )
-  @Patch('edit-published/:id')
   async editPublishedBlog(
     @Param('id') id: string,
     @Body() dto: UpdateBlogDraftDto,

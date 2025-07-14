@@ -9,11 +9,9 @@ const HomeExplore: React.FC<{
 }> = ({ blogs }) => {
   return (
     <div className="max-w-[75rem] w-full pb-10">
-      <div>
-        <h1 className="text-[2.5rem] font-bold">Explore</h1>
-        <h2 className="my-4 text-[1.375rem] font-semibold">
-          Popular destinations
-        </h2>
+      <div className="pb-2">
+        <h1 className="text-2xl font-semibold">Discover New Destinations</h1>
+        <h2 className="my-2 text-base text-gray-600">Popular destinations</h2>
       </div>
       {!!blogs && blogs.length > 0 ? (
         <Grid2 container alignItems={"center"} spacing={2}>

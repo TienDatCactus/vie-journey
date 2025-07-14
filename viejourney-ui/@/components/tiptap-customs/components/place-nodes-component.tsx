@@ -23,6 +23,7 @@ import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import React, { useCallback, useState } from "react";
 import { useAutocompleteSuggestions } from "../../../../src/utils/hooks/use-autocomplete-suggestion";
 import { useFetchPlaceDetails } from "../../../../src/utils/hooks/use-fetch-place";
+import { getPlacePhotoUrl } from "../../../../src/utils/handlers/utils";
 
 interface PlaceNodeViewProps {
   node: {
@@ -121,61 +122,6 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
     [fetchPlaceDetail, updateAttributes]
   );
 
-  function getPlacePhotoUrl(photo: any): string {
-    const fallbackImage = "/images/placeholder-main.png";
-    if (!photo) return fallbackImage;
-    try {
-      if (typeof photo.getUrl === "function") {
-        try {
-          return photo.getUrl({ maxWidth: 800 });
-        } catch (e) {
-          console.error("getUrl with params failed", e);
-        }
-      }
-
-      // Method 2: Try getUrl() without parameters (some API versions)
-      if (typeof photo.getUrl === "function") {
-        try {
-          return photo.getUrl();
-        } catch (e) {
-          console.error("getUrl without params failed", e);
-        }
-      }
-
-      // Method 3: Try getURI method (older or custom implementations)
-      if (typeof photo.getURI === "function") {
-        try {
-          return photo.getURI();
-        } catch (e) {
-          console.error("getURI failed", e);
-        }
-      }
-
-      // Method 4: Check if photo is a string URL directly
-      if (typeof photo === "string") {
-        return photo;
-      }
-
-      // Method 5: Check for common URL properties
-      if (photo.url) return photo.url;
-
-      // Method 6: Check if there's a photo reference we can use with Places Photo API
-      if (photo.name || photo.photoReference || photo.photo_reference) {
-        const photoRef =
-          photo.name || photo.photoReference || photo.photo_reference;
-        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
-        if (photoRef && apiKey) {
-          return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoRef}&key=${apiKey}`;
-        }
-      }
-
-      // Return fallback if all methods fail
-      return fallbackImage;
-    } catch (error) {
-      console.error("Error getting photo URL:", error);
-      return fallbackImage;
-    }
-  }
   const formatPriceLevel = (
     level?: google.maps.places.PriceLevel | number | null
   ): string => {

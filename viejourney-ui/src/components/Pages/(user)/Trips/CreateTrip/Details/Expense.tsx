@@ -1280,7 +1280,7 @@ const ExpenseSection: React.FC = () => {
           justifyContent={"space-between"}
           marginBottom={4}
         >
-          <h1 className="text-3xl font-bold">Budgeting</h1>
+          <h1 className="text-3xl font-bold">Budget</h1>
           <EditExpenseDialog />
         </Stack>
         <div className="flex justify-between gap-4 pt-4 bg-neutral-200 rounded-xl p-4">

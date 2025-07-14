@@ -89,9 +89,7 @@ const HomeTrips: React.FC<{
               alignItems={"center"}
             >
               <Link to={"/profile"}>
-                <h1 className="my-0 text-2xl hover:underline">
-                  Your Travel Blogs
-                </h1>
+                <h1 className="my-0 text-2xl hover:underline">Travel Blogs</h1>
               </Link>
               <div>
                 <Button

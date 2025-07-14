@@ -47,6 +47,8 @@ export const ADMIN = {
   BULK_UPDATE_USER_ROLES: "/admin/users/bulk-update-roles",
 };
 export const TRIP = {
+  UPDATE_TRIP_DATES: "/trip/update-dates",
+  UPDATE_TRIP_COVER: "/trip/update-cover-image",
   VALIDATE_INVITE: "/trip/validate-invite",
   GET_PLAN_BY_TRIP_ID: "/trip/plan",
   REMOVE_TRIP_MATE: "/trip/remove-tripmate",
@@ -59,7 +61,8 @@ export const TRIP = {
 };
 
 export const ASSET = {
-  UPLOAD: "/assets/image",
+  GET_USER_ASSETS: "/assets/content/by-user",
+  UPLOAD: "/assets",
   LANDING: "/assets/landing",
 };
 
@@ -69,5 +72,5 @@ export const BLOG = {
 };
 
 export const COMMENT = {
-  COMMENTS: "/comments"
-}
+  COMMENTS: "/comments",
+};

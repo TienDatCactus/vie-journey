@@ -29,7 +29,7 @@ export class AssetsController {
 
   @Get('landing')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  // @Roles(Role.Admin)
   async getAllBannersBySubsection() {
     return this.assetsService.fetchAllBannersBySubsection();
   }
@@ -96,7 +96,7 @@ export class AssetsController {
       },
     }),
   )
-  addAssetBanner(
+  addModularAsset(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
     @Body('type') type: string,
@@ -178,9 +178,10 @@ export class AssetsController {
     }
   }
 
-  @Get('userContent')
+  @Get('content/by-user')
   @UseGuards(JwtAuthGuard)
-  async getAllUserContentAssets() {
-    return await this.assetsService.getAllUserContentAssets();
+  async getAllUserContentAssets(@Req() req: Request) {
+    const userId = req.user?.['userId'];
+    return await this.assetsService.getAllUserContentAssets(userId);
   }
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import {
-  Add as AddIcon,
+  AddAPhoto,
   Close as CloseIcon,
-  Edit as EditIcon,
-  LocationOn as LocationIcon,
-  Share as ShareIcon,
+  Edit,
+  Share,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -14,38 +13,40 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  Stack,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { motion } from "motion/react";
 import { enqueueSnackbar } from "notistack";
 import React from "react";
-import Map from "../../../components/Maps/Map";
 import { MainLayout } from "../../../layouts";
 import { editUserAvatar } from "../../../services/api/user";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
-import ProfileSettings from "./component/Setting";
+import AccountSetting from "./component/AccountSetting";
 import TravelBlog from "./component/TravelBlog";
 import TripPlans from "./component/TripPlan";
+import ProfileMap from "./component/ProfileMap";
 
 const Dashboard: React.FC = () => {
+  const { info, loadCurrentUser, credential } = useAuthStore();
+
   const [value, setValue] = React.useState(0);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string>("");
-  const { info, loadCurrentUser, credential } = useAuthStore();
   const [uploading, setUploading] = React.useState(false);
   const menuItems = [
     { id: 0, label: "Overview" },
     { id: 1, label: "Trip Plans" },
     { id: 2, label: "Blogs" },
-    { id: 3, label: "Settings" },
+    { id: 3, label: "Setting" },
   ];
   const handleEditClick = () => {
     setEditModalOpen(true);
@@ -99,230 +100,147 @@ const Dashboard: React.FC = () => {
   return (
     <MainLayout>
       <div className="w-full max-w-[125rem] mx-auto lg:px-20 lg:py-10 bg-gray-50 ">
-        <div className="bg-white border-b border-gray-200">
-          <motion.ul
-            variants={{
-              hidden: {},
-              show: {
-                transition: {
-                  staggerChildren: 0.05,
-                },
-              },
-            }}
-            initial="hidden"
-            animate="show"
-            className="flex w-full bg-[#f4f4f4] p-2"
-          >
-            {menuItems.map((item) => (
-              <motion.li
-                initial={false}
-                className="flex-1 "
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  show: {
-                    opacity: 1,
-                    y: 0,
-                    transition: { duration: 0.3, ease: "easeOut" },
-                  },
-                }}
-                key={item.id}
-              >
-                <Button
-                  onClick={() => setValue(item.id)}
-                  className={`w-full py-2 px-6 text-center font-medium transition-colors cursor-pointer ${
-                    value === item.id
-                      ? "text-gray-900 bg-white"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  {item.label}
-                </Button>
-              </motion.li>
-            ))}
-          </motion.ul>
-        </div>
-
-        <div className="w-full">
-          {value === 0 && (
-            <>
-              <div className=" py-6">
-                {(!info?.fullName ||
-                  !info.address ||
-                  !info.dob ||
-                  !info.phone) && (
-                  <Alert severity="warning" className="mb-4">
-                    Your profile is incomplete. Please update your full name,
-                    address, date of birth, and phone number to get the most out
-                    of your travel dashboard.
-                  </Alert>
-                )}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                  <div className="lg:col-span-1  h-full">
-                    <Card className="p-6  h-full ">
-                      <CardContent className="text-center p-0 flex flex-col justify-between h-full">
-                        <Avatar
-                          sx={{
-                            width: 140,
-                            height: 140,
-                          }}
-                          className="mx-auto bg-gray-300"
-                        >
-                          <img
-                            src={info?.avatar || "/placeholder.svg"}
-                            className="w-full h-full"
-                            alt="avatar"
-                          />
-                        </Avatar>
-
-                        <Typography variant="h6" className="font-semibold mb-1">
-                          {info?.fullName}
-                        </Typography>
-
-                        <div className="flex justify-center gap-8 mb-4">
-                          <div className="text-center">
-                            <Typography variant="h6" className="font-bold">
-                              0
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              className="text-gray-500"
-                            >
-                              Following
-                            </Typography>
-                          </div>
-                          <div className="text-center">
-                            <Typography variant="h6" className="font-bold">
-                              0
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              className="text-gray-500"
-                            >
-                              Followers
-                            </Typography>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outlined"
-                            startIcon={<EditIcon />}
-                            className="flex-1 text-gray-700 border-gray-300"
-                            size="small"
-                            onClick={handleEditClick}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="contained"
-                            startIcon={<ShareIcon />}
-                            className="flex-1 bg-gray-800 hover:bg-gray-900"
-                            size="small"
-                          >
-                            Share
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Main Content */}
-                  <div className="lg:col-span-3">
-                    <Card className="relative overflow-hidden">
-                      {/* Map Background with overlays */}
-                      <div className="h-[318px] relative">
-                        <Map
-                          position="static"
-                          className="w-full h-full"
-                          detailed={false}
-                        />
-
-                        {/* Stats Chips */}
-                        <div className="absolute top-4 left-4 flex gap-2">
-                          <Chip
-                            label="1 Country"
-                            className="bg-white/50 text-gray-800 backdrop-blur-sm border border-white/50 shadow-sm"
-                            size="small"
-                          />
-                          <Chip
-                            label="1 City & Region"
-                            className="bg-white/50  text-gray-800 backdrop-blur-sm border border-white/50 shadow-sm"
-                            size="small"
-                          />
-                          <Chip
-                            label="Novice"
-                            className="bg-white/50 text-gray-800 backdrop-blur-sm border border-white/50 shadow-sm"
-                            size="small"
-                          />
-                        </div>
-
-                        {/* Settings Icons */}
-                        <div className="absolute top-4 right-4 flex gap-1">
-                          <IconButton
-                            size="small"
-                            className="bg-white/50 text-gray-600 hover:text-gray-800 backdrop-blur-sm shadow-sm"
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            className="bg-white/50 text-gray-600 hover:text-gray-800 backdrop-blur-sm shadow-sm"
-                          >
-                            <ShareIcon fontSize="small" />
-                          </IconButton>
-                        </div>
-
-                        <div className="absolute bottom-4 left-4">
-                          <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            className="bg-white/50 text-gray-800 backdrop-blur-sm border border-white/50 hover:bg-white shadow-sm"
-                            size="small"
-                          >
-                            Add visited places
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
+        <div className="w-full shadow-sm">
+          <Card className="p-6 bg-gray-50  h-full " elevation={0}>
+            <CardContent className="text-center p-0 flex  h-full">
+              <Stack direction={"row"} className="w-full" spacing={2}>
+                <div>
+                  <div className="relative w-fit">
+                    <Avatar
+                      sx={{
+                        width: 140,
+                        height: 140,
+                      }}
+                      className="mx-auto bg-gray-300 relative"
+                    >
+                      <img
+                        src={info?.avatar || "/placeholder.svg"}
+                        className="w-full h-full"
+                        alt="avatar"
+                      />
+                    </Avatar>
+                    <IconButton
+                      size="small"
+                      className="p-2 absolute bottom-0 z-10 bg right-0 bg-black text-white hover:bg-gray-800"
+                      onClick={handleEditClick}
+                    >
+                      <AddAPhoto className="text-xl" />
+                    </IconButton>
                   </div>
                 </div>
-              </div>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" className="font-semibold ">
-                    Recent Activity
-                  </Typography>
-                  <Typography variant="body2" className="text-gray-500 mb-4">
-                    Your latest travel updates and interactions
-                  </Typography>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center rounded-md gap-3 bg-neutral-100 p-2">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <LocationIcon className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <Typography variant="body2" className="font-medium">
-                          Added new trip plan
-                        </Typography>
-                        <Typography variant="caption" className="text-gray-500">
-                          Trip to Paris • 2 days ago
-                        </Typography>
-                      </div>
+                <Stack className="flex-1 justify-between">
+                  <Stack
+                    direction={"row"}
+                    justifyContent={"space-between"}
+                    alignItems={"center"}
+                    className="flex-1 px-4"
+                  >
+                    <div className="text-start">
+                      <Typography
+                        variant="h6"
+                        className="font-semibold mb-1 text-2xl"
+                      >
+                        {info?.fullName}
+                      </Typography>
+                      <p className="text-gray-600 text-sm">
+                        Passionate traveler exploring the world one destination
+                        at a time
+                      </p>
+                    </div>
+                    <Stack direction={"row"} spacing={1} className="mb-2">
+                      <Button
+                        variant="outlined"
+                        className="rounded-sm bg-white border-gray-300 mt-2 text-gray-800"
+                        onClick={() => setValue(3)}
+                        size="small"
+                        startIcon={<Edit />}
+                      >
+                        Edit Profile
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        className="rounded-sm bg-white border-gray-300 mt-2 text-gray-800"
+                        startIcon={<Share />}
+                        size="small"
+                      >
+                        Share
+                      </Button>
+                    </Stack>
+                  </Stack>
+
+                  <div className="grid grid-cols-4 my-4">
+                    <div className="text-center">
+                      <Typography variant="h6" className="font-bold">
+                        0
+                      </Typography>
+                      <Typography variant="caption" className="text-gray-500">
+                        Trips
+                      </Typography>
+                    </div>
+                    <div className="text-center">
+                      <Typography variant="h6" className="font-bold">
+                        0
+                      </Typography>
+                      <Typography variant="caption" className="text-gray-500">
+                        Destinations
+                      </Typography>
+                    </div>
+                    <div className="text-center">
+                      <Typography variant="h6" className="font-bold">
+                        0
+                      </Typography>
+                      <Typography variant="caption" className="text-gray-500">
+                        Following
+                      </Typography>
+                    </div>
+                    <div className="text-center">
+                      <Typography variant="h6" className="font-bold">
+                        0
+                      </Typography>
+                      <Typography variant="caption" className="text-gray-500">
+                        Followers
+                      </Typography>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        </div>
+        <ToggleButtonGroup
+          color="info"
+          value={value}
+          exclusive
+          aria-label="Platform"
+          className="my-4"
+        >
+          {menuItems.map((item) => (
+            <ToggleButton
+              key={item.id}
+              className="p-2 w-40 "
+              value={item.id}
+              onClick={() => setValue(item.id)}
+              selected={value === item.id}
+            >
+              {item.label}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+        {(!info?.fullName || !info.address || !info.dob || !info.phone) && (
+          <Alert severity="warning" className="mb-4">
+            Your profile is incomplete. Please update your full name, address,
+            date of birth, and phone number to get the most out of your travel
+            dashboard.
+          </Alert>
+        )}
+        <div className="w-full">
+          {value === 0 && <ProfileMap />}
 
           {value === 1 && <TripPlans />}
 
           {value === 2 && <TravelBlog />}
-
-          {value === 3 && info && <ProfileSettings userInfo={info} />}
+          {value === 3 && <AccountSetting />}
         </div>
 
         {/* Edit Avatar Modal */}

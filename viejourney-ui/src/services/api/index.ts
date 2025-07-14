@@ -16,7 +16,7 @@ import {
   VerifyReqDTO,
 } from "./dto";
 import { setToken } from "./token";
-import { AUTH, TRIP, USER, ACCOUNTS, HOTELS, ADMIN } from "./url";
+import { AUTH, TRIP, USER, ACCOUNTS, HOTELS, ADMIN, ASSET } from "./url";
 import { Trip } from "../stores/storeTypes";
 
 export const doLogin = async (data: LoginReqDTO) => {
@@ -505,4 +505,74 @@ export const doImportHotels = async (file: File) => {
     console.error("Failed to import hotels:", error);
     throw error;
   }
+};
+
+export const doGetUserContentAssets = async () => {
+  try {
+    const resp = await http.get(`${ASSET.GET_USER_ASSETS}`);
+    if (resp) {
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to get user content assets:", error);
+  }
+  return [];
+};
+
+export const updateTripDates = async (
+  tripId: string,
+  startDate: string,
+  endDate: string
+) => {
+  try {
+    const resp = await http.post(`${TRIP?.UPDATE_TRIP_DATES}`, {
+      tripId: tripId,
+      startDate: startDate,
+      endDate: endDate,
+    });
+    if (resp.status > 200 && resp.status < 300) {
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to update trip dates:", error);
+  }
+};
+
+export const doAddContentAsset = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", "CONTENT");
+    const res = await http.post(ASSET.UPLOAD, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    if (res.status >= 200 && res.status < 300) {
+      enqueueSnackbar("Asset uploaded successfully", { variant: "success" });
+      return res.data;
+    }
+  } catch (error) {
+    console.error(error);
+    enqueueSnackbar("Failed to upload asset", { variant: "error" });
+  }
+};
+
+export const doUpdateTripCover = async (tripId: string, assetId: string) => {
+  try {
+    const resp = await http.post(`${TRIP?.UPDATE_TRIP_COVER}`, {
+      tripId: tripId,
+      assetId: assetId,
+    });
+    if (resp.status >= 200 && resp.status < 300) {
+      enqueueSnackbar("Trip cover updated successfully", {
+        variant: "success",
+      });
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to update trip cover:", error);
+    enqueueSnackbar("Failed to update trip cover", { variant: "error" });
+  }
+  return null;
 };

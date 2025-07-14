@@ -88,4 +88,30 @@ export class TripController {
   findPlanByTripId(@Param('id') id: string) {
     return this.tripService.findPlanByTripId(id);
   }
+
+  @Post('update-dates')
+  @UseGuards(JwtAuthGuard)
+  async patchPlanDates(
+    @Body() req: { tripId: string; startDate: Date; endDate: Date },
+  ) {
+    return this.tripService.updatePlanDates(
+      req.tripId,
+      req.startDate,
+      req.endDate,
+    );
+  }
+
+  @Post('update-cover-image')
+  @UseGuards(JwtAuthGuard)
+  async updateTripCoverImage(
+    @Body() req: { tripId: string; assetId: string },
+    @Req() request: Request,
+  ): Promise<any> {
+    const userId = request.user?.['userId'] as string;
+    return this.tripService.updateTripCoverImage(
+      req.tripId,
+      req.assetId,
+      userId,
+    );
+  }
 }

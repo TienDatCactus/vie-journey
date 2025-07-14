@@ -54,3 +54,19 @@ export interface IUserInfoUpdate {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface Asset {
+  _id?: string;
+  type: string;
+  url: string;
+  publicId: string;
+  location: string;
+  assetOwner: string;
+  format: string;
+  file_size: string;
+  dimensions: string;
+  userId?: string;
+  subsection?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
