@@ -10,6 +10,7 @@ import {
   HomeTestimonial,
 } from "../../../components/Pages/(anonymous)/Home";
 import { useAssetsStore } from "../../../services/stores/useAssets";
+import { Backdrop } from "@mui/material";
 
 const Home = () => {
   const { doGetAssets, landingAssets } = useAssetsStore();
@@ -32,6 +33,7 @@ const Home = () => {
     <MainLayout>
       <HomeHero img={landingAssets?.hero?.[0]?.url || ""} />
       {landingAssets?.intro && <HomeAdvert imgs={landingAssets.intro} />}
+      {loading ? <Backdrop open={loading} /> : null}
       {landingAssets?.destination && (
         <HomeGuides imgs={landingAssets?.destination} />
       )}

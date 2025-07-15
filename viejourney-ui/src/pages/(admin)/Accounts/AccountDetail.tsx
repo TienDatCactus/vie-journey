@@ -26,7 +26,6 @@ import { AdminLayout } from "../../../layouts";
 import {
   doGetUserDetail,
   doDeleteUser,
-  doUpdateAccountStatus,
   doUpdateUserInfo,
 } from "../../../services/api";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
@@ -192,20 +191,6 @@ const AccountDetail = () => {
       navigate("/admin/accounts");
     } catch (err) {
       setLoadingDelete(false);
-    }
-  };
-
-  const handleChangeActive = async (active: boolean) => {
-    if (!id) return;
-    setLoadingEdit(true);
-    try {
-      await doUpdateAccountStatus(id, active);
-      setLoadingEdit(false);
-      // Reload lại user
-      const updated = await doGetUserDetail(id);
-      setUser(updated);
-    } catch (err) {
-      setLoadingEdit(false);
     }
   };
 

@@ -4,16 +4,16 @@ import type React from "react";
 
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-import ImageIcon from "@mui/icons-material/Image";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ImageIcon from "@mui/icons-material/Image";
 import {
+  Box,
   Chip,
   Divider,
+  IconButton,
   Stack,
   TextField,
-  Box,
   Typography,
-  IconButton,
 } from "@mui/material";
 import { autocompleteClasses } from "@mui/material/Autocomplete";
 import { styled } from "@mui/material/styles";
@@ -21,7 +21,7 @@ import useAutocomplete, {
   type AutocompleteGetTagProps,
 } from "@mui/material/useAutocomplete";
 import dayjs from "dayjs";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { IContentItem } from "../../../utils/interfaces/blog";
 
 interface FilmOptionType {
@@ -247,7 +247,7 @@ function CustomAutocomplete({
     multiple: true,
     options: topTravelBlogTags,
     getOptionLabel: (option) => option.title,
-    onChange: (event, newValue) => {
+    onChange: (_, newValue) => {
       const newTags = newValue.map((option) => option.title);
       onTagsChange(newTags);
     },

@@ -8,6 +8,8 @@ import {
   Delete,
   Req,
   UseGuards,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { Request } from 'express';
@@ -33,7 +35,26 @@ export class TripController {
   }
   @Post('invite')
   @UseGuards(JwtAuthGuard)
-  async inviteToTrip(@Body() req: { tripId: string; email: string }) {
+  async inviteToTrip(
+    @Body() req: { tripId: string; email: string },
+    @Req() request: Request,
+  ) {
+    const userId = request.user?.['userId'] as string;
+    const trip = await this.tripService.findOne(req.tripId);
+
+    if (!trip) {
+      throw new HttpException('Trip not found', HttpStatus.NOT_FOUND);
+    }
+    const userEmail = request.user?.['email'] as string;
+    if (
+      trip.createdBy.toString() !== userId &&
+      !trip.tripmates.includes(userEmail)
+    ) {
+      throw new HttpException(
+        'You do not have permission to invite others to this trip',
+        HttpStatus.FORBIDDEN,
+      );
+    }
     return await this.tripService.inviteToTrip(req.tripId, req.email);
   }
 

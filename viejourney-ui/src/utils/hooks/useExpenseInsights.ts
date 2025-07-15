@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Expense } from "../../services/stores/storeInterfaces";
-import { getTypeColor, randomColor } from "../handlers/utils";
+import { getTypeColor } from "../handlers/utils";
 
 // hooks/useExpenseInsights.ts
 export function useExpenseInsights(expenses: Expense[], totalBudget: number) {

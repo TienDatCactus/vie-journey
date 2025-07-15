@@ -2,6 +2,7 @@ import {
   ChevronLeft,
   Logout,
   Menu as MenuIcon,
+  ModeOfTravel,
   Settings,
 } from "@mui/icons-material";
 import { Avatar, IconButton, Tooltip } from "@mui/material";
@@ -37,21 +38,20 @@ export const Nav: React.FC<NavProps> = ({
         collapsed ? "w-20" : "w-64"
       }`}
     >
-      <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
+      <div
+        className={`flex items-center ${
+          collapsed ? "justify-center" : "justify-between"
+        } px-4 py-4 border-b border-gray-100`}
+      >
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600  flex items-center justify-center">
-              <span className="text-white font-bold text-sm">VJ</span>
-            </div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              VieJourney
-            </h1>
+            <ModeOfTravel />
+            <h1 className="text-xl font-bold ">VieJourney</h1>
           </div>
         )}
         <IconButton
           onClick={() => setCollapsed(!collapsed)}
-          className="text-gray-600 hover:bg-gray-100 mx-auto"
-          size="medium"
+          className="text-gray-600 hover:bg-gray-100 w-fit"
         >
           {collapsed ? <MenuIcon /> : <ChevronLeft />}
         </IconButton>

@@ -14,10 +14,10 @@ import { IRelatedBlogs } from "../../../utils/interfaces/blog";
 const Home: React.FC = () => {
   const [blogs, setBlogs] = React.useState<IRelatedBlogs[]>([]);
   const { handleGetUserTrips } = useTripDetailStore();
-  const { getBlogList } = useUserBlog();
+  const { handleGetBlogList } = useUserBlog();
   useEffect(() => {
     const fetchBlogs = async () => {
-      const res = await getBlogList({});
+      const res = await handleGetBlogList({});
       if (res) {
         setBlogs(res);
       }

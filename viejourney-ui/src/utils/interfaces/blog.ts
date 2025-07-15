@@ -137,7 +137,7 @@ export interface IContentItem {
   updatedAt: string;
 }
 
-interface BlogMetrics {
+export interface BlogMetrics {
   viewCount: number;
   likeCount: number;
   commentCount: number;

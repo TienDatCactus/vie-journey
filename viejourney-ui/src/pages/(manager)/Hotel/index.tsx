@@ -1,69 +1,38 @@
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Hotel as HotelIcon,
+  FileUpload as ImportIcon,
+  LocationOn as LocationIcon,
+  MoreVert as MoreVertIcon,
+  Visibility as VisibilityIcon,
+} from "@mui/icons-material";
+import {
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Paper,
+  Rating,
+  Stack,
+  Typography,
+} from "@mui/material";
+import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "../../../layouts";
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Stack,
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Rating,
-  Avatar,
-} from "@mui/material";
-import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
-import { LicenseInfo } from "@mui/x-license";
-import {
-  Add as AddIcon,
-  FileUpload as ImportIcon,
-  MoreVert as MoreVertIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
-  Hotel as HotelIcon,
-  LocationOn as LocationIcon,
-} from "@mui/icons-material";
+import { doCreateHotel, doGetAllHotels } from "../../../services/api";
+import { Hotel } from "../../../utils/interfaces";
 import AddHotelDialog from "./AddHotelDialog";
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditHotelDialog from "./EditHotelDialog";
 import ImportHotelDialog from "./ImportHotelDialog";
-import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
-import {
-  doGetAllHotels,
-  doCreateHotel,
-  doUpdateHotel,
-  doDeleteHotel,
-  doImportHotels,
-} from "../../../services/api";
 
-// Set MUI Pro License
-LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
-
-interface Hotel {
-  _id: string;
-  name: string;
-  description: string;
-  rating: number;
-  address: string;
-  coordinate: string;
-  images: string[]; // Changed from 'image' to 'images' to match backend
-}
-
-// Interface for API response
-interface HotelApiResponse {
-  _id: string;
-  name: string;
-  description: string;
-  rating: number;
-  address: string;
-  coordinate: string;
-  images: string[]; // Changed from 'image' to 'images' to match backend
-}
-
-// Actions Menu Component
 const ActionMenu = ({
   hotelId,
   onEdit,
@@ -164,7 +133,7 @@ const HotelManagement = () => {
         const result = await doGetAllHotels();
 
         // Process the response data to match our interface
-        const processedHotels = result.map((hotel: HotelApiResponse) => ({
+        const processedHotels = result.map((hotel: Hotel) => ({
           _id: hotel._id,
           name: hotel.name,
           description: hotel.description,
@@ -241,14 +210,12 @@ const HotelManagement = () => {
         // Add new hotel - Call CREATE_HOTEL API
         console.log("Calling CREATE_HOTEL API with payload:", hotelData);
 
-        const response = await doCreateHotel(hotelData as any);
-
-        // Refresh hotel list after successful creation
+        await doCreateHotel(hotelData as any);
         const fetchHotels = async () => {
           try {
             const result = await doGetAllHotels();
 
-            const processedHotels = result.map((hotel: HotelApiResponse) => ({
+            const processedHotels = result.map((hotel: Hotel) => ({
               ...hotel,
               coordinate:
                 typeof hotel.coordinate === "object"
@@ -287,7 +254,7 @@ const HotelManagement = () => {
       try {
         const result = await doGetAllHotels();
 
-        const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
+        const processedHotels = result.data.map((hotel: Hotel) => ({
           _id: hotel._id,
           name: hotel.name,
           description: hotel.description,
@@ -346,7 +313,7 @@ const HotelManagement = () => {
       try {
         const result = await doGetAllHotels();
 
-        const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
+        const processedHotels = result.data.map((hotel: Hotel) => ({
           _id: hotel._id,
           name: hotel.name,
           description: hotel.description,
@@ -395,7 +362,7 @@ const HotelManagement = () => {
       try {
         const result = await doGetAllHotels();
 
-        const processedHotels = result.data.map((hotel: HotelApiResponse) => ({
+        const processedHotels = result.data.map((hotel: Hotel) => ({
           _id: hotel._id,
           name: hotel.name,
           description: hotel.description,

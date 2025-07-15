@@ -1,29 +1,28 @@
-import React from "react";
-import { AdminLayout } from "../../../layouts";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import ArticleIcon from "@mui/icons-material/Article";
+import FlagIcon from "@mui/icons-material/Flag";
+import LoginIcon from "@mui/icons-material/Login";
+import PeopleIcon from "@mui/icons-material/People";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import PersonOffIcon from "@mui/icons-material/PersonOff";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
+  Avatar,
   Box,
-  Grid2,
+  Button,
   Card,
   CardContent,
-  Typography,
-  Paper,
   Chip,
+  Grid2,
+  Paper,
   Stack,
-  Button,
-  Avatar,
+  Typography,
 } from "@mui/material";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
 import { LicenseInfo } from "@mui/x-license";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import PeopleIcon from "@mui/icons-material/People";
-import ArticleIcon from "@mui/icons-material/Article";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import FlagIcon from "@mui/icons-material/Flag";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import LoginIcon from "@mui/icons-material/Login";
-import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
-import PersonOffIcon from "@mui/icons-material/PersonOff";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import { AdminLayout } from "../../../layouts";
 
 // Set MUI Pro License
 LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);

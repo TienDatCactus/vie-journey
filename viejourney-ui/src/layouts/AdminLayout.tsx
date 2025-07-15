@@ -1,10 +1,5 @@
-import {
-  AdminPanelSettings,
-  Dashboard,
-  Hotel as HotelIcon,
-} from "@mui/icons-material";
+import { AdminPanelSettings, Dashboard } from "@mui/icons-material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import PermMediaIcon from "@mui/icons-material/PermMedia";
 import { ReactNode, useState } from "react";
 import { Nav } from "../components/Nav";
 const AdminLayout = ({ children }: { children: ReactNode }) => {
@@ -13,8 +8,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   const menuItems = [
     { icon: <Dashboard />, label: "Dashboard", path: "/admin/dashboard" },
     { icon: <AccountCircleIcon />, label: "Account", path: "/admin/accounts" },
-    { icon: <HotelIcon />, label: "Hotel", path: "/admin/hotels" },
-    { icon: <PermMediaIcon />, label: "Media", path: "/admin/media" },
+
     {
       icon: <AdminPanelSettings />,
       label: "Role",

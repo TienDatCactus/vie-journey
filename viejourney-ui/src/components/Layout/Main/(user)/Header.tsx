@@ -1,4 +1,9 @@
-import { Logout, PersonAdd, Settings } from "@mui/icons-material";
+import {
+  AccountCircle,
+  HomeWork,
+  KeyboardCommandKey,
+  Logout,
+} from "@mui/icons-material";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
@@ -58,6 +63,7 @@ export function HideOnScroll(props: Props) {
 }
 
 const Header = () => {
+  const { user } = useAuthStore();
   const info = useAuthStore((state) => state.info);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -73,6 +79,19 @@ const Header = () => {
   const onLogout = async () => {
     await handleLogout();
     navigate("/");
+  };
+
+  const handleDashboardNavigate = () => {
+    switch (user?.role) {
+      case "ADMIN":
+        navigate("/admin/dashboard");
+        break;
+      case "MANAGER":
+        navigate("/manager/dashboard");
+        break;
+      default:
+        navigate("/profile");
+    }
   };
   return (
     <HideOnScroll>
@@ -154,60 +173,55 @@ const Header = () => {
               open={open}
               onClose={handleClose}
               onClick={handleClose}
-              PaperProps={{
-                elevation: 0,
-                sx: {
-                  overflow: "visible",
-                  filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-                  mt: 1.5,
-                  "& .MuiAvatar-root": {
-                    width: 26,
-                    height: 26,
-                    ml: -0.5,
-                    mr: 1,
-                  },
-                  "&::before": {
-                    content: '""',
-                    display: "block",
-                    position: "absolute",
-                    top: 0,
-                    right: 14,
-                    width: 10,
-                    height: 10,
-                    bgcolor: "background.paper",
-                    transform: "translateY(-50%) rotate(45deg)",
-                    zIndex: 0,
+              slotProps={{
+                paper: {
+                  elevation: 0,
+                  sx: {
+                    overflow: "visible",
+                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                    mt: 1.5,
+                    "& .MuiAvatar-root": {
+                      width: 26,
+                      height: 26,
+                      ml: -0.5,
+                      mr: 1,
+                    },
+                    "&::before": {
+                      content: '""',
+                      display: "block",
+                      position: "absolute",
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: "background.paper",
+                      transform: "translateY(-50%) rotate(45deg)",
+                      zIndex: 0,
+                    },
                   },
                 },
               }}
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-              <MenuItem onClick={handleClose}>
-                <Avatar /> Profile
+              {user?.role && user?.role !== "USER" && (
+                <MenuItem onClick={handleDashboardNavigate}>
+                  <KeyboardCommandKey className="mr-2 text-neutral-500" />
+                  Dashboard
+                </MenuItem>
+              )}
+              <MenuItem onClick={() => navigate("/profile")}>
+                <AccountCircle className="mr-2 text-neutral-500" /> Profile
               </MenuItem>
-              <MenuItem onClick={handleClose}>
-                <Avatar /> My account
-              </MenuItem>
-              <MenuItem>
-                <Link to={"/12"} style={{ display: "flex" }}>
-                  <Avatar />
-                  My blog
+
+              <MenuItem onClick={() => navigate("/home")}>
+                <Link to={"/home"} style={{ display: "flex" }}>
+                  <HomeWork className="mr-2 text-neutral-500" />
+                  Main
                 </Link>
               </MenuItem>
               <Divider />
-              <MenuItem onClick={handleClose}>
-                <ListItemIcon>
-                  <PersonAdd fontSize="small" />
-                </ListItemIcon>
-                Add another account
-              </MenuItem>
-              <MenuItem onClick={handleClose}>
-                <ListItemIcon>
-                  <Settings fontSize="small" />
-                </ListItemIcon>
-                Settings
-              </MenuItem>
+
               <MenuItem onClick={onLogout} disabled={isLoading}>
                 {isLoading && (
                   <CircularProgress size={20} className="animate-spin" />

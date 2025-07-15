@@ -87,3 +87,13 @@ export interface Asset {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface Hotel {
+  _id: string;
+  name: string;
+  description: string;
+  rating: number;
+  address: string;
+  coordinate: string;
+  images: string[]; // Changed from 'image' to 'images' to match backend
+}

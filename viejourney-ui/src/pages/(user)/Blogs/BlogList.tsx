@@ -71,7 +71,7 @@ const BlogList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-    const data = await getBlogList(params);
+    const data = await handleGetBlogList(params);
     if (data) {
       setBlogs(data);
     }
@@ -98,10 +98,11 @@ const BlogList: React.FC = () => {
       ...params,
       search,
     };
+    setSearchQuery(search);
     setParams(newParams);
     await fetchData(newParams);
   };
-  const { getBlogList } = useUserBlog();
+  const { handleGetBlogList } = useUserBlog();
   useEffect(() => {
     (async () => {
       await fetchData(params);

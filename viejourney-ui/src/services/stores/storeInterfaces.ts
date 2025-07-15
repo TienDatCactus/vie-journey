@@ -1,4 +1,4 @@
-import { Account, UserInfo } from "../../utils/interfaces";
+import { UserInfo } from "../../utils/interfaces";
 
 export interface NoteData {
   id: string;

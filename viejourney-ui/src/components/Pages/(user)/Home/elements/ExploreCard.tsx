@@ -24,6 +24,7 @@ const ExploreCard: React.FC<{ item: IRelatedBlogs }> = ({ item }) => {
       setIsLiked(!!liked);
     })();
   }, [item._id]);
+  console.log(isLiked);
   console.log("ExploreCard", item);
   return (
     <Card elevation={0} className="lg:w-full shadow-sm">
