@@ -195,33 +195,12 @@ const router = createBrowserRouter([
           },
         ],
       },
-      {
-        path: "hotels",
-        children: [
-          {
-            path: "",
-            element: (
-              <SuspenseWrapper component={HotelManagement} requireAuth={true} />
-            ),
-          },
-          {
-            path: "detail/:id",
-            element: (
-              <SuspenseWrapper component={HotelDetail} requireAuth={true} />
-            ),
-          },
-        ],
-      },
+
       {
         path: "role-management",
         element: (
           <SuspenseWrapper component={RoleManagement} requireAuth={true} />
         ),
-      },
-      {
-        path: "media",
-        errorElement: <ErrorBoundary />,
-        element: <SuspenseWrapper component={Media} requireAuth={true} />,
       },
     ],
   },
@@ -303,6 +282,28 @@ const router = createBrowserRouter([
                 component={BlogManagementView}
                 requireAuth={true}
               />
+            ),
+          },
+        ],
+      },
+      {
+        path: "media",
+        errorElement: <ErrorBoundary />,
+        element: <SuspenseWrapper component={Media} requireAuth={true} />,
+      },
+      {
+        path: "hotels",
+        children: [
+          {
+            path: "",
+            element: (
+              <SuspenseWrapper component={HotelManagement} requireAuth={true} />
+            ),
+          },
+          {
+            path: "detail/:id",
+            element: (
+              <SuspenseWrapper component={HotelDetail} requireAuth={true} />
             ),
           },
         ],

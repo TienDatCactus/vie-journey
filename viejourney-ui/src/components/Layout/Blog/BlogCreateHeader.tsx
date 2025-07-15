@@ -18,8 +18,7 @@ const BlogCreateHeader: React.FC<{
 }> = ({ onSaveDraft, onPublic, type }) => {
   const handleSaveDraft = () => {
     onSaveDraft();
-    // You can add additional UI feedback here
-    // For example, show a toast notification
+   
   };
 
   const handlePublicBlog = () => {

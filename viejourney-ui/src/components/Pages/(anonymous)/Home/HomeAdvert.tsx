@@ -6,45 +6,8 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { Pagination, Navigation, Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-const carouselData = [
-  {
-    id: 1,
-    number: "01",
-    image: "/images/welcome-banner.jpg",
-    title: "We don't just plan vacations; we create journeys",
-    description:
-      "tailored to your dreams, ensuring every moment is unforgettable.",
-    bgColor: "bg-green-50",
-  },
-  {
-    id: 2,
-    number: "02",
-    image: "/images/welcome-banner.jpg",
-    title: "With our trusted local partners, you'll discover",
-    description:
-      "hidden spots and cultural experiences that most travelers never get to see.",
-    bgColor: "bg-blue-50",
-  },
-  {
-    id: 3,
-    number: "03",
-    image: "/images/welcome-banner.jpg",
-    title: "Experience authentic adventures beyond",
-    description:
-      "the typical tourist path with our carefully curated local experiences.",
-    bgColor: "bg-purple-50",
-  },
-  {
-    id: 4,
-    number: "04",
-    image: "/images/welcome-banner.jpg",
-    title: "Create memories that last a lifetime",
-    description:
-      "with personalized itineraries designed just for you and your loved ones.",
-    bgColor: "bg-orange-50",
-  },
-];
-const SlideCard = ({ slide }: { slide: (typeof carouselData)[0] }) => {
+
+const SlideCard = ({ slide }: { slide: any }) => {
   return (
     <div className={`rounded-2xl  p-8 relative overflow-hidden `}>
       {/* Slide Number */}
@@ -78,7 +41,45 @@ const SlideCard = ({ slide }: { slide: (typeof carouselData)[0] }) => {
     </div>
   );
 };
-const HomeAdvert: React.FC = () => {
+const HomeAdvert: React.FC<{ imgs?: any[] }> = ({ imgs = [] }) => {
+  const carouselData = [
+    {
+      id: 1,
+      number: "01",
+      image: imgs[0].url ?? "/images/welcome-banner.jpg",
+      title: "We don't just plan vacations; we create journeys",
+      description:
+        "tailored to your dreams, ensuring every moment is unforgettable.",
+      bgColor: "bg-green-50",
+    },
+    {
+      id: 2,
+      number: "02",
+      image: imgs[1].url ?? "/images/welcome-banner.jpg",
+      title: "With our trusted local partners, you'll discover",
+      description:
+        "hidden spots and cultural experiences that most travelers never get to see.",
+      bgColor: "bg-blue-50",
+    },
+    {
+      id: 3,
+      number: "03",
+      image: imgs[2].url ?? "/images/welcome-banner.jpg",
+      title: "Experience authentic adventures beyond",
+      description:
+        "the typical tourist path with our carefully curated local experiences.",
+      bgColor: "bg-purple-50",
+    },
+    {
+      id: 4,
+      number: "04",
+      image: imgs[3].url ?? "/images/welcome-banner.jpg",
+      title: "Create memories that last a lifetime",
+      description:
+        "with personalized itineraries designed just for you and your loved ones.",
+      bgColor: "bg-orange-50",
+    },
+  ];
   const swiperRef = useRef<any>(null);
 
   return (

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { OldPOIData, POIData } from "../types";
 import PlaceMarker from "./PlaceMarker";
+import { CircularProgress } from "@mui/material";
 
 interface MarkerClusterProps {
   places: OldPOIData[];
@@ -103,6 +104,7 @@ const MarkerCluster: React.FC<MarkerClusterProps> = ({
   if (!isVisible) return null;
   return (
     <>
+      {isLoading && <CircularProgress />}
       {detailedPlaces.map((place) => (
         <PlaceMarker
           key={place.id}

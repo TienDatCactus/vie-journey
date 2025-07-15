@@ -1,4 +1,4 @@
-import { AdvancedMarker, Marker, Pin } from "@vis.gl/react-google-maps";
+import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 
 interface IndexedMarkersProps {
   route: google.maps.DirectionsRoute | null;

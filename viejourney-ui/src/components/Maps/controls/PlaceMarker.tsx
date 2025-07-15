@@ -27,7 +27,7 @@ const PlaceMarker: React.FC<PlaceMarkerProps> = ({
   onClick,
   isSelected = false,
 }) => {
-  const [markerRef, marker] = useAdvancedMarkerRef();
+  const [markerRef] = useAdvancedMarkerRef();
   const category = getCategoryForPlace(place);
 
   const markerColor = category?.color || "#5e71f6";

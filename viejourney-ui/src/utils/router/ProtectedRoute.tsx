@@ -18,8 +18,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { isLoading, credential, user } = useAuthStore();
   const isAuthenticated = !!credential?.userId;
   const isVerified = user?.status === "ACTIVE";
-  console.log(isAuthenticated);
-  console.log(requireAuth);
+
   useEffect(() => {
     if (!requireAuth) return;
     if (!isAuthenticated) {

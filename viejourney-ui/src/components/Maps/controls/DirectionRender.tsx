@@ -27,7 +27,7 @@ export function DirectionsRender({
   const [directionsService, setDirectionsService] =
     useState<google.maps.DirectionsService>();
   const [routes, setRoutes] = useState<google.maps.DirectionsRoute[]>([]);
-  const [routeIndex, setRouteIndex] = useState(0);
+  const [routeIndex] = useState(0);
 
   const selected = routes[routeIndex];
 

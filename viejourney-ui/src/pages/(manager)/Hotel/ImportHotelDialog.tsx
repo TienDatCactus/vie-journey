@@ -1,46 +1,35 @@
-import React, { useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Box,
-  Typography,
-  Stack,
+  Download as DownloadIcon,
+  Error as ErrorIcon,
+  Info as InfoIcon,
+  CheckCircle as SuccessIcon,
+  CloudUpload as UploadIcon,
+} from "@mui/icons-material";
+import {
   Alert,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   LinearProgress,
-  Paper,
   List,
   ListItem,
   ListItemText,
-  ListItemIcon,
-  Divider,
+  Paper,
+  Stack,
+  Typography,
 } from "@mui/material";
-import {
-  CloudUpload as UploadIcon,
-  CheckCircle as SuccessIcon,
-  Error as ErrorIcon,
-  Info as InfoIcon,
-  Download as DownloadIcon,
-} from "@mui/icons-material";
+import React, { useState } from "react";
 import { doImportHotels } from "../../../services/api";
-
-interface Hotel {
-  _id: string;
-  name: string;
-  description: string;
-  rating: number;
-  address: string;
-  coordinate: string;
-  image: string[];
-}
+import { Hotel } from "../../../utils/interfaces";
 
 interface ImportHotelDialogProps {
   open: boolean;
   onClose: () => void;
-  onImport?: (hotels: Hotel[]) => void; // For backward compatibility
-  onImportSuccess?: () => void; // Callback after successful import
+  onImport: (hotels: Hotel[]) => void;
+  onImportSuccess?: () => void;
   loading?: boolean;
 }
 

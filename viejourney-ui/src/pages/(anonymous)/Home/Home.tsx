@@ -1,5 +1,6 @@
 import { MainLayout } from "../../../layouts";
 
+import { useEffect, useState } from "react";
 import {
   HomeAdvert,
   HomeBanner,
@@ -8,35 +9,38 @@ import {
   HomeHero,
   HomeTestimonial,
 } from "../../../components/Pages/(anonymous)/Home";
-import { useEffect, useState } from "react";
 import { useAssetsStore } from "../../../services/stores/useAssets";
-import { getLandingAssets } from "../../../services/api/asset";
+import { Backdrop } from "@mui/material";
 
 const Home = () => {
-  const { assets, doGetAssets } = useAssetsStore();
+  const { doGetAssets, landingAssets } = useAssetsStore();
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    const getLandingAssets = async () => {
+    const fetchAssets = async () => {
       try {
         setLoading(true);
         await doGetAssets();
       } catch (error) {
-        console.error(error);
+        console.error("Lỗi khi load asset trang chủ:", error);
       } finally {
         setLoading(false);
       }
     };
-    getLandingAssets();
-  }, [getLandingAssets]);
-
-  console.log(assets);
+    fetchAssets();
+  }, [doGetAssets]);
   return (
     <MainLayout>
-      <HomeHero />
-      <HomeAdvert />
-      <HomeGuides />
-      <HomeBanner />
-      <HomeTestimonial />
+      <HomeHero img={landingAssets?.hero?.[0]?.url || ""} />
+      {landingAssets?.intro && <HomeAdvert imgs={landingAssets.intro} />}
+      {loading ? <Backdrop open={loading} /> : null}
+      {landingAssets?.destination && (
+        <HomeGuides imgs={landingAssets?.destination} />
+      )}
+      {landingAssets?.hotel && <HomeBanner imgs={landingAssets?.hotel} />}
+      {landingAssets?.creator && (
+        <HomeTestimonial imgs={landingAssets?.creator} />
+      )}
       <HomeCall />
     </MainLayout>
   );

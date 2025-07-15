@@ -55,6 +55,23 @@ export interface IUserInfoUpdate {
   updatedAt?: Date;
 }
 
+export interface LandingAssets {
+  hero?: {
+    url?: string;
+  }[];
+  intro?: {
+    url?: string;
+  }[];
+  destination?: {
+    url?: string;
+  }[];
+  hotel?: {
+    url?: string;
+  }[];
+  creator?: {
+    url?: string;
+  }[];
+}
 export interface Asset {
   _id?: string;
   type: string;
@@ -69,4 +86,14 @@ export interface Asset {
   subsection?: string | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface Hotel {
+  _id: string;
+  name: string;
+  description: string;
+  rating: number;
+  address: string;
+  coordinate: string;
+  images: string[]; // Changed from 'image' to 'images' to match backend
 }

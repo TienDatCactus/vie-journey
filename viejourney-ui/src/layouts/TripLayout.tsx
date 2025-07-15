@@ -20,11 +20,11 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import { CSSObject, styled, Theme } from "@mui/material/styles";
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { TripHeader } from "../components/Layout";
 import { TripMap } from "../components/Pages/(user)/Trips";
 import { useTripDetailStore } from "../services/stores/useTripDetailStore";
 import { getDatesBetween } from "../utils/handlers/utils";
-import { Link, useNavigate } from "react-router-dom";
 
 const drawerWidth = 200;
 

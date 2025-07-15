@@ -39,7 +39,6 @@ interface POIDetailsProps {
 const POIDetails: React.FC<POIDetailsProps> = ({
   poi,
   onClose,
-  onAddToTrip,
   onToggleFavorite,
 }) => {
   const [isFavorite, setIsFavorite] = useState(false);

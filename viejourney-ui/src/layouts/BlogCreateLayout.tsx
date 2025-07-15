@@ -21,8 +21,8 @@ const BlogCreateLayout = ({
   formData,
   onFormDataChange,
   coverImageUrl,
-  setCoverImageUrl, 
-  type
+  setCoverImageUrl,
+  type,
 }: {
   children: ReactNode;
   blog: IContentItem;
@@ -56,7 +56,6 @@ const BlogCreateLayout = ({
     setHasProceeded(true);
     setOpen(false);
     setIsDirty(false);
-    blockerRef.current?.proceed();
   };
 
   return (
@@ -83,7 +82,11 @@ const BlogCreateLayout = ({
           </DialogActions>
         </Dialog>
       )}
-      <BlogCreateHeader onSaveDraft={onSaveDraft} onPublic={onPublic} type={type}/>
+      <BlogCreateHeader
+        onSaveDraft={onSaveDraft}
+        onPublic={onPublic}
+        type={type}
+      />
       <Container className="grid grid-cols-12 gap-4 p-4 ">
         <BlogCreateToolbar
           blog={blog}

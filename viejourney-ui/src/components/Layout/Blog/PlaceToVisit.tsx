@@ -1,4 +1,3 @@
-import React from "react";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import Divider from "@mui/material/Divider";
 

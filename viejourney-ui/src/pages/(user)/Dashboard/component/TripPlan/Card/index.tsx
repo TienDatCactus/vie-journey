@@ -1,4 +1,4 @@
-import { CalendarToday, LocationOn } from "@mui/icons-material";
+import { CalendarToday } from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -8,9 +8,9 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { useAuthStore } from "../../../../../../services/stores/useAuthStore";
-import { Trip } from "../../../../../../services/stores/storeTypes";
 import { Link } from "react-router-dom";
+import { Trip } from "../../../../../../services/stores/storeTypes";
+import { useAuthStore } from "../../../../../../services/stores/useAuthStore";
 
 const TripCard: React.FC<{ trip: Trip }> = ({ trip }) => {
   const { info } = useAuthStore();

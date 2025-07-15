@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography } from "@mui/material";
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShareIcon from "@mui/icons-material/Share";
+import TravelExploreIcon from "@mui/icons-material/TravelExplore";
+import { AppBar, Toolbar, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 
 const BlogAppBar = () => {
   const [isVisible, setIsVisible] = useState<boolean>(false);

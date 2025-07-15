@@ -33,7 +33,7 @@ interface BlogStore {
   handleGetBlogList: (params: any) => Promise<any>;
 }
 
-export const useUserBlog = create<BlogStore>((set, get) => ({
+export const useUserBlog = create<BlogStore>(() => ({
   handleStartBlog: async (location: string) => {
     try {
       const res = await startBlog(location);

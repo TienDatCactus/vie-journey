@@ -1,10 +1,5 @@
 // src/Tiptap.tsx
-import {
-  EditorProvider,
-  FloatingMenu,
-  BubbleMenu,
-  useEditor,
-} from "@tiptap/react";
+import { BubbleMenu, FloatingMenu, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
 // define your extension array

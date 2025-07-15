@@ -1,3 +1,4 @@
+import EastSharpIcon from "@mui/icons-material/EastSharp";
 import {
   Button,
   Card,
@@ -11,8 +12,6 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
-import EastSharpIcon from "@mui/icons-material/EastSharp";
-import { color } from "motion/react";
 const HotelRelatedBlogs: React.FC = () => {
   const fakeData = [
     {
