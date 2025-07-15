@@ -35,8 +35,8 @@ const Home = () => {
       <HomeHero img={assets?.hero[0]?.url} />
       {assets?.intro && <HomeAdvert imgs={assets.intro} />}
       {assets?.destination && <HomeGuides imgs={assets?.destination} />}
-      {assets?.destination && <HomeBanner imgs={assets?.destination} />}
-      {assets?.destination && <HomeTestimonial imgs={assets?.destination} />}
+      {assets?.hotel && <HomeBanner imgs={assets?.hotel} />}
+      {assets?.creator && <HomeTestimonial imgs={assets?.creator} />}
       <HomeCall />
     </MainLayout>
   );

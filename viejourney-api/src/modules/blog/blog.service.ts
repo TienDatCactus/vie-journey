@@ -496,9 +496,11 @@ export class BlogService {
         .exec();
       if (!user) throw new NotFoundException('User not found');
 
+      // Generate title with format: Location + Guide
       const title = `${location} Guide`;
 
       let coverImageUrl = '';
+      // Handle file upload for cover image if provided
       if (file) {
         const uploadResult = await this.assetsService.uploadImage(file, {
           public_id: `users/${userId}/BLOG_COVERS/${uuidv4()}`,
@@ -517,8 +519,8 @@ export class BlogService {
           location,
           placeId: null,
         },
-        createdBy: user.userId,
-        updatedBy: user.userId,
+        createdBy: user._id,
+        updatedBy: user._id,
         likes: [],
         status: 'DRAFT', // Default status for user-created blogs
         metrics: {
@@ -556,7 +558,7 @@ export class BlogService {
       const blog = await this.blogModel
         .findOne({
           _id: blogId,
-          createdBy: user.userId,
+          createdBy: user._id,
           status: 'DRAFT',
         })
         .populate('createdBy')
@@ -783,7 +785,7 @@ export class BlogService {
       const blog = await this.blogModel
         .findOne({
           _id: blogId,
-          createdBy: user.userId,
+          createdBy: user._id,
           status: { $in: ['PENDING', 'APPROVED', 'REJECTED'] }, // Allow editing published/reviewed blogs
         })
         .exec();
