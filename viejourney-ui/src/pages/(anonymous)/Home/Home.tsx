@@ -12,16 +12,14 @@ import {
 import { useAssetsStore } from "../../../services/stores/useAssets";
 
 const Home = () => {
-  const { doGetAssets } = useAssetsStore();
+  const { doGetAssets, landingAssets } = useAssetsStore();
   const [loading, setLoading] = useState(false);
-  const [assets, setAssets] = useState<any>(null);
 
   useEffect(() => {
     const fetchAssets = async () => {
       try {
         setLoading(true);
-        const response = await doGetAssets();
-        setAssets(response);
+        await doGetAssets();
       } catch (error) {
         console.error("Lỗi khi load asset trang chủ:", error);
       } finally {
@@ -32,11 +30,15 @@ const Home = () => {
   }, [doGetAssets]);
   return (
     <MainLayout>
-      <HomeHero img={assets?.hero[0]?.url} />
-      {assets?.intro && <HomeAdvert imgs={assets.intro} />}
-      {assets?.destination && <HomeGuides imgs={assets?.destination} />}
-      {assets?.destination && <HomeBanner imgs={assets?.destination} />}
-      {assets?.destination && <HomeTestimonial imgs={assets?.destination} />}
+      <HomeHero img={landingAssets?.hero?.[0]?.url || ""} />
+      {landingAssets?.intro && <HomeAdvert imgs={landingAssets.intro} />}
+      {landingAssets?.destination && (
+        <HomeGuides imgs={landingAssets?.destination} />
+      )}
+      {landingAssets?.hotel && <HomeBanner imgs={landingAssets?.hotel} />}
+      {landingAssets?.creator && (
+        <HomeTestimonial imgs={landingAssets?.creator} />
+      )}
       <HomeCall />
     </MainLayout>
   );

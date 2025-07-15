@@ -3,11 +3,11 @@ import { Button, Stack } from "@mui/material";
 import React from "react";
 import bg from "/images/banner.jpg";
 import { Link } from "react-router-dom";
-const HomeHero: React.FC<{img: string}> = ({img}) => {
+const HomeHero: React.FC<{ img: string }> = ({ img }) => {
   return (
     <div className="w-full relative">
       <img
-        src={img ?? bg}
+        src={bg}
         alt="banner"
         className="w-full h-[80vh] object-cover object-center"
       />

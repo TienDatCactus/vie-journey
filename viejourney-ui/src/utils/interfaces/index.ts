@@ -55,6 +55,23 @@ export interface IUserInfoUpdate {
   updatedAt?: Date;
 }
 
+export interface LandingAssets {
+  hero?: {
+    url?: string;
+  }[];
+  intro?: {
+    url?: string;
+  }[];
+  destination?: {
+    url?: string;
+  }[];
+  hotel?: {
+    url?: string;
+  }[];
+  creator?: {
+    url?: string;
+  }[];
+}
 export interface Asset {
   _id?: string;
   type: string;

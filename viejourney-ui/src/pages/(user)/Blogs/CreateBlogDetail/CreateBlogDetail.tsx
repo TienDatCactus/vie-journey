@@ -20,7 +20,6 @@ const CreateBlogDetail: React.FC = () => {
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const location = useLocation();
   const { type } = location.state || {};
-  console.log(type);
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
@@ -92,8 +91,7 @@ const CreateBlogDetail: React.FC = () => {
     };
 
     let res;
-
-    if (type === "DRAFT") {
+    if (type === "draft") {
       res = await handleEditBlog(id ?? "", data);
     } else {
       res = await handleEditPublicBlog(id ?? "", data);

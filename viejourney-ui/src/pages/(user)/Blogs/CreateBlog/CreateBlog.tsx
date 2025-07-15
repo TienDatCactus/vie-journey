@@ -61,9 +61,10 @@ const CreateBlog: React.FC = () => {
       setLoading(true);
       if (!data.destination.trim()) return;
       const newBlogId = await handleStartBlog(data.destination);
-      console.log(newBlogId);
       if (newBlogId) {
-        navigate(`/blogs/edit/${newBlogId}`);
+        navigate(`/blogs/edit/${newBlogId}`, {
+          state: { type: "draft" },
+        });
       }
     } catch (error) {
       console.error(error);
