@@ -2,14 +2,13 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUserBlog } from "../../../services/stores/useBlogStore";
 import { IRelatedBlogs } from "../../../utils/interfaces/blog";
 import { Button } from "@mui/material";
+import { getBlogList } from "../../../services/api/blog";
 
 const RelatedBlog = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [blogs, setBlogs] = useState<IRelatedBlogs[]>();
-  const { getBlogList } = useUserBlog();
   useEffect(() => {
     (async () => {
       const data = await getBlogList({});
@@ -18,7 +17,6 @@ const RelatedBlog = () => {
       }
     })();
   }, []);
-  console.log(blogs);
   const navigate = useNavigate();
 
   const nextSlide = () => {

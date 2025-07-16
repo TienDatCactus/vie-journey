@@ -15,12 +15,11 @@ import {
 import {
   Button,
   Card,
-  Checkbox,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
-  type SelectChangeEvent,
+  type SelectChangeEvent
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import ManagerLayout from "../../../layouts/ManagerLayout";
@@ -214,9 +213,7 @@ export default function BlogManagementList() {
           <table className="w-full">
             <thead>
               <tr className="text-left text-gray-500 border-b border-gray-300">
-                <th className="pb-3 pr-4 font-medium">
-                  <Checkbox size="small" />
-                </th>
+               
                 <th className="pb-3 pr-4 font-medium">Title & Author</th>
                 <th className="pb-3 pr-4 font-medium">Trip & Location</th>
                 <th className="pb-3 pr-4 font-medium">Content</th>

@@ -10,11 +10,11 @@ import {
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
-import { IRelatedBlogs } from "../../../../utils/interfaces/blog";
 import { TripTag } from "./elements";
 import BlogTag from "./elements/GuideTag";
+import { IBlog } from "../../../../utils/interfaces/blog";
 const HomeTrips: React.FC<{
-  blogs?: IRelatedBlogs[];
+  blogs?: IBlog[];
 }> = ({ blogs }) => {
   const { trips } = useTripDetailStore();
 

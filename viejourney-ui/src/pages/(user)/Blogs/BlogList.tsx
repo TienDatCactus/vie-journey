@@ -16,6 +16,7 @@ import { MainLayout } from "../../../layouts";
 import { useUserBlog } from "../../../services/stores/useBlogStore";
 import CardSkeleton from "../../../utils/handlers/loading/CardSkeleton";
 import { IRelatedBlogs } from "../../../utils/interfaces/blog";
+import { getBlogList } from "../../../services/api/blog";
 const BlogList: React.FC = () => {
   const handleScroll = () => {
     const element = destRef.current;
@@ -101,7 +102,6 @@ const BlogList: React.FC = () => {
     setParams(newParams);
     await fetchData(newParams);
   };
-  const { getBlogList } = useUserBlog();
   useEffect(() => {
     (async () => {
       await fetchData(params);
