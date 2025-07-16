@@ -10,7 +10,7 @@ async function bootstrap() {
   });
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: true,
+    origin: 'https://vie-journey.site',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
