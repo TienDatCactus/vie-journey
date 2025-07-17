@@ -97,3 +97,34 @@ export interface Hotel {
   coordinate: string;
   images: string[]; // Changed from 'image' to 'images' to match backend
 }
+export interface PlaceData {
+  displayName: string;
+  placeId: string;
+  latitude?: number;
+  longitude?: number;
+  editorialSummary?: string;
+  types?: string[];
+  photos?: string[];
+  googleMapsURI?: string;
+  showDetails?: boolean;
+}
+
+export interface ProcessedBlogContent {
+  cleanHtml: string;
+  places: PlaceData[];
+  fullHtml: string;
+  wordCount: number;
+}
+
+export interface UserDetails {
+  destinations: {
+    name: string;
+    location: {
+      lat: number;
+      lng: number;
+    };
+  }[];
+  likeCount: number;
+  blogCount: number;
+  tripCount: number;
+}

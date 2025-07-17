@@ -2,7 +2,11 @@ import { Card, Chip, IconButton, Button, Stack } from "@mui/material";
 import React from "react";
 import Map from "../../../../../components/Maps/Map";
 import { Edit, Share, Add } from "@mui/icons-material";
+import { useAuthStore } from "../../../../../services/stores/useAuthStore";
+import { useMapPan } from "../../../../../services/stores/useMapPan";
 const index: React.FC = () => {
+  const { details } = useAuthStore();
+  const { setSelectedLocation } = useMapPan();
   return (
     <div className=" py-6">
       <div className="lg:col-span-3">
@@ -74,16 +78,26 @@ const index: React.FC = () => {
             <div>
               <h1 className="text-base text-gray-600">Recent destinations</h1>
               <ul className="flex flex-wrap gap-2 my-2">
-                {["Paris", "London", "New York"].map((place, index) => (
-                  <Chip
-                    key={index}
-                    label={place}
-                    className=" bg-gray-200 text-gray-800"
-                  />
-                ))}
+                {!!details &&
+                  details?.destinations.length > 0 &&
+                  details?.destinations.map((place, index) => (
+                    <Chip
+                      onClick={() =>
+                        setSelectedLocation({
+                          lat: place.location.lat,
+                          long: place.location.lng,
+                        })
+                      }
+                      key={index}
+                      label={place.name}
+                      className=" bg-gray-200 text-gray-800"
+                    />
+                  ))}
               </ul>
             </div>
-            <p className="font-medium">4 destinations</p>
+            <p className="font-medium">
+              {details?.destinations.length || 0} destinations
+            </p>
           </Stack>
         </Card>
       </div>

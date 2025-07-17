@@ -26,7 +26,7 @@ const TripTag = ({ trip }: { trip: Trip }) => {
               className="w-20 h-20 rounded-md object-cover"
               alt={trip?.title}
               src={
-                // trip?.coverImage ||
+                trip?.coverImage?.url ||
                 `https://placehold.co/600x400/1a1a1a/ffffff?text=${trip?.title
                   .split(" ")
                   .join("+")}`

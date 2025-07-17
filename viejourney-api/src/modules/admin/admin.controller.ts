@@ -85,7 +85,6 @@ export class AdminController {
           }
         : undefined;
     const resp = await this.userService.getAllUser(filter, pagination);
-    console.log(resp);
     return this.userService.getAllUser(filter, pagination);
   }
 

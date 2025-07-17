@@ -1,3 +1,5 @@
+import { PlaceData } from ".";
+
 export interface IQueryParam {
   search: string;
   page: number;
@@ -104,15 +106,28 @@ export interface IFlag {
 }
 
 export interface IBlogDetail {
+  _id: string;
   title: string;
   content: string;
-  createdBy: IUser;
   summary: string;
-  status: "APPROVED" | "PENDING" | "REJECTED";
   coverImage: string;
+  destination: string;
   tripId: string | null;
+  slug: string;
+  tags: string[];
+  places: PlaceData[];
+  createdBy: IUser | string; // nếu bạn chưa resolve populated user
+  updatedBy: IUser | string;
+  likes: string[];
+  status: "APPROVED" | "PENDING" | "REJECTED" | "DRAFT";
   flags: IFlag[];
+  metrics: {
+    viewCount: number;
+    likeCount: number;
+    commentCount: number;
+  };
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IBlogDraft {
@@ -121,20 +136,6 @@ export interface IBlogDraft {
   location: string;
   status: string;
   message: string;
-}
-
-export interface IContentItem {
-  _id: string;
-  title: string;
-  content: string;
-  summary: string;
-  tags: string[];
-  coverImage: string;
-  location: string;
-  status: string;
-  slug?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface BlogMetrics {
@@ -154,23 +155,45 @@ export interface IBlog {
   summary: string;
   tags: string[];
   coverImage: string;
-  tripId: string | null;
-  destination: {
-    location: string;
-    placeId: string | null;
+  destination: string;
+  places: {
+    placeId: string;
+    displayName: string;
+    latitude: number;
+    longitude: number;
+    editorialSummary?: string;
+    types: string[];
+    photos: string[];
+    googleMapsURI: string;
+    showDetails: boolean;
+  }[];
+  createdBy: {
+    _id: string;
+    email?: string;
+    fullName?: string;
+    avatar: {
+      _id: string;
+      url: string;
+    };
+    totalBlogs: number;
+    likesCount: number;
   };
-  createdBy: string;
   updatedBy: string;
   likes: string[];
-  status: "APPROVED" | "PENDING" | "REJECTED";
-  flags: any[];
+  status: "APPROVED" | "PENDING" | "REJECTED" | "DRAFT";
+  flags: {
+    userId: string;
+    reason: string;
+    date: string;
+  }[];
+  slug?: string;
   metrics: {
     viewCount: number;
     likeCount: number;
     commentCount: number;
   };
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 export interface IRelatedBlogs {

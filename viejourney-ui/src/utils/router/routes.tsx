@@ -76,11 +76,7 @@ const SuspenseWrapper = ({
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <AuthLayout>
-        <Outlet />
-      </AuthLayout>
-    ),
+    element: <Outlet />,
     children: [
       {
         path: "",
@@ -89,7 +85,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/home",
-        element: <SuspenseWrapper component={AuthHome} requireAuth={true} />,
+        element: (
+          <AuthLayout>
+            <SuspenseWrapper component={AuthHome} requireAuth={true} />
+          </AuthLayout>
+        ),
         errorElement: <ErrorBoundary />,
       },
     ],
@@ -263,6 +263,10 @@ const router = createBrowserRouter([
     ),
     errorElement: <ErrorBoundary />,
     children: [
+      {
+        path: "dashboard",
+        element: <Navigate to="/manager/blogs" replace />,
+      },
       {
         path: "blogs",
         children: [

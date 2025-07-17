@@ -11,7 +11,7 @@ import {
   SpeedDialAction,
   SpeedDialIcon,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MainAuthHeader, MainUnAuthHeader } from "../components/Layout";
 import Footer from "../components/Layout/Main/Footer";
@@ -19,7 +19,19 @@ import { useAuthStore } from "../services/stores/useAuthStore";
 import { smoothScrollTo } from "../utils/handlers/utils";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuthStore();
+  const { user, loadCurrentUser, loadUserInfo, credential, info } =
+    useAuthStore();
+
+  useEffect(() => {
+    const run = async () => {
+      if (!credential?.token || user) return;
+      if (!info) {
+        await loadUserInfo();
+      }
+      await loadCurrentUser();
+    };
+    run();
+  }, [credential?.token, user, loadCurrentUser, loadUserInfo]);
   const navigate = useNavigate();
   const actions = [
     {

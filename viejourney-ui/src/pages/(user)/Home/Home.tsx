@@ -7,34 +7,27 @@ import {
   Trips as HomeTrips,
 } from "../../../components/Pages/(user)/Home";
 import { MainLayout } from "../../../layouts";
+import { useBlogStore } from "../../../services/stores/useBlogStore";
 import { useTripDetailStore } from "../../../services/stores/useTripDetailStore";
-import { useUserBlog } from "../../../services/stores/useBlogStore";
-import { IRelatedBlogs } from "../../../utils/interfaces/blog";
 
 const Home: React.FC = () => {
-  const [blogs, setBlogs] = React.useState<IRelatedBlogs[]>([]);
   const { handleGetUserTrips } = useTripDetailStore();
-  const { handleGetBlogList } = useUserBlog();
+  const { fetchMyBlogs, fetchBlogs } = useBlogStore();
+
   useEffect(() => {
-    const fetchBlogs = async () => {
-      const res = await handleGetBlogList({});
-      if (res) {
-        setBlogs(res);
-      }
-    };
-    fetchBlogs();
-  }, []);
-  useEffect(() => {
-    (async () => {
+    const fetchData = async () => {
+      await fetchMyBlogs();
       await handleGetUserTrips();
-    })();
-  }, []);
+      await fetchBlogs();
+    };
+    fetchData();
+  }, [fetchMyBlogs, handleGetUserTrips]);
   return (
     <MainLayout>
       <HomeBanner />
       <HomeRecent />
-      <HomeTrips blogs={blogs} />
-      <HomeExplore blogs={blogs} />
+      <HomeTrips />
+      <HomeExplore />
     </MainLayout>
   );
 };

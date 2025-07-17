@@ -94,7 +94,7 @@ const HotelDetail: React.FC = () => {
   }, [id]);
 
   const handleBack = () => {
-    navigate("/admin/hotels");
+    navigate("/manager/hotels");
   };
 
   const handleEdit = () => {
@@ -146,7 +146,7 @@ const HotelDetail: React.FC = () => {
 
   const handleDeleteHotel = async () => {
     // Navigate back to hotel list after successful delete
-    navigate("/admin/hotels");
+    navigate("/manager/hotels");
   };
 
   const parseCoordinate = (coordinateStr: string) => {

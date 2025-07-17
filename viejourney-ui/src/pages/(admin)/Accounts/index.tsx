@@ -187,7 +187,6 @@ function Accounts() {
         res = await doGetAllUsers();
       }
 
-      // Both APIs return the same structure: { status, message, data: { users, total } }
       if (res.status === "success" && res.data?.users) {
         const transformedUsers = res.data.users.map((user: any) => ({
           _id: user.userId,

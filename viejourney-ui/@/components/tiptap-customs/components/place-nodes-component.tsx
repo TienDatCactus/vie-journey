@@ -44,6 +44,7 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
 }) => {
   const placesLib = useMapsLibrary("places");
   if (!placesLib) return null;
+
   const [inputValue, setInputValue] = useState(
     node.attrs.place?.displayName || ""
   );
@@ -89,31 +90,33 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
         placePrediction: google.maps.places.PlacePrediction | null;
       } | null
     ) => {
-      if (suggestion?.placePrediction) {
-        setSelectedPlace({ placePrediction: suggestion.placePrediction });
+      if (!suggestion?.placePrediction) return;
 
-        setInputValue(suggestion.placePrediction.mainText?.toString() || "");
-        setOpen(false);
-        setLoading(true);
+      setSelectedPlace({ placePrediction: suggestion.placePrediction });
+      setInputValue(suggestion.placePrediction.mainText?.toString() || "");
+      setOpen(false);
+      setLoading(true);
 
-        try {
-          const placeDetails = await fetchPlaceDetail(
-            suggestion.placePrediction.placeId
-          );
+      try {
+        const placeDetails = await fetchPlaceDetail(
+          suggestion.placePrediction.placeId
+        );
+
+        if (placeDetails) {
+          // Just update the node with place details
           updateAttributes({
             place: placeDetails,
+            showDetails: node.attrs.showDetails || false,
           });
-
           setIsEditing(false);
-        } catch (error) {
-          console.error("Error fetching place details:", error);
-          setIsEditing(false);
-        } finally {
-          setLoading(false);
         }
+      } catch (error) {
+        console.error("Error fetching place details:", error);
+      } finally {
+        setLoading(false);
       }
     },
-    [fetchPlaceDetail, updateAttributes]
+    [fetchPlaceDetail, updateAttributes, node.attrs.showDetails]
   );
 
   const formatPriceLevel = (

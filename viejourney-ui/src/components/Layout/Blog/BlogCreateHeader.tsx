@@ -1,5 +1,3 @@
-"use client";
-
 import {
   ArrowBack,
   EditLocationAlt,
@@ -9,82 +7,179 @@ import {
 } from "@mui/icons-material";
 import { AppBar, Button, Divider, Stack, Toolbar } from "@mui/material";
 import type React from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
+import { useBlogStore } from "../../../services/stores/useBlogStore";
 
-const BlogCreateHeader: React.FC<{
-  onSaveDraft: () => void;
-  onPublic: () => void;
-  type: string;
-}> = ({ onSaveDraft, onPublic, type }) => {
-  const handleSaveDraft = () => {
-    onSaveDraft();
-   
+interface BlogCreateHeaderProps {
+  onSaveDraft: () => Promise<void>;
+  onPublic: () => Promise<void>;
+  blog?: any;
+  formData?: {
+    title: string;
+    summary: string;
+    slug: string;
+    tags: string[];
+  };
+  wordCount?: number;
+  loading?: boolean;
+}
+
+const BlogCreateHeader: React.FC<BlogCreateHeaderProps> = ({
+  onSaveDraft,
+  onPublic,
+  blog,
+  formData,
+  wordCount = 0,
+  loading: parentLoading = false,
+}) => {
+  const [loading, setLoading] = useState(false);
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { type } = location.state || { type: "draft" };
+
+  const { publishBlog } = useBlogStore();
+
+  const isLoading = loading || parentLoading;
+
+  const handleSaveDraft = async () => {
+    if (isLoading) return;
+
+    try {
+      setLoading(true);
+      await onSaveDraft();
+    } catch (error) {
+      console.error("Save draft error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePublicBlog = () => {
-    onPublic();
+  const handlePublicBlog = async () => {
+    if (isLoading) return;
+
+    try {
+      setLoading(true);
+
+      if (type === "draft" && id) {
+        await publishBlog(id);
+        setTimeout(() => {
+          navigate("/home");
+        }, 1000);
+      } else {
+        await onPublic();
+      }
+    } catch (error) {
+      console.error("Publish blog error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePreview = () => {
+    if (id) {
+      // Open preview in new tab
+      window.open(`/blogs/${id}/preview`, "_blank");
+    }
+  };
+
+  const getLocationText = () => {
+    if (blog?.destination?.location) {
+      return blog.destination.location;
+    }
+    if (blog?.location) {
+      return blog.location;
+    }
+    if (formData?.title) {
+      return formData.title;
+    }
+    return "New Blog Post";
   };
 
   return (
-    <AppBar position="static" className="bg-white w-full">
-      <Toolbar className="flex justify-between items-center">
+    <AppBar position="static" className="bg-white shadow-sm border-b">
+      <Toolbar className="flex justify-between items-center min-h-[64px]">
         <Stack
           direction="row"
           alignItems="center"
           spacing={2}
-          className="h-full px-4"
+          className="h-full px-2"
         >
-          <Link to="/home">
-            <Button className="text-dark-800" startIcon={<ArrowBack />}>
+          <Link to="/home" className="no-underline">
+            <Button
+              className="text-gray-800 hover:text-gray-600 normal-case"
+              startIcon={<ArrowBack />}
+              disabled={isLoading}
+              size="medium"
+            >
               Back to Home
             </Button>
           </Link>
-          <Divider flexItem orientation="vertical" />
+
+          <Divider flexItem orientation="vertical" className="mx-2" />
+
           <Stack
             direction="row"
             spacing={1}
             className="text-neutral-600 text-sm"
+            alignItems="center"
           >
-            <EditLocationAlt />
-            <p>paris, france</p>
+            <EditLocationAlt fontSize="small" className="text-gray-500" />
+            <span className="font-medium">{getLocationText()}</span>
           </Stack>
         </Stack>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <data value="words" className="text-sm text-gray-600">
-            90 words
-          </data>
-          <Button startIcon={<Visibility />} className="text-dark-800">
+
+        <Stack direction="row" spacing={2} alignItems="center" className="px-2">
+          <span className="text-sm text-gray-600 font-medium">
+            {wordCount} words
+          </span>
+
+          <Button
+            startIcon={<Visibility />}
+            className="text-gray-800 hover:text-gray-600 normal-case"
+            onClick={handlePreview}
+            disabled={!id || isLoading}
+            size="medium"
+          >
             Preview
           </Button>
+
           {type === "draft" ? (
             <>
               <Button
+                disabled={isLoading}
                 startIcon={<SaveAs />}
-                className="border border-gray-300 text-gray-800 px-4"
+                variant="outlined"
+                className="border-gray-300 text-gray-800 hover:border-gray-400 hover:bg-gray-50 normal-case"
                 onClick={handleSaveDraft}
+                size="medium"
               >
-                Save Draft
+                {isLoading ? "Saving..." : "Save Draft"}
               </Button>
+
               <Button
+                disabled={isLoading}
                 variant="contained"
                 startIcon={<EmergencyShare />}
-                className="bg-blue-600"
+                className="bg-blue-600 hover:bg-blue-700 text-white normal-case"
                 onClick={handlePublicBlog}
+                size="medium"
               >
-                Publish
+                {isLoading ? "Publishing..." : "Publish"}
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                variant="contained"
-                startIcon={<SaveAs />}
-                className="bg-blue-600"
-                onClick={handleSaveDraft}
-              >
-                Save
-              </Button>
-            </>
+            <Button
+              disabled={isLoading}
+              variant="contained"
+              startIcon={<SaveAs />}
+              className="bg-blue-600 hover:bg-blue-700 text-white normal-case"
+              onClick={handleSaveDraft}
+              size="medium"
+            >
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
           )}
         </Stack>
       </Toolbar>

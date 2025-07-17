@@ -108,12 +108,18 @@ const Header = () => {
         )}
         <ButtonGroup variant="contained" aria-label="Disabled button group">
           <Link to="/auth/login">
-            <Button size="small" className="bg-white " variant="outlined">
+            <Button
+              size="small"
+              className="rounded-s-sm bg-white"
+              variant="outlined"
+            >
               Login
             </Button>
           </Link>
           <Link to="/auth/register">
-            <Button size="small">SignUp</Button>
+            <Button size="small" className="rounded-e-sm">
+              SignUp
+            </Button>
           </Link>
         </ButtonGroup>
       </Stack>

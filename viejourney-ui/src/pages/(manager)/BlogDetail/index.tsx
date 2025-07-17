@@ -30,9 +30,10 @@ import useBlogDetail from "./container/hook";
 
 export default function Blog() {
   const { id } = useParams<{ id: string }>();
-  const { blog, handleUpdateStatus, handleBanAuthor, handleClearFlag } = useBlogDetail({
-    id: id ?? "",
-  });
+  const { blog, handleUpdateStatus, handleBanAuthor, handleClearFlag } =
+    useBlogDetail({
+      id: id ?? "",
+    });
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<
     null | "APPROVED" | "REJECTED"
@@ -137,7 +138,10 @@ export default function Blog() {
 
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar
-                    src={blog?.createdBy?.avatar?.url || "/images/placeholders/icons8-avatar-50.png"}
+                    src={
+                      blog?.createdBy?.avatar?.url ||
+                      "/images/placeholders/icons8-avatar-50.png"
+                    }
                     alt={blog?.createdBy.fullName}
                     className="w-12 h-12"
                   />
@@ -332,7 +336,6 @@ export default function Blog() {
           <TextField
             fullWidth
             multiline
-            minRows={3}
             value={banReason}
             onChange={(e) => setBanReason(e.target.value)}
             placeholder="Reason for banning the author..."

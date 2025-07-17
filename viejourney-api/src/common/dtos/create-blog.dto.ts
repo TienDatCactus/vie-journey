@@ -7,50 +7,58 @@ import {
   MaxLength,
   ArrayMaxSize,
 } from 'class-validator';
+import { PlaceData } from '../entities/blog.entity';
 
 export class CreateBlogDto {
-  @IsString({ message: 'Tiêu đề phải là một chuỗi.' })
+  @IsString({ message: 'Title must be a string.' })
   @Length(5, 100, {
-    message: 'Tiêu đề phải có độ dài từ 5 đến 100 ký tự.',
+    message: 'Title must be between 5 and 100 characters.',
   })
   title: string;
 
   @IsOptional()
-  @IsString({ message: 'Slug phải là một chuỗi.' })
+  @IsString({ message: 'Slug must be a string.' })
   @Length(3, 100, {
-    message: 'Slug phải có độ dài từ 3 đến 100 ký tự.',
+    message: 'Slug must be between 3 and 100 characters.',
   })
   slug?: string;
 
-  @IsString({ message: 'Nội dung phải là một chuỗi.' })
+  @IsString({ message: 'Content must be a string.' })
   @Length(20, 5000, {
-    message: 'Nội dung phải có độ dài từ 20 đến 5000 ký tự.',
+    message: 'Content must be between 20 and 5000 characters.',
   })
   content: string;
 
   @IsOptional()
-  @IsString({ message: 'Tóm tắt phải là một chuỗi.' })
+  @IsString({ message: 'Summary must be a string.' })
   @MaxLength(300, {
-    message: 'Tóm tắt không được vượt quá 300 ký tự.',
+    message: 'Summary must not exceed 300 characters.',
   })
   summary?: string;
 
   @IsOptional()
-  @IsArray({ message: 'Tags phải là một mảng chuỗi.' })
+  @IsArray({ message: 'Tags must be an array of strings.' })
   @ArrayMaxSize(10, {
-    message: 'Tối đa chỉ được 10 tags.',
+    message: 'A maximum of 10 tags is allowed.',
   })
-  @IsString({ each: true, message: 'Mỗi tag phải là một chuỗi.' })
+  @IsString({ each: true, message: 'Each tag must be a string.' })
   tags?: string[];
 
   @IsOptional()
-  @IsString({ message: 'Ảnh bìa phải là một chuỗi URL.' })
+  @IsString({ message: 'Cover image must be a string URL.' })
   @MaxLength(500, {
-    message: 'Đường dẫn ảnh bìa không được vượt quá 500 ký tự.',
+    message: 'Cover image URL must not exceed 500 characters.',
   })
   coverImage?: string;
 
   @IsOptional()
-  @IsString({ message: 'Địa điểm phải là một chuỗi.' })
-  location?: string | null;
+  @IsString({ message: 'Destination must be a string.' })
+  destination?: string | null;
+
+  @IsOptional()
+  @IsArray({ message: 'Places must be an array.' })
+  @ArrayMaxSize(5, {
+    message: 'A maximum of 5 places is allowed.',
+  })
+  places?: PlaceData[];
 }

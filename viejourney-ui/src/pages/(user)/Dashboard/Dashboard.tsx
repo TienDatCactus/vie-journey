@@ -25,7 +25,7 @@ import {
   Typography,
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import React from "react";
+import React, { useEffect } from "react";
 import { MainLayout } from "../../../layouts";
 import { editUserAvatar } from "../../../services/api/user";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
@@ -35,8 +35,17 @@ import TripPlans from "./component/TripPlan";
 import ProfileMap from "./component/ProfileMap";
 
 const Dashboard: React.FC = () => {
-  const { info, loadCurrentUser, credential } = useAuthStore();
-
+  const { details, info, credential } = useAuthStore();
+  const loadUserDetails = useAuthStore((state) => state.loadUserDetails);
+  const loadCurrentUser = useAuthStore((state) => state.loadCurrentUser);
+  useEffect(() => {
+    const loadData = async () => {
+      if (!details && credential?.userId) {
+        await loadUserDetails();
+      }
+    };
+    loadData();
+  }, [details, credential?.userId, loadUserDetails]);
   const [value, setValue] = React.useState(0);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
@@ -172,7 +181,7 @@ const Dashboard: React.FC = () => {
                   <div className="grid grid-cols-4 my-4">
                     <div className="text-center">
                       <Typography variant="h6" className="font-bold">
-                        0
+                        {details?.tripCount || 0}
                       </Typography>
                       <Typography variant="caption" className="text-gray-500">
                         Trips
@@ -180,7 +189,7 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div className="text-center">
                       <Typography variant="h6" className="font-bold">
-                        0
+                        {details?.destinations?.length || 0}
                       </Typography>
                       <Typography variant="caption" className="text-gray-500">
                         Destinations
@@ -188,18 +197,18 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div className="text-center">
                       <Typography variant="h6" className="font-bold">
-                        0
+                        {details?.tripCount || 0}
                       </Typography>
                       <Typography variant="caption" className="text-gray-500">
-                        Following
+                        Likes
                       </Typography>
                     </div>
                     <div className="text-center">
                       <Typography variant="h6" className="font-bold">
-                        0
+                        {details?.blogCount || 0}
                       </Typography>
                       <Typography variant="caption" className="text-gray-500">
-                        Followers
+                        Blogs
                       </Typography>
                     </div>
                   </div>
@@ -307,7 +316,7 @@ const Dashboard: React.FC = () => {
                   </Typography>
                   <Typography variant="caption" className="text-gray-600">
                     {selectedFile.name} (
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    {(selectedFile?.size / 1024 / 1024).toFixed(2)} MB)
                   </Typography>
                 </Box>
               )}

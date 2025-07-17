@@ -193,7 +193,7 @@ const HotelManagement = () => {
   };
 
   const handleViewHotel = (hotelId: string) => {
-    navigate(`/admin/hotels/detail/${hotelId}`);
+    navigate(`/manager/hotels/detail/${hotelId}`);
   };
 
   const handleSaveHotel = async (hotelData: Partial<Hotel>) => {

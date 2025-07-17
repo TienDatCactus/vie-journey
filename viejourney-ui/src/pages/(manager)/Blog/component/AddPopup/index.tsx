@@ -339,7 +339,9 @@ export default function NewPostDialog({
               Content
             </Typography>
             <SimpleEditor
-              onContentChange={(html) => handleInputChange("content", html)}
+              onContentChange={(html) =>
+                handleInputChange("content", html.cleanHtml)
+              }
             />
           </div>
         </DialogContent>

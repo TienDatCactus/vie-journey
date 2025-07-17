@@ -3,9 +3,11 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -14,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateUserInfoDto } from 'src/common/dtos/update-userinfo.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UserService } from './user.service';
+import { Types } from 'mongoose';
 
 @UseGuards(JwtAuthGuard)
 @Controller('user')
@@ -27,9 +30,13 @@ export class UserController {
   ) {
     return this.userService.updateUserInfo(id, updateUserInfoDto);
   }
-  @Get(':id')
-  async getUserInfo(@Param('id') id: string) {
-    return this.userService.getUserByID(id);
+  @Get()
+  async getUserInfo(@Req() req) {
+    const userId = req?.user?.['userId'] as string;
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      throw new NotFoundException('Invalid user ID format');
+    }
+    return this.userService.getUserByID(userId);
   }
   @Post('edit-avatar')
   @UseInterceptors(
@@ -50,5 +57,15 @@ export class UserController {
     @Body('id') id: string,
   ) {
     return this.userService.updateUserAvatar(id, file);
+  }
+
+  @Get('details')
+  async getUserDetails(@Req() req) {
+    const userId = req.user?.['userId'] as string;
+    const email = req.user?.['email'] as string;
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid user ID format');
+    }
+    return this.userService.getUserDetails(userId, email);
   }
 }

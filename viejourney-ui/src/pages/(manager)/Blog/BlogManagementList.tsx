@@ -41,13 +41,12 @@ export default function BlogManagementList() {
     handleChangePage,
     handleSearchChange,
     handleChangeStatus,
-    handleSort
+    handleSort,
   } = useBlog();
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
-
 
   const handleStatusFilterChange = (event: SelectChangeEvent) => {
     handleChangeStatus(event.target.value);
@@ -181,7 +180,6 @@ export default function BlogManagementList() {
                   >
                     <MenuItem value="asc">Ascending</MenuItem>
                     <MenuItem value="desc">Descending</MenuItem>
-                   
                   </Select>
                 </FormControl>
               </div>

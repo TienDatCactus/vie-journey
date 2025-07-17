@@ -6,17 +6,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model, ObjectId, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
-import { AssetsService } from '../assets/assets.service';
-import { UserInfos } from 'src/common/entities/userInfos.entity';
-import { Account } from 'src/common/entities/account.entity';
-import {
-  PaginationDto,
-  PaginationResponseDto,
-} from 'src/common/dtos/pagination-userlist.dto';
-import { Asset } from 'src/common/entities/asset.entity';
 import { FilterUserDto } from 'src/common/dtos/filter-userinfo.dto';
+import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
+import { Account } from 'src/common/entities/account.entity';
+import { Asset } from 'src/common/entities/asset.entity';
+import { UserInfos } from 'src/common/entities/userInfos.entity';
+import { Blog } from 'src/infrastructure/database/blog.schema';
+import { Trip } from 'src/infrastructure/database/trip.schema';
+import { AssetsService } from '../assets/assets.service';
 
 @Injectable()
 export class UserService {
@@ -24,6 +23,8 @@ export class UserService {
     @InjectModel('UserInfos') private readonly userInfosModel: Model<UserInfos>,
     @InjectModel('Account') private readonly accountModel: Model<Account>,
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
+    @InjectModel('Trip') private readonly tripModel: Model<Trip>,
+    @InjectModel('Blog') private readonly blogModel: Model<Blog>,
     private readonly assetsService: AssetsService,
   ) {}
   async getAllUser(
@@ -283,5 +284,43 @@ export class UserService {
         `Failed to update user role: ${error.message}`,
       );
     }
+  }
+  async getUserDetails(userId: string, email: string) {
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+    const userInfo = await this.userInfosModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .exec();
+    const destination = await this.tripModel
+      .find({
+        tripmates: { $in: [email] },
+      })
+      .select('destination')
+      .lean()
+      .exec();
+
+    const blogCount = await this.blogModel.countDocuments({
+      createdBy: new Types.ObjectId(userInfo?._id),
+    });
+    const likeCount = await this.blogModel.countDocuments({
+      likes: { $in: [new Types.ObjectId(userId)] },
+    });
+
+    const tripCount = await this.tripModel.countDocuments({
+      tripmates: { $in: [email] },
+    });
+
+    return {
+      destinations: destination.map((d) => {
+        return {
+          name: d.destination.name,
+          location: d.destination.location,
+        };
+      }),
+      blogCount,
+      likeCount,
+      tripCount,
+    };
   }
 }

@@ -54,6 +54,21 @@ export class BlogService {
     }
   }
 
+  async getRelatedBlogs(blogId: string, tags: string[]): Promise<Blog[]> {
+    if (!tags || tags.length === 0) {
+      throw new BadRequestException('Tags are required to find related blogs');
+    }
+
+    const relatedBlogs = await this.blogModel
+      .find({
+        _id: { $ne: blogId },
+        tags: { $in: tags },
+        status: 'APPROVED',
+      })
+      .limit(5) // Limit to 5 related blogs
+      .exec();
+    return relatedBlogs;
+  }
   async unlikeBlog(req: Request, blogId: string) {
     const userId = req.user?.['userId'] as string;
     // 1. Xóa like trong bảng Like
@@ -151,7 +166,7 @@ export class BlogService {
         createdBy: blog?.createdBy,
         avatarUser: blog?.createdBy?.avatar?.url || null,
         summary: blog.summary,
-        destination: blog?.destination?.location || null,
+        destination: blog?.destination || null,
         viewCount: blog.metrics?.viewCount || 0,
         likeCount: blog.metrics?.likeCount || 0,
         commentCount: blog.metrics?.commentCount || 0,
@@ -186,7 +201,7 @@ export class BlogService {
           { title: { $regex: search, $options: 'i' } },
           { summary: { $regex: search, $options: 'i' } },
           { tags: { $regex: search, $options: 'i' } },
-          { 'destination.location': { $regex: search, $options: 'i' } },
+          { destination: { $regex: search, $options: 'i' } },
         ];
       }
 
@@ -196,7 +211,6 @@ export class BlogService {
 
       const blogs = await this.blogModel
         .find(query)
-
         .sort({ updatedAt: -1, createdAt: -1 }) // Show latest first
         .skip(skip)
         .limit(limitNum)
@@ -211,10 +225,6 @@ export class BlogService {
             .findOne({ userId: blog.updatedBy })
             .populate('userId', 'email')
             .exec();
-          console.log('blog.createdBy:', blog.createdBy);
-          console.log('createBy:', createBy);
-          console.log('blog.updatedBy:', blog.updatedBy);
-          console.log('updatedBy:', updatedBy);
           return {
             ...blog.toObject(),
             createdBy: {
@@ -237,12 +247,7 @@ export class BlogService {
         status: 'success',
         data: {
           blogs: populateAuthors.map((blog) => ({
-            _id: blog._id,
-            title: blog.title,
-            summary: blog.summary,
-            coverImage: blog.coverImage,
-            location: blog.destination?.location,
-            tags: blog.tags,
+            ...blog,
             author: {
               _id: blog?._id,
               fullName: blog?.createdBy?.fullName || 'Unknown',
@@ -298,7 +303,6 @@ export class BlogService {
 
     await blog.save();
 
-    // Trả về thông tin cập nhật
     return blog.metrics;
   }
 
@@ -306,22 +310,38 @@ export class BlogService {
   async findOneBlogById(blogId: string) {
     const blog = await this.blogModel
       .findById(blogId)
-
+      .populate({
+        path: 'createdBy',
+        select: 'fullName avatar',
+        populate: {
+          path: 'avatar',
+          select: 'url',
+        },
+      })
       .exec();
+    const [userBlogCount, blogLikesCount, userEmail] = await Promise.all([
+      this.blogModel.countDocuments({ createdBy: blog?.createdBy._id }),
+      blog?.metrics?.likeCount ?? 0,
+      this.userInfosModel
+        .findById(blog?.createdBy._id)
+        .populate({
+          path: 'userId',
+          select: 'email',
+        })
+        .exec(),
+    ]);
 
-    if (!blog) throw new NotFoundException('Blog not found');
-
-    return {
-      title: blog.title,
-      content: blog.content,
-      createdBy: blog.createdBy,
-      summary: blog.summary,
-      coverImage: blog.coverImage,
-      status: blog.status,
-      destination: blog.destination?.location,
-      flags: blog.flags || [],
-      createdAt: blog.createdAt,
+    const blogWithMetrics = {
+      ...blog?.toObject(),
+      createdBy: {
+        ...blog?.toObject().createdBy,
+        email: userEmail?.userId?.email || 'Unknown',
+        totalBlogs: userBlogCount,
+        likesCount: blogLikesCount,
+      },
     };
+    if (!blogWithMetrics) throw new NotFoundException('Blog not found');
+    return blogWithMetrics;
   }
 
   // update status of blog by id
@@ -447,10 +467,8 @@ export class BlogService {
         createdBy: new Types.ObjectId(user._id), // Lấy userId từ userInfos
         updatedBy: new Types.ObjectId(user._id),
         coverImage: uploadResult?.secure_url || '',
-        destination: {
-          location: createBlogDto?.location || null,
-          placeId: null,
-        },
+        destination: createBlogDto.destination || null,
+        places: createBlogDto.places || [],
         status: 'APPROVED',
         metrics: {
           likeCount: 0,
@@ -516,11 +534,7 @@ export class BlogService {
         summary: '',
         tags: [],
         coverImage: coverImageUrl,
-        tripId: null,
-        destination: {
-          location,
-          placeId: null,
-        },
+        destination: location,
         createdBy: user._id,
         updatedBy: user._id,
         likes: [],
@@ -539,7 +553,7 @@ export class BlogService {
       return {
         blogId: createdBlog._id,
         title: createdBlog.title,
-        location: createdBlog.destination?.location,
+        destination: createdBlog.destination,
         coverImage: createdBlog.coverImage,
         status: createdBlog.status,
         message: 'Blog draft created successfully. You can now start writing.',
@@ -578,7 +592,8 @@ export class BlogService {
         summary: blog.summary,
         tags: blog.tags,
         coverImage: blog.coverImage,
-        location: blog.destination?.location,
+        destination: blog.destination,
+        places: blog.places || [],
         status: blog.status,
         createdAt: blog.createdAt,
         updatedAt: blog.updatedAt,
@@ -620,7 +635,8 @@ export class BlogService {
         summary: blog.summary,
         tags: blog.tags,
         coverImage: blog.coverImage,
-        location: blog.destination?.location,
+        destination: blog.destination,
+        places: blog.places || [],
         status: blog.status,
         metrics: {
           viewCount: blog.metrics?.viewCount || 0,
@@ -689,6 +705,9 @@ export class BlogService {
       if (updateData.content !== undefined) blog.content = updateData.content;
       if (updateData.summary !== undefined) blog.summary = updateData.summary;
       if (updateData.tags !== undefined) blog.tags = updateData.tags;
+      if (updateData.destination !== undefined)
+        blog.destination = updateData.destination;
+      if (updateData.places !== undefined) blog.places = updateData.places;
 
       blog.updatedBy = user._id;
       blog.updatedAt = new Date();
@@ -702,7 +721,8 @@ export class BlogService {
         summary: updatedBlog.summary,
         tags: updatedBlog.tags,
         coverImage: updatedBlog.coverImage,
-        location: updatedBlog.destination?.location,
+        destination: updatedBlog.destination,
+        places: updatedBlog.places,
         status: updatedBlog.status,
         updatedAt: updatedBlog.updatedAt,
         message: 'Blog draft updated successfully',
@@ -837,7 +857,8 @@ export class BlogService {
         summary: updatedBlog.summary,
         tags: updatedBlog.tags,
         coverImage: updatedBlog.coverImage,
-        location: updatedBlog.destination?.location,
+        destination: updatedBlog.destination,
+        places: updatedBlog.places,
         status: updatedBlog.status,
         updatedAt: updatedBlog.updatedAt,
         message:

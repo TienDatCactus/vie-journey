@@ -199,9 +199,9 @@ export const doGetTrip = async (tripId: string) => {
   return null;
 };
 
-export const doGetUserInfo = async (userId: string) => {
+export const doGetUserInfo = async () => {
   try {
-    const resp = await http.get(`${USER?.GET_USER_INFO}/${userId}`);
+    const resp = await http.get(`${USER?.GET_USER_INFO}`);
     if (resp) {
       return extractApiData<GetUserInfoRespDTO>(resp);
     }
@@ -573,6 +573,18 @@ export const doUpdateTripCover = async (tripId: string, assetId: string) => {
   } catch (error) {
     console.error("Failed to update trip cover:", error);
     enqueueSnackbar("Failed to update trip cover", { variant: "error" });
+  }
+  return null;
+};
+
+export const doGetUserDetails = async () => {
+  try {
+    const resp = await http.get(`${USER.GET_DETAILS}`);
+    if (resp) {
+      return resp.data;
+    }
+  } catch (error) {
+    console.error("Failed to get user details:", error);
   }
   return null;
 };

@@ -110,7 +110,7 @@ const Map: React.FC<MapProps> = ({
   ...mapProps
 }) => {
   const { fetchPlaceDetail } = useFetchPlaceDetails();
-  const { selected } = useMapPan();
+  const { selected, selectedLocation } = useMapPan();
   const [place, setPlace] = React.useState<POIData | null>(null);
 
   const isApiLoaded = useApiIsLoaded();
@@ -158,14 +158,19 @@ const Map: React.FC<MapProps> = ({
   }, [selected, fetchPlaceDetail]);
 
   useEffect(() => {
-    if (selected && mapInstance && selected.location) {
-      mapInstance.panTo({
-        lat: selected.location.lat || 0,
-        lng: selected.location.lng || 0,
+    if (
+      (selected && selected?.location && mapInstance && selected.location) ||
+      (selectedLocation && mapInstance && selectedLocation)
+    ) {
+      console.log(selected?.location);
+      console.log(selectedLocation);
+      mapInstance?.panTo({
+        lat: selected?.location?.lat || selectedLocation.lat || 0,
+        lng: selected?.location?.lng || selectedLocation.long || 0,
       });
-      mapInstance.setZoom(20);
+      mapInstance.setZoom(10);
     }
-  }, [selected, mapInstance]);
+  }, [selected, selectedLocation, mapInstance]);
 
   return (
     <Box sx={{ position: position, width: "100%", height: "100%" }}>

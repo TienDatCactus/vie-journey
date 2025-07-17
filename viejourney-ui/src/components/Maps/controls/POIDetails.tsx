@@ -2,6 +2,8 @@ import {
   BookmarkAdd,
   BookmarkAdded,
   Close as CloseIcon,
+  Event,
+  EventNote,
   LibraryAdd,
   Phone as PhoneIcon,
   Place as PlaceIcon,
@@ -18,16 +20,24 @@ import {
   Grid2,
   IconButton,
   Link,
+  ListItemIcon,
+  Menu,
+  MenuItem,
   Stack,
   Tooltip,
   Typography,
 } from "@mui/material";
+import { motion } from "motion/react";
 import React, { useState } from "react";
 import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { motion } from "motion/react";
+import { useSocket } from "../../../services/context/socketContext";
+import { useTripDetailStore } from "../../../services/stores/useTripDetailStore";
+import {
+  getDatesBetween,
+  getPlacePhotoUrl,
+} from "../../../utils/handlers/utils";
 import { POIData } from "../types";
-import { getPlacePhotoUrl } from "../../../utils/handlers/utils";
 
 interface POIDetailsProps {
   poi: POIData;
@@ -42,6 +52,15 @@ const POIDetails: React.FC<POIDetailsProps> = ({
   onToggleFavorite,
 }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [loading, setLoading] = useState(false);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   const handleFavoriteToggle = () => {
     const newState = !isFavorite;
     setIsFavorite(newState);
@@ -126,6 +145,67 @@ const POIDetails: React.FC<POIDetailsProps> = ({
 
     return null;
   };
+  const trip = useTripDetailStore((state) => state.trip);
+  const { socket } = useSocket();
+  const tripDateRange = getDatesBetween(trip.startDate, trip.endDate);
+  const handleAddToDate = async (date: string, index: number) => {
+    try {
+      setLoading(true);
+      const itinerary = {
+        id: `itinerary-note-${Date.now()}`,
+        note: "",
+        date: date,
+        place: {
+          placeId: poi?.id || "",
+          displayName: poi?.displayName || "",
+          types: poi?.types || [],
+          photo: poi?.photos ? getPlacePhotoUrl(poi?.photos[0]) : "",
+          editorialSummary:
+            poi?.editorialSummary ||
+            "No summary available, please refer to the location details.",
+          location: {
+            lat: poi?.location?.lat() || 0,
+            lng: poi?.location?.lng() || 0,
+          },
+          time: "",
+          cost: "",
+        },
+        isEditing: false,
+      };
+      socket?.emit("planItemAdded", {
+        section: "itineraries",
+        item: itinerary,
+      });
+      window.location.href = `#${index}`;
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  if (tripDateRange.length === 0) {
+    return (
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={onClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <Box sx={{ p: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            No trip dates available
+          </Typography>
+        </Box>
+      </Menu>
+    );
+  }
   // Determine if the place is currently open
   const openNow = isOpen();
   return (
@@ -240,14 +320,63 @@ const POIDetails: React.FC<POIDetailsProps> = ({
               </IconButton>
             </Tooltip>
             <Tooltip arrow placement="top" title="Add to trip">
-              <IconButton
-                size="small"
-                // onClick={() => onAddToTrip(poi)}
-              >
+              <IconButton size="small" onClick={handleClick}>
                 <LibraryAdd />
                 {/* <LibraryAddCheck/> */}
               </IconButton>
             </Tooltip>
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={onClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              slotProps={{
+                paper: {
+                  style: {
+                    maxHeight: 300,
+                    width: "230px",
+                  },
+                },
+              }}
+            >
+              <Box sx={{ px: 2, py: 1 }}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Add to trip day
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Select a date to add this place
+                </Typography>
+              </Box>
+              <Divider />
+              {tripDateRange.map((date, index) => (
+                <MenuItem
+                  key={index}
+                  onClick={() => handleAddToDate(date, index)}
+                >
+                  <ListItemIcon>
+                    {index === 0 ? (
+                      <Event fontSize="small" color="primary" />
+                    ) : index === tripDateRange.length - 1 ? (
+                      <Event fontSize="small" color="secondary" />
+                    ) : (
+                      <EventNote fontSize="small" />
+                    )}
+                  </ListItemIcon>
+                  <Typography variant="body2">
+                    {date}
+                    {index === 0 && " (Start)"}
+                    {index === tripDateRange.length - 1 && " (End)"}
+                  </Typography>
+                </MenuItem>
+              ))}
+            </Menu>
           </Grid2>
         </Grid2>
         {/* Rating */}
@@ -256,8 +385,8 @@ const POIDetails: React.FC<POIDetailsProps> = ({
             <StarIcon
               sx={{
                 color: "#faaf00",
-                fontSize: "1.25rem",
-                marginRight: "4px",
+                fontSize: "20px",
+                marginRight: "0.25rem",
               }}
             />
             <Typography variant="body2" component="span" fontWeight="bold">
@@ -402,7 +531,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
                     variant="body2"
                     color="primary"
                     sx={{
-                      maxWidth: "calc(100% - 32px)",
+                      maxWidth: "calc(100% - 2rem)",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
@@ -477,7 +606,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
                   </Typography>
                   <div className="flex items-center ml-2">
                     <StarIcon
-                      sx={{ color: "#faaf00", fontSize: "1rem", mr: 0.5 }}
+                      sx={{ color: "#faaf00", fontSize: "16px", mr: 0.5 }}
                     />
                     <Typography variant="body2">{review.rating}</Typography>
                   </div>

@@ -18,93 +18,39 @@ export class CommentService {
     @InjectModel('UserInfos') private userInfosModel: Model<UserInfos>,
   ) {}
 
-  async createComment(
-    blogId: string,
-    content: string,
-    req: Request,
-    parentId?: string,
-  ) {
-    const userId = req.user?.['userId'] as string;
+  async createComment(blogId: string, content: string, userId: string) {
     const userInfos = await this.userInfosModel.findOne({
       userId: new Types.ObjectId(userId),
     });
-    // 1. Kiểm tra Blog tồn tại
     const blog = await this.blogModel.findById(blogId);
     if (!blog) throw new NotFoundException('Blog not found');
-
-    let parentComment: any = null;
-    if (parentId) {
-      // 2. Kiểm tra comment cha tồn tại
-      parentComment = await this.commentModel.findById(parentId);
-      if (!parentComment)
-        throw new NotFoundException('Parent comment not found');
-    }
-
-    // 3. Tạo comment mới
-    const commentData: any = {
+    const commentData: Comment = {
       blogId: new Types.ObjectId(blogId),
       content,
-      commentBy: userInfos?._id,
-      totalReplies: 0,
-      totalChildren: 0,
+      commentBy: userInfos?._id as Types.ObjectId,
       likes: [],
       edited: false,
       editedAt: null,
-      replies: [],
     };
 
-    if (parentId) {
-      commentData.parentId = new Types.ObjectId(parentId);
-    } else {
-      commentData.parentId = null;
-    }
-
-    const comment = await this.commentModel.create(commentData);
-
-    // 4. Nếu là reply, cập nhật replies, totalReplies và totalChildren cho các comment cha
-    if (parentComment) {
-      // Thêm _id của reply vào mảng replies của comment cha
-      parentComment.replies.push(comment._id);
-      parentComment.totalReplies += 1;
-      await parentComment.save();
-
-      // Tăng tổng số reply (bao gồm cả reply lồng nhau) cho tất cả các cha
-      let currentParent: any = parentComment;
-      while (currentParent) {
-        currentParent.totalChildren += 1;
-        await currentParent.save();
-        if (currentParent.parentId) {
-          currentParent = await this.commentModel.findById(
-            currentParent.parentId,
-          );
-        } else {
-          currentParent = null;
-        }
-      }
-    }
-
-    // 5. Cập nhật tổng số comment trong Blog (nếu có trường này)
-    if (blog.metrics) {
-      blog.metrics.commentCount = (blog.metrics.commentCount || 0) + 1;
-      await blog.save();
-    }
-
+    const comment = (await this.commentModel.create(commentData)).populate({
+      path: 'commentBy',
+      select: 'fullName avatar',
+      populate: {
+        path: 'avatar',
+        model: 'Asset',
+        select: 'url',
+      },
+    });
+    console.log(comment);
     return comment;
   }
 
   async getComments(
     blogId: string,
-    parentId?: string,
     limit?: number,
     skip?: number,
-  ) {
-    const query: any = { blogId: new Types.ObjectId(blogId) };
-    if (parentId) {
-      query.parentId = new Types.ObjectId(parentId);
-    } else {
-      query.$or = [{ parentId: null }, { parentId: { $exists: false } }];
-    }
-
+  ): Promise<Comment[]> {
     // Gán giá trị mặc định nếu không truyền vào
     const limitValue = limit !== undefined ? limit : 10;
     const skipValue = skip !== undefined ? skip : 0;
@@ -113,7 +59,9 @@ export class CommentService {
     const totalToFetch = skipValue + limitValue;
 
     const comments = await this.commentModel
-      .find(query)
+      .find({
+        blogId: new Types.ObjectId(blogId),
+      })
       .populate({
         path: 'commentBy',
         select: 'fullName avatar',
@@ -126,17 +74,7 @@ export class CommentService {
       .sort({ createdAt: 1 })
       .limit(totalToFetch)
       .lean();
-
-    // Map lại dữ liệu avatar
-    const mappedComments = comments.map((comment) => ({
-      ...comment,
-      commentBy: {
-        ...comment.commentBy,
-        avatar: comment.commentBy?.avatar?.url || null,
-      },
-    }));
-
-    return mappedComments;
+    return comments;
   }
 
   async editComment(commentId: string, userId: string, content: string) {
@@ -151,7 +89,15 @@ export class CommentService {
     comment.edited = true;
     comment.editedAt = new Date();
     await comment.save();
-    return comment;
+    return comment.populate({
+      path: 'commentBy',
+      select: 'fullName avatar',
+      populate: {
+        path: 'avatar',
+        model: 'Asset',
+        select: 'url',
+      },
+    });
   }
 
   async deleteComment(commentId: string, userId: string) {
@@ -163,38 +109,10 @@ export class CommentService {
     if (comment.commentBy.toString() !== userInfos?._id.toString())
       throw new ForbiddenException('No permission');
 
-    // 1. Xóa đệ quy tất cả reply con cháu
     await this.deleteCommentAndChildren(commentId);
 
-    // 2. Nếu có parent, cập nhật lại replies, totalReplies, totalChildren cho cha và các ông cha
-    if (comment.parentId) {
-      // Xóa _id khỏi mảng replies của cha
-      await this.commentModel.findByIdAndUpdate(comment.parentId, {
-        $pull: { replies: comment._id },
-        $inc: { totalReplies: -1 },
-      });
-
-      // Giảm totalChildren cho tất cả các cha trong chuỗi
-      let currentParent = await this.commentModel.findById(comment.parentId);
-      // Số lượng comment con cháu bị xóa (bao gồm chính nó)
-      const totalDeleted = await this.countCommentAndChildren(commentId);
-      while (currentParent) {
-        currentParent.totalChildren -= totalDeleted;
-        await currentParent.save();
-        if (currentParent.parentId) {
-          currentParent = await this.commentModel.findById(
-            currentParent.parentId,
-          );
-        } else {
-          currentParent = null;
-        }
-      }
-    }
-
-    // 3. Giảm metrics.commentCount trong Blog
     const blog = await this.blogModel.findById(comment.blogId);
     if (blog && blog.metrics) {
-      // Đếm tổng số comment bị xóa (bao gồm chính nó và các con cháu)
       const totalDeleted = await this.countCommentAndChildren(commentId);
       blog.metrics.commentCount -= totalDeleted;
       if (blog.metrics.commentCount < 0) blog.metrics.commentCount = 0;

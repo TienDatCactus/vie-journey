@@ -1,23 +1,35 @@
-import * as React from "react";
+import { Alert, CircularProgress } from "@mui/material";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { Alert } from "@mui/material";
+import * as React from "react";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 
 interface StatusDialogProps {
   status: "ACTIVE" | "INACTIVE" | "BANNED";
+  shown: boolean;
+  setShown: (shown: boolean) => void;
 }
 
-const StatusDialog: React.FC<StatusDialogProps> = ({ status }) => {
-  const [open, setOpen] = React.useState(true);
+const StatusDialog: React.FC<StatusDialogProps> = ({
+  status,
+  shown,
+  setShown,
+}) => {
   const { handleLogout } = useAuthStore();
-  const handleClose = () => {
-    setOpen(false);
-    if (status === "BANNED" || status === "INACTIVE") handleLogout();
+  const [loading, setLoading] = React.useState(false);
+  const handleClose = async () => {
+    try {
+      setLoading(true);
+      if (status === "BANNED" || status === "INACTIVE") await handleLogout();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+      setShown(false);
+    }
   };
   const ContentSwitch = () => {
     switch (status) {
@@ -45,16 +57,19 @@ const StatusDialog: React.FC<StatusDialogProps> = ({ status }) => {
   };
   return (
     <Dialog
-      open={open}
+      open={shown}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">{"Account Status"}</DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          {ContentSwitch()}
-        </DialogContentText>
-      </DialogContent>
+      {loading ? (
+        <DialogContent>
+          <CircularProgress size={24} />
+          Loading...
+        </DialogContent>
+      ) : (
+        <DialogContent>{ContentSwitch()}</DialogContent>
+      )}
       <DialogActions>
         <Button onClick={handleClose}>Close</Button>
       </DialogActions>

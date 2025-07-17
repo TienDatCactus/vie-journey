@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { Account, UserInfo } from "../../utils/interfaces";
+import { Account, UserDetails, UserInfo } from "../../utils/interfaces";
 import {
   doForgotPassword,
   doGetUser,
+  doGetUserDetails,
   doGetUserInfo,
   doLogin,
   doLoginWithGoogle,
@@ -29,6 +30,7 @@ interface AuthCredential {
 interface AuthState {
   user: Account | null;
   info: UserInfo | null;
+  details: UserDetails | null; // Assuming UserDetails is defined elsewhere
   credential: AuthCredential | null;
   isLoading: boolean;
 
@@ -55,6 +57,8 @@ interface AuthState {
 
   // Initialization
   loadCurrentUser: () => Promise<void>;
+  loadUserInfo: () => Promise<void>;
+  loadUserDetails: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -65,7 +69,7 @@ export const useAuthStore = create<AuthState>()(
         info: null,
         credential: null,
         isLoading: false,
-
+        details: null,
         setUser: (user) => set({ user }),
         setInfo: (info) => set({ info }),
         setCredential: (credential) => set({ credential }),
@@ -147,9 +151,7 @@ export const useAuthStore = create<AuthState>()(
             if (cred?.userId) {
               await doLogout({ userId: cred.userId });
             }
-
-            set({ user: null, credential: null });
-
+            set({ user: null, credential: null, info: null });
             return { success: true, message: "Logged out successfully" };
           } catch (error) {
             console.error("Logout error:", error);
@@ -262,13 +264,39 @@ export const useAuthStore = create<AuthState>()(
 
             const [user, info] = await Promise.all([
               doGetUser({ userId }),
-              doGetUserInfo(userId),
+              doGetUserInfo(),
             ]);
 
             set({ user, info });
           } catch (err) {
             console.error("loadCurrentUser failed:", err);
             set({ credential: null });
+          } finally {
+            set({ isLoading: false });
+          }
+        },
+        loadUserInfo: async () => {
+          const { credential } = get();
+          if (!credential?.userId) return;
+          try {
+            set({ isLoading: true });
+            const info = await doGetUserInfo();
+            set({ info });
+          } catch (err) {
+            console.error("loadUserInfo failed:", err);
+          } finally {
+            set({ isLoading: false });
+          }
+        },
+        loadUserDetails: async () => {
+          const { credential } = get();
+          if (!credential?.userId) return;
+          try {
+            set({ isLoading: true });
+            const details = await doGetUserDetails();
+            set({ details });
+          } catch (err) {
+            console.error("loadUserDetails failed:", err);
           } finally {
             set({ isLoading: false });
           }

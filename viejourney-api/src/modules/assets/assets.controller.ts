@@ -28,8 +28,6 @@ export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
   @Get('landing')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(Role.Admin)
   async getAllBannersBySubsection() {
     return this.assetsService.fetchAllBannersBySubsection();
   }

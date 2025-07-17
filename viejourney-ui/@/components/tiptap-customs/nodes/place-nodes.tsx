@@ -16,11 +16,8 @@ declare module "@tiptap/core" {
 
 export const PlaceAutocomplete = Node.create<PlaceAutocompleteOptions>({
   name: "placeAutocomplete",
-
   group: "block",
-
   content: "block*",
-
   defining: true,
 
   addOptions() {
@@ -34,21 +31,8 @@ export const PlaceAutocomplete = Node.create<PlaceAutocompleteOptions>({
       place: {
         default: null,
       },
-      placeId: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("data-place-id"),
-        renderHTML: (attributes) => {
-          if (!attributes.placeId) return {};
-          return { "data-place-id": attributes.placeId };
-        },
-      },
       showDetails: {
         default: false,
-        parseHTML: (element) =>
-          element.getAttribute("data-show-details") === "true",
-        renderHTML: (attributes) => ({
-          "data-show-details": attributes.showDetails ? "true" : "false",
-        }),
       },
     };
   },
@@ -66,8 +50,9 @@ export const PlaceAutocomplete = Node.create<PlaceAutocompleteOptions>({
       "div",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         "data-type": "place-autocomplete",
+        class: "place-node-container",
       }),
-      0,
+      0, // This allows content inside the node
     ];
   },
 
@@ -83,14 +68,9 @@ export const PlaceAutocomplete = Node.create<PlaceAutocompleteOptions>({
           return commands.insertContent({
             type: this.name,
             attrs: {
-              place: null, // Start with no place selected
+              place: null,
               showDetails: false,
             },
-            content: [
-              {
-                type: "paragraph",
-              },
-            ],
           });
         },
     };

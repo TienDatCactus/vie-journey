@@ -7,8 +7,8 @@ const ManagerLayout = ({ children }: { children: ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
   const menuItems = [
     { icon: <ArticleIcon />, label: "Blog", path: "/manager/blogs" },
-    { icon: <Hotel />, label: "Hotel", path: "/admin/hotels" },
-    { icon: <PermMedia />, label: "Media", path: "/admin/media" },
+    { icon: <Hotel />, label: "Hotel", path: "/manager/hotels" },
+    { icon: <PermMedia />, label: "Media", path: "/manager/media" },
   ];
 
   return (

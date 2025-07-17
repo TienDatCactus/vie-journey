@@ -1,12 +1,11 @@
 import { Alert, Grid2 } from "@mui/material";
 import React from "react";
+import { useBlogStore } from "../../../../services/stores/useBlogStore";
 import CardSkeleton from "../../../../utils/handlers/loading/CardSkeleton";
-import { IRelatedBlogs } from "../../../../utils/interfaces/blog";
 import { ExploreCard } from "./elements";
 
-const HomeExplore: React.FC<{
-  blogs?: IRelatedBlogs[];
-}> = ({ blogs }) => {
+const HomeExplore: React.FC = () => {
+  const { blogs } = useBlogStore();
   return (
     <div className="max-w-[75rem] w-full pb-10">
       <div className="pb-2">

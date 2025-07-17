@@ -22,7 +22,7 @@ import useAutocomplete, {
 } from "@mui/material/useAutocomplete";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
-import type { IContentItem } from "../../../utils/interfaces/blog";
+import { IBlog } from "../../../utils/interfaces/blog";
 
 interface FilmOptionType {
   title: string;
@@ -395,7 +395,7 @@ function ImageUpload({
             <strong>{coverImage?.name}</strong>
             <br />
             {coverImage
-              ? `${(coverImage.size / 1024 / 1024).toFixed(2)} MB`
+              ? `${(coverImage?.size / 1024 / 1024).toFixed(2)} MB`
               : ""}
           </Typography>
         </Box>
@@ -443,7 +443,7 @@ const BlogCreateToolbar = ({
   coverImageUrl,
   setCoverImageUrl,
 }: {
-  blog: IContentItem;
+  blog: IBlog | null;
   formData: {
     title: string;
     summary: string;
@@ -544,7 +544,7 @@ const BlogCreateToolbar = ({
           >
             <dt>Created at</dt>
             <dd className="text-sm text-gray-500">
-              {dayjs(blog.createdAt).format("YYYY-MM-DD HH:mm")}
+              {dayjs(blog?.createdAt).format("YYYY-MM-DD HH:mm")}
             </dd>
           </Stack>
 
@@ -555,7 +555,7 @@ const BlogCreateToolbar = ({
           >
             <dt>Last saved</dt>
             <dd className="text-sm text-gray-500">
-              {dayjs(blog.updatedAt).format("YYYY-MM-DD HH:mm")}
+              {dayjs(blog?.updatedAt).format("YYYY-MM-DD HH:mm")}
             </dd>
           </Stack>
         </dl>

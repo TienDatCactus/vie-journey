@@ -1,31 +1,43 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import StatusDialog from "../components/Auth/elements/StatusDialog";
 import { useAuthStore } from "../services/stores/useAuthStore";
 
+const StatusHandler = () => {
+  const { user } = useAuthStore();
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    if ((user?.status === "INACTIVE" || user?.status === "BANNED") && !shown) {
+      setShown(true);
+    }
+  }, [user?.status]);
+  console.log(user?.status, shown ? "shown" : "not shown");
+  if (!shown && (user?.status === "INACTIVE" || user?.status === "BANNED")) {
+    return (
+      <StatusDialog status={user.status} shown={shown} setShown={setShown} />
+    );
+  }
+
+  return null;
+};
+
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
-  const { user, loadCurrentUser, credential } = useAuthStore();
+  const { user, loadCurrentUser, loadUserInfo, info, credential } =
+    useAuthStore();
   useEffect(() => {
     const run = async () => {
       if (!credential?.token || user) return;
+      if (!info) {
+        await loadUserInfo();
+      }
       await loadCurrentUser();
     };
     run();
-  }, [credential?.token]);
+  }, [credential?.token, user, loadCurrentUser, loadUserInfo]);
 
   return (
     <>
-      {user?.status &&
-        React.createElement(() => {
-          const [shown, setShown] = React.useState(false);
-
-          React.useEffect(() => {
-            if (user.status && !shown) {
-              setShown(true);
-            }
-          }, [user.status == "INACTIVE" || user.status == "BANNED"]);
-
-          return !shown ? <StatusDialog status={user?.status} /> : null;
-        })}
+      <StatusHandler />
       {children}
     </>
   );

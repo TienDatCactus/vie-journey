@@ -23,7 +23,6 @@ export class AssetsService {
   // Lấy tất cả asset của user có type là CONTENT
   async getAllUserContentAssets(userId: string) {
     try {
-      console.log('userId: ', userId);
       const assets = await this.assetModel
         .find({
           assetOwner: 'USER',
@@ -31,7 +30,6 @@ export class AssetsService {
           type: { $regex: /^CONTENT$/i }, // không phân biệt hoa thường
         })
         .exec();
-      console.log('assets: ', assets);
       return assets;
     } catch (error) {
       throw new BadRequestException(
@@ -48,7 +46,6 @@ export class AssetsService {
   ) {
     const userId = req.user?.['userId'] as string;
     const roles = req.user?.['role'] as string;
-    console.log('Role: ', roles);
 
     if (!file) {
       throw new BadRequestException('File upload is required');
