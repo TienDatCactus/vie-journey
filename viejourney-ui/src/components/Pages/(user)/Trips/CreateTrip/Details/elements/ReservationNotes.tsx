@@ -49,7 +49,6 @@ interface NotesCardProps {
 const NotesCard: React.FC<NotesCardProps> = ({
   data,
   index,
-  onUpdate,
   onToggleEdit,
   onDelete,
 }) => {

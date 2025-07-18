@@ -1,35 +1,25 @@
-import React, { useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Box,
-  Typography,
-  Stack,
-  Rating,
-  Chip,
-  IconButton,
-  Alert,
-} from "@mui/material";
-import {
-  Save as SaveIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
+  Save as SaveIcon,
 } from "@mui/icons-material";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Rating,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { doUpdateHotel } from "../../../services/api";
-
-interface Hotel {
-  _id: string;
-  name: string;
-  description: string;
-  rating: number;
-  address: string;
-  coordinate: string;
-  image: string[];
-}
+import { Hotel } from "../../../utils/interfaces";
 
 interface EditHotelDialogProps {
   open: boolean;
@@ -68,7 +58,7 @@ const EditHotelDialog: React.FC<EditHotelDialogProps> = ({
         rating: hotel.rating,
         address: hotel.address,
         coordinate: hotel.coordinate,
-        images: hotel.image || [],
+        images: hotel.images || [],
       });
     } else {
       setFormData({

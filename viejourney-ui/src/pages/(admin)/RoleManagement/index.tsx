@@ -1,29 +1,29 @@
-import React, { useState } from "react";
-import { AdminLayout } from "../../../layouts";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import GroupIcon from "@mui/icons-material/Group";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import PersonIcon from "@mui/icons-material/Person";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
+  Avatar,
   Box,
-  Grid2,
   Card,
   CardContent,
-  Typography,
-  Paper,
   Chip,
-  Stack,
-  Avatar,
+  Grid2,
   IconButton,
+  Paper,
+  Stack,
+  Typography,
 } from "@mui/material";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
 import { LicenseInfo } from "@mui/x-license";
-import PersonIcon from "@mui/icons-material/Person";
-import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import GroupIcon from "@mui/icons-material/Group";
-import EditRoleDialog from "./EditRoleDialog";
-import ViewUsersDialog from "./ViewUsersDialog";
+import { useState } from "react";
+import { AdminLayout } from "../../../layouts";
+import { doBulkUpdateUserRoles } from "../../../services/api";
 import ChangeRoleDialog from "./ChangeRoleDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
-import { doBulkUpdateUserRoles } from "../../../services/api";
+import EditRoleDialog from "./EditRoleDialog";
+import ViewUsersDialog from "./ViewUsersDialog";
 
 // Set MUI Pro License
 LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
@@ -145,13 +145,7 @@ const RoleManagement = () => {
   const [newRole, setNewRole] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleEditRole = (roleId: number) => {
-    const role = systemRoles.find((r) => r.id === roleId);
-    if (role) {
-      setSelectedRole(role);
-      setEditDialogOpen(true);
-    }
-  };
+  //
 
   const handleViewUsers = (roleId: number) => {
     const role = systemRoles.find((r) => r.id === roleId);

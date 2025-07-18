@@ -89,12 +89,6 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
         placePrediction: google.maps.places.PlacePrediction | null;
       } | null
     ) => {
-      const placeId = suggestion?.placePrediction?.placeId || "";
-      let placeInstance;
-      if (placesLib && placeId) {
-        placeInstance = new placesLib.Place({ id: placeId });
-      }
-
       if (suggestion?.placePrediction) {
         setSelectedPlace({ placePrediction: suggestion.placePrediction });
 

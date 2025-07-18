@@ -1,6 +1,6 @@
 import { Chip } from "@mui/material";
 import React from "react";
-const HomeTestimonial: React.FC = () => {
+const HomeTestimonial: React.FC<{ imgs?: any[] }> = ({ imgs = [] }) => {
   return (
     <div className="max-w-[1200px] lg:py-10 lg:pb-20 text-center">
       <Chip
@@ -21,14 +21,14 @@ const HomeTestimonial: React.FC = () => {
       <ul className="flex justify-center items-center gap-8 mt-6">
         <li>
           <img
-            src="/images/pexels-elletakesphotos-1680172.jpg"
+            src= {imgs[0].url ?? "/images/pexels-elletakesphotos-1680172.jpg"}
             alt="testimonial 1"
             className=" w-40 h-40 object-cover shadow-lg grayscale"
           />
         </li>
         <li className="scale-110 transition-all duration-200 hover:scale-125">
           <img
-            src="/images/pexels-elletakesphotos-1680172.jpg"
+            src={imgs[1].url ?? "/images/pexels-elletakesphotos-1680172.jpg"}
             alt="testimonial 2"
             className=" w-40 h-40 object-cover shadow-lg "
           />
@@ -37,7 +37,7 @@ const HomeTestimonial: React.FC = () => {
         </li>
         <li>
           <img
-            src="/images/pexels-elletakesphotos-1680172.jpg"
+            src={imgs[2].url ?? "/images/pexels-elletakesphotos-1680172.jpg"}
             alt="testimonial 3"
             className=" w-40 h-40 object-cover shadow-lg grayscale"
           />

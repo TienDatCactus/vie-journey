@@ -1,51 +1,33 @@
 import { create } from "zustand";
 import { getLandingAssets } from "../api/asset";
 import { doAddContentAsset, doGetUserContentAssets } from "../api";
-import { Asset } from "../../utils/interfaces";
+import { Asset, LandingAssets } from "../../utils/interfaces";
 
 interface AssetsState {
-  assets: Asset[];
+  landingAssets: LandingAssets;
   userAssets: Asset[];
-  addAsset: (asset: Asset) => void;
-  removeAsset: (id: string) => void;
-  clearAssets: () => void;
-  filterAssets: (type: string) => void;
+
   doGetAssets: () => Promise<void>;
   doGetUserAssets: () => Promise<void>;
   doAddUserAsset: (asset: File) => Promise<void>;
 }
 
 export const useAssetsStore = create<AssetsState>((set) => ({
-  assets: [],
+  landingAssets: [],
   userAssets: [],
-  addAsset: (asset) =>
-    set((state) => ({
-      assets: [...state.assets, asset],
-    })),
-  removeAsset: (id) =>
-    set((state) => ({
-      assets: state.assets.filter((asset) => asset._id !== id),
-    })),
-  clearAssets: () =>
-    set(() => ({
-      assets: [],
-    })),
-  filterAssets: (type: string) => {
-    set((state) => ({
-      assets: state.assets.filter((asset) => asset.type === type),
-    }));
-  },
+
   doGetAssets: async () => {
     try {
-      const assets = await getLandingAssets(); // Adjust the API endpoint as needed
-      if (!assets || !Array.isArray(assets)) {
+      const response = await getLandingAssets();
+      if (!response) {
         throw new Error("Failed to fetch assets");
       }
-      set({ assets: assets });
+      set({ landingAssets: response });
     } catch (error) {
-      console.error(error);
+      console.error("Lỗi khi lấy danh sách assets:", error);
     }
   },
+
   doGetUserAssets: async () => {
     try {
       const userAssets = await doGetUserContentAssets();

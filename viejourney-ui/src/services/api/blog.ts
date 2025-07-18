@@ -108,8 +108,7 @@ export const editBlogDraft = async (id: string, data: any) => {
   data.tags.forEach((tag: string) => {
     formData.append("tags", tag);
   });
-
-  const res = await http.patch(`${BLOG.BLOGS}/update-draft/${id}`, formData, {
+  const res = await http.patch(`${BLOG.BLOGS}/draft/${id}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

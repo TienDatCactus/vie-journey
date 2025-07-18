@@ -111,42 +111,52 @@ export class TripService {
       });
       console.log('Decoded token:', decodedToken);
       console.log(tripId);
+      if (!decodedToken.tripId || !decodedToken.email) {
+        throw new HttpException('Invalid token format', HttpStatus.BAD_REQUEST);
+      }
       if (decodedToken.tripId !== tripId) {
         throw new HttpException(
           'Invalid invitation token for this trip',
           HttpStatus.BAD_REQUEST,
         );
       }
-      // Check if token is expired
-      if (new Date() > new Date(decodedToken.expiresAt)) {
+      if (
+        decodedToken.expiresAt &&
+        new Date() > new Date(decodedToken.expiresAt)
+      ) {
         throw new HttpException(
           'Invitation token has expired',
           HttpStatus.BAD_REQUEST,
         );
       }
-      // 2. Get the trip details
       const trip = await this.tripModel.findById(tripId);
       if (!trip) {
         throw new HttpException('Trip not found', HttpStatus.NOT_FOUND);
       }
       const email = decodedToken.email;
-      if (!email) {
+      const isInvited = trip.tripmates.includes(email);
+      if (!isInvited) {
         throw new HttpException(
-          'Email not found in token',
+          'Your email is not on the invitation list',
           HttpStatus.BAD_REQUEST,
         );
       }
       const existingUser = await this.userModel.findOne({ email });
-      const tripmateExists = trip.tripmates.includes(email);
+      const hasAccount = !!existingUser;
+
       return {
         valid: true,
-        trip: trip,
-        userExists: !!existingUser,
+        trip: {
+          id: trip._id,
+          title: trip.title,
+          destination: trip.destination,
+          startDate: trip.startDate,
+          endDate: trip.endDate,
+        },
+        userExists: hasAccount,
         email: email,
-        tripmateExists: tripmateExists ? email : undefined,
       };
     } catch (error) {
-      console.error('Error validating invitation token:', error);
       throw new HttpException(
         'Error validating invitation token: ' + error.message,
         HttpStatus.BAD_REQUEST,
@@ -252,8 +262,16 @@ export class TripService {
       }
 
       const secret = process.env.JWT_SECRET || 'secret';
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+
       const token = this.jwtService.sign(
-        { sub: email, email, tripId: trip._id },
+        {
+          sub: email,
+          email,
+          tripId: trip._id,
+          expiresAt: expiresAt.toISOString(),
+        },
         { secret: secret },
       );
 
@@ -270,15 +288,17 @@ export class TripService {
           joinLink,
         },
       });
-      console.log(result);
       if (result) {
         await this.tripModel.updateOne(
           { _id: tripId },
           { $addToSet: { tripmates: email } },
         );
       }
-      console.log('Email sent successfully:', result);
-      return result;
+      return {
+        success: true,
+        message: `Invitation sent to ${email} (fallback plain text)`,
+        expiresAt,
+      };
     } catch (error) {
       console.error('Failed to send invitation email:', error);
       // Rethrow with more descriptive message

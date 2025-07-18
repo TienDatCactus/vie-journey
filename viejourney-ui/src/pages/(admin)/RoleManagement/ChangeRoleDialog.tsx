@@ -74,27 +74,27 @@ const ChangeRoleDialog: React.FC<ChangeRoleDialogProps> = ({
           Change all users to role
         </Typography>
       </DialogTitle>
-      
+
       <DialogContent>
         <Box sx={{ mb: 3 }}>
           <Typography variant="body1" sx={{ mb: 2 }}>
             Các user này sẽ được chuyển sang role:{" "}
-            <Chip 
-              label={getRoleLabel(newRole)} 
+            <Chip
+              label={getRoleLabel(newRole)}
               color={getRoleColor(newRole) as any}
               size="small"
             />
           </Typography>
-          
+
           <Divider sx={{ my: 2 }} />
-          
+
           <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
             Danh sách người dùng ({selectedUsers.length}):
           </Typography>
-          
+
           <List dense>
             {selectedUsers.map((user, index) => (
-              <ListItem key={user.userId} sx={{ py: 0.5 }}>
+              <ListItem key={index} sx={{ py: 0.5 }}>
                 <ListItemText
                   primary={
                     <Box display="flex" alignItems="center" gap={1}>
@@ -108,20 +108,16 @@ const ChangeRoleDialog: React.FC<ChangeRoleDialogProps> = ({
                   }
                   secondary={
                     <Box display="flex" alignItems="center" gap={1}>
-                      <Typography variant="caption">
-                        Từ: 
-                      </Typography>
-                      <Chip 
-                        label={getRoleLabel(user.role)} 
+                      <Typography variant="caption">Từ:</Typography>
+                      <Chip
+                        label={getRoleLabel(user.role)}
                         color={getRoleColor(user.role) as any}
                         size="small"
                         variant="outlined"
                       />
-                      <Typography variant="caption">
-                        → 
-                      </Typography>
-                      <Chip 
-                        label={getRoleLabel(newRole)} 
+                      <Typography variant="caption">→</Typography>
+                      <Chip
+                        label={getRoleLabel(newRole)}
                         color={getRoleColor(newRole) as any}
                         size="small"
                       />
@@ -133,16 +129,12 @@ const ChangeRoleDialog: React.FC<ChangeRoleDialogProps> = ({
           </List>
         </Box>
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 3 }}>
         <Button onClick={onClose} variant="outlined">
           Cancel
         </Button>
-        <Button 
-          onClick={onAccept} 
-          variant="contained"
-          color="primary"
-        >
+        <Button onClick={onAccept} variant="contained" color="primary">
           Accept
         </Button>
       </DialogActions>

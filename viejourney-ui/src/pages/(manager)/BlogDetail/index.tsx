@@ -137,7 +137,7 @@ export default function Blog() {
 
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar
-                    src={blog?.createdBy.avatar.url}
+                    src={blog?.createdBy?.avatar?.url || "/images/placeholders/icons8-avatar-50.png"}
                     alt={blog?.createdBy.fullName}
                     className="w-12 h-12"
                   />

@@ -116,13 +116,13 @@ const GeneralFilter: React.FC<GeneralFilterProps> = ({
   const mapInstance = useMap();
   const placesLib = useMapsLibrary("places");
   const [destination, setDestination] = useState<string>("");
-  const [selectedPlace, setSelectedPlace] = useState<{
+  const [selectedPlace] = useState<{
     placePrediction: google.maps.places.PlacePrediction | null;
   } | null>(null);
   const [open, setOpen] = useState(false);
   const [openSearch, setOpenSearch] = useState(false);
   const { suggestions, isLoading } = useAutocompleteSuggestions(destination);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const { handlePOIClick, setHighlightedPOI } = usePOI();
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

@@ -40,9 +40,9 @@ export const HOTELS = {
 };
 
 export const ADMIN = {
-  GET_ASSET: "/admin/assets",
-  UPDATE_ASSET: "/admin/update-asset",
-  DELETE_ASSET: "/admin/assets/delete",
+  GET_ASSET: "/assets",
+  UPDATE_ASSET: "/update-asset",
+  DELETE_ASSET: "/assets/delete",
   UPDATE_USER_ROLE: "/admin/users/:id/role",
   BULK_UPDATE_USER_ROLES: "/admin/users/bulk-update-roles",
 };

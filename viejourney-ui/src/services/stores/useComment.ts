@@ -27,7 +27,7 @@ interface UseComment {
   handleDeleteComment: (commentId: string) => Promise<boolean>;
 }
 
-export const useComment = create<UseComment>((set, get) => ({
+export const useComment = create<UseComment>(() => ({
   handleGetComment: async (params: ICommentParams) => {
     try {
       const comments = await getComment(params);

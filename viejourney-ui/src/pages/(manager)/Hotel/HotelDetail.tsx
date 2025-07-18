@@ -31,16 +31,7 @@ import {
 import { doGetHotelById } from "../../../services/api";
 import EditHotelDialog from "./EditHotelDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
-
-interface Hotel {
-  _id: string;
-  name: string;
-  description: string;
-  rating: number;
-  address: string;
-  coordinate: string;
-  image: string[];
-}
+import { Hotel } from "../../../utils/interfaces";
 
 const HotelDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -72,7 +63,7 @@ const HotelDetail: React.FC = () => {
           address: hotelData.address,
           coordinate: hotelData.coordinate,
           // Parse image array if it's a string
-          image: Array.isArray(hotelData.image)
+          images: Array.isArray(hotelData.image)
             ? hotelData.image
                 .map((img: string) => {
                   // If image is in format "['img1.jpg', 'img2.jpg']", parse it
@@ -124,7 +115,7 @@ const HotelDetail: React.FC = () => {
         rating: hotelData.rating,
         address: hotelData.address,
         coordinate: hotelData.coordinate,
-        image: Array.isArray(hotelData.image)
+        images: Array.isArray(hotelData.image)
           ? hotelData.image
               .map((img: string) => {
                 if (img.startsWith("[") && img.endsWith("]")) {
@@ -378,13 +369,13 @@ const HotelDetail: React.FC = () => {
             </Paper>
 
             {/* Images */}
-            {hotel.image && hotel.image.length > 0 && (
+            {hotel.images && hotel.images.length > 0 && (
               <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight="bold" mb={2}>
-                  Images ({hotel.image.length})
+                  Images ({hotel.images.length})
                 </Typography>
                 <Grid2 container spacing={2}>
-                  {hotel.image.map((image, index) => (
+                  {hotel.images.map((image, index) => (
                     <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                       <Card>
                         <CardMedia
@@ -450,7 +441,7 @@ const HotelDetail: React.FC = () => {
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <ImageIcon color="action" fontSize="small" />
                     <Typography variant="body1" fontWeight={500}>
-                      {hotel.image?.length || 0} images
+                      {hotel.images?.length || 0} images
                     </Typography>
                   </Stack>
                 </Box>

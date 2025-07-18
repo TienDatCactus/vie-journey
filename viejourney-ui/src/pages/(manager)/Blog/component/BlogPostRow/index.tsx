@@ -8,9 +8,8 @@ import {
   LocationOn,
   Schedule,
   Visibility,
-   
 } from "@mui/icons-material";
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from "@mui/icons-material/Close";
 import {
   Avatar,
   Button,
@@ -58,8 +57,17 @@ export default function BlogPostRow({
       case "REJECTED":
         return (
           <div className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-md w-fit">
-            <CloseIcon  sx={{ fontSize: 16 }} />
+            <CloseIcon sx={{ fontSize: 16 }} />
             <span>REJECTED</span>
+          </div>
+        );
+
+      case "DRAFT":
+        return (
+          <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md w-fit">
+            {" "}
+            <CloseIcon sx={{ fontSize: 16 }} />
+            <span>DRAFT</span>
           </div>
         );
     }
@@ -77,10 +85,10 @@ export default function BlogPostRow({
           </div>
           <div className="flex items-center gap-2 mt-1">
             <Avatar sx={{ width: 24, height: 24 }} src={blog?.avatarUser}>
-              {blog?.createdBy.fullName}
+              {blog?.createdBy?.fullName}
             </Avatar>
             <span className="text-sm text-gray-500">
-              {blog?.createdBy.fullName}
+              {blog?.createdBy?.fullName}
             </span>
           </div>
         </div>

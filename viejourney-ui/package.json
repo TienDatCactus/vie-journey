@@ -13,6 +13,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
     "@floating-ui/react": "^0.27.12",
     "@mui/icons-material": "^6.4.8",
     "@mui/material": "^6.4.8",
@@ -79,5 +80,13 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.32.0",
+    "@rollup/rollup-darwin-x64": "^4.32.0",
+    "@rollup/rollup-linux-arm64-gnu": "^4.32.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.32.0",
+    "@rollup/rollup-win32-arm64-msvc": "^4.32.0",
+    "@rollup/rollup-win32-x64-msvc": "^4.32.0"
   }
 }
