@@ -306,7 +306,7 @@ export class BlogService {
   async findOneBlogById(blogId: string) {
     const blog = await this.blogModel
       .findById(blogId)
-      .populate('createdBy updatedBy')
+      .populate('createdBy')
       .exec();
 
     if (!blog) throw new NotFoundException('Blog not found');
@@ -471,17 +471,22 @@ export class BlogService {
     const userId = req.user?.['userId'] as string;
     const blog = await this.blogModel.findById(blogId).exec();
     if (!blog) throw new NotFoundException('Blog not found');
+    if (blog.status !== 'APPROVED') {
+      throw new BadRequestException(
+        'Cannot flag a blog that is in DRAFT or PENDING status',
+      );
+    } else {
+      // Thêm flag mới vào mảng flags
+      blog.flags = blog.flags || [];
+      blog.flags.push({
+        reason,
+        userId: new Types.ObjectId(userId), // lưu lại ai là người flag
+        date: new Date(),
+      });
 
-    // Thêm flag mới vào mảng flags
-    blog.flags = blog.flags || [];
-    blog.flags.push({
-      reason,
-      userId: new Types.ObjectId(userId), // lưu lại ai là người flag
-      date: new Date(),
-    });
-
-    await blog.save();
-    return { message: 'Flag added successfully', flags: blog.flags };
+      await blog.save();
+      return { message: 'Flag added successfully', flags: blog.flags };
+    }
   }
 
   // Start writing a blog with location

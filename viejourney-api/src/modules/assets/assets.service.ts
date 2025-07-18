@@ -80,7 +80,7 @@ export class AssetsService {
         (subsection.toLowerCase() === 'creator' && count >= 3)
       ) {
         throw new BadRequestException(
-          `Số lượng asset cho subsection ${subsection} đã vượt quá giới hạn!`,
+          `The number of assets for subsection:${subsection} has exceeded the limit!`,
         );
       }
     }
@@ -218,7 +218,7 @@ export class AssetsService {
       const banners = await this.assetModel.find({ type: 'BANNER' }).exec();
 
       // Danh sách các subsection cần lấy
-      const subsections = ['hero', 'intro', 'destination', 'hotels', 'creator'];
+      const subsections = ['hero', 'intro', 'destination', 'hotel', 'creator'];
 
       // Kết quả trả về
       const result: Record<string, any[]> = {};
