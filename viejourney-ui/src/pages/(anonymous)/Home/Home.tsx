@@ -56,7 +56,7 @@ const Home = () => {
     };
 
     fetchAssets();
-  }, [doGetAssets]);
+  }, []);
 
   const hasAssets = landingAssets && Object.keys(landingAssets).length > 0;
 
