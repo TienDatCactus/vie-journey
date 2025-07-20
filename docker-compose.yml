@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  viejourney-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: viejourney
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./viejourney-api/.env:/app/.env
+    env_file:
+      - ./viejourney-api/.env
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"

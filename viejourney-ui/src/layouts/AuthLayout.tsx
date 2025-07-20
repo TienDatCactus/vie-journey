@@ -24,6 +24,7 @@ const StatusHandler = () => {
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, loadCurrentUser, loadUserInfo, info, credential } =
     useAuthStore();
+
   useEffect(() => {
     const run = async () => {
       if (!credential?.token || user) return;
