@@ -5,12 +5,14 @@ import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import { Asset } from 'src/common/entities/asset.entity';
+import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AssetsService {
   constructor(
     @InjectModel('Asset') private readonly assetModel: Model<Asset>,
+    @InjectModel('UserInfos') private readonly userInfos: Model<UserInfos>,
     private configService: ConfigService,
   ) {
     cloudinary.config({
@@ -23,7 +25,6 @@ export class AssetsService {
   // Lấy tất cả asset của user có type là CONTENT
   async getAllUserContentAssets(userId: string) {
     try {
-      console.log('userId: ', userId);
       const assets = await this.assetModel
         .find({
           assetOwner: 'USER',
@@ -31,7 +32,6 @@ export class AssetsService {
           type: { $regex: /^CONTENT$/i }, // không phân biệt hoa thường
         })
         .exec();
-      console.log('assets: ', assets);
       return assets;
     } catch (error) {
       throw new BadRequestException(
@@ -48,7 +48,6 @@ export class AssetsService {
   ) {
     const userId = req.user?.['userId'] as string;
     const roles = req.user?.['role'] as string;
-    console.log('Role: ', roles);
 
     if (!file) {
       throw new BadRequestException('File upload is required');
@@ -155,28 +154,18 @@ export class AssetsService {
 
     if (asset.type === 'AVATAR') {
       await this.deleteImage(asset.publicId);
-
-      const updatedAsset = await this.assetModel.findOneAndUpdate(
-        { publicId: asset.publicId },
-        {
-          $set: {
-            url: null,
-            publicId: null,
-            location: null,
-            format: null,
-            file_size: null,
-            dimensions: null,
-          },
-        },
+      const updatedAsset = await this.assetModel.findByIdAndDelete(asset._id);
+      if (!updatedAsset) {
+        throw new BadRequestException(`Failed to delete asset with id ${id}`);
+      }
+      await this.userInfos.findOneAndUpdate(
+        { userId: asset.userId },
+        { avatar: null },
         { new: true },
       );
-
       return updatedAsset;
     } else {
-      // Xóa ảnh trên Cloudinary (nếu cần)
       await this.deleteImage(asset.publicId);
-
-      // Xóa asset khỏi database
       const deletedAsset = await this.assetModel.findOneAndDelete({
         publicId: asset.publicId,
       });

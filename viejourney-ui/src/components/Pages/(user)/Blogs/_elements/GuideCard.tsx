@@ -1,26 +1,23 @@
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import { FavoriteBorder, FavoriteOutlined } from "@mui/icons-material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Avatar, IconButton, Stack } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUserBlog } from "../../../../../services/stores/useBlogStore";
+import { useBlogStore } from "../../../../../services/stores/useBlogStore";
 import { IRelatedBlogs } from "../../../../../utils/interfaces/blog";
 
 const BlogCard = (props: IRelatedBlogs) => {
   const navigate = useNavigate();
-  const [isLiked, setIsLiked] = useState<boolean>(false);
 
-  const { handleCheckIsLike } = useUserBlog();
+  const { checkLikeStatus, isLiked } = useBlogStore();
 
   useEffect(() => {
     (async () => {
-      const liked = await handleCheckIsLike(props._id);
-      setIsLiked(!!liked);
+      await checkLikeStatus(props._id);
     })();
   }, [props._id]);
 
@@ -68,19 +65,19 @@ const BlogCard = (props: IRelatedBlogs) => {
             <Stack direction={"row"} alignItems={"center"}>
               <IconButton>
                 {isLiked ? (
-                  <FavoriteIcon
-                    className="cursor-pointer hover:scale-110 transition-all duration-300"
+                  <FavoriteOutlined
+                    className="cursor-pointer hover:scale-110 transition-all duration-300 text-base"
                     sx={{ color: "red" }}
                   />
                 ) : (
-                  <FavoriteBorderIcon className="cursor-pointer hover:scale-110 transition-all duration-300 text-gray-600" />
+                  <FavoriteBorder className="text-base" />
                 )}
               </IconButton>
               <p className="m-0">{props.metrics.likeCount} </p>
             </Stack>
             <Stack direction={"row"} alignItems={"center"}>
               <IconButton>
-                <VisibilityIcon className="text-[18px]" />
+                <VisibilityIcon className="text-base" />
               </IconButton>
               <p className="m-0">{props.metrics.viewCount} </p>
             </Stack>

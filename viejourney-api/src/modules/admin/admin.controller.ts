@@ -22,6 +22,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UserService } from '../userinfo/user.service';
 import { AdminService } from './admin.service';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { DashboardQueryDto } from 'src/common/dtos/dashboard-analytics.dto';
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.Admin)
@@ -30,11 +31,19 @@ export class AdminController {
     private readonly adminService: AdminService,
     private readonly userService: UserService,
   ) {}
-
+  @Get('analytics')
+  async getDashboardAnalytics(@Query() query: DashboardQueryDto) {
+    return this.adminService.getDashboardAnalytics(query);
+  }
+  @Get('roles')
+  async getRoleBasedCounts() {
+    return this.adminService.getRoleBasedCounts();
+  }
   @Get('accounts')
   async getAllAccounts() {
     return this.adminService.getAllAccounts();
   }
+
   @Post('accounts')
   async createAccount(@Body() createAccountDto: CreateAccountDto) {
     return this.adminService.createAccount(createAccountDto);
@@ -85,7 +94,6 @@ export class AdminController {
           }
         : undefined;
     const resp = await this.userService.getAllUser(filter, pagination);
-    console.log(resp);
     return this.userService.getAllUser(filter, pagination);
   }
 

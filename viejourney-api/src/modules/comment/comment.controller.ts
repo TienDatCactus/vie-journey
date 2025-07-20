@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -22,29 +23,25 @@ export class CommentController {
   async createComment(
     @Body('blogId') blogId: string,
     @Body('content') content: string,
-    @Body('parentId') parentId: string,
     @Req() req,
   ) {
-    return this.commentService.createComment(blogId, content, req, parentId);
+    const userId = req.user?.['userId'] as string;
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+    return this.commentService.createComment(blogId, content, userId);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   async getComments(
     @Query('blogId') blogId: string,
-    @Query('parentId') parentId: string,
     @Query('limit') limit?: string,
     @Query('skip') skip?: string,
   ) {
-    // Chuyển đổi sang number, nếu không truyền thì dùng giá trị mặc định
     const limitNumber = limit !== undefined ? parseInt(limit, 10) : 10;
     const skipNumber = skip !== undefined ? parseInt(skip, 10) : 0;
-    return this.commentService.getComments(
-      blogId,
-      parentId,
-      limitNumber,
-      skipNumber,
-    );
+    return this.commentService.getComments(blogId, limitNumber, skipNumber);
   }
 
   @Patch(':id')

@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { animate } from "motion/react";
+import { ProcessedBlogContent, PlaceData } from "../interfaces";
 
 export function getDatesBetween(startDate: Date, endDate: Date): string[] {
   const start = dayjs(startDate);
@@ -174,4 +175,106 @@ export const smoothScrollTo = (targetY: number) => {
       window.scrollTo(0, latest);
     },
   });
+};
+
+export const getWordCount = (content: string) => {
+  if (!content) return 0;
+  const text = content.replace(/<[^>]*>/g, ""); // Remove HTML tags
+  const words = text
+    .trim()
+    .split(/\s+/)
+    .filter((word) => word.length > 0);
+  return words.length;
+};
+
+export const processBlogContent = (editor: any): ProcessedBlogContent => {
+  if (!editor) {
+    return {
+      cleanHtml: "<p></p>",
+      places: [],
+      fullHtml: "<p></p>",
+      wordCount: 0,
+    };
+  }
+
+  const places: PlaceData[] = [];
+  let placeCounter = 1;
+
+  // Extract places from editor state
+  editor.state.doc.descendants((node: any) => {
+    if (node.type.name === "placeAutocomplete") {
+      const googlePlace = node.attrs.place;
+
+      // Only process if we have a valid Google Place with data
+      if (googlePlace && googlePlace.id && googlePlace.displayName) {
+        try {
+          const placeData: PlaceData = {
+            displayName: googlePlace.displayName,
+            placeId: googlePlace.id,
+            latitude:
+              typeof googlePlace.location?.lat === "function"
+                ? googlePlace.location.lat()
+                : googlePlace.location?.lat || 0,
+            longitude:
+              typeof googlePlace.location?.lng === "function"
+                ? googlePlace.location.lng()
+                : googlePlace.location?.lng || 0,
+            editorialSummary: googlePlace.editorialSummary || "",
+            types: Array.isArray(googlePlace.types) ? googlePlace.types : [],
+            photos:
+              googlePlace.photos && googlePlace.photos.length > 0
+                ? [getPlacePhotoUrl(googlePlace.photos[0])]
+                : [],
+            googleMapsURI: googlePlace.googleMapsURI || "",
+            showDetails: Boolean(node.attrs.showDetails),
+          };
+
+          places.push(placeData);
+          console.log(
+            `Extracted place ${placeCounter}:`,
+            placeData.displayName
+          );
+          placeCounter++;
+        } catch (error) {
+          console.error("Error extracting place data:", error);
+        }
+      }
+    }
+  });
+
+  // Get full HTML from editor
+  const fullHtml = editor.getHTML();
+
+  // Create clean HTML by removing place nodes entirely
+  let cleanHtml = fullHtml;
+
+  // Remove all place autocomplete nodes from the HTML
+  cleanHtml = cleanHtml.replace(
+    /<div[^>]*data-type="place-autocomplete"[^>]*>[\s\S]*?<\/div>/g,
+    ""
+  );
+
+  // Clean up any extra empty paragraphs or whitespace
+  cleanHtml = cleanHtml
+    .replace(/<p><\/p>/g, "") // Remove empty paragraphs
+    .replace(/\s+/g, " ") // Normalize whitespace
+    .trim();
+
+  // Ensure we have at least one paragraph
+  if (!cleanHtml || cleanHtml === "") {
+    cleanHtml = "<p></p>";
+  }
+
+  console.log("Blog content processed:", {
+    placesFound: places.length,
+    placeNames: places.map((p) => p.displayName),
+    cleanHtmlLength: cleanHtml.length,
+  });
+
+  return {
+    cleanHtml,
+    places,
+    fullHtml,
+    wordCount: getWordCount(cleanHtml),
+  };
 };

@@ -18,6 +18,7 @@ export const USER = {
   GET_USER_INFO: "/user",
   UPDATE: "/user/edit-profile",
   EDIT_AVATAR: "/user/edit-avatar",
+  GET_DETAILS: "/user/details",
 };
 
 export const ACCOUNTS = {
@@ -40,6 +41,8 @@ export const HOTELS = {
 };
 
 export const ADMIN = {
+  GET_ROLE_BASED_COUNTS: "/admin/roles",
+  GET_ANALYTICS: "/admin/analytics",
   GET_ASSET: "/assets",
   UPDATE_ASSET: "/update-asset",
   DELETE_ASSET: "/assets/delete",
@@ -67,8 +70,12 @@ export const ASSET = {
 };
 
 export const BLOG = {
+  BLOGS_RELATED: "/blogs/related",
   LIST_BLOGS: "/blogs/manager",
   BLOGS: "/blogs",
+  BLOGS_FLAG: "/blogs/flags",
+  BLOGS_UPDATE_DRAFT: "/blogs/draft",
+  BLOGS_EDIT: "/blogs/edit",
 };
 
 export const COMMENT = {

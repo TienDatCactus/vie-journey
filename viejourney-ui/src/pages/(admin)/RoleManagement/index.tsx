@@ -17,13 +17,17 @@ import {
 } from "@mui/material";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
 import { LicenseInfo } from "@mui/x-license";
-import { useState } from "react";
-import { AdminLayout } from "../../../layouts";
-import { doBulkUpdateUserRoles } from "../../../services/api";
+import { useEffect, useState } from "react";
+import {
+  doBulkUpdateUserRoles,
+  doGetRoleBasedCounts,
+} from "../../../services/api";
 import ChangeRoleDialog from "./ChangeRoleDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
 import EditRoleDialog from "./EditRoleDialog";
 import ViewUsersDialog from "./ViewUsersDialog";
+import { DashboardLayout } from "../../../layouts";
+import { enqueueSnackbar } from "notistack";
 
 // Set MUI Pro License
 LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
@@ -51,74 +55,6 @@ const ActionComponent = ({
   );
 };
 
-const roleStats = [
-  {
-    title: "Regular User",
-    count: 1247,
-    icon: <PersonIcon />,
-    color: "#e3f2fd",
-    iconColor: "#1976d2",
-  },
-  {
-    title: "Content Manager",
-    count: 23,
-    icon: <ManageAccountsIcon />,
-    color: "#f3e5f5",
-    iconColor: "#7b1fa2",
-  },
-  {
-    title: "Administrator",
-    count: 5,
-    icon: <AdminPanelSettingsIcon />,
-    color: "#ffebee",
-    iconColor: "#d32f2f",
-  },
-];
-
-const systemRoles = [
-  {
-    id: 1,
-    role: "Regular User",
-    apiRole: "USER", // API role constant
-    description: "Regular user with basic content creation privileges",
-    users: 1247,
-    permissions: ["Content Management (1)", "Comment Management (1)"],
-    color: "#1976d2",
-    bgColor: "#e3f2fd",
-  },
-  {
-    id: 2,
-    role: "Content Manager",
-    apiRole: "MANAGER", // API role constant
-    description: "Content & asset manager with moderation capabilities",
-    users: 23,
-    permissions: [
-      "Content Management (4)",
-      "Comment Management (3)",
-      "User Management (1)",
-      "Asset Management (2)",
-    ],
-    color: "#7b1fa2",
-    bgColor: "#f3e5f5",
-  },
-  {
-    id: 3,
-    role: "Administrator",
-    apiRole: "ADMIN", // API role constant
-    description: "Supervisor with full system access and control",
-    users: 5,
-    permissions: [
-      "Content Management (4)",
-      "Comment Management (4)",
-      "User Management (4)",
-      "Report Management (4)",
-      "Asset Management (4)",
-    ],
-    color: "#d32f2f",
-    bgColor: "#ffebee",
-  },
-];
-
 // User interface for dialog
 interface User {
   userId: string;
@@ -138,15 +74,105 @@ const RoleManagement = () => {
   const [viewUsersDialogOpen, setViewUsersDialogOpen] = useState(false);
   const [changeRoleDialogOpen, setChangeRoleDialogOpen] = useState(false);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<
-    (typeof systemRoles)[0] | null
-  >(null);
+
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [newRole, setNewRole] = useState("");
   const [loading, setLoading] = useState(false);
+  const [counts, setCounts] = useState<{
+    userCount: number;
+    managerCount: number;
+    adminCount: number;
+  }>({
+    userCount: 0,
+    managerCount: 0,
+    adminCount: 0,
+  });
 
-  //
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await doGetRoleBasedCounts();
+        if (res) {
+          setCounts({
+            userCount: res.userCount || 0,
+            managerCount: res.managerCount || 0,
+            adminCount: res.adminCount || 0,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+  const roleStats = [
+    {
+      title: "Regular User",
+      value: counts.userCount.toLocaleString(),
+      change: `${counts.userCount.toLocaleString()} users with basic access`,
+      icon: <PersonIcon />,
+      color: "#e3f2fd",
+      iconColor: "#1976d2",
+    },
+    {
+      title: "Content Manager",
+      value: counts.managerCount.toLocaleString(),
+      change: `${counts.managerCount.toLocaleString()} users with content privileges`,
+      icon: <ManageAccountsIcon />,
+      color: "#f3e5f5",
+      iconColor: "#7b1fa2",
+    },
+    {
+      title: "Administrator",
+      value: counts.adminCount.toLocaleString(),
+      change: `${counts.adminCount.toLocaleString()} users with full system access`,
+      icon: <AdminPanelSettingsIcon />,
+      color: "#ffebee",
+      iconColor: "#d32f2f",
+    },
+  ];
 
+  const systemRoles = [
+    {
+      id: 1,
+      role: "Regular User",
+      apiRole: "USER", // API role constant
+      description: "Regular user with basic content creation privileges",
+      users: counts.userCount,
+      permissions: ["Content Management (1)", "Comment Management (1)"],
+      color: "#1976d2",
+      bgColor: "#e3f2fd",
+    },
+    {
+      id: 2,
+      role: "Content Manager",
+      apiRole: "MANAGER", // API role constant
+      description: "Content & asset manager with moderation capabilities",
+      users: counts.managerCount,
+      permissions: [
+        "Content Management (4)",
+        "Comment Management (3)",
+        "Asset Management (2)",
+      ],
+      color: "#7b1fa2",
+      bgColor: "#f3e5f5",
+    },
+    {
+      id: 3,
+      role: "Administrator",
+      apiRole: "ADMIN", // API role constant
+      description: "Supervisor with full system access and control",
+      users: counts.adminCount,
+      permissions: ["User Management (4)", "Report Management (4)"],
+      color: "#d32f2f",
+      bgColor: "#ffebee",
+    },
+  ];
+  const [selectedRole, setSelectedRole] = useState<
+    (typeof systemRoles)[0] | null
+  >(null);
   const handleViewUsers = (roleId: number) => {
     const role = systemRoles.find((r) => r.id === roleId);
     if (role) {
@@ -181,8 +207,6 @@ const RoleManagement = () => {
       setNewRole("");
       setSelectedRole(null);
 
-      console.log("Bulk roles updated successfully:", result);
-
       // Log summary for debugging
       if (result.summary) {
         const { successCount, totalRequested, failedCount } = result.summary;
@@ -191,10 +215,15 @@ const RoleManagement = () => {
         if (failedCount > 0 && result.failed) {
           console.warn(`${failedCount} users failed to update:`, result.failed);
           // You could show a toast notification here for failed updates
+          enqueueSnackbar(
+            `${failedCount} users failed to update. Check console for details.`,
+            { variant: "error" }
+          );
         }
-
-        // You could show a success toast notification here
-        // Example: showToast(`Successfully updated ${successCount} users to ${newRole}`)
+        enqueueSnackbar(
+          `Successfully updated ${successCount} users to role "${newRole}".`,
+          { variant: "success" }
+        );
       }
     } catch (error) {
       console.error("Error updating roles:", error);
@@ -244,7 +273,7 @@ const RoleManagement = () => {
   const columns: GridColDef[] = [
     {
       field: "role",
-      headerName: "Role",
+      headerName: "ROLE",
       width: 200,
       renderCell: (params) => (
         <Chip
@@ -252,7 +281,7 @@ const RoleManagement = () => {
           sx={{
             bgcolor: params.row.bgColor,
             color: params.row.color,
-            fontWeight: "bold",
+            fontWeight: 500,
             minWidth: 120,
           }}
         />
@@ -260,24 +289,27 @@ const RoleManagement = () => {
     },
     {
       field: "description",
-      headerName: "Description",
+      headerName: "DESCRIPTION",
       width: 300,
       flex: 1,
+      renderCell: (params) => (
+        <Typography variant="body2">{params.value}</Typography>
+      ),
     },
     {
       field: "users",
-      headerName: "Users",
+      headerName: "USERS",
       width: 120,
       renderCell: (params) => (
         <Stack direction="row" alignItems="center" spacing={1}>
           <GroupIcon fontSize="small" color="action" />
-          <Typography fontWeight="bold">{params.value}</Typography>
+          <Typography fontWeight={500}>{params.value}</Typography>
         </Stack>
       ),
     },
     {
       field: "permissions",
-      headerName: "Permissions (View-Only)",
+      headerName: "PERMISSIONS",
       width: 400,
       flex: 1,
       renderCell: (params) => (
@@ -297,7 +329,7 @@ const RoleManagement = () => {
     },
     {
       field: "actions",
-      headerName: "Actions",
+      headerName: "ACTIONS",
       width: 80,
       sortable: false,
       align: "center",
@@ -308,21 +340,30 @@ const RoleManagement = () => {
   ];
 
   return (
-    <AdminLayout>
+    <DashboardLayout>
       <Box sx={{ p: 3 }}>
-        <Box>
-          <Typography variant="h4" fontWeight="bold">
-            Role & Permission Management
-          </Typography>
-          <Typography color="text.secondary" className="mb-6">
-            Configure role policies and access control
-          </Typography>
-        </Box>
+        {/* Header */}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ mb: 4 }}
+        >
+          <Box>
+            <Typography variant="h4" fontWeight="300" sx={{ mb: 1 }}>
+              Role & Permission Management
+            </Typography>
+            <Typography color="text.secondary">
+              Configure role policies and access control across the platform
+            </Typography>
+          </Box>
+        </Stack>
+
         {/* Stats Cards */}
         <Grid2 container spacing={3} sx={{ mb: 4 }}>
           {roleStats.map((stat, index) => (
             <Grid2 size={{ xs: 12, md: 4 }} key={index}>
-              <Card sx={{ height: "100%" }}>
+              <Card elevation={0} className="shadow-sm" sx={{ height: "100%" }}>
                 <CardContent>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Avatar
@@ -335,12 +376,15 @@ const RoleManagement = () => {
                     >
                       {stat.icon}
                     </Avatar>
-                    <Box>
-                      <Typography variant="h4" fontWeight="bold">
-                        {stat.count}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="h4" fontWeight="300">
+                        {stat.value}
                       </Typography>
                       <Typography color="text.secondary" variant="body2">
                         {stat.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {stat.change}
                       </Typography>
                     </Box>
                   </Stack>
@@ -351,8 +395,8 @@ const RoleManagement = () => {
         </Grid2>
 
         {/* System Roles Table */}
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" fontWeight="bold" mb={1}>
+        <Paper elevation={0} className="shadow-sm" sx={{ p: 3 }}>
+          <Typography variant="h6" fontWeight="500" mb={1}>
             System Roles
           </Typography>
           <Typography color="text.secondary" mb={3}>
@@ -371,17 +415,21 @@ const RoleManagement = () => {
               }}
               pageSizeOptions={[5, 10, 25]}
               disableRowSelectionOnClick
+              disableColumnMenu
+              hideFooterSelectedRowCount
               getRowHeight={() => "auto"}
               sx={{
                 "& .MuiDataGrid-cell": {
-                  borderBottom: "1px solid #f0f0f0",
                   py: 1,
                   display: "flex",
                   alignItems: "center",
                 },
                 "& .MuiDataGrid-columnHeaders": {
                   backgroundColor: "#fafafa",
-                  fontWeight: "bold",
+                  fontWeight: "500",
+                },
+                "& .MuiDataGrid-columnSeparator": {
+                  display: "none",
                 },
                 "& .MuiDataGrid-row": {
                   minHeight: "auto !important",
@@ -423,11 +471,11 @@ const RoleManagement = () => {
           onClose={handleCloseConfirmationDialog}
           onConfirm={handleConfirmChangeRole}
           title="Are you sure?"
-          message={`Bạn có chắc chắn muốn thay đổi role cho ${selectedUsers.length} user(s) đã chọn không? Thao tác này sẽ sử dụng Bulk Update API.`}
+          message={`Are you sure you want to change the role for ${selectedUsers.length} user(s)? This action cannot be undone.`}
           loading={loading}
         />
       </Box>
-    </AdminLayout>
+    </DashboardLayout>
   );
 };
 

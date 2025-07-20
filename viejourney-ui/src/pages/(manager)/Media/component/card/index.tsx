@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 
 import { useState } from "react";
@@ -310,7 +308,7 @@ const AssetCard = ({
                   color="text.secondary"
                   sx={{ display: "block" }}
                 >
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                  {(selectedFile?.size / 1024 / 1024).toFixed(2)} MB
                 </Typography>
               </Box>
             )}

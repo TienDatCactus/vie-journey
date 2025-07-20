@@ -21,26 +21,23 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ImagePlusIcon } from "../../../../../../@/components/tiptap-icons/image-plus-icon";
-import { useUserBlog } from "../../../../../services/stores/useBlogStore";
+import { useBlogStore } from "../../../../../services/stores/useBlogStore";
 import CardSkeleton from "../../../../../utils/handlers/loading/CardSkeleton";
-import { IBlog } from "../../../../../utils/interfaces/blog";
-import dayjs from "dayjs";
 
 export default function TravelBlog() {
-  const [myBlogs, setMyBlogs] = useState<IBlog[]>([]);
   const [loading, setLoading] = useState(true);
-  const { handleGetMyBlogs } = useUserBlog();
+  const { fetchMyBlogs, myBlogs } = useBlogStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
         setLoading(true);
-        const res = await handleGetMyBlogs();
-        if (res) setMyBlogs(res);
+        await fetchMyBlogs();
       } catch (error) {
         console.error("Error fetching blogs:", error);
       } finally {
@@ -53,12 +50,12 @@ export default function TravelBlog() {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "published":
+      case "approved":
         return "success";
       case "draft":
+        return "primary";
+      case "pending":
         return "warning";
-      case "archived":
-        return "default";
       default:
         return "primary";
     }
@@ -298,7 +295,7 @@ export default function TravelBlog() {
                 <Typography
                   variant="h6"
                   component="h2"
-                  className=" font-semibold line-clamp-2"
+                  className=" font-semibold line-clamp-1"
                 >
                   {blog.title}
                 </Typography>
@@ -319,7 +316,7 @@ export default function TravelBlog() {
                   <Box className="flex items-center  text-gray-500">
                     <LocationOn fontSize="small" className="mr-1" />
                     <Typography variant="body2" className="truncate">
-                      {blog.destination.location}
+                      {blog.destination}
                     </Typography>
                   </Box>
 

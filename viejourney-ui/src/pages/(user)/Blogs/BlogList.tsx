@@ -13,20 +13,21 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AllBlogs } from "../../../components/Pages/(user)/Blogs";
 import { MainLayout } from "../../../layouts";
-import { useUserBlog } from "../../../services/stores/useBlogStore";
+import {
+  useBlogSelectors,
+  useBlogStore,
+} from "../../../services/stores/useBlogStore";
 import CardSkeleton from "../../../utils/handlers/loading/CardSkeleton";
-import { IRelatedBlogs } from "../../../utils/interfaces/blog";
+
 const BlogList: React.FC = () => {
-  const handleScroll = () => {
-    const element = destRef.current;
-    if (element) {
-      animate(window.scrollY, element.offsetTop, {
-        duration: 1,
-        ease: "easeInOut",
-        onUpdate: (value: number) => window.scrollTo(0, value),
-      });
-    }
-  };
+  const destRef = useRef<HTMLDivElement | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+
+  const { blogs, filters, fetchBlogs, setFilters, loadMore } = useBlogStore();
+
+  const { canLoadMore } = useBlogSelectors();
+
   const destinations = [
     "Hanoi",
     "Ho Chi Minh City",
@@ -59,75 +60,79 @@ const BlogList: React.FC = () => {
     "Long Xuyen",
     "My Tho",
   ];
-  const destRef = useRef<HTMLDivElement | null>(null);
-  const [blogs, setBlogs] = useState<IRelatedBlogs[]>();
-  const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const fetchData = async (params: any) => {
-    try {
-      setLoading(true);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-    const data = await handleGetBlogList(params);
-    if (data) {
-      setBlogs(data);
-    }
-  };
 
-  const [params, setParams] = useState({
-    page: 1,
-    limit: 10,
-    search: "",
-  });
-
-  const handleShowMore = async () => {
-    const newParam = {
-      ...params,
-      limit: params.limit + 10,
-    };
-
-    setParams(newParam);
-    await fetchData(newParam);
-  };
-
-  const handleSearchChange = async (search: string) => {
-    const newParams = {
-      ...params,
-      search,
-    };
-    setSearchQuery(search);
-    setParams(newParams);
-    await fetchData(newParams);
-  };
-  const { handleGetBlogList } = useUserBlog();
+  // Initial load
   useEffect(() => {
-    (async () => {
-      await fetchData(params);
-    })();
-  }, []);
-  console.log(blogs);
+    const loadInitialBlogs = async () => {
+      setLoading(true);
+      try {
+        await fetchBlogs({ page: 1 });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialBlogs();
+  }, [fetchBlogs]);
+
+  // Debounced search effect
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
-      handleSearchChange(searchQuery);
+      if (searchInput !== filters.search) {
+        handleSearchChange(searchInput);
+      }
     }, 500);
 
     return () => clearTimeout(delayDebounce);
-  }, [searchQuery]);
-  if (loading) {
-    return <CardSkeleton />;
-  }
+  }, [searchInput, filters.search]);
+
+  const handleScroll = () => {
+    const element = destRef.current;
+    if (element) {
+      animate(window.scrollY, element.offsetTop, {
+        duration: 1,
+        ease: "easeInOut",
+        onUpdate: (value: number) => window.scrollTo(0, value),
+      });
+    }
+  };
+
+  const handleSearchChange = async (search: string) => {
+    setLoading(true);
+    try {
+      // Update filters in store (this will reset page to 1)
+      setFilters({ search });
+      // Fetch blogs with new search term
+      await fetchBlogs({ search, page: 1 });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDestinationClick = (destination: string) => {
+    setSearchInput(destination);
+    handleSearchChange(destination);
+  };
+
+  const handleShowMore = async () => {
+    if (!canLoadMore || loading) return;
+
+    setLoading(true);
+    try {
+      await loadMore();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <MainLayout>
-      <div className="w-full max-w-[75rem]  py-6">
+      <div className="w-full max-w-[75rem] py-6">
         <Stack
           direction={"column"}
           justifyContent={"center"}
           alignItems={"center"}
-          className=" mx-auto"
+          className="mx-auto"
           gap={1}
         >
           <h1 className="font-bold my-2 text-[40px]">
@@ -138,6 +143,8 @@ const BlogList: React.FC = () => {
             fullWidth
             variant="standard"
             placeholder="Search for a specific blog"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             slotProps={{
               input: {
                 startAdornment: (
@@ -156,34 +163,39 @@ const BlogList: React.FC = () => {
             world.
           </Link>
           <p className="my-2">Or browse our most popular destinations: </p>
-          <Stack direction={"row"} className="flex-wrap " gap={2}>
-            {!!destinations.length &&
-              destinations
-                ?.slice(0, 2)
-                .map((destination, index) => (
-                  <Chip
-                    className="font-bold text-[#727272]"
-                    key={index}
-                    onClick={(e) => console.log(e)}
-                    label={destination}
-                  />
-                ))}
+          <Stack direction={"row"} className="flex-wrap" gap={2}>
+            {destinations.slice(0, 2).map((destination, index) => (
+              <Chip
+                className="font-bold text-[#727272]"
+                key={index}
+                onClick={() => handleDestinationClick(destination)}
+                label={destination}
+              />
+            ))}
             <Chip
-              className="font-bold text-[#727272]"
+              className="font-bold text-gray-500 cursor-pointer hover:bg-gray-200"
               label="See more ..."
               onClick={handleScroll}
             />
           </Stack>
         </Stack>
       </div>
-      {/* guides cards */}
-      {!!blogs && blogs.length > 0 ? (
-        <AllBlogs blogs={blogs ?? []} />
+
+      {/* Blogs content */}
+      {loading && blogs.length === 0 && (
+        <div className="w-full max-w-[75rem] mx-auto flex justify-center items-center">
+          <CardSkeleton />
+        </div>
+      )}
+      {blogs.length > 0 ? (
+        <AllBlogs blogs={blogs} />
       ) : (
         <div className="relative w-full max-w-[75rem] mx-auto flex flex-col justify-center items-center">
-          <div className="inset-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute  w-full h-full flex justify-center items-center ">
-            <Alert severity="error" className=" text-center">
-              No blogs currently available
+          <div className="inset-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute w-full h-full flex justify-center items-center">
+            <Alert severity="info" className="text-center">
+              {filters.search
+                ? `No blogs found for "${filters.search}"`
+                : "No blogs currently available"}
             </Alert>
           </div>
           <div className="w-full max-w-[75rem] mx-auto flex justify-center items-center">
@@ -191,16 +203,27 @@ const BlogList: React.FC = () => {
           </div>
         </div>
       )}
-      <div className="flex justify-center mt-6">
-        <Button
-          variant="outlined"
-          onClick={handleShowMore}
-          color="primary"
-          className="rounded-4xl py-2 px-10 border-[#d9d9d9] text-[#495057] font-semibold"
-        >
-          See more
-        </Button>
-      </div>
+
+      {/* Load more button */}
+      {blogs.length > 0 && (
+        <div className="flex justify-center mt-6">
+          <Button
+            variant="outlined"
+            onClick={handleShowMore}
+            disabled={!canLoadMore || loading}
+            color="primary"
+            className="rounded-4xl py-2 px-10 border-[#d9d9d9] text-[#495057] font-semibold"
+          >
+            {loading
+              ? "Loading..."
+              : canLoadMore
+              ? "See more"
+              : "No more blogs"}
+          </Button>
+        </div>
+      )}
+
+      {/* Destinations section */}
       <motion.div
         className="w-full max-w-[1200px] pb-10"
         ref={destRef}
@@ -212,15 +235,14 @@ const BlogList: React.FC = () => {
           Or browse our destinations with the most guides
         </h1>
         <Stack direction={"row"} className="flex-wrap" gap={1}>
-          {!!destinations.length &&
-            destinations?.map((destination, index) => (
-              <Chip
-                className="font-bold text-[#727272]"
-                onClick={(e) => console.log(e)}
-                key={index}
-                label={destination}
-              />
-            ))}
+          {destinations.map((destination, index) => (
+            <Chip
+              className="font-bold text-[#727272] cursor-pointer hover:bg-gray-200"
+              onClick={() => handleDestinationClick(destination)}
+              key={index}
+              label={destination}
+            />
+          ))}
         </Stack>
       </motion.div>
     </MainLayout>

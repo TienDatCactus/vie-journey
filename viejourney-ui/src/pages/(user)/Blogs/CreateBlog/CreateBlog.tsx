@@ -13,9 +13,9 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../../../../layouts";
 import { useAutocompleteSuggestions } from "../../../../utils/hooks/use-autocomplete-suggestion";
-import { useUserBlog } from "../../../../services/stores/useBlogStore";
+import { useBlogStore } from "../../../../services/stores/useBlogStore";
 const CreateBlog: React.FC = () => {
-  const { handleStartBlog } = useUserBlog();
+  const { startBlog } = useBlogStore();
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState<string>("");
   const [selectedPlace, setSelectedPlace] = useState<{
@@ -60,7 +60,7 @@ const CreateBlog: React.FC = () => {
     try {
       setLoading(true);
       if (!data.destination.trim()) return;
-      const newBlogId = await handleStartBlog(data.destination);
+      const newBlogId = await startBlog(data.destination);
       if (newBlogId) {
         navigate(`/blogs/edit/${newBlogId}`, {
           state: { type: "draft" },

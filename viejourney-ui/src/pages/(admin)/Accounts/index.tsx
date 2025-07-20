@@ -1,38 +1,44 @@
-import React, { useState, useEffect } from "react";
-import { AdminLayout } from "../../../layouts";
-import {
-  Box,
-  Paper,
-  Typography,
-  Stack,
-  TextField,
-  Avatar,
-  Chip,
-  IconButton,
-  Menu,
-  MenuItem,
-  Grid2,
-  InputAdornment,
-  FormControl,
-  Select,
-  Button,
-} from "@mui/material";
-import { DataGridPremium } from "@mui/x-data-grid-premium";
-import SearchIcon from "@mui/icons-material/Search";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import SearchIcon from "@mui/icons-material/Search";
+import PeopleIcon from "@mui/icons-material/People";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import BlockIcon from "@mui/icons-material/Block";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import {
-  doGetAllUsers,
-  doFilterUsers,
-  doUpdateAccountStatus,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  FormControl,
+  Grid2,
+  IconButton,
+  InputAdornment,
+  Menu,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { DataGridPremium } from "@mui/x-data-grid-premium";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import {
   doDeleteUser,
+  doFilterUsers,
+  doGetAllUsers,
+  doUpdateAccountStatus,
   doUpdateUserInfo,
 } from "../../../services/api";
-import { Link } from "react-router-dom";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditAccountDialog from "./EditAccountDialog";
+import { DashboardLayout } from "../../../layouts";
 
 function stringAvatar(name: string) {
   if (!name) return "";
@@ -95,8 +101,6 @@ const ActionMenu = ({
   );
 };
 
-// DataGrid columns definition - will be created inside component to access handlers
-
 function Accounts() {
   const [users, setUsers] = useState<unknown[]>([]);
   const [search, setSearch] = useState("");
@@ -116,6 +120,7 @@ function Accounts() {
     { value: "INACTIVE", label: "Inactive" },
     { value: "BANNED", label: "Banned" },
   ];
+
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
@@ -141,7 +146,7 @@ function Accounts() {
     return debouncedValue;
   };
 
-  const debouncedSearch = useDebounce(search, 500); // 500ms delay
+  const debouncedSearch = useDebounce(search, 500);
 
   const fetchAccounts = async (params?: {
     search?: string;
@@ -150,7 +155,6 @@ function Accounts() {
   }) => {
     setLoading(true);
     try {
-      // Check if any filter is applied
       const hasFilters =
         params?.search ||
         search ||
@@ -162,12 +166,10 @@ function Accounts() {
       let res;
 
       if (hasFilters) {
-        // Use filter API when filters are applied
         const filterParams: any = {};
 
         if (params?.search || search) {
           const searchTerm = params?.search || search;
-          // Detect if search term looks like email (contains @)
           if (searchTerm.includes("@")) {
             filterParams.email = searchTerm;
           } else {
@@ -183,11 +185,9 @@ function Accounts() {
 
         res = await doFilterUsers(filterParams);
       } else {
-        // Use regular GET API when no filters
         res = await doGetAllUsers();
       }
 
-      // Both APIs return the same structure: { status, message, data: { users, total } }
       if (res.status === "success" && res.data?.users) {
         const transformedUsers = res.data.users.map((user: any) => ({
           _id: user.userId,
@@ -225,10 +225,56 @@ function Accounts() {
     ...user,
   }));
 
+  // Calculate stats
+  const totalUsers = users.length;
+  const activeUsers = users.filter(
+    (user: any) => user.userId?.status === "ACTIVE"
+  ).length;
+  const bannedUsers = users.filter(
+    (user: any) => user.userId?.status === "BANNED"
+  ).length;
+  const adminUsers = users.filter(
+    (user: any) => user.userId?.role === "ADMIN"
+  ).length;
+
+  const statsData = [
+    {
+      title: "Total Users",
+      value: totalUsers.toLocaleString(),
+      change: `${totalUsers} registered accounts`,
+      icon: <PeopleIcon />,
+      color: "#e3f2fd",
+      iconColor: "#1976d2",
+    },
+    {
+      title: "Active Users",
+      value: activeUsers.toLocaleString(),
+      change: `${activeUsers} currently active`,
+      icon: <PersonAddIcon />,
+      color: "#e8f5e8",
+      iconColor: "#2e7d32",
+    },
+    {
+      title: "Banned Users",
+      value: bannedUsers.toLocaleString(),
+      change: `${bannedUsers} restricted access`,
+      icon: <BlockIcon />,
+      color: "#ffebee",
+      iconColor: "#c62828",
+    },
+    {
+      title: "Admin Users",
+      value: adminUsers.toLocaleString(),
+      change: `${adminUsers} admin privileges`,
+      icon: <VerifiedUserIcon />,
+      color: "#f3e5f5",
+      iconColor: "#7b1fa2",
+    },
+  ];
+
   // Handle status change
   const handleStatusChange = async (accountId: string, newStatus: string) => {
     try {
-      // Update UI first (optimistic update)
       setUsers((prev) =>
         prev.map((u: any) =>
           u.userId._id === accountId
@@ -243,13 +289,10 @@ function Accounts() {
         )
       );
 
-      // Call API to update on server
       const active = newStatus === "Active";
-
       await doUpdateAccountStatus(accountId, active);
     } catch (err) {
       console.error("Error updating status:", err);
-      // Revert on error by refetching data
       fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
     }
   };
@@ -436,7 +479,6 @@ function Accounts() {
     setLoadingDelete(true);
     try {
       await doDeleteUser(user._id);
-      // Refresh data after delete
       fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
       setOpenDelete(false);
       setLoadingDelete(false);
@@ -457,7 +499,6 @@ function Accounts() {
     setLoadingEdit(true);
     try {
       await doUpdateUserInfo(user._id, data);
-      // Refresh data after edit
       fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
       setLoadingEdit(false);
       setOpenEdit(false);
@@ -468,44 +509,65 @@ function Accounts() {
   };
 
   return (
-    <AdminLayout>
+    <DashboardLayout>
       <Box sx={{ p: 3 }}>
         {/* Header */}
         <Stack
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          mb={3}
+          sx={{ mb: 4 }}
         >
           <Box>
-            <Typography variant="h4" fontWeight="bold">
+            <Typography variant="h4" fontWeight="300" sx={{ mb: 1 }}>
               User Management
             </Typography>
             <Typography color="text.secondary">
-              View, search, update and restrict user accounts
+              Manage user accounts, roles, and permissions across the platform
             </Typography>
           </Box>
-          <Stack direction="row" spacing={2}>
-            <Chip
-              label="5 Active"
-              color="success"
-              variant="outlined"
-              size="small"
-            />
-            <Chip
-              label="1 Banned"
-              color="error"
-              variant="outlined"
-              size="small"
-            />
-          </Stack>
         </Stack>
 
+        {/* Stats Cards */}
+        <Grid2 container spacing={3} sx={{ mb: 4 }}>
+          {statsData.map((stat, index) => (
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+              <Card elevation={0} className="shadow-sm" sx={{ height: "100%" }}>
+                <CardContent>
+                  <Stack direction="row" alignItems="center" spacing={2}>
+                    <Avatar
+                      sx={{
+                        bgcolor: stat.color,
+                        color: stat.iconColor,
+                        width: 56,
+                        height: 56,
+                      }}
+                    >
+                      {stat.icon}
+                    </Avatar>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="h4" fontWeight="300">
+                        {stat.value}
+                      </Typography>
+                      <Typography color="text.secondary" variant="body2">
+                        {stat.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {stat.change}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid2>
+          ))}
+        </Grid2>
+
         {/* Search & Filters */}
-        <Paper sx={{ p: 3, mb: 3 }}>
+        <Paper elevation={0} className="shadow-sm" sx={{ p: 3, mb: 3 }}>
           <Stack direction="row" alignItems="center" spacing={2} mb={2}>
             <SearchIcon color="action" />
-            <Typography variant="h6" fontWeight="bold">
+            <Typography variant="h6" fontWeight="500">
               Search & Filters
             </Typography>
           </Stack>
@@ -580,16 +642,17 @@ function Accounts() {
             </Grid2>
           </Grid2>
         </Paper>
+
         {/* Users Table */}
-        <Paper sx={{ p: 3 }}>
+        <Paper elevation={0} className="shadow-sm" sx={{ p: 3 }}>
           <Stack
             direction="row"
             justifyContent="space-between"
             alignItems="center"
             mb={3}
           >
-            <Typography variant="h6" fontWeight="bold">
-              Users ({users.length})
+            <Typography variant="h6" fontWeight="500">
+              Users ({totalUsers})
             </Typography>
             <Button
               variant="outlined"
@@ -627,7 +690,7 @@ function Accounts() {
                 },
                 "& .MuiDataGrid-columnHeaders": {
                   backgroundColor: "#fafafa",
-                  fontWeight: "bold",
+                  fontWeight: "500",
                 },
                 "& .MuiDataGrid-columnSeparator": {
                   display: "none",
@@ -646,6 +709,7 @@ function Accounts() {
           </Box>
         </Paper>
       </Box>
+
       <ConfirmDeleteDialog
         open={openDelete}
         onClose={() => {
@@ -656,6 +720,7 @@ function Accounts() {
         loading={loadingDelete}
         userName={deleteIdx !== null ? (users[deleteIdx] as any)?.fullName : ""}
       />
+
       <EditAccountDialog
         open={openEdit}
         onClose={() => {
@@ -675,7 +740,7 @@ function Accounts() {
             : undefined
         }
       />
-    </AdminLayout>
+    </DashboardLayout>
   );
 }
 

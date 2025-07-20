@@ -51,7 +51,7 @@ const OauthSuccess: React.FC = () => {
     };
 
     handleCallback();
-  }, [params, setCredential, enqueueSnackbar]);
+  }, [params, setCredential]);
   useEffect(() => {
     if (loading) return;
     if (timer <= 0) {

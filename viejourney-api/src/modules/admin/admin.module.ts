@@ -15,6 +15,7 @@ import { Blog } from 'src/common/entities/blog.entity';
 import { Comment } from 'src/common/entities/comment.entity';
 import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { Asset } from 'src/common/entities/asset.entity';
+import { Trip, TripSchema } from 'src/infrastructure/database/trip.schema';
 
 @Module({
   imports: [
@@ -24,6 +25,8 @@ import { Asset } from 'src/common/entities/asset.entity';
       { name: Comment.name, schema: CommentSchema },
       { name: UserInfos.name, schema: UserInfosSchema },
       { name: Asset.name, schema: AssetSchema },
+      // Add Trip schema if needed
+      { name: Trip.name, schema: TripSchema },
     ]),
     forwardRef(() => AuthModule),
     AssetsModule, // Use forwardRef to avoid circular dependency

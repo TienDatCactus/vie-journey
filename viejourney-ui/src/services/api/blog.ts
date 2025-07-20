@@ -6,7 +6,6 @@ import {
   IBlogDraft,
   IBlogQuery,
   IBlogRes,
-  IContentItem,
   IQueryParam,
   IRelatedBlogs,
 } from "../../utils/interfaces/blog";
@@ -78,18 +77,21 @@ export const banAuthor = async (id: string, reason: string) => {
 
 // blog user
 export const startBlog = async (location: string): Promise<IBlogDraft> => {
+  if (!location.trim()) {
+    throw new Error("Location cannot be empty");
+  }
   const res = await http.post(`${BLOG.BLOGS}/start-blog`, {
     location,
   });
   return res.data;
 };
 
-export const getBlogDraft = async (id: string): Promise<IContentItem> => {
+export const getBlogDraft = async (id: string): Promise<IBlog> => {
   const res = await http.get(`${BLOG.BLOGS}/draft/${id}`);
   return res.data;
 };
 
-export const getBlogPublic = async (id: string): Promise<IContentItem> => {
+export const getBlogPublic = async (id: string): Promise<IBlog> => {
   const res = await http.get(`${BLOG.BLOGS}/published/${id}`);
   return res.data;
 };
@@ -98,9 +100,14 @@ export const editBlogDraft = async (id: string, data: any) => {
 
   formData.append("title", data.title);
   formData.append("content", data.content);
+  data.places.forEach((place: any, index: number) => {
+    Object.entries(place).forEach(([key, value]) => {
+      formData.append(`places[${index}][${key}]`, value as any);
+    });
+  });
   formData.append("summary", data.summary);
   formData.append("slug", data.slug);
-
+  console.log(formData.get("places"));
   if (data.coverImage) {
     formData.append("coverImage", data.coverImage);
   }
@@ -108,7 +115,7 @@ export const editBlogDraft = async (id: string, data: any) => {
   data.tags.forEach((tag: string) => {
     formData.append("tags", tag);
   });
-  const res = await http.patch(`${BLOG.BLOGS}/draft/${id}`, formData, {
+  const res = await http.patch(`${BLOG.BLOGS_UPDATE_DRAFT}/${id}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -124,7 +131,11 @@ export const editBlogPublic = async (id: string, data: any) => {
   formData.append("content", data.content);
   formData.append("summary", data.summary);
   formData.append("slug", data.slug);
-
+  data.places.forEach((place: any, index: number) => {
+    Object.entries(place).forEach(([key, value]) => {
+      formData.append(`places[${index}][${key}]`, value as any);
+    });
+  });
   if (data.coverImage) {
     formData.append("coverImage", data.coverImage);
   }
@@ -133,7 +144,7 @@ export const editBlogPublic = async (id: string, data: any) => {
     formData.append("tags", tag);
   });
 
-  const res = await http.patch(`${BLOG.BLOGS}/edit/${id}`, formData, {
+  const res = await http.patch(`${BLOG.BLOGS_EDIT}/${id}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -152,7 +163,7 @@ export const getMyBlog = async (): Promise<IBlog[]> => {
   return res.data?.blogs;
 };
 
-export const getBlogUserDetail = async (id: string): Promise<IBlogDetail> => {
+export const getBlogUserDetail = async (id: string): Promise<IBlog> => {
   const res = await http.get(`${BLOG.BLOGS}/${id}`);
   return res.data;
 };
@@ -162,13 +173,21 @@ export const getBlogList = async (params: any): Promise<IRelatedBlogs[]> => {
   return res.data.data.blogs;
 };
 
+export const getRelatedBlogs = async (
+  blogId: string,
+  tags: string[]
+): Promise<IRelatedBlogs[]> => {
+  const res = await http.post(`${BLOG.BLOGS_RELATED}`, { blogId, tags });
+  return res.data.data?.blogs || [];
+};
+
 export const clearFlag = async (id: string) => {
   const res = await http.patch(`${BLOG.BLOGS}/${id}/flags`);
   return res.data;
 };
 
 export const createFlag = async (id: string, reason: string) => {
-  const res = await http.post(`${BLOG.BLOGS}/${id}/flag`, { reason });
+  const res = await http.post(`${BLOG.BLOGS}/${id}/flags`, { reason });
   return res.data;
 };
 

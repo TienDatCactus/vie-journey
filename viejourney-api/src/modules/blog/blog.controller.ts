@@ -55,6 +55,17 @@ export class BlogController {
     return this.blogService.getAllApprovedBlogs(pageNum, limitNum, search);
   }
 
+  @Post('related')
+  async getRelatedBlogs(
+    @Body('tags') tags: string[],
+    @Body('blogId') blogId: string,
+  ) {
+    if (!tags || tags.length === 0) {
+      throw new BadRequestException('Tags are required');
+    }
+    return this.blogService.getRelatedBlogs(blogId, tags);
+  }
+
   // Get user's blogs - MOVED THIS BEFORE @Get(':id')
   @Get('my-blogs')
   @UseGuards(JwtAuthGuard)
@@ -236,8 +247,8 @@ export class BlogController {
     return this.blogService.deleteBlogById(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Manager)
+  @UseGuards(JwtAuthGuard)
+  // @Roles(Role.Manager)
   @Post(':id/flags')
   async createFlag(
     @Param('id') id: string,

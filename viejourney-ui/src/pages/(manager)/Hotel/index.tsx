@@ -25,13 +25,13 @@ import {
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AdminLayout } from "../../../layouts";
 import { doCreateHotel, doGetAllHotels } from "../../../services/api";
 import { Hotel } from "../../../utils/interfaces";
 import AddHotelDialog from "./AddHotelDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditHotelDialog from "./EditHotelDialog";
 import ImportHotelDialog from "./ImportHotelDialog";
+import { DashboardLayout } from "../../../layouts";
 
 const ActionMenu = ({
   hotelId,
@@ -193,7 +193,7 @@ const HotelManagement = () => {
   };
 
   const handleViewHotel = (hotelId: string) => {
-    navigate(`/admin/hotels/detail/${hotelId}`);
+    navigate(`/manager/hotels/detail/${hotelId}`);
   };
 
   const handleSaveHotel = async (hotelData: Partial<Hotel>) => {
@@ -484,7 +484,7 @@ const HotelManagement = () => {
   ];
 
   return (
-    <AdminLayout>
+    <DashboardLayout>
       <Box sx={{ p: 3 }}>
         {/* Header */}
         <Stack
@@ -633,7 +633,7 @@ const HotelManagement = () => {
           }
         />
       </Box>
-    </AdminLayout>
+    </DashboardLayout>
   );
 };
 

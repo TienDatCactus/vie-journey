@@ -1,5 +1,3 @@
-"use client";
-
 import { Add, Public } from "@mui/icons-material";
 import { Box, Button, Grid2, Typography } from "@mui/material";
 import type React from "react";
@@ -53,6 +51,7 @@ const TripPlans: React.FC = () => {
             <Button
               variant="contained"
               startIcon={<Add />}
+              className="rounded-sm"
               // onClick={handleCreateGuide}
               sx={{
                 backgroundColor: "#2c2c2c",
@@ -61,9 +60,7 @@ const TripPlans: React.FC = () => {
                 },
                 textTransform: "none",
                 fontWeight: 500,
-                px: 3,
                 py: 1,
-                borderRadius: 2,
               }}
             >
               Start Planning
@@ -82,7 +79,6 @@ const TripPlans: React.FC = () => {
           >
             <Box
               sx={{
-                mb: 3,
                 p: 3,
                 borderRadius: "50%",
                 backgroundColor: "#f5f5f5",
@@ -105,7 +101,6 @@ const TripPlans: React.FC = () => {
               sx={{
                 fontWeight: 600,
                 color: "#333",
-                mb: 2,
               }}
             >
               No trip yet

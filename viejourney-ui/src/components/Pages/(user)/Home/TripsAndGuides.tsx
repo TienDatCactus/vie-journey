@@ -1,4 +1,4 @@
-import { Add, AirplaneTicket } from "@mui/icons-material";
+import { Add, AirplaneTicket, EditNote } from "@mui/icons-material";
 import {
   Button,
   Divider,
@@ -9,18 +9,17 @@ import {
 } from "@mui/material";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useBlogStore } from "../../../../services/stores/useBlogStore";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
-import { IRelatedBlogs } from "../../../../utils/interfaces/blog";
 import { TripTag } from "./elements";
 import BlogTag from "./elements/GuideTag";
-const HomeTrips: React.FC<{
-  blogs?: IRelatedBlogs[];
-}> = ({ blogs }) => {
+const HomeTrips: React.FC = () => {
   const { trips } = useTripDetailStore();
-
+  const { myBlogs } = useBlogStore();
   const navigate = useNavigate();
+  console.log(trips);
   return (
-    <div className="w-full max-w-[1200px] py-10">
+    <div className="w-full max-w-[75rem] py-10">
       <Grid2 container spacing={2}>
         <Grid2 size={6}>
           <Paper elevation={0} className=" bg-white p-4 h-90 max-h-100">
@@ -43,7 +42,7 @@ const HomeTrips: React.FC<{
               </Link>
             </Stack>
             <Stack className="my-2 mt-4">
-              {!!trips && trips?.length < 0 ? (
+              {!!trips && trips?.length > 0 ? (
                 trips.slice(0, 2).map((item, index) => (
                   <Stack key={index}>
                     <TripTag trip={item} />
@@ -103,9 +102,9 @@ const HomeTrips: React.FC<{
               </div>
             </Stack>
             <Grid2 container spacing={2} className="my-2 mt-4 ">
-              {blogs && blogs.length > 0 ? (
-                blogs.slice(0, 2).map((item, index) => (
-                  <Grid2 size={6} key={index}>
+              {myBlogs && myBlogs.length > 0 ? (
+                myBlogs.slice(0, 2).map((item, index) => (
+                  <Grid2 size={12} key={index}>
                     <BlogTag blog={item} />
                   </Grid2>
                 ))
@@ -118,7 +117,7 @@ const HomeTrips: React.FC<{
                   gap={1}
                 >
                   <IconButton className="w-fit bg-gray-100 p-4">
-                    <AirplaneTicket />
+                    <EditNote />
                   </IconButton>
                   <h1 className="text-xl text-gray-500">
                     You haven't created any blogs yet.

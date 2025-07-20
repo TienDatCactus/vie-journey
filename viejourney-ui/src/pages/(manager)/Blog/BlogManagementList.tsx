@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Add,
   CheckCircle,
@@ -8,25 +6,40 @@ import {
   Flag,
   GridView,
   MenuBook,
+  Newspaper,
   Schedule,
   Search,
   ViewList,
 } from "@mui/icons-material";
 import {
+  Box,
   Button,
   Card,
-  Checkbox,
   FormControl,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   type SelectChangeEvent,
 } from "@mui/material";
+import {
+  DataGridPremium,
+  GridActionsCellItem,
+  GridColDef,
+  GridPaginationModel,
+  GridRowId,
+  GridRowParams,
+  GridSortModel,
+} from "@mui/x-data-grid-premium";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import ManagerLayout from "../../../layouts/ManagerLayout";
+import { DashboardLayout } from "../../../layouts";
 import type { IBlogQuery } from "../../../utils/interfaces/blog";
 import NewPostDialog from "./component/AddPopup";
-import BlogPostRow from "./component/BlogPostRow";
+import BlogStatusChip from "./component/BlogStatusChip";
 import StatCard from "./component/Card";
 import useBlog from "./component/Container/hook";
 
@@ -35,31 +48,224 @@ export default function BlogManagementList() {
     blogs,
     handleCreateBlog,
     handleDeleteBlog,
-    totalPage,
     params,
     totalBlog,
     handleChangePage,
     handleSearchChange,
     handleChangeStatus,
-    handleSort
+    handleSort,
   } = useBlog();
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowId[]>([]);
+  const [loading, setLoading] = useState(false);
 
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    page: params.page - 1, // DataGrid uses 0-based indexing
+    pageSize: params.pageSize,
+  });
+
+  const handlePaginationModelChange = (newModel: GridPaginationModel) => {
+    try {
+      setLoading(true);
+      setPaginationModel(newModel);
+      handleChangePage(newModel.page + 1);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle sorting
+  const handleSortModelChange = (model: GridSortModel) => {
+    try {
+      setLoading(true);
+      if (model.length > 0) {
+        const sort = model[0];
+        handleSort(sort.sort || "asc");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // DataGrid columns definition
+  const columns: GridColDef[] = [
+    {
+      field: "title",
+      cellClassName: "flex items-center",
+      headerName: "Title & Author",
+      flex: 1,
+      minWidth: 250,
+      renderCell: (params) => (
+        <Box sx={{ py: 1 }}>
+          <Box
+            sx={{
+              fontWeight: 600,
+              fontSize: "0.875rem",
+              mb: 0.5,
+              cursor: "pointer",
+              "&:hover": { textDecoration: "underline" },
+            }}
+            onClick={() => {
+              // Navigate to blog detail
+              window.location.href = `/manager/blogs/${params.row._id}`;
+            }}
+          >
+            {params.row.title}
+          </Box>
+          <Box sx={{ fontSize: "0.75rem", color: "text.secondary" }}>
+            by {params.row.createdBy?.fullName || params.row.createdBy?.email}
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      field: "destination",
+      cellClassName: "flex items-center",
+      headerName: "Trip & Location",
+      width: 200,
+      renderCell: (params) => (
+        <Box sx={{ py: 1 }}>
+          <Box sx={{ fontWeight: 500, fontSize: "0.875rem", mb: 0.5 }}>
+            {params.row.destination || "No destination"}
+          </Box>
+          <Box sx={{ fontSize: "0.75rem", color: "text.secondary" }}>
+            {params.row.places?.length || 0} places mentioned
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      field: "content",
+      headerName: "Content",
+      cellClassName: "flex items-center",
+      width: 200,
+      renderCell: (params) => {
+        const wordCount = params.row.content
+          ? params.row.content.replace(/<[^>]*>/g, "").split(" ").length
+          : 0;
+        const summary = params.row.summary || "";
+
+        return (
+          <Box sx={{ py: 1 }}>
+            <Box sx={{ fontSize: "0.875rem", mb: 0.5 }}>
+              {summary.length > 50 ? `${summary.substring(0, 50)}...` : summary}
+            </Box>
+            <Box sx={{ fontSize: "0.75rem", color: "text.secondary" }}>
+              {wordCount} words
+            </Box>
+          </Box>
+        );
+      },
+    },
+    {
+      field: "status",
+      align: "center",
+      cellClassName: "flex items-center",
+      headerName: "Status",
+      width: 120,
+      renderCell: (params) => <BlogStatusChip status={params.row.status} />,
+    },
+    {
+      field: "dates",
+      headerName: "Dates",
+      cellClassName: "flex items-center",
+      width: 180,
+      renderCell: (params) => (
+        <Box sx={{ py: 1, fontSize: "0.75rem" }}>
+          <Box sx={{ mb: 0.5 }}>
+            Created: {dayjs(params.row.createdAt).format("MMM DD, YYYY")}
+          </Box>
+          <Box sx={{ color: "text.secondary" }}>
+            Updated: {dayjs(params.row.updatedAt).format("MMM DD, YYYY")}
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      field: "actions",
+      type: "actions",
+      cellClassName: "flex items-center",
+      headerName: "Actions",
+      width: 120,
+      getActions: (params: GridRowParams) => [
+        <GridActionsCellItem
+          key="view"
+          icon={<ViewList />}
+          label="View"
+          onClick={() => {
+            window.location.href = `/manager/blogs/${params.row._id}`;
+          }}
+        />,
+        <GridActionsCellItem
+          key="delete"
+          icon={<Flag />}
+          label="Delete"
+          onClick={() => handleDeleteBlog(params.row._id)}
+          showInMenu
+        />,
+      ],
+    },
+  ];
 
   const handleStatusFilterChange = (event: SelectChangeEvent) => {
-    handleChangeStatus(event.target.value);
+    try {
+      setLoading(true);
+      handleChangeStatus(event.target.value);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSortByChange = (event: SelectChangeEvent) => {
-    handleSort(event.target.value);
+    try {
+      setLoading(true);
+      handleSort(event.target.value);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNewPostSubmit = (postData: IBlogQuery) => {
-    handleCreateBlog(postData);
-    setIsNewPostDialogOpen(false);
+    try {
+      setLoading(true);
+      handleCreateBlog(postData);
+      setIsNewPostDialogOpen(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle bulk actions
+  const handleBulkDelete = () => {
+    try {
+      setLoading(true);
+      rowSelectionModel.forEach((id) => {
+        handleDeleteBlog(id as string);
+      });
+      setRowSelectionModel([]);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkStatusChange = (status: string) => {
+    // Implement bulk status change
+    console.log("Bulk status change:", status, rowSelectionModel);
   };
 
   useEffect(() => {
@@ -69,100 +275,173 @@ export default function BlogManagementList() {
 
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
+
+  // Sync pagination model with params
+  useEffect(() => {
+    try {
+      setLoading(true);
+      setPaginationModel({
+        page: params.page - 1,
+        pageSize: params.pageSize,
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [params.page, params.pageSize]);
+
   return (
-    <ManagerLayout>
-      <div className=" mx-auto p-4 bg-white min-h-screen">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
-            <div className="bg-indigo-100 p-2 rounded-md">
-              <MenuBook className="text-indigo-600" sx={{ fontSize: 24 }} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+    <DashboardLayout>
+      <Box sx={{ p: 4, bgcolor: "grey.50", minHeight: "100vh" }}>
+        {/* Header */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <Box sx={{ bgcolor: "grey.200", p: 2, borderRadius: 1 }}>
+              <Newspaper sx={{ fontSize: "2rem" }} />
+            </Box>
+            <Box>
+              <Box
+                sx={{
+                  fontSize: "2rem",
+                  fontWeight: 600,
+                  color: "grey.900",
+                  mb: 0.5,
+                }}
+              >
                 Blog Content Dashboard
-              </h1>
-              <p className="text-gray-500 text-sm">
+              </Box>
+              <Box sx={{ color: "grey.500", fontSize: "1rem" }}>
                 Manage and moderate travel blog posts
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 cursor-pointer">
-              <Download sx={{ fontSize: 16 }} />
-              <span>Export</span>
-            </button>
-
-            <button
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 cursor-pointer"
-              onClick={() => setIsNewPostDialogOpen(true)}
+              </Box>
+            </Box>
+          </Box>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<Download />}
+              sx={{
+                color: "black",
+                borderColor: "grey.300",
+                bgcolor: "white",
+                borderRadius: 0.5,
+              }}
             >
-              <Add sx={{ fontSize: 16 }} />
-              <span>New Post</span>
-            </button>
-          </div>
-        </div>
+              Export
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => setIsNewPostDialogOpen(true)}
+              sx={{
+                bgcolor: "rgba(0,0,0,0.8)",
+                color: "white",
+                borderRadius: 0.5,
+              }}
+            >
+              New Post
+            </Button>
+          </Box>
+        </Box>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Stats Cards */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "repeat(2, 1fr)",
+              lg: "repeat(4, 1fr)",
+            },
+            gap: 4,
+            mb: 2,
+          }}
+        >
           <StatCard
             title="Total Posts"
             value={totalBlog + ""}
-            icon={<MenuBook className="text-blue-600" sx={{ fontSize: 20 }} />}
-            color="bg-blue-50"
+            icon={<MenuBook sx={{ color: "grey.600" }} />}
           />
           <StatCard
             title="Published"
             value="3"
-            icon={
-              <CheckCircle className="text-green-600" sx={{ fontSize: 20 }} />
-            }
-            color="bg-green-50"
+            icon={<CheckCircle sx={{ color: "grey.600" }} />}
           />
           <StatCard
             title="Pending Review"
             value="1"
-            icon={<Schedule className="text-amber-600" sx={{ fontSize: 20 }} />}
-            color="bg-amber-50"
+            icon={<Schedule sx={{ color: "grey.600" }} />}
           />
           <StatCard
             title="Flagged"
             value="2"
-            icon={<Flag className="text-red-600" sx={{ fontSize: 20 }} />}
-            color="bg-red-50"
+            icon={<Flag sx={{ color: "grey.600" }} />}
           />
-        </div>
+        </Box>
 
-        <Card className="mb-6 p-4">
-          <div className="flex flex-col gap-4">
-            <div className="relative">
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                sx={{ fontSize: 16 }}
-              />
-              <input
-                type="text"
-                placeholder="Search by title, author, tag, or status..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
+        {/* Filters and Search */}
+        <Card elevation={0} className="shadow-sm" sx={{ mb: 2, p: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              justifyContent: "space-between",
+              gap: 4,
+            }}
+          >
+            <TextField
+              placeholder="Search by title, author, tag, or status..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  ),
+                  sx: { borderRadius: 0.5, height: 40 },
+                },
+              }}
+              sx={{ minWidth: 300 }}
+            />
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 4,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  flexWrap: "wrap",
                 }}
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row justify-between gap-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <FilterList className="text-gray-500" sx={{ fontSize: 16 }} />
-                  <span className="text-gray-500 text-sm">Filters:</span>
-                </div>
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <FilterList sx={{ color: "grey.500", fontSize: 16 }} />
+                  <Box sx={{ color: "grey.500", fontSize: "0.875rem" }}>
+                    Filters:
+                  </Box>
+                </Box>
 
                 <FormControl size="small" sx={{ minWidth: 120 }}>
-                  <InputLabel id="status-filter-label">Status</InputLabel>
+                  <InputLabel>Status</InputLabel>
                   <Select
-                    labelId="status-filter-label"
                     value={params.status}
                     label="Status"
                     onChange={handleStatusFilterChange}
+                    sx={{ borderRadius: 0.5 }}
                   >
                     <MenuItem value="">All Status</MenuItem>
                     <MenuItem value="PENDING">Pending</MenuItem>
@@ -172,116 +451,130 @@ export default function BlogManagementList() {
                 </FormControl>
 
                 <FormControl size="small" sx={{ minWidth: 140 }}>
-                  <InputLabel id="sort-by-label">Sort By</InputLabel>
+                  <InputLabel>Sort By</InputLabel>
                   <Select
-                    labelId="sort-by-label"
                     value={params.sort}
                     label="Sort By"
                     onChange={handleSortByChange}
+                    sx={{ borderRadius: 0.5 }}
                   >
                     <MenuItem value="asc">Ascending</MenuItem>
                     <MenuItem value="desc">Descending</MenuItem>
-                   
                   </Select>
                 </FormControl>
-              </div>
+              </Box>
 
-              <div className="flex justify-end">
-                <div className="bg-gray-100 rounded-md p-1 flex">
-                  <button
-                    className={`px-3 py-1 rounded-md cursor-pointer ${
-                      viewMode === "cards" ? "bg-white shadow-sm" : ""
-                    }`}
-                    onClick={() => setViewMode("cards")}
-                  >
-                    <GridView sx={{ fontSize: 16 }} />
-                  </button>
-                  <button
-                    className={`px-3 py-1 rounded-md cursor-pointer ${
-                      viewMode === "table" ? "bg-white shadow-sm" : ""
-                    }`}
-                    onClick={() => setViewMode("table")}
-                  >
-                    <ViewList sx={{ fontSize: 16 }} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(_, newAlignment) => {
+                  if (newAlignment !== null) {
+                    setViewMode(newAlignment);
+                  }
+                }}
+              >
+                <ToggleButton value="cards">
+                  <GridView sx={{ fontSize: 16 }} />
+                </ToggleButton>
+                <ToggleButton value="table">
+                  <ViewList sx={{ fontSize: 16 }} />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          </Box>
+
+          {/* Bulk Actions */}
+          {rowSelectionModel.length > 0 && (
+            <Box
+              sx={{ mt: 3, p: 2, bgcolor: "primary.light", borderRadius: 1 }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box sx={{ color: "primary.dark", fontWeight: 500 }}>
+                  {rowSelectionModel.length} item(s) selected
+                </Box>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => handleBulkStatusChange("APPROVED")}
+                >
+                  Approve
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => handleBulkStatusChange("REJECTED")}
+                >
+                  Reject
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  onClick={handleBulkDelete}
+                >
+                  Delete
+                </Button>
+              </Box>
+            </Box>
+          )}
         </Card>
 
-        <div className="overflow-x-auto border-gray-400 rounded-[10px]">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-300">
-                <th className="pb-3 pr-4 font-medium">
-                  <Checkbox size="small" />
-                </th>
-                <th className="pb-3 pr-4 font-medium">Title & Author</th>
-                <th className="pb-3 pr-4 font-medium">Trip & Location</th>
-                <th className="pb-3 pr-4 font-medium">Content</th>
-                <th className="pb-3 pr-4 font-medium">Status</th>
-                <th className="pb-3 pr-4 font-medium">Dates</th>
-                <th className="pb-3 pr-4 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {blogs?.map((blog) => {
-                return (
-                  <BlogPostRow
-                    key={blog._id}
-                    blog={blog}
-                    handleDeleteBlog={handleDeleteBlog}
-                  />
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex items-center justify-around mt-4 px-2">
-          <div className="text-sm text-gray-500">
-            Showing{" "}
-            {Math.min((params.page - 1) * params.pageSize + 1, totalBlog ?? 0)}{" "}
-            to {Math.min(params.page * params.pageSize, totalBlog ?? 0)} of{" "}
-            {totalBlog} posts
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => handleChangePage(params.page - 1)}
-              disabled={params.page === 1}
-            >
-              Previous
-            </Button>
-
-            {Array.from({ length: totalPage ?? 1 }, (_, i) => i + 1).map(
-              (page) => (
-                <Button
-                  key={page}
-                  onClick={() => handleChangePage(page)}
-                  variant={page === params.page ? "contained" : "text"}
-                >
-                  {page}
-                </Button>
-              )
-            )}
-
-            <Button
-              onClick={() => handleChangePage(params.page + 1)}
-              disabled={params.page === totalPage}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      </div>
+        {/* DataGrid */}
+        <Card elevation={0} sx={{ boxShadow: 1, height: 500 }}>
+          <DataGridPremium
+            rows={blogs || []}
+            columns={columns}
+            getRowId={(row) => row._id}
+            loading={loading}
+            // Pagination
+            pagination
+            paginationMode="server"
+            paginationModel={paginationModel}
+            onPaginationModelChange={handlePaginationModelChange}
+            rowCount={totalBlog || 0}
+            pageSizeOptions={[5, 10, 25, 50, 100]}
+            // Sorting
+            sortingMode="server"
+            onSortModelChange={handleSortModelChange}
+            // Selection
+            checkboxSelection
+            // Styling
+            sx={{
+              border: "none",
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "grey.50",
+                borderBottom: "1px solid",
+                borderColor: "grey.300",
+              },
+              "& .MuiDataGrid-cell": {
+                borderBottom: "1px solid",
+                borderColor: "grey.100",
+              },
+              "& .MuiDataGrid-row:hover": {
+                backgroundColor: "grey.50",
+              },
+              "& .MuiDataGrid-footerContainer": {
+                borderTop: "1px solid",
+                borderColor: "grey.300",
+                backgroundColor: "grey.50",
+              },
+            }}
+            // Features
+            disableColumnFilter={false}
+            disableColumnSelector={false}
+            disableDensitySelector={false}
+            // Row height
+            getRowHeight={() => "auto"}
+            getEstimatedRowHeight={() => 80}
+          />
+        </Card>
+      </Box>
 
       <NewPostDialog
         open={isNewPostDialogOpen}
         onClose={() => setIsNewPostDialogOpen(false)}
         onSubmit={handleNewPostSubmit}
       />
-    </ManagerLayout>
+    </DashboardLayout>
   );
 }

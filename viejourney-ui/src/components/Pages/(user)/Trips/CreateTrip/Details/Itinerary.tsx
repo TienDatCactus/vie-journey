@@ -574,7 +574,27 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
       setLoading(false);
     }
   };
+  const prevCount = React.useRef(placesForDay.length);
 
+  useEffect(() => {
+    // Keep track of previous places count to detect new additions
+
+    if (
+      placesForDay.length > 0 &&
+      (placesForDay.length > prevCount.current || !expanded)
+    ) {
+      setExpanded(true);
+
+      if (placesForDay.length > prevCount.current) {
+        const element = document.getElementById(`day-section-${props.index}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    }
+
+    prevCount.current = placesForDay.length;
+  }, [placesForDay, expanded, props.index]);
   if (loading) {
     return (
       <div className="bg-white p-4 my-2 rounded flex items-center justify-center">

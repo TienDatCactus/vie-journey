@@ -72,6 +72,7 @@ import "../../..//components/tiptap-templates/simple/simple-editor.scss";
 
 import { Place } from "@mui/icons-material";
 import { ThemeToggle } from "./theme-toggle";
+import { processBlogContent } from "../../../../src/utils/handlers/utils";
 
 const MainToolbarContent = ({
   editor,
@@ -180,12 +181,14 @@ const MobileToolbarContent = ({
   </>
 );
 
+// Update the interface to return processed content
 export function SimpleEditor({
   onContentChange,
   content,
 }: {
-  onContentChange?: (html: string) => void;
+  onContentChange?: (data: { cleanHtml: string; places: any[] }) => void;
   content?: string;
+  loading?: boolean;
 }) {
   const isMobile = useMobile();
   const windowSize = useWindowSize();
@@ -229,10 +232,17 @@ export function SimpleEditor({
       PlaceAutocomplete,
     ],
     onUpdate({ editor }) {
-      const html = editor.getHTML();
-      onContentChange?.(html);
+      // Extract places and clean HTML from editor
+      const processedContent = processBlogContent(editor);
+      onContentChange?.(processedContent);
     },
-
+    onCreate({ editor }) {
+      // Process initial content
+      setTimeout(() => {
+        const processedContent = processBlogContent(editor);
+        onContentChange?.(processedContent);
+      }, 100);
+    },
     content: content || "<p></p>",
   });
 
@@ -250,7 +260,7 @@ export function SimpleEditor({
   return (
     <EditorContext.Provider value={{ editor }}>
       <Toolbar
-        className="rounded-xl"
+        className="rounded-t-md  shadow-md"
         ref={toolbarRef}
         style={
           isMobile
@@ -275,7 +285,7 @@ export function SimpleEditor({
         )}
       </Toolbar>
 
-      <div className="content-wrapper">
+      <div className="content-wrapper border border-dashed border-neutral-600 border-t-0 max-h-200 h-150 overflow-y-scroll rounded-b-md">
         <EditorContent
           editor={editor}
           role="presentation"

@@ -4,9 +4,7 @@ import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUserBlog } from "../../../../../services/stores/useBlogStore";
 import { IRelatedBlogs } from "../../../../../utils/interfaces/blog";
 
 const ExploreCard: React.FC<{ item: IRelatedBlogs }> = ({ item }) => {
@@ -14,20 +12,12 @@ const ExploreCard: React.FC<{ item: IRelatedBlogs }> = ({ item }) => {
   const handleCardClick = () => {
     navigate(`/blogs/${item._id}`);
   };
-  const [isLiked, setIsLiked] = useState<boolean>(false);
 
-  const { handleCheckIsLike } = useUserBlog();
-
-  useEffect(() => {
-    (async () => {
-      const liked = await handleCheckIsLike(item._id);
-      setIsLiked(!!liked);
-    })();
-  }, [item._id]);
-  console.log(isLiked);
-  console.log("ExploreCard", item);
   return (
-    <Card elevation={0} className="lg:w-full shadow-sm">
+    <Card
+      elevation={0}
+      className="lg:w-full shadow-sm hover:shadow-md transition-all duration-200"
+    >
       <CardActionArea onClick={handleCardClick}>
         <div className="relative z-20">
           <Chip

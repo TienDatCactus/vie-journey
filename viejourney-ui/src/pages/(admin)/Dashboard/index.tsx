@@ -1,197 +1,172 @@
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import {
+  ArticleOutlined,
+  Difference,
+  OnlinePrediction,
+} from "@mui/icons-material";
 import ArticleIcon from "@mui/icons-material/Article";
-import FlagIcon from "@mui/icons-material/Flag";
-import LoginIcon from "@mui/icons-material/Login";
+import MapPinIcon from "@mui/icons-material/LocationOn";
 import PeopleIcon from "@mui/icons-material/People";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import PersonOffIcon from "@mui/icons-material/PersonOff";
-import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import ActivityIcon from "@mui/icons-material/Speed";
 import {
   Avatar,
   Box,
-  Button,
   Card,
   CardContent,
-  Chip,
+  CardHeader,
+  CircularProgress,
+  FormControl,
   Grid2,
-  Paper,
+  InputLabel,
+  List,
+  ListItem,
+  ListItemText,
+  MenuItem,
+  Select,
   Stack,
   Typography,
 } from "@mui/material";
-import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
-import { LicenseInfo } from "@mui/x-license";
-import { AdminLayout } from "../../../layouts";
-
-// Set MUI Pro License
-LicenseInfo.setLicenseKey(import.meta.env.VITE_MUI_PRO_KEY);
-
-// Top Stats Cards Data
-const statsData = [
-  {
-    title: "Total Users",
-    value: "12,847",
-    change: "+17 new today",
-    icon: <PeopleIcon />,
-    color: "#e3f2fd",
-    iconColor: "#1976d2",
-  },
-  {
-    title: "Active Users (7d)",
-    value: "3,421",
-    change: "+5.25% from last week",
-    icon: <TrendingUpIcon />,
-    color: "#e8f5e8",
-    iconColor: "#2e7d32",
-  },
-  {
-    title: "Number of Admins",
-    value: "8",
-    change: "Access control size",
-    icon: <AdminPanelSettingsIcon />,
-    color: "#ffebee",
-    iconColor: "#d32f2f",
-  },
-  {
-    title: "Blog Posts",
-    value: "5,632",
-    change: "+156 today",
-    icon: <ArticleIcon />,
-    color: "#f3e5f5",
-    iconColor: "#7b1fa2",
-    flagged: 23,
-  },
-];
-
-// Blog Posts Overview Data
-const blogOverviewData = [
-  { label: "Total Blog Posts", value: "5,632", color: "#333" },
-  { label: "Flagged Blogs", value: "23", color: "#f44336", flag: true },
-  { label: "Published Today", value: "+156", color: "#4caf50" },
-  { label: "Growth Rate", value: "+8.3%", color: "#4caf50" },
-];
-
-// Recent Actions Data
-const recentActions = [
-  {
-    id: 1,
-    action: "User Registration",
-    user: "john.doe@email.com",
-    details: "New user registered",
-    severity: "Info",
-    time: "14:30:25",
-    icon: <PersonAddIcon />,
-  },
-  {
-    id: 2,
-    action: "Blog Flagged",
-    user: "admin@system.com",
-    details: "Blog 'How to Make Money Fast' flagged for spam",
-    severity: "Warning",
-    time: "14:25:12",
-    icon: <FlagIcon />,
-  },
-  {
-    id: 3,
-    action: "Admin Login",
-    user: "sarah.admin@company.com",
-    details: "Admin user logged in",
-    severity: "Info",
-    time: "14:20:45",
-    icon: <LoginIcon />,
-  },
-  {
-    id: 4,
-    action: "Content Removed",
-    user: "moderator@system.com",
-    details: "Blog post removed due to policy violation",
-    severity: "High",
-    time: "14:15:33",
-    icon: <RemoveCircleIcon />,
-  },
-  {
-    id: 5,
-    action: "User Suspended",
-    user: "admin@system.com",
-    details: "User account suspended for 7 days",
-    severity: "High",
-    time: "14:10:18",
-    icon: <PersonOffIcon />,
-  },
-];
-
-const actionsColumns: GridColDef[] = [
-  {
-    field: "action",
-    headerName: "Action",
-    width: 180,
-    renderCell: (params) => (
-      <Stack direction="row" spacing={1}>
-        {params.row.icon}
-        <Typography variant="body2">{params.value}</Typography>
-      </Stack>
-    ),
-  },
-  {
-    field: "user",
-    headerName: "User",
-    width: 250,
-    renderCell: (params) => (
-      <Typography variant="body2" color="primary">
-        {params.value}
-      </Typography>
-    ),
-  },
-  {
-    field: "details",
-    headerName: "Details",
-    width: 300,
-    flex: 1,
-  },
-  {
-    field: "severity",
-    headerName: "Severity",
-    width: 100,
-    renderCell: (params) => {
-      const color =
-        params.value === "High"
-          ? "error"
-          : params.value === "Warning"
-          ? "warning"
-          : "info";
-      return <Chip label={params.value} color={color} size="small" />;
-    },
-  },
-  {
-    field: "time",
-    headerName: "Time",
-    width: 100,
-    renderCell: (params) => (
-      <Typography variant="body2" color="text.secondary">
-        {params.value}
-      </Typography>
-    ),
-  },
-];
+import { BarChart, LineChart, PieChart } from "@mui/x-charts";
+import { useEffect, useState } from "react";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import {
+  useAdminAnalyticsStore,
+  useAnalyticsData,
+  useAnalyticsLoading,
+} from "../../../services/stores/useAdminAnalyticsStore";
 
 function AdminPage() {
-  return (
-    <AdminLayout>
-      <Box sx={{ p: 3 }}>
-        <Box>
-          <Typography variant="h4" fontWeight="bold">
-            Admin Dashboard
-          </Typography>
-          <Typography color="text.secondary" className="mb-6">
-            High-level snapshot of system activities and metrics
+  const { fetchAnalytics, setTimeRange } = useAdminAnalyticsStore();
+  const analytics = useAnalyticsData();
+  const loading = useAnalyticsLoading();
+  const [timeRange, setTimeRangeLocal] = useState("30d");
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <Box
+          sx={{ p: 3 }}
+          className="flex flex-col items-center justify-center h-screen"
+        >
+          <CircularProgress />
+          <Typography variant="h5" fontWeight="300" sx={{ mt: 2 }}>
+            Loading analytics...
           </Typography>
         </Box>
-        {/* Top Stats Cards */}
+      </DashboardLayout>
+    );
+  }
+  const handleTimeRangeChange = (newTimeRange: "7d" | "30d" | "90d" | "1y") => {
+    setTimeRangeLocal(newTimeRange);
+    setTimeRange(newTimeRange);
+  };
+
+  // Use analytics data instead of hardcoded data
+  const contentCreationData = analytics?.contentCreationData || [];
+  const engagementData = analytics?.engagementData || [];
+  const userActivityData = analytics?.userActivityData || [];
+  const contentStatusData = analytics?.contentStatusData || [];
+  const topLocationsData = analytics?.topLocationsData || [];
+
+  const statsData = [
+    {
+      title: "Total Users",
+      value: analytics?.totalUsers?.toLocaleString() || "0",
+      change: analytics?.userGrowthData
+        ? `${
+            analytics?.userGrowthData && analytics?.userGrowthData.length > 0
+              ? "+"
+              : ""
+          }${analytics.userGrowthData.length} today`
+        : "No data",
+      icon: <PeopleIcon />,
+      color: "#e3f2fd",
+      iconColor: "#1976d2",
+    },
+    {
+      title: "Total Trips",
+      value: analytics?.totalTrips?.toLocaleString() || "0",
+      change: analytics?.totalTrips
+        ? `${analytics.totalTrips > 0 ? "+" : ""}${analytics.totalTrips} today`
+        : "No data",
+      icon: <MapPinIcon />,
+      color: "#e8f5e8",
+      iconColor: "#2e7d32",
+    },
+    {
+      title: "Blog Posts",
+      value: analytics?.totalBlogs?.toLocaleString() || "0",
+      change: analytics?.totalBlogs
+        ? `${analytics.totalBlogs > 0 ? "+" : ""}${analytics.totalBlogs} today`
+        : "No data",
+      icon: <ArticleIcon />,
+      color: "#f3e5f5",
+      iconColor: "#7b1fa2",
+    },
+    {
+      title: "Total Interactions",
+      value: analytics?.totalInteractions?.toLocaleString() || "0",
+      change: analytics?.totalInteractions
+        ? `${analytics.totalInteractions > 0 ? "+" : ""}${
+            Math.abs(analytics.totalInteractions) >= 1000
+              ? `${(analytics.totalInteractions / 1000).toFixed(1)}k`
+              : analytics.totalInteractions
+          } today`
+        : "No data",
+      icon: <ActivityIcon />,
+      color: "#fff3e0",
+      iconColor: "#f57c00",
+    },
+  ];
+
+  return (
+    <DashboardLayout>
+      <Box sx={{ p: 3 }}>
+        {/* Header */}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ mb: 4 }}
+        >
+          <Box>
+            <Typography variant="h4" fontWeight="300" sx={{ mb: 1 }}>
+              Analytics Dashboard
+            </Typography>
+            <Typography color="text.secondary">
+              Comprehensive insights into platform performance and user
+              engagement
+            </Typography>
+          </Box>
+          <FormControl sx={{ minWidth: 140 }}>
+            <InputLabel>Time Range</InputLabel>
+            <Select
+              value={timeRange}
+              label="Time Range"
+              onChange={(e) =>
+                handleTimeRangeChange(
+                  e.target.value as "7d" | "30d" | "90d" | "1y"
+                )
+              }
+              size="small"
+              sx={{ bgcolor: "white" }}
+            >
+              <MenuItem value="7d">Last 7 days</MenuItem>
+              <MenuItem value="30d">Last 30 days</MenuItem>
+              <MenuItem value="90d">Last 90 days</MenuItem>
+              <MenuItem value="1y">Last year</MenuItem>
+            </Select>
+          </FormControl>
+        </Stack>
+
+        {/* Key Metrics Cards */}
         <Grid2 container spacing={3} sx={{ mb: 4 }}>
           {statsData.map((stat, index) => (
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }} key={index}>
-              <Card sx={{ height: "100%", position: "relative" }}>
+              <Card elevation={0} className="shadow-sm" sx={{ height: "100%" }}>
                 <CardContent>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Avatar
@@ -205,136 +180,300 @@ function AdminPage() {
                       {stat.icon}
                     </Avatar>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="h4" fontWeight="bold">
+                      <Typography variant="h4" fontWeight="300">
                         {stat.value}
                       </Typography>
                       <Typography color="text.secondary" variant="body2">
                         {stat.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: stat.change.startsWith("+")
+                            ? "success.main"
+                            : "text.secondary",
+                        }}
+                      >
                         {stat.change}
                       </Typography>
                     </Box>
                   </Stack>
-                  {stat.flagged && (
-                    <Chip
-                      label={`${stat.flagged} flagged`}
-                      color="error"
-                      size="small"
-                      sx={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                        fontSize: "0.75rem",
-                      }}
-                    />
-                  )}
                 </CardContent>
               </Card>
             </Grid2>
           ))}
         </Grid2>
 
-        {/* Main Content - Two Columns */}
-        <Grid2 container spacing={3}>
-          {/* Blog Posts Overview - 1/4 width */}
-          <Grid2 size={{ xs: 12, md: 3 }}>
-            <Paper sx={{ p: 3, height: "100%" }}>
-              <Typography variant="h6" fontWeight="bold" mb={1}>
-                Blog Posts Overview
-              </Typography>
-              <Typography color="text.secondary" mb={3}>
-                Content statistics and health metrics
-              </Typography>
-
-              <Stack spacing={3}>
-                {blogOverviewData.map((item, index) => (
-                  <Stack
-                    key={index}
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      {item.label}
-                    </Typography>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Typography
-                        variant="h6"
-                        fontWeight="bold"
-                        sx={{ color: item.color }}
-                      >
-                        {item.value}
-                      </Typography>
-                      {item.flag && (
-                        <Chip
-                          label="F"
-                          color="error"
-                          size="small"
-                          sx={{ minWidth: 24, height: 20 }}
-                        />
-                      )}
-                    </Stack>
+        {/* Charts Grid */}
+        <Grid2 container spacing={3} sx={{ mb: 4 }}>
+          {/* User Growth Chart - Updated to ScatterChart */}
+          <Grid2 size={{ xs: 12, lg: 4 }}>
+            <Card elevation={0} className="shadow-sm">
+              <CardHeader
+                title={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <PeopleIcon sx={{ fontSize: 20 }} />
+                    <Typography variant="h6">User Activity</Typography>
                   </Stack>
-                ))}
-              </Stack>
-            </Paper>
+                }
+              />
+              <CardContent className="h-full">
+                <PieChart
+                  series={[
+                    {
+                      data: userActivityData,
+                      innerRadius: 40,
+                      outerRadius: 100,
+                      paddingAngle: 2,
+                      cornerRadius: 4,
+                    },
+                  ]}
+                  height={200}
+                  hideLegend
+                />
+                <Box
+                  sx={{
+                    mt: 2,
+                    width: "100%",
+                    height: "100%",
+                  }}
+                >
+                  {userActivityData.map((item) => (
+                    <Stack
+                      key={item.id}
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      sx={{ mb: 1 }}
+                    >
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            bgcolor: item.color,
+                          }}
+                        />
+                        <Typography variant="body2" color="text.secondary">
+                          {item.label}
+                        </Typography>
+                      </Stack>
+                      <Typography variant="body2" fontWeight="500">
+                        {item.value.toLocaleString()}
+                      </Typography>
+                    </Stack>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
           </Grid2>
 
-          {/* Recent Actions - 3/4 width */}
-          <Grid2 size={{ xs: 12, md: 9 }}>
-            <Paper sx={{ p: 3, height: "100%" }}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={1}
-              >
-                <Typography variant="h6" fontWeight="bold">
-                  Recent Actions
-                </Typography>
-                <Button
-                  variant="text"
-                  size="small"
-                  endIcon={<VisibilityIcon />}
-                  sx={{ textTransform: "none" }}
-                >
-                  View Activity Log
-                </Button>
-              </Stack>
-              <Typography color="text.secondary" mb={3}>
-                Last 10 items from activity log
-              </Typography>
-
-              <Box sx={{ height: 400, width: "100%" }}>
-                <DataGridPremium
-                  rows={recentActions}
-                  columns={actionsColumns}
-                  initialState={{
-                    pagination: {
-                      paginationModel: { page: 0, pageSize: 10 },
+          {/* Content Creation Chart */}
+          <Grid2 size={{ xs: 12, lg: 8 }}>
+            <Card elevation={0} className="shadow-sm">
+              <CardHeader
+                title={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <ArticleOutlined sx={{ fontSize: 20 }} />
+                    <Typography variant="h6">Content Creation</Typography>
+                  </Stack>
+                }
+              />
+              <CardContent>
+                <BarChart
+                  dataset={contentCreationData}
+                  className="h-68"
+                  xAxis={[
+                    {
+                      dataKey: "month",
+                      scaleType: "band",
                     },
-                  }}
-                  pageSizeOptions={[5, 10, 25]}
-                  disableRowSelectionOnClick
-                  sx={{
-                    "& .MuiDataGrid-cell": {
-                      borderBottom: "1px solid #f0f0f0",
-                      display: "flex",
-                      alignItems: "center",
+                  ]}
+                  series={[
+                    {
+                      dataKey: "blogs",
+                      label: "Blogs",
+                      color: "#8b5cf6",
                     },
-                    "& .MuiDataGrid-columnHeaders": {
-                      backgroundColor: "#fafafa",
-                      fontWeight: "bold",
+                    {
+                      dataKey: "trips",
+                      label: "Trips",
+                      color: "#06b6d4",
                     },
-                  }}
+                  ]}
+                  height={300}
+                  grid={{ horizontal: true }}
                 />
-              </Box>
-            </Paper>
+              </CardContent>
+            </Card>
+          </Grid2>
+        </Grid2>
+
+        {/* Engagement and Activity */}
+        <Grid2 container spacing={3} sx={{ mb: 4 }}>
+          {/* Weekly Engagement */}
+          <Grid2 size={12}>
+            <Card elevation={0} className="shadow-sm">
+              <CardHeader
+                title={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <OnlinePrediction sx={{ fontSize: 20 }} />
+                    <Typography variant="h6">Weekly Engagement</Typography>
+                  </Stack>
+                }
+              />
+              <CardContent>
+                <LineChart
+                  dataset={engagementData}
+                  xAxis={[
+                    {
+                      dataKey: "day",
+                      scaleType: "point",
+                    },
+                  ]}
+                  series={[
+                    {
+                      dataKey: "likes",
+                      label: "Likes",
+                      color: "#ef4444",
+                      curve: "catmullRom",
+                    },
+                    {
+                      dataKey: "comments",
+                      label: "Comments",
+                      color: "#3b82f6",
+                      curve: "catmullRom",
+                    },
+                    {
+                      dataKey: "shares",
+                      label: "Shares",
+                      color: "#10b981",
+                      curve: "catmullRom",
+                    },
+                  ]}
+                  height={300}
+                  grid={{ horizontal: true, vertical: true }}
+                />
+              </CardContent>
+            </Card>
+          </Grid2>
+
+          {/* User Activity Distribution */}
+        </Grid2>
+
+        {/* Bottom Section */}
+        <Grid2 container spacing={3} sx={{ mb: 4 }}>
+          {/* Popular Destinations */}
+          <Grid2 size={{ xs: 12, lg: 6 }}>
+            <Card
+              elevation={0}
+              className="shadow-sm max-h-105 overflow-y-scroll"
+            >
+              <CardHeader
+                title={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <MapPinIcon sx={{ fontSize: 20 }} />
+                    <Typography variant="h6">Popular Destinations</Typography>
+                  </Stack>
+                }
+              />
+              <CardContent>
+                <List disablePadding>
+                  {topLocationsData.map((location, index) => (
+                    <Box key={index}>
+                      <ListItem
+                        sx={{
+                          bgcolor: "grey.50",
+                          borderRadius: 1,
+                          mb: 1,
+                          px: 2,
+                        }}
+                      >
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1" fontWeight="500">
+                              {location.location}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography variant="body2" color="text.secondary">
+                              {location.trips} trips • {location.blogs} blogs
+                            </Typography>
+                          }
+                        />
+                        <Box sx={{ textAlign: "right" }}>
+                          <Typography variant="h6" fontWeight="300">
+                            {(location.trips + location.blogs).toLocaleString()}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            total content
+                          </Typography>
+                        </Box>
+                      </ListItem>
+                    </Box>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid2>
+
+          {/* Content Status */}
+          <Grid2 size={{ xs: 12, lg: 6 }}>
+            <Card elevation={0} className="shadow-sm ">
+              <CardHeader
+                title={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Difference sx={{ fontSize: 20 }} />
+                    <Typography variant="h6">
+                      Content Status Overview
+                    </Typography>
+                  </Stack>
+                }
+              />
+              <CardContent>
+                <PieChart
+                  series={[
+                    {
+                      data: contentStatusData,
+                      outerRadius: 80,
+                      paddingAngle: 2,
+                      cornerRadius: 4,
+                    },
+                  ]}
+                  hideLegend
+                  height={200}
+                />
+                <Grid2 container spacing={2} sx={{ mt: 2 }}>
+                  {contentStatusData.map((item) => (
+                    <Grid2 size={6} key={item.id}>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            bgcolor: item.color,
+                          }}
+                        />
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            {item.label}
+                          </Typography>
+                          <Typography variant="subtitle2" fontWeight="500">
+                            {item.value.toLocaleString()}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Grid2>
+                  ))}
+                </Grid2>
+              </CardContent>
+            </Card>
           </Grid2>
         </Grid2>
       </Box>
-    </AdminLayout>
+    </DashboardLayout>
   );
 }
 

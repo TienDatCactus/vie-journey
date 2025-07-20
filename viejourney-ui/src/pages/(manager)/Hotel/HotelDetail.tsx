@@ -1,37 +1,37 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { AdminLayout } from "../../../layouts";
 import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Stack,
-  Chip,
-  Rating,
+  ArrowBack as ArrowBackIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Hotel as HotelIcon,
+  Image as ImageIcon,
+  LocationOn as LocationIcon,
+  Star as StarIcon,
+} from "@mui/icons-material";
+import {
+  Alert,
   Avatar,
-  Grid2,
+  Box,
+  Button,
   Card,
   CardContent,
   CardMedia,
+  Chip,
   Divider,
+  Grid2,
   IconButton,
+  Paper,
+  Rating,
   Skeleton,
-  Alert,
+  Stack,
+  Typography,
 } from "@mui/material";
-import {
-  ArrowBack as ArrowBackIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Hotel as HotelIcon,
-  LocationOn as LocationIcon,
-  Star as StarIcon,
-  Image as ImageIcon,
-} from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { DashboardLayout } from "../../../layouts";
 import { doGetHotelById } from "../../../services/api";
-import EditHotelDialog from "./EditHotelDialog";
-import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import { Hotel } from "../../../utils/interfaces";
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
+import EditHotelDialog from "./EditHotelDialog";
 
 const HotelDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -94,7 +94,7 @@ const HotelDetail: React.FC = () => {
   }, [id]);
 
   const handleBack = () => {
-    navigate("/admin/hotels");
+    navigate("/manager/hotels");
   };
 
   const handleEdit = () => {
@@ -146,7 +146,7 @@ const HotelDetail: React.FC = () => {
 
   const handleDeleteHotel = async () => {
     // Navigate back to hotel list after successful delete
-    navigate("/admin/hotels");
+    navigate("/manager/hotels");
   };
 
   const parseCoordinate = (coordinateStr: string) => {
@@ -165,7 +165,7 @@ const HotelDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
+      <DashboardLayout>
         <Box sx={{ p: 3 }}>
           {/* Header Skeleton */}
           <Stack direction="row" alignItems="center" spacing={2} mb={3}>
@@ -200,13 +200,13 @@ const HotelDetail: React.FC = () => {
             </Grid2>
           </Grid2>
         </Box>
-      </AdminLayout>
+      </DashboardLayout>
     );
   }
 
   if (error) {
     return (
-      <AdminLayout>
+      <DashboardLayout>
         <Box sx={{ p: 3 }}>
           <Stack direction="row" alignItems="center" spacing={2} mb={3}>
             <IconButton onClick={handleBack}>
@@ -225,13 +225,13 @@ const HotelDetail: React.FC = () => {
             Back to Hotel List
           </Button>
         </Box>
-      </AdminLayout>
+      </DashboardLayout>
     );
   }
 
   if (!hotel) {
     return (
-      <AdminLayout>
+      <DashboardLayout>
         <Box sx={{ p: 3 }}>
           <Stack direction="row" alignItems="center" spacing={2} mb={3}>
             <IconButton onClick={handleBack}>
@@ -250,14 +250,14 @@ const HotelDetail: React.FC = () => {
             Back to Hotel List
           </Button>
         </Box>
-      </AdminLayout>
+      </DashboardLayout>
     );
   }
 
   const coordinate = parseCoordinate(hotel.coordinate);
 
   return (
-    <AdminLayout>
+    <DashboardLayout>
       <Box sx={{ p: 3 }}>
         {/* Header */}
         <Stack
@@ -508,7 +508,7 @@ const HotelDetail: React.FC = () => {
           hotelName={hotel?.name || ""}
         />
       </Box>
-    </AdminLayout>
+    </DashboardLayout>
   );
 };
 

@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   BadRequestException,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -71,7 +72,11 @@ export class AccountController {
   }
 
   @Post('profile')
-  getProfile(@Body() req: { userId: string }) {
-    return this.accountService.findOne(req.userId);
+  getProfile(@Req() req) {
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+    return this.accountService.findOne(userId);
   }
 }
