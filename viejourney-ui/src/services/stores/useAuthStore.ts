@@ -91,7 +91,7 @@ export const useAuthStore = create<AuthState>()(
                 },
               });
 
-              const user = await doGetUser({ userId: loginResp.userId });
+              const user = await doGetUser();
               set({ user });
 
               return { success: true, data: loginResp };
@@ -263,8 +263,8 @@ export const useAuthStore = create<AuthState>()(
             }
 
             const [user, info] = await Promise.all([
-              doGetUser({ userId }),
-              doGetUserInfo(),
+              await doGetUser(),
+              await doGetUserInfo(),
             ]);
 
             set({ user, info });

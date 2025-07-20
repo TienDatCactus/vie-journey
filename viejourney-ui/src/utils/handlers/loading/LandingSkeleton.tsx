@@ -1,6 +1,4 @@
-import { Skeleton, Box, Grid, Card, Stack, Container } from "@mui/material";
-import React from "react";
-
+import { Box, Card, Container, Grid2, Skeleton, Stack } from "@mui/material";
 const HomePageSkeleton = {
   // Hero Section Skeleton
   Hero: () => (
@@ -58,9 +56,17 @@ const HomePageSkeleton = {
         <Skeleton variant="text" width="60%" height={24} />
       </Stack>
 
-      <Grid container spacing={3}>
+      <Grid2 container spacing={3}>
         {[1, 2, 3].map((item) => (
-          <Grid item xs={12} md={4} key={item}>
+          <Grid2
+            size={{
+              xs: 12,
+              sm: 6,
+              md: 4, // Adjust based on your layout needs
+              lg: 3, // Optional for larger screens
+            }}
+            key={item}
+          >
             <Card className="p-4">
               <Skeleton
                 variant="rectangular"
@@ -82,9 +88,9 @@ const HomePageSkeleton = {
               />
               <Skeleton variant="text" width="90%" height={20} />
             </Card>
-          </Grid>
+          </Grid2>
         ))}
-      </Grid>
+      </Grid2>
     </Box>
   ),
 
@@ -101,9 +107,17 @@ const HomePageSkeleton = {
         <Skeleton variant="text" width="70%" height={24} />
       </Stack>
 
-      <Grid container spacing={2}>
+      <Grid2 container spacing={2}>
         {[1, 2, 3, 4, 5, 6].map((item) => (
-          <Grid item xs={12} sm={6} md={4} key={item}>
+          <Grid2
+            size={{
+              xs: 12,
+              sm: 6,
+              md: 4,
+              lg: 3,
+            }}
+            key={item}
+          >
             <Card className="overflow-hidden">
               <Skeleton variant="rectangular" width="100%" height={240} />
               <Box className="p-3">
@@ -140,17 +154,22 @@ const HomePageSkeleton = {
                 </Stack>
               </Box>
             </Card>
-          </Grid>
+          </Grid2>
         ))}
-      </Grid>
+      </Grid2>
     </Box>
   ),
 
   // Banner Section Skeleton
   Banner: () => (
     <Box className="py-8">
-      <Grid container spacing={4} alignItems="center">
-        <Grid item xs={12} md={6}>
+      <Grid2 container spacing={4} alignItems="center">
+        <Grid2
+          size={{
+            xs: 12,
+            md: 6,
+          }}
+        >
           <Stack spacing={3}>
             <Skeleton
               variant="text"
@@ -177,17 +196,17 @@ const HomePageSkeleton = {
               />
             </Stack>
           </Stack>
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={6}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
           <Skeleton
             variant="rectangular"
             width="100%"
             height={300}
             sx={{ borderRadius: 2 }}
           />
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Box>
   ),
 
@@ -204,9 +223,9 @@ const HomePageSkeleton = {
         <Skeleton variant="text" width="55%" height={24} />
       </Stack>
 
-      <Grid container spacing={3}>
+      <Grid2 container spacing={3}>
         {[1, 2, 3].map((item) => (
-          <Grid item xs={12} md={4} key={item}>
+          <Grid2 size={{ xs: 12, md: 4 }} key={item}>
             <Card className="p-4 h-full">
               <Stack direction="row" spacing={2} className="mb-3">
                 <Skeleton variant="circular" width={50} height={50} />
@@ -251,9 +270,9 @@ const HomePageSkeleton = {
                 ))}
               </Stack>
             </Card>
-          </Grid>
+          </Grid2>
         ))}
-      </Grid>
+      </Grid2>
     </Box>
   ),
 

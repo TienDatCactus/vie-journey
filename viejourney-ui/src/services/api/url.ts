@@ -41,6 +41,8 @@ export const HOTELS = {
 };
 
 export const ADMIN = {
+  GET_ROLE_BASED_COUNTS: "/admin/roles",
+  GET_ANALYTICS: "/admin/analytics",
   GET_ASSET: "/assets",
   UPDATE_ASSET: "/update-asset",
   DELETE_ASSET: "/assets/delete",

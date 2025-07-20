@@ -7,7 +7,7 @@ const HomeHero: React.FC<{ img: string }> = ({ img }) => {
   return (
     <div className="w-full relative">
       <img
-        src={bg}
+        src={img && bg}
         alt="banner"
         className="w-full h-[80vh] object-cover object-center"
       />

@@ -53,7 +53,7 @@ interface EditRoleDialogProps {
 // Available permission types and levels
 const PERMISSION_TYPES = [
   "Content Management",
-  "Comment Management", 
+  "Comment Management",
   "User Management",
   "Report Management",
   "Asset Management",
@@ -76,7 +76,9 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
   const [roleName, setRoleName] = useState("");
   const [description, setDescription] = useState("");
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [editingPermission, setEditingPermission] = useState<string | null>(null);
+  const [editingPermission, setEditingPermission] = useState<string | null>(
+    null
+  );
   const [newPermissionType, setNewPermissionType] = useState("");
   const [newPermissionLevel, setNewPermissionLevel] = useState<number>(1);
 
@@ -101,7 +103,7 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
 
   // Convert Permission objects back to string format
   const formatPermissions = (perms: Permission[]): string[] => {
-    return perms.map(perm => `${perm.name} (${perm.level})`);
+    return perms.map((perm) => `${perm.name} (${perm.level})`);
   };
 
   useEffect(() => {
@@ -121,26 +123,28 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
 
   const handleAddPermission = () => {
     if (!newPermissionType) return;
-    
+
     const newPermission: Permission = {
       id: Date.now().toString(),
       name: newPermissionType,
       level: newPermissionLevel,
     };
-    
+
     setPermissions([...permissions, newPermission]);
     setNewPermissionType("");
     setNewPermissionLevel(1);
   };
 
   const handleDeletePermission = (id: string) => {
-    setPermissions(permissions.filter(perm => perm.id !== id));
+    setPermissions(permissions.filter((perm) => perm.id !== id));
   };
 
   const handleEditPermission = (id: string, newLevel: number) => {
-    setPermissions(permissions.map(perm => 
-      perm.id === id ? { ...perm, level: newLevel } : perm
-    ));
+    setPermissions(
+      permissions.map((perm) =>
+        perm.id === id ? { ...perm, level: newLevel } : perm
+      )
+    );
     setEditingPermission(null);
   };
 
@@ -159,32 +163,39 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
   };
 
   const getLevelLabel = (level: number) => {
-    const levelObj = PERMISSION_LEVELS.find(l => l.value === level);
+    const levelObj = PERMISSION_LEVELS.find((l) => l.value === level);
     return levelObj ? levelObj.label : "Unknown";
   };
 
   const getLevelColor = (level: number) => {
     switch (level) {
-      case 1: return "default";
-      case 2: return "primary";
-      case 3: return "warning";
-      case 4: return "error";
-      default: return "default";
+      case 1:
+        return "default";
+      case 2:
+        return "primary";
+      case 3:
+        return "warning";
+      case 4:
+        return "error";
+      default:
+        return "default";
     }
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={handleClose} 
-      maxWidth="md" 
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
       fullWidth
-      PaperProps={{
-        sx: { minHeight: "600px" }
+      slotProps={{
+        paper: {
+          className: "rounded-lg shadow-lg",
+        },
       }}
     >
-      <DialogTitle>
-        <Typography variant="h5" fontWeight="bold">
+      <DialogTitle sx={{ pb: 2 }}>
+        <Typography variant="h5" fontWeight="300" sx={{ mb: 1 }}>
           {role ? "Edit Role" : "Create Role"}
         </Typography>
         <Typography variant="body2" color="text.secondary">
@@ -192,11 +203,11 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
         </Typography>
       </DialogTitle>
 
-      <DialogContent dividers>
-        <Stack spacing={3}>
+      <DialogContent dividers sx={{ p: 3 }}>
+        <Stack spacing={4}>
           {/* Role Basic Info */}
           <Box>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
+            <Typography variant="h6" fontWeight="500" mb={2}>
               Role Information
             </Typography>
             <Stack spacing={2}>
@@ -206,6 +217,12 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
                 onChange={(e) => setRoleName(e.target.value)}
                 fullWidth
                 required
+                size="small"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 1,
+                  },
+                }}
               />
               <TextField
                 label="Description"
@@ -215,6 +232,12 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
                 multiline
                 rows={2}
                 required
+                size="small"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 1,
+                  },
+                }}
               />
             </Stack>
           </Box>
@@ -223,13 +246,22 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
 
           {/* Permissions Management */}
           <Box>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
+            <Typography variant="h6" fontWeight="500" mb={2}>
               Permissions Management
             </Typography>
-            
+
             {/* Add New Permission */}
-            <Paper sx={{ p: 2, mb: 2, bgcolor: "grey.50" }}>
-              <Typography variant="subtitle2" fontWeight="bold" mb={2}>
+            <Paper
+              elevation={0}
+              className="shadow-sm"
+              sx={{
+                p: 3,
+                mb: 3,
+                bgcolor: "#fafafa",
+                borderRadius: 1,
+              }}
+            >
+              <Typography variant="body1" fontWeight="500" mb={2}>
                 Add New Permission
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -239,6 +271,9 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
                     value={newPermissionType}
                     onChange={(e) => setNewPermissionType(e.target.value)}
                     label="Permission Type"
+                    sx={{
+                      borderRadius: 1,
+                    }}
                   >
                     {PERMISSION_TYPES.map((type) => (
                       <MenuItem key={type} value={type}>
@@ -247,13 +282,18 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
                     ))}
                   </Select>
                 </FormControl>
-                
+
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <InputLabel>Level</InputLabel>
                   <Select
                     value={newPermissionLevel}
-                    onChange={(e) => setNewPermissionLevel(Number(e.target.value))}
+                    onChange={(e) =>
+                      setNewPermissionLevel(Number(e.target.value))
+                    }
                     label="Level"
+                    sx={{
+                      borderRadius: 1,
+                    }}
                   >
                     {PERMISSION_LEVELS.map((level) => (
                       <MenuItem key={level.value} value={level.value}>
@@ -262,13 +302,18 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
                     ))}
                   </Select>
                 </FormControl>
-                
+
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={handleAddPermission}
                   disabled={!newPermissionType}
                   size="small"
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: 1,
+                    fontWeight: 500,
+                  }}
                 >
                   Add
                 </Button>
@@ -276,19 +321,40 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
             </Paper>
 
             {/* Current Permissions List */}
-            <Typography variant="subtitle2" fontWeight="bold" mb={2}>
+            <Typography variant="body1" fontWeight="500" mb={2}>
               Current Permissions ({permissions.length})
             </Typography>
-            
+
             {permissions.length === 0 ? (
-              <Alert severity="info">
+              <Alert
+                severity="info"
+                sx={{
+                  borderRadius: 1,
+                  "& .MuiAlert-message": {
+                    fontWeight: 400,
+                  },
+                }}
+              >
                 No permissions assigned. Add permissions using the form above.
               </Alert>
             ) : (
-              <Stack spacing={1}>
+              <Stack spacing={2}>
                 {permissions.map((permission) => (
-                  <Paper key={permission.id} sx={{ p: 2 }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Paper
+                    key={permission.id}
+                    elevation={0}
+                    className="shadow-sm"
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
+                      border: "1px solid #f0f0f0",
+                    }}
+                  >
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
                       <Box>
                         <Typography variant="body1" fontWeight={500}>
                           {permission.name}
@@ -297,20 +363,34 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
                           label={getLevelLabel(permission.level)}
                           color={getLevelColor(permission.level) as any}
                           size="small"
-                          sx={{ mt: 0.5 }}
+                          sx={{
+                            mt: 1,
+                            fontWeight: 500,
+                          }}
                         />
                       </Box>
-                      
+
                       <Stack direction="row" spacing={1}>
                         {editingPermission === permission.id ? (
                           <>
                             <FormControl size="small" sx={{ minWidth: 120 }}>
                               <Select
                                 value={permission.level}
-                                onChange={(e) => handleEditPermission(permission.id, Number(e.target.value))}
+                                onChange={(e) =>
+                                  handleEditPermission(
+                                    permission.id,
+                                    Number(e.target.value)
+                                  )
+                                }
+                                sx={{
+                                  borderRadius: 1,
+                                }}
                               >
                                 {PERMISSION_LEVELS.map((level) => (
-                                  <MenuItem key={level.value} value={level.value}>
+                                  <MenuItem
+                                    key={level.value}
+                                    value={level.value}
+                                  >
                                     {level.label}
                                   </MenuItem>
                                 ))}
@@ -328,14 +408,18 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
                           <>
                             <IconButton
                               size="small"
-                              onClick={() => setEditingPermission(permission.id)}
+                              onClick={() =>
+                                setEditingPermission(permission.id)
+                              }
                               color="primary"
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
                             <IconButton
                               size="small"
-                              onClick={() => handleDeletePermission(permission.id)}
+                              onClick={() =>
+                                handleDeletePermission(permission.id)
+                              }
                               color="error"
                             >
                               <DeleteIcon fontSize="small" />
@@ -352,8 +436,16 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2 }}>
-        <Button onClick={handleClose} disabled={loading}>
+      <DialogActions sx={{ p: 3, gap: 1 }}>
+        <Button
+          onClick={handleClose}
+          disabled={loading}
+          sx={{
+            textTransform: "none",
+            borderRadius: 1,
+            fontWeight: 500,
+          }}
+        >
           Cancel
         </Button>
         <Button
@@ -361,6 +453,11 @@ const EditRoleDialog: React.FC<EditRoleDialogProps> = ({
           onClick={handleSave}
           disabled={loading || !roleName.trim() || !description.trim()}
           startIcon={loading ? undefined : <SaveIcon />}
+          sx={{
+            textTransform: "none",
+            borderRadius: 1,
+            fontWeight: 500,
+          }}
         >
           {loading ? "Saving..." : "Save Role"}
         </Button>

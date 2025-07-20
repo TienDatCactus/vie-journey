@@ -1,12 +1,13 @@
 import { enqueueSnackbar } from "notistack";
+import { DashboardAnalyticsResponse } from "../../utils/interfaces/admin";
 import http from "../axios";
+import { Trip } from "../stores/storeTypes";
 import { extractApiData } from "./apiHelpers";
 import {
   CreateTripDto,
   CreateTripRespDto,
   GetTripRespDto,
   GetUserInfoRespDTO,
-  GetUserReqDTO,
   GetUserRespDTO,
   LoginReqDTO,
   LoginRespDTO,
@@ -16,8 +17,7 @@ import {
   VerifyReqDTO,
 } from "./dto";
 import { setToken } from "./token";
-import { AUTH, TRIP, USER, ACCOUNTS, HOTELS, ADMIN, ASSET } from "./url";
-import { Trip } from "../stores/storeTypes";
+import { ACCOUNTS, ADMIN, ASSET, AUTH, HOTELS, TRIP, USER } from "./url";
 
 export const doLogin = async (data: LoginReqDTO) => {
   try {
@@ -87,9 +87,9 @@ export const doLogout = async (data: LogoutReqDTO) => {
   }
 };
 
-export const doGetUser = async (data: GetUserReqDTO) => {
+export const doGetUser = async () => {
   try {
-    const resp = await http.post(USER?.GET_PROFILE, data);
+    const resp = await http.post(USER?.GET_PROFILE);
     if (resp) {
       return extractApiData<GetUserRespDTO>(resp);
     }
@@ -587,4 +587,35 @@ export const doGetUserDetails = async () => {
     console.error("Failed to get user details:", error);
   }
   return null;
+};
+
+export const getDashboardAnalytics = async (
+  timeRange: "7d" | "30d" | "90d" | "1y" = "30d"
+) => {
+  try {
+    const response = await http.get<DashboardAnalyticsResponse>(
+      `${ADMIN.GET_ANALYTICS}?timeRange=${timeRange}`
+    );
+
+    if (!response.status || response.status < 200 || response.status >= 300) {
+      throw new Error("Failed to fetch analytics");
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const doGetRoleBasedCounts = async () => {
+  try {
+    const response = await http.get(ADMIN.GET_ROLE_BASED_COUNTS);
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      throw new Error("Failed to fetch role-based counts");
+    }
+  } catch (error) {
+    console.error(error);
+  }
 };

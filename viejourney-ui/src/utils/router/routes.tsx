@@ -6,6 +6,7 @@ import Fallback from "../handlers/loading/Fallback";
 import ProtectedRoute from "./ProtectedRoute";
 import InviteRedirect from "../../pages/(user)/Trip/TripInvite";
 import TripJoinViaEmail from "../../pages/(user)/Trip/TripJoinViaEmail";
+import Media from "../../pages/(manager)/Media";
 // Anonymous routes
 const Access = lazy(() => import("../../pages/(anonymous)/Auth/Access"));
 const VerifyScreen = lazy(
@@ -45,7 +46,6 @@ const AccountDetail = lazy(
   () => import("../../pages/(admin)/Accounts/AccountDetail")
 );
 const RoleManagement = lazy(() => import("../../pages/(admin)/RoleManagement"));
-const Media = lazy(() => import("../../pages/(admin)/Media"));
 
 // Manager routes
 const BlogManagementList = lazy(
@@ -73,6 +73,7 @@ const SuspenseWrapper = ({
     </Suspense>
   </ProtectedRoute>
 );
+
 const router = createBrowserRouter([
   {
     path: "/",

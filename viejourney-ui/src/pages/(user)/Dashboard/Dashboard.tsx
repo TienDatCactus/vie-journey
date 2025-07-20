@@ -35,9 +35,8 @@ import TripPlans from "./component/TripPlan";
 import ProfileMap from "./component/ProfileMap";
 
 const Dashboard: React.FC = () => {
-  const { details, info, credential } = useAuthStore();
+  const { details, info, credential, loadUserInfo } = useAuthStore();
   const loadUserDetails = useAuthStore((state) => state.loadUserDetails);
-  const loadCurrentUser = useAuthStore((state) => state.loadCurrentUser);
   useEffect(() => {
     const loadData = async () => {
       if (!details && credential?.userId) {
@@ -92,8 +91,9 @@ const Dashboard: React.FC = () => {
           });
           return;
         }
-        const res = await editUserAvatar(credential.userId, selectedFile);
-        if (res) await loadCurrentUser();
+        await editUserAvatar(credential.userId, selectedFile).then(
+          async () => await loadUserInfo()
+        );
         enqueueSnackbar("Updated image successful", {
           variant: "success",
         });

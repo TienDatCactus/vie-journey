@@ -54,75 +54,33 @@ interface BlogPost {
   flags: ModerationFlag[];
 }
 
-// Mock data - replace with your backend data
-const mockBlogPost: BlogPost = {
-  id: "1",
-  title: "My Amazing Journey Through Europe",
-  publishedDate: "28/7/2023",
-  category: "Travel",
-  status: "pending",
-  content: `Last summer, I embarked on an unforgettable journey through Europe, visiting 5 countries in just 3 weeks.
-
-Paris, France
-
-The City of Light did not disappoint! I spent my days exploring the Louvre, climbing the Eiffel Tower, and enjoying croissants at charming cafés.
-
-The City of Light did not disappoint! I spent my days exploring the Louvre, climbing the Eiffel Tower, and enjoying croissants at charming cafés.`,
-  author: {
-    name: "Jane Smith",
-    avatar: "/placeholder.svg?height=40&width=40",
-    joinDate: "12 years ago",
-    email: "jane@email.com",
-    phone: "+1 234-567-890",
-    location: "New York, USA",
-    posts: 23,
-    followers: 1250,
-  },
-  flags: [
-    {
-      id: "1",
-      type: "inappropriate",
-      reason: "Inappropriate content",
-      reportedBy: "User_123",
-      date: "28/7/2023",
-    },
-    {
-      id: "2",
-      type: "spam",
-      reason: "Spam",
-      reportedBy: "User_456",
-      date: "28/7/2023",
-    },
-  ],
-};
-
 export default function BlogManagementView() {
-  const [post] = React.useState<BlogPost>(mockBlogPost);
+  const [post] = React.useState<BlogPost>();
   const { id } = useParams<{ id: string }>();
 
   const { blog } = useBlogDetail({ id: id ?? "" });
 
   const handleApprove = () => {
-    console.log("Approving post:", post.id);
+    console.log("Approving post:", post?.id);
   };
 
   const handleReject = () => {
-    console.log("Rejecting post:", post.id);
+    console.log("Rejecting post:", post?.id);
   };
 
   const handleBanAuthor = () => {
-    console.log("Banning author:", post.author.name);
+    console.log("Banning author:", post?.author.name);
   };
 
   const handleClearFlags = () => {
-    console.log("Clearing flags for post:", post.id);
+    console.log("Clearing flags for post:", post?.id);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <div>
           <Typography variant="h4" className="font-bold text-gray-800 mb-2">
             Blog Moderation
           </Typography>
@@ -135,7 +93,7 @@ export default function BlogManagementView() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           {/* Main Content Area */}
           <div className="lg:col-span-2">
             <Card className="shadow-sm">
@@ -144,10 +102,10 @@ export default function BlogManagementView() {
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Typography variant="body2" color="text.secondary">
-                      Published on {post.publishedDate}
+                      Published on {post?.publishedDate}
                     </Typography>
                     <Chip
-                      label={post.category}
+                      label={post?.category}
                       size="small"
                       className="bg-blue-100 text-blue-800"
                     />
@@ -186,16 +144,16 @@ export default function BlogManagementView() {
 
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar
-                    src={post.author.avatar}
-                    alt={post.author.name}
+                    src={post?.author.avatar}
+                    alt={post?.author.name}
                     className="w-12 h-12"
                   />
                   <div>
                     <Typography variant="subtitle1" className="font-medium">
-                      {post.author.name}
+                      {post?.author.name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Joined {post.author.joinDate}
+                      Joined {post?.author.joinDate}
                     </Typography>
                   </div>
                 </div>
@@ -203,16 +161,20 @@ export default function BlogManagementView() {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
                     <Email className="w-4 h-4 text-gray-500" />
-                    <Typography variant="body2">{post.author.email}</Typography>
+                    <Typography variant="body2">
+                      {post?.author.email}
+                    </Typography>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-gray-500" />
-                    <Typography variant="body2">{post.author.phone}</Typography>
+                    <Typography variant="body2">
+                      {post?.author.phone}
+                    </Typography>
                   </div>
                   <div className="flex items-center gap-2">
                     <LocationOn className="w-4 h-4 text-gray-500" />
                     <Typography variant="body2">
-                      {post.author.location}
+                      {post?.author.location}
                     </Typography>
                   </div>
                 </div>
@@ -222,7 +184,7 @@ export default function BlogManagementView() {
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
                     <Typography variant="h6" className="font-semibold">
-                      {post.author.posts}
+                      {post?.author.posts}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Posts
@@ -230,7 +192,7 @@ export default function BlogManagementView() {
                   </div>
                   <div>
                     <Typography variant="h6" className="font-semibold">
-                      {post.author.followers}
+                      {post?.author.followers}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Followers
@@ -248,11 +210,11 @@ export default function BlogManagementView() {
                   className="font-semibold mb-4 flex items-center gap-2"
                 >
                   <Flag className="w-5 h-5 text-red-500" />
-                  Flags ({post.flags.length})
+                  Flags ({post?.flags.length})
                 </Typography>
 
                 <div className="space-y-3">
-                  {post.flags.map((flag) => (
+                  {post?.flags.map((flag) => (
                     <Paper
                       key={flag.id}
                       className="p-3 bg-red-50 border border-red-200"

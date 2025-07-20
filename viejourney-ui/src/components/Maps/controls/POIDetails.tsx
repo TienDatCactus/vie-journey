@@ -16,6 +16,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Divider,
   Grid2,
   IconButton,
@@ -58,9 +59,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+
   const handleFavoriteToggle = () => {
     const newState = !isFavorite;
     setIsFavorite(newState);
@@ -183,6 +182,16 @@ const POIDetails: React.FC<POIDetailsProps> = ({
       setLoading(false);
     }
   };
+  if (loading) {
+    return (
+      <Box className="w-full h-full flex items-center justify-center">
+        <CircularProgress size={24} />
+        <Typography variant="body2" color="text.secondary">
+          Loading...
+        </Typography>
+      </Box>
+    );
+  }
   if (tripDateRange.length === 0) {
     return (
       <Menu
@@ -206,6 +215,7 @@ const POIDetails: React.FC<POIDetailsProps> = ({
       </Menu>
     );
   }
+
   // Determine if the place is currently open
   const openNow = isOpen();
   return (

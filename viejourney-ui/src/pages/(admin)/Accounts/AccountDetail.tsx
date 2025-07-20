@@ -13,6 +13,7 @@ import {
   Chip,
   Divider,
   Grid,
+  Grid2,
   IconButton,
   Paper,
   Stack,
@@ -22,10 +23,10 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AdminLayout } from "../../../layouts";
+import { DashboardLayout } from "../../../layouts";
 import {
-  doGetUserDetail,
   doDeleteUser,
+  doGetUserDetail,
   doUpdateUserInfo,
 } from "../../../services/api";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
@@ -215,11 +216,11 @@ const AccountDetail = () => {
   };
 
   return (
-    <AdminLayout>
+    <DashboardLayout>
       <Box sx={{ p: 2 }}>
-        <Grid container spacing={2}>
+        <Grid2 container spacing={2}>
           {/* Left Side */}
-          <Grid item xs={12} md={4}>
+          <Grid2 size={{ xs: 12, md: 4 }}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
               <Stack alignItems="center" spacing={1}>
                 <Box sx={{ position: "relative" }}>
@@ -282,7 +283,7 @@ const AccountDetail = () => {
                 </Button>
               </Stack>
             </Paper>
-          </Grid>
+          </Grid2>
           {/* Right Side */}
           <Grid item xs={12} md={8}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
@@ -452,7 +453,7 @@ const AccountDetail = () => {
               )}
             </Paper>
           </Grid>
-        </Grid>
+        </Grid2>
         <ConfirmDeleteDialog
           open={openDelete}
           onClose={() => setOpenDelete(false)}
@@ -468,7 +469,7 @@ const AccountDetail = () => {
           user={user || undefined}
         />
       </Box>
-    </AdminLayout>
+    </DashboardLayout>
   );
 };
 

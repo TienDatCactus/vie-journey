@@ -34,14 +34,14 @@ export class AssetsController {
 
   @Get('banner/subsection')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Manager)
   async getSubsection() {
     return this.assetsService.getSubsection();
   }
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Manager)
   async getAssetsByType(
     @Query('type') type: string,
     @Query('subsection') subsection?: string,
@@ -50,14 +50,14 @@ export class AssetsController {
   }
   @Delete('delete')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Manager)
   async deleteAssetById(@Query('id') id: string) {
     return this.assetsService.deleteAssetById(id);
   }
 
   @Post('update-asset')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Manager)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {

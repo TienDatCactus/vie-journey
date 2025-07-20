@@ -15,13 +15,11 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { BlogCreateLayout } from "../../../../layouts";
 import { useBlogStore } from "../../../../services/stores/useBlogStore";
-import { useMapPan } from "../../../../services/stores/useMapPan";
 import { getWordCount } from "../../../../utils/handlers/utils";
 import { SimpleEditor } from "./../../../../../@/components/tiptap-templates/simple/simple-editor";
 
 const CreateBlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { setSelected } = useMapPan();
   const location = useLocation();
   const { type } = location.state || {};
   const {

@@ -1,31 +1,42 @@
-"use client";
-
 import {
+  ArrowBack,
   Block,
-  Check,
+  Cancel,
+  CheckCircle,
   ClearAll,
-  Close,
-  Flag,
-  LocationOn,
-  Phone,
+  Comment,
+  Edit,
+  History,
+  Person,
+  Place,
+  RemoveRedEye,
+  Star,
+  ThumbUp,
 } from "@mui/icons-material";
 import {
   Avatar,
+  Box,
   Button,
   Card,
   CardContent,
+  CardHeader,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
-  Paper,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import useBlogDetail from "./container/hook";
 
 export default function Blog() {
@@ -70,229 +81,324 @@ export default function Blog() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <Typography variant="h4" className="font-bold text-gray-800 mb-2">
-            Blog Moderation
-          </Typography>
-          <Button
-            variant="text"
-            size="small"
-            href="/manager/blogs"
-            className="text-blue-600 hover:text-blue-800"
+        <div className="mb-6 flex items-center justify-between">
+          <Link to="/manager/blogs">
+            <Button
+              variant="text"
+              startIcon={<ArrowBack />}
+              className="text-gray-600 hover:bg-neutral-100"
+            >
+              Back to All Blogs
+            </Button>
+          </Link>
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems={"center"}
+            className="mt-2"
           >
-            Back to All Blogs
-          </Button>
+            <Chip
+              label={blog?.status}
+              className="bg-yellow-100 text-yellow-800"
+            />
+            <Button
+              variant="outlined"
+              className="border-gray-300 text-gray-700 rounded-sm"
+              startIcon={<History />}
+            >
+              View History
+            </Button>
+          </Stack>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content Area */}
-          <div className="lg:col-span-2">
-            <Card className="shadow-sm">
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="border-0 shadow-sm">
               <CardContent className="p-6">
-                {/* Post Header */}
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    {/* <Typography variant="body2" color="text.secondary">
-                      Published on {post.publishedDate}
-                    </Typography>
-                    <Chip
-                      label={post.category}
-                      size="small"
-                      className="bg-blue-100 text-blue-800"
-                    /> */}
+                <div className="space-y-4">
+                  <div>
+                    <h1 className="text-2xl font-medium text-gray-900 mb-2">
+                      {blog?.title}
+                    </h1>
+                    <p className="text-gray-600">{blog?.summary}</p>
                   </div>
-                  <Typography
-                    variant="h4"
-                    className="font-bold text-gray-900 mb-4"
-                  >
-                    {blog?.title}
-                  </Typography>
-                </div>
 
-                {/* Post Content */}
-                <div className="prose max-w-none">
-                  <Typography
-                    variant="body1"
-                    className="text-gray-700 mb-4 leading-relaxed"
-                  >
-                    {blog?.summary}
-                  </Typography>
-
-                  <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: blog?.content || "" }}
-                  />
+                  {/* Author & Meta */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Avatar
+                        className="w-10 h-10"
+                        src={blog?.createdBy?.avatar?.url || "/placeholder.svg"}
+                      />
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {blog?.createdBy?.fullName}
+                        </p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                          <span>
+                            Published at{" "}
+                            {dayjs(blog?.createdAt).format("MMMM D, YYYY")}
+                          </span>
+                          <div className="flex items-center space-x-1">
+                            <Place className="w-3 h-3" />
+                            <span>{blog?.destination}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex items-center space-x-1">
+                        <RemoveRedEye className="w-4 h-4" />
+                        <span>{blog?.metrics?.viewCount}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <ThumbUp className="w-4 h-4" />
+                        <span>{blog?.metrics?.likeCount}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Comment className="w-4 h-4" />
+                        <span>{blog?.metrics?.commentCount}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
             {/* Author Information */}
-            <Card className="shadow-sm">
-              <CardContent className="p-4">
-                <Typography variant="h6" className="font-semibold mb-4">
-                  Author Information
-                </Typography>
-
-                <div className="flex items-center gap-3 mb-4">
-                  <Avatar
-                    src={
-                      blog?.createdBy?.avatar?.url ||
-                      "/images/placeholders/icons8-avatar-50.png"
-                    }
-                    alt={blog?.createdBy.fullName}
-                    className="w-12 h-12"
-                  />
-                  <div>
-                    <Typography variant="subtitle1" className="font-medium">
-                      {blog?.createdBy.fullName}
-                    </Typography>
-                    {/* <Typography variant="body2" color="text.secondary">
-                      Joined {post.author.joinDate}
-                    </Typography> */}
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  {/* <div className="flex items-center gap-2">
-                    <Email className="w-4 h-4 text-gray-500" />
-                    <Typography variant="body2">{blog?.createdBy.phone}</Typography>
-                  </div> */}
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-500" />
-                    <Typography variant="body2">
-                      {blog?.createdBy.phone}
-                    </Typography>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <LocationOn className="w-4 h-4 text-gray-500" />
-                    <Typography variant="body2">
-                      {blog?.createdBy.address}
-                    </Typography>
-                  </div>
-                </div>
-
-                <Divider className="my-4" />
-                {/* 
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <Typography variant="h6" className="font-semibold">
-                      {post.author.posts}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Posts
-                    </Typography>
-                  </div>
-                  <div>
-                    <Typography variant="h6" className="font-semibold">
-                      {post.author.followers}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Followers
-                    </Typography>
-                  </div>
-                </div> */}
-              </CardContent>
-            </Card>
-
-            {/* Flags */}
-            <Card className="shadow-sm">
-              <CardContent className="p-4">
+            <Card sx={{ boxShadow: 1 }}>
+              <CardHeader>
                 <Typography
                   variant="h6"
-                  className="font-semibold mb-4 flex items-center gap-2"
+                  component="h3"
+                  sx={{ fontWeight: 500 }}
                 >
-                  <Flag className="w-5 h-5 text-red-500" />
-                  Flags ({blog?.flags.length})
+                  Author Information
                 </Typography>
+              </CardHeader>
+              <CardContent>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Avatar sx={{ width: 48, height: 48 }}>
+                      <img
+                        src={blog?.createdBy?.avatar?.url || "/placeholder.svg"}
+                        alt="Author"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </Avatar>
+                    <Box>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: 500, color: "grey.900" }}
+                      >
+                        {blog?.createdBy?.fullName || "Unknown Author"}
+                      </Typography>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <Star
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              color: "warning.main",
+                            }}
+                          />
+                          <Typography variant="body2" color="text.secondary">
+                            4.5
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
 
-                <div className="space-y-3">
-                  {blog?.flags.map((flag, index) => (
-                    <Paper
-                      key={index}
-                      className="p-3 bg-red-50 border border-red-200"
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+                  >
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
                     >
-                      <div className="flex items-start gap-2">
-                        <Flag className="w-4 h-4 text-red-500 mt-0.5" />
-                        <div className="flex-1">
-                          <Typography
-                            variant="body2"
-                            className="font-medium text-red-800"
-                          >
-                            {flag.reason}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Reported by manager •{" "}
-                            {dayjs(flag.date).format("YYYY-MM-DD")}
-                          </Typography>
-                        </div>
-                      </div>
-                    </Paper>
-                  ))}
-                </div>
+                      <Typography variant="body2" color="text.secondary">
+                        Member Since:
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {dayjs(blog?.createdBy?.createdAt).format("MMM YYYY")}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        Date of Birth:
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {blog?.createdBy?.dob || "Not Provided"}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        Reputation:
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {blog?.createdBy?.flaggedCount || 0} Flags
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Tooltip title="Coming soon!">
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      sx={{
+                        bgcolor: "white",
+                        borderColor: "grey.300",
+                        color: "grey.700",
+                      }}
+                      startIcon={<Person sx={{ width: 16, height: 16 }} />}
+                    >
+                      View Author Profile
+                    </Button>
+                  </Tooltip>
+                </Box>
               </CardContent>
             </Card>
 
             {/* Moderation Actions */}
-            <Card className="shadow-sm">
-              <CardContent className="p-4">
-                <Typography variant="h6" className="font-semibold mb-4">
+            <Card sx={{ boxShadow: 1 }}>
+              <CardHeader>
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  sx={{ fontWeight: 500 }}
+                >
                   Moderation Actions
                 </Typography>
-
-                <div className="space-y-3">
-                  {blog?.status === "PENDING" ? (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="contained"
-                        color="success"
-                        startIcon={<Check />}
-                        onClick={handleApprove}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        startIcon={<Close />}
-                        onClick={handleReject}
-                        className="flex-1"
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  ) : (
-                    <></>
-                  )}
-
-                  {blog?.flags && blog.flags.length > 0 ? (
-                    <Button
-                      variant="outlined"
-                      startIcon={<ClearAll />}
-                      onClick={handleClearFlags}
-                      className="w-full"
+              </CardHeader>
+              <CardContent>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="action-select-label">Action</InputLabel>
+                    <Select
+                      labelId="action-select-label"
+                      label="Action"
+                      className="rounded-sm"
+                      defaultValue=""
                     >
-                      Clear Flags
-                    </Button>
-                  ) : (
-                    <></>
-                  )}
+                      <MenuItem value="approve">Approve Post</MenuItem>
+                      <MenuItem value="reject">Reject Post</MenuItem>
+                      <MenuItem value="request-changes">
+                        Request Changes
+                      </MenuItem>
+                      <MenuItem value="flag-review">Flag for Review</MenuItem>
+                    </Select>
+                  </FormControl>
 
-                  <Divider className="my-3" />
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    label="Reason (Optional)"
+                    placeholder="Provide additional context for your decision..."
+                    variant="outlined"
+                    slotProps={{
+                      input: { className: "rounded-sm" },
+                    }}
+                    size="small"
+                  />
 
-                  <Button
-                    variant="contained"
-                    color="error"
-                    startIcon={<Block />}
-                    onClick={handleBanAuthorClick}
-                    className="w-full"
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
                   >
-                    Ban Author
-                  </Button>
-                </div>
+                    {blog?.status === "PENDING" && (
+                      <Button
+                        fullWidth
+                        className="rounded-sm"
+                        variant="contained"
+                        onClick={handleApprove}
+                        sx={{
+                          bgcolor: "success.main",
+                          "&:hover": { bgcolor: "success.dark" },
+                          color: "white",
+                        }}
+                        startIcon={
+                          <CheckCircle sx={{ width: 16, height: 16 }} />
+                        }
+                      >
+                        Approve Post
+                      </Button>
+                    )}
+                    {blog?.flags && blog.flags.length > 0 ? (
+                      <Button
+                        variant="outlined"
+                        startIcon={<ClearAll />}
+                        onClick={handleClearFlags}
+                        className="w-full"
+                      >
+                        Clear Flags
+                      </Button>
+                    ) : (
+                      <></>
+                    )}
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      className="rounded-sm"
+                      sx={{
+                        bgcolor: "white",
+                        borderColor: "grey.300",
+                        color: "grey.700",
+                      }}
+                      startIcon={<Edit sx={{ width: 16, height: 16 }} />}
+                    >
+                      Request Changes
+                    </Button>
+                    {blog?.status === "PENDING" && (
+                      <Button
+                        fullWidth
+                        className="rounded-sm"
+                        variant="outlined"
+                        onClick={handleReject}
+                        sx={{
+                          bgcolor: "white",
+                          borderColor: "error.main",
+                          color: "error.main",
+                          "&:hover": {
+                            bgcolor: "error.50",
+                            borderColor: "error.dark",
+                            color: "error.dark",
+                          },
+                        }}
+                        startIcon={<Cancel sx={{ width: 16, height: 16 }} />}
+                      >
+                        Reject Post
+                      </Button>
+                    )}
+                    <Button
+                      variant="contained"
+                      color="error"
+                      startIcon={<Block />}
+                      onClick={handleBanAuthorClick}
+                      className="rounded-sm"
+                    >
+                      Ban Author
+                    </Button>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           </div>

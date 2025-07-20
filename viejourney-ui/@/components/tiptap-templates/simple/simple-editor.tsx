@@ -185,7 +185,6 @@ const MobileToolbarContent = ({
 export function SimpleEditor({
   onContentChange,
   content,
-  loading = false,
 }: {
   onContentChange?: (data: { cleanHtml: string; places: any[] }) => void;
   content?: string;

@@ -1,32 +1,13 @@
-export interface IAssetType {
-  type: "AVATAR" | "BANNER" | "CONTENT";
+// src/common/dtos/dashboard-query.dto.ts
+import { IsOptional, IsIn } from 'class-validator';
+
+export class DashboardQueryDto {
+  @IsOptional()
+  @IsIn(['7d', '30d', '90d', '1y'])
+  timeRange?: string = '30d';
 }
 
-export interface IQueryUpdate {
-  publicId: string;
-  file: File;
-}
-
-export interface IAsset {
-  _id: string;
-  userId: string;
-  type: IAssetType;
-  url: string;
-  location: string;
-  format: string;
-  file_size: string;
-  dimensions: string;
-  publicId: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export enum ASSET_TYPE {
-  AVATAR = "AVATAR",
-  BANNER = "BANNER",
-  CONTENT = "CONTENT",
-}
-export interface DashboardAnalyticsResponse {
+export class DashboardAnalyticsDto {
   // Key Metrics
   totalUsers: number;
   totalTrips: number;

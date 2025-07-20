@@ -15,7 +15,16 @@ import {
   Grid2,
   CircularProgress,
   Alert,
+  Avatar,
+  Stack,
+  Paper,
+  Chip,
 } from "@mui/material";
+import {
+  People as PeopleIcon,
+  Edit as EditIcon,
+  Cancel as CancelIcon,
+} from "@mui/icons-material";
 import { DataGridPremium, GridColDef } from "@mui/x-data-grid-premium";
 import { doFilterUsers } from "../../../services/api";
 
@@ -133,6 +142,7 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
   };
 
   const handleUserSelect = (user: User, checked: boolean) => {
+    if (user.role === "ADMIN") return; // Prevent selecting ADMIN users
     if (checked) {
       setSelectedUsers([...selectedUsers, user]);
     } else {
@@ -142,7 +152,7 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedUsers([...users]);
+      setSelectedUsers(users.filter((u) => u.role !== "ADMIN")); // Only non-ADMIN users
     } else {
       setSelectedUsers([]);
     }
@@ -167,6 +177,26 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
     onClose();
   };
 
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case "USER":
+        return "primary";
+      case "MANAGER":
+        return "warning";
+      case "ADMIN":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const stringAvatar = (name: string) => {
+    if (!name) return "";
+    const words = name.split(" ");
+    if (words.length === 1) return words[0][0];
+    return words[0][0] + words[1][0];
+  };
+
   const columns: GridColDef[] = [
     {
       field: "select",
@@ -175,9 +205,15 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
       sortable: false,
       renderHeader: () => (
         <Checkbox
-          checked={selectedUsers.length === users.length && users.length > 0}
+          checked={
+            selectedUsers.length ===
+              users.filter((u) => u.role !== "ADMIN").length &&
+            users.filter((u) => u.role !== "ADMIN").length > 0
+          }
           indeterminate={
-            selectedUsers.length > 0 && selectedUsers.length < users.length
+            selectedUsers.length > 0 &&
+            selectedUsers.length <
+              users.filter((u) => u.role !== "ADMIN").length
           }
           onChange={(e) => handleSelectAll(e.target.checked)}
         />
@@ -186,24 +222,67 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
         <Checkbox
           checked={selectedUsers.some((u) => u.userId === params.row.userId)}
           onChange={(e) => handleUserSelect(params.row, e.target.checked)}
+          disabled={params.row.role === "ADMIN"} // Disable for ADMIN users
         />
       ),
     },
     {
-      field: "role",
-      headerName: "Role",
-      width: 120,
-    },
-    {
-      field: "email",
-      headerName: "Email",
-      width: 250,
+      field: "user",
+      headerName: "USER",
+      width: 280,
       flex: 1,
+      renderCell: (params) => (
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Avatar sx={{ width: 32, height: 32 }}>
+            {stringAvatar(params.row.userName || params.row.email)}
+          </Avatar>
+          <Box>
+            <Typography variant="body2" color="text.secondary">
+              {params.row.email || params.row.userName}
+            </Typography>
+          </Box>
+        </Stack>
+      ),
     },
     {
-      field: "userName",
-      headerName: "Username",
-      width: 200,
+      field: "role",
+      headerName: "ROLE",
+      width: 120,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color={getRoleColor(params.value) as any}
+          size="small"
+          variant="outlined"
+          sx={{
+            fontWeight: 500,
+            opacity: params.value === "ADMIN" ? 0.6 : 1, // visually dim ADMIN
+          }}
+        />
+      ),
+    },
+    {
+      field: "status",
+      headerName: "STATUS",
+      width: 100,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color={params.value === "ACTIVE" ? "success" : "default"}
+          size="small"
+          sx={{ fontWeight: 500 }}
+        />
+      ),
+    },
+    {
+      field: "createdAt",
+      headerName: "CREATED AT",
+      width: 120,
+      renderCell: (params) => (
+        <Typography variant="body2">
+          {params.value ? new Date(params.value).toLocaleDateString() : "-"}
+        </Typography>
+      ),
     },
   ];
 
@@ -211,7 +290,7 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
     <Dialog
       open={open}
       onClose={handleClose}
-      maxWidth="md"
+      maxWidth="lg"
       fullWidth
       sx={{
         zIndex: 1300,
@@ -226,75 +305,174 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
         sx: {
           zIndex: 1301,
           position: "relative",
-          overflow: "visible", // Allow dropdown to overflow
+          overflow: "visible",
+          borderRadius: 2,
+          minHeight: "600px",
         },
       }}
       disableEnforceFocus
       disableAutoFocus
       disableScrollLock
     >
-      <DialogTitle>
-        <Typography variant="h6" fontWeight="bold">
-          Danh sách người dùng - {roleData?.role}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {roleData?.description}
-        </Typography>
+      <DialogTitle sx={{ pb: 2 }}>
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Avatar
+            sx={{
+              bgcolor: "#e3f2fd",
+              color: "#1976d2",
+              width: 48,
+              height: 48,
+            }}
+          >
+            <PeopleIcon />
+          </Avatar>
+          <Box>
+            <Typography variant="h5" fontWeight="300" sx={{ mb: 0.5 }}>
+              Users in {roleData?.role} Role
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {roleData?.description}
+            </Typography>
+          </Box>
+        </Stack>
       </DialogTitle>
 
-      <DialogContent sx={{ overflow: "visible" }}>
+      <DialogContent dividers sx={{ p: 3 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert
+            severity="error"
+            sx={{
+              mb: 3,
+              borderRadius: 1,
+              "& .MuiAlert-message": {
+                fontWeight: 400,
+              },
+            }}
+          >
             {error}
           </Alert>
         )}
 
-        <Grid2 container spacing={2} sx={{ mb: 3 }}>
-          <Grid2 size={{ xs: 12, md: 6 }}>
-            <FormControl fullWidth>
-              <InputLabel>Chọn role mới</InputLabel>
-              <Select
-                value={newRole}
-                label="Chọn role mới"
-                onChange={(e) => setNewRole(e.target.value)}
-                sx={{
-                  "& .MuiSelect-select": {
-                    zIndex: 1,
-                  },
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      zIndex: 1400,
-                      position: "absolute",
+        {/* Role Change Section */}
+        <Paper
+          elevation={0}
+          className="shadow-sm"
+          sx={{
+            p: 3,
+            mb: 3,
+            bgcolor: "#f8f9fa",
+            borderRadius: 1,
+            border: "1px solid #e3f2fd",
+          }}
+        >
+          <Typography variant="h6" fontWeight="500" sx={{ mb: 2 }}>
+            Bulk Role Change
+          </Typography>
+
+          <Grid2 container spacing={3} alignItems="center">
+            <Grid2 size={{ xs: 12, md: 4 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Select New Role</InputLabel>
+                <Select
+                  value={newRole}
+                  label="Select New Role"
+                  onChange={(e) => setNewRole(e.target.value)}
+                  sx={{
+                    borderRadius: 1,
+                    "& .MuiSelect-select": {
+                      zIndex: 1,
                     },
-                  },
-                  anchorOrigin: {
-                    vertical: "bottom",
-                    horizontal: "left",
-                  },
-                  transformOrigin: {
-                    vertical: "top",
-                    horizontal: "left",
-                  },
-                  disablePortal: true, // Keep dropdown within dialog
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        zIndex: 1400,
+                        position: "absolute",
+                      },
+                    },
+                    anchorOrigin: {
+                      vertical: "bottom",
+                      horizontal: "left",
+                    },
+                    transformOrigin: {
+                      vertical: "top",
+                      horizontal: "left",
+                    },
+                    disablePortal: true,
+                  }}
+                >
+                  {roles
+                    .filter(
+                      (role) =>
+                        role.value !== "ADMIN" &&
+                        role.value !== roleData?.apiRole
+                    )
+                    .map((role) => (
+                      <MenuItem key={role.value} value={role.value}>
+                        {role.label}
+                      </MenuItem>
+                    ))}
+                  <MenuItem value="ADMIN" disabled>
+                    Administrator (readonly)
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid2>
+
+            <Grid2 size={{ xs: 12, md: 4 }}>
+              <Typography variant="body2" color="text.secondary">
+                Selected Users:{" "}
+                <Chip
+                  label={selectedUsers.length}
+                  color="primary"
+                  size="small"
+                  sx={{ fontWeight: 500 }}
+                />
+              </Typography>
+            </Grid2>
+
+            <Grid2 size={{ xs: 12, md: 4 }}>
+              <Button
+                variant="contained"
+                onClick={handleEdit}
+                disabled={selectedUsers.length === 0 || !newRole}
+                startIcon={<EditIcon />}
+                size="small"
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 1,
+                  fontWeight: 500,
                 }}
               >
-                {roles
-                  .filter((role) => role.value !== roleData?.apiRole)
-                  .map((role) => (
-                    <MenuItem key={role.value} value={role.value}>
-                      {role.label}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
+                Change Role
+              </Button>
+            </Grid2>
           </Grid2>
-        </Grid2>
+        </Paper>
+
+        {/* Users List */}
+        <Typography variant="h6" fontWeight="500" sx={{ mb: 2 }}>
+          Users List ({users.length})
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Select users to change their roles. Use the checkboxes to select
+          individual users or all users.
+        </Typography>
 
         {loading ? (
-          <Box display="flex" justifyContent="center" p={3}>
-            <CircularProgress />
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            sx={{ py: 8 }}
+          >
+            <Stack alignItems="center" spacing={2}>
+              <CircularProgress />
+              <Typography variant="body2" color="text.secondary">
+                Loading users...
+              </Typography>
+            </Stack>
           </Box>
         ) : (
           <Box sx={{ height: 400, width: "100%" }}>
@@ -309,13 +487,20 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
               }}
               pageSizeOptions={[5, 10, 25]}
               disableRowSelectionOnClick
+              disableColumnMenu
+              hideFooterSelectedRowCount
               sx={{
                 "& .MuiDataGrid-cell": {
-                  borderBottom: "1px solid #f0f0f0",
+                  borderBottom: "0.0625rem solid #f0f0f0",
+                  display: "flex",
+                  alignItems: "center",
                 },
                 "& .MuiDataGrid-columnHeaders": {
                   backgroundColor: "#fafafa",
-                  fontWeight: "bold",
+                  fontWeight: "500",
+                },
+                "& .MuiDataGrid-columnSeparator": {
+                  display: "none",
                 },
               }}
             />
@@ -323,16 +508,31 @@ const ViewUsersDialog: React.FC<ViewUsersDialogProps> = ({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ p: 3 }}>
-        <Button onClick={handleClose} variant="outlined">
+      <DialogActions sx={{ p: 3, gap: 1 }}>
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          startIcon={<CancelIcon />}
+          sx={{
+            textTransform: "none",
+            borderRadius: 1,
+            fontWeight: 500,
+          }}
+        >
           Cancel
         </Button>
         <Button
           onClick={handleEdit}
           variant="contained"
           disabled={selectedUsers.length === 0 || !newRole}
+          startIcon={<EditIcon />}
+          sx={{
+            textTransform: "none",
+            borderRadius: 1,
+            fontWeight: 500,
+          }}
         >
-          Edit
+          Apply Changes ({selectedUsers.length})
         </Button>
       </DialogActions>
     </Dialog>

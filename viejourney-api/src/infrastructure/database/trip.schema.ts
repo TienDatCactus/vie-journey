@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, ObjectId } from 'mongoose';
+import { UserInfos } from './userinfo.schema';
 
 @Schema({
   versionKey: false,
@@ -32,8 +33,12 @@ export class Trip extends Document {
   tripmateRange: string;
   description: string;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  createdBy: string;
+  @Prop({
+    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'UserInfos',
+  })
+  createdBy: UserInfos | ObjectId;
 
   @Prop({ default: 0 })
   visibility: boolean;

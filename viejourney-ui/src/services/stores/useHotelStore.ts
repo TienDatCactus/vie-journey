@@ -54,7 +54,7 @@ const initialState: HotelState = {
 };
 
 export const useHotelStore = create<HotelStore>()(
-  subscribeWithSelector((set, get) => ({
+  subscribeWithSelector((set) => ({
     ...initialState,
 
     searchHotels: async (filters: HotelFilters) => {
@@ -68,7 +68,7 @@ export const useHotelStore = create<HotelStore>()(
 
         if (filters.location) {
           filteredHotels = filteredHotels.filter(
-            (hotel) =>
+            (hotel: any) =>
               hotel.address
                 ?.toLowerCase()
                 .includes(filters.location!.toLowerCase()) ||
@@ -80,12 +80,14 @@ export const useHotelStore = create<HotelStore>()(
 
         if (filters.minRating && filters.minRating > 0) {
           filteredHotels = filteredHotels.filter(
-            (hotel) => hotel.rating >= filters.minRating!
+            (hotel: any) => hotel.rating >= filters.minRating!
           );
         }
 
         // Sort by rating (highest first)
-        filteredHotels.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        filteredHotels.sort(
+          (a: any, b: any) => (b.rating || 0) - (a.rating || 0)
+        );
 
         set({ hotels: filteredHotels, loading: false });
 
@@ -133,8 +135,8 @@ export const useHotelStore = create<HotelStore>()(
         const allHotels = await doGetAllHotels();
         // Get top-rated hotels as featured
         const featured = allHotels
-          .filter((hotel) => hotel.rating >= 4.0)
-          .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+          .filter((hotel: any) => hotel.rating >= 4.0)
+          .sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
           .slice(0, 6);
 
         set({ featuredHotels: featured });
@@ -148,7 +150,7 @@ export const useHotelStore = create<HotelStore>()(
         const allHotels = await doGetAllHotels();
 
         // Calculate distance and sort by proximity
-        const hotelsWithDistance = allHotels.map((hotel) => {
+        const hotelsWithDistance = allHotels.map((hotel: any) => {
           const hotelCoord =
             typeof hotel.coordinate === "string"
               ? JSON.parse(hotel.coordinate)
@@ -165,7 +167,7 @@ export const useHotelStore = create<HotelStore>()(
         });
 
         const nearby = hotelsWithDistance
-          .sort((a, b) => a.distance - b.distance)
+          .sort((a: any, b: any) => a.distance - b.distance)
           .slice(0, 8);
 
         set({ nearbyHotels: nearby });

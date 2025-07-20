@@ -50,12 +50,12 @@ export default function TravelBlog() {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "published":
+      case "approved":
         return "success";
       case "draft":
+        return "primary";
+      case "pending":
         return "warning";
-      case "archived":
-        return "default";
       default:
         return "primary";
     }
@@ -295,7 +295,7 @@ export default function TravelBlog() {
                 <Typography
                   variant="h6"
                   component="h2"
-                  className=" font-semibold line-clamp-2"
+                  className=" font-semibold line-clamp-1"
                 >
                   {blog.title}
                 </Typography>
