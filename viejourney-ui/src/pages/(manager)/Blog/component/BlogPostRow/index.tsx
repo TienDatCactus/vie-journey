@@ -133,7 +133,7 @@ export default function BlogPostRow({
       <td className="py-4 pr-4">
         <div className="flex items-center gap-1">
           <Link
-            to={`http://localhost:5173/manager/blogs/${blog._id}`}
+            to={`/manager/blogs/${blog._id}`}
             className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left cursor-pointer"
           >
             <Visibility className="text-gray-500" sx={{ fontSize: 16 }} />

@@ -129,6 +129,17 @@ const TripJoinViaEmail: React.FC = () => {
     },
   ];
 
+  if (loading || tripInfo == null) {
+    return (
+      <Box className="flex flex-col items-center justify-center min-h-screen">
+        <CircularProgress size={60} />
+        <Typography variant="h6" className="mt-4">
+          Validating your invitation...
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <div className="relative min-h-screen w-full">
       {/* Background Image */}
@@ -263,7 +274,7 @@ const TripJoinViaEmail: React.FC = () => {
                       >
                         {tripInfo.trip.startDate &&
                           dayjs(tripInfo.trip.startDate).format(
-                            "MMM D, YYYY"
+                            "MMM D, YYYY",
                           )}{" "}
                         -{" "}
                         {tripInfo.trip.endDate &&
