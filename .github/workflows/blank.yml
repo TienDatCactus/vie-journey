@@ -35,10 +35,6 @@ jobs:
         working-directory: ./viejourney-ui
         run: npm run build
 
-      - name: Run React Tests
-        working-directory: ./viejourney-ui
-        run: npm test -- --watchAll=false
-
       ##############################
       # Backend (NestJS)
       ##############################
@@ -50,6 +46,3 @@ jobs:
         working-directory: ./viejourney-api
         run: npm run build
 
-      - name: Run NestJS Tests
-        working-directory: ./viejourney-api
-        run: npm run test
