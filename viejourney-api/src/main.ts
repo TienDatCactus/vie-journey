@@ -3,14 +3,21 @@ import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
-
+const allowedOrigins = ['http://localhost:5173', 'https://vie-journey.site'];
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log'],
   });
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: true,
+    origin: function (origin, callback) {
+      // Cho phép nếu không có origin (vd: request từ Postman) hoặc nằm trong danh sách
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

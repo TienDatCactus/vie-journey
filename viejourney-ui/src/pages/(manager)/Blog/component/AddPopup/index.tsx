@@ -61,7 +61,7 @@ export default function NewPostDialog({
   };
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0] ?? null;
 
@@ -82,7 +82,7 @@ export default function NewPostDialog({
     setImagePreview(null);
     // Reset the file input
     const fileInput = document.getElementById(
-      "cover-image-upload"
+      "cover-image-upload",
     ) as HTMLInputElement;
     if (fileInput) {
       fileInput.value = "";
@@ -178,7 +178,7 @@ export default function NewPostDialog({
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      localhost:5173/blogs/
+                      vie-journey/blogs/
                     </InputAdornment>
                   ),
                 },
