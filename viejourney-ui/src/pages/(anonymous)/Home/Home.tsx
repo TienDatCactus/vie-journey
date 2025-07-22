@@ -1,4 +1,4 @@
-import { MainLayout } from "../../../layouts";
+import { Container, Fade } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
   HomeAdvert,
@@ -8,8 +8,8 @@ import {
   HomeHero,
   HomeTestimonial,
 } from "../../../components/Pages/(anonymous)/Home";
+import { MainLayout } from "../../../layouts";
 import { useAssetsStore } from "../../../services/stores/useAssets";
-import { Box, Container, Fade } from "@mui/material";
 import HomePageSkeleton from "../../../utils/handlers/loading/LandingSkeleton";
 const Home = () => {
   const { doGetAssets, landingAssets } = useAssetsStore();
@@ -56,7 +56,7 @@ const Home = () => {
     };
 
     fetchAssets();
-  }, [doGetAssets]);
+  }, []);
 
   const hasAssets = landingAssets && Object.keys(landingAssets).length > 0;
 
@@ -80,7 +80,7 @@ const Home = () => {
         ) : (
           <Fade in={sectionsLoaded.intro} timeout={800}>
             <div>
-              <HomeAdvert imgs={landingAssets.intro} />
+              <HomeAdvert imgs={landingAssets?.intro} />
             </div>
           </Fade>
         )}
@@ -128,17 +128,11 @@ const Home = () => {
       </Container>
 
       {/* Call to Action Section */}
-      <Box sx={{ mt: 4 }}>
-        {loading || !sectionsLoaded.call ? (
-          <HomePageSkeleton.CallToAction />
-        ) : (
-          <Fade in={sectionsLoaded.call} timeout={800}>
-            <div>
-              <HomeCall />
-            </div>
-          </Fade>
-        )}
-      </Box>
+      <Fade in={sectionsLoaded.call} className="w-full" timeout={800}>
+        <div>
+          <HomeCall />
+        </div>
+      </Fade>
     </MainLayout>
   );
 };

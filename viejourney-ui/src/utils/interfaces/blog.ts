@@ -70,10 +70,9 @@ export interface IBlogQuery {
   slug: string;
   content: string;
   summary: string;
-  tags: string[];
-  location: string;
-  file: File | null;
-  userId: string;
+  tags?: string[];
+  destination: string;
+  coverImage?: File | null;
 }
 
 export interface IBlogRes {

@@ -7,7 +7,7 @@ import {
 } from "@mui/icons-material";
 import { Avatar, IconButton, Tooltip } from "@mui/material";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../services/stores/useAuthStore";
 
 interface NavProps {
@@ -45,7 +45,16 @@ export const Nav: React.FC<NavProps> = ({
       >
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <ModeOfTravel />
+            <Link
+              to="/"
+              className="hover:scale-105 transition-all  duration-200 hover:shadow-md rounded-full"
+            >
+              <img
+                src="/icons/icons8-around-the-globe-50.png"
+                alt="Logo"
+                className="h-8"
+              />
+            </Link>
             <h1 className="text-xl font-bold ">VieJourney</h1>
           </div>
         )}

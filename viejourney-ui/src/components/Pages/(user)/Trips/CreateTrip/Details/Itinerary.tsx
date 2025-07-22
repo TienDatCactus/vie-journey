@@ -655,7 +655,26 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
 
 const ItinerarySection: React.FC<ItineraryProps> = () => {
   const trip = useTripDetailStore((state) => state.trip);
-
+  const [loading, setLoading] = useState(false);
+  const handleAccept = async (
+    date: [dayjs.Dayjs | null, dayjs.Dayjs | null]
+  ) => {
+    try {
+      setLoading(true);
+      const startDate = dayjs(date[0]).toISOString();
+      const endDate = dayjs(date[1]).toISOString();
+      console.log("Selected dates:", startDate, endDate);
+      if (startDate && endDate) {
+        await useTripDetailStore
+          .getState()
+          .handleUpdateTripDates(startDate, endDate);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const generatedDates = getDatesBetween(trip?.startDate, trip?.endDate);
   return (
     <section className="pt-10" id="itinerary">
@@ -667,6 +686,8 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
         >
           <h1 className="text-3xl font-bold">Itinerary</h1>
           <DateRangePicker
+            loading={loading}
+            onAccept={handleAccept}
             slotProps={{
               textField: {
                 variant: "standard",
@@ -682,6 +703,7 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
                     },
                     boxShadow: "none",
                     border: "none",
+
                     "&:hover": {
                       backgroundColor: "rgba(0, 0, 0, 0.04)",
                     },

@@ -1,4 +1,4 @@
-import { ExpandMore, TravelExplore } from "@mui/icons-material";
+import { ExpandMore } from "@mui/icons-material";
 import PublicIcon from "@mui/icons-material/Public";
 import { Button, Divider, Stack } from "@mui/material";
 import { useLocation } from "react-router-dom";
@@ -56,7 +56,11 @@ const Footer = () => {
         justifyContent="space-between"
       >
         <Stack direction={"row"} spacing={2} alignItems="center">
-          <TravelExplore className="text-neutral-50 text-5xl" />
+          <img
+            src="/icons/icons8-around-the-globe-50.png"
+            alt="Logo"
+            className="h-10 bg-white rounded-full"
+          />
           <h1 className="text-neutral-50 text-2xl font-medium font-sans italic">
             VieJourney
           </h1>

@@ -213,7 +213,13 @@ export class UserService {
   }
   async updateUserInfo(id: string, updateUserInfoDto: any): Promise<UserInfos> {
     const updatedUser = await this.userInfosModel
-      .findByIdAndUpdate(id, updateUserInfoDto, { new: true })
+      .findOneAndUpdate(
+        {
+          userId: new Types.ObjectId(id),
+        },
+        updateUserInfoDto,
+        { new: true },
+      )
       .exec();
 
     if (!updatedUser) {

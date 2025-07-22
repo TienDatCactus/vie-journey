@@ -14,6 +14,7 @@ interface SocketContextType {
   socketLoading: boolean;
   setSocketLoading: (loading: boolean) => void;
   socketDisconnected: boolean;
+  setSocketDisconnected: (disconnected: boolean) => void;
 }
 
 export const SocketContext = createContext<SocketContextType>({
@@ -22,6 +23,7 @@ export const SocketContext = createContext<SocketContextType>({
   socketLoading: true,
   setSocketLoading: () => {},
   socketDisconnected: false,
+  setSocketDisconnected: () => {},
 });
 
 export const useSocket = () => useContext(SocketContext);
@@ -30,11 +32,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socketLoading, setSocketLoading] = useState<boolean>(true);
   const [socketDisconnected, setSocketDisconnected] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (socket && socket.connected == false) {
-      setSocketDisconnected(true);
-    }
-  }, [socket?.connected]);
   return (
     <SocketContext.Provider
       value={{
@@ -43,6 +40,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         socketLoading,
         setSocketLoading,
         socketDisconnected,
+        setSocketDisconnected,
       }}
     >
       {children}

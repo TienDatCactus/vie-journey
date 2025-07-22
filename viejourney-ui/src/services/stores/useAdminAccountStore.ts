@@ -224,7 +224,6 @@ export const useAdminAccountsStore = create<AdminAccountsState>((set, get) => ({
   updateUserInfo: async (userId: string, data) => {
     try {
       await doUpdateUserInfo(userId, data);
-      // Refresh data after update
       get().fetchUsers();
     } catch (error) {
       set({

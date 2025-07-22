@@ -1,5 +1,4 @@
 import SearchIcon from "@mui/icons-material/Search";
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import {
   Button,
   ButtonGroup,
@@ -53,8 +52,10 @@ const Header = () => {
     >
       <Stack className="h-full" direction={"row"} alignItems={"center"} gap={1}>
         <Link to={"/"} className="flex items-center gap-2">
-          <TravelExploreIcon
-            className={`text-[40px] ${isScrolled ? "text-white" : ""}`}
+          <img
+            src="/icons/icons8-around-the-globe-50.png"
+            alt="Logo"
+            className="h-8 bg-white rounded-full"
           />
         </Link>
         <h1 className={`text-[20px] ${isScrolled ? "text-white" : ""}`}>

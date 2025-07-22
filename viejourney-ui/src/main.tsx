@@ -20,6 +20,7 @@ import "./index.css";
 import { SocketProvider } from "./services/context/socketContext";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
+import ScreenGuard from "./layouts/ScreenGuard";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
@@ -69,7 +70,9 @@ root.render(
               >
                 <SocketProvider>
                   <HelmetProvider>
-                    <RouterProvider router={router} />
+                    <ScreenGuard>
+                      <RouterProvider router={router} />
+                    </ScreenGuard>
                   </HelmetProvider>
                 </SocketProvider>
               </APIProvider>

@@ -11,7 +11,7 @@ const HomeBanner: React.FC = () => {
       <div className="w-full h-100 mb-4  relative">
         <Map
           mapTypeControl={false}
-          defaultCenter={{ lat: 48.8566, lng: 2.3522 }} // Example coordinates for Paris
+          defaultCenter={{ lat: 0, lng: 0 }} // Example coordinates for Paris
           defaultZoom={5}
           position="relative"
           detailed={false}

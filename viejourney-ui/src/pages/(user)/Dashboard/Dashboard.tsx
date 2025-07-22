@@ -18,8 +18,8 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Input,
   Stack,
-  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -30,9 +30,9 @@ import { MainLayout } from "../../../layouts";
 import { editUserAvatar } from "../../../services/api/user";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 import AccountSetting from "./component/AccountSetting";
+import ProfileMap from "./component/ProfileMap";
 import TravelBlog from "./component/TravelBlog";
 import TripPlans from "./component/TripPlan";
-import ProfileMap from "./component/ProfileMap";
 
 const Dashboard: React.FC = () => {
   const { details, info, credential, loadUserInfo } = useAuthStore();
@@ -108,7 +108,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="w-full max-w-[125rem] mx-auto lg:px-20 lg:py-10 bg-gray-50 ">
+      <div className="w-full max-w-[125rem] mx-auto lg:px-20 lg:py-10 ">
         <div className="w-full shadow-sm">
           <Card className="p-6 bg-gray-50  h-full " elevation={0}>
             <CardContent className="text-center p-0 flex  h-full">
@@ -294,15 +294,16 @@ const Dashboard: React.FC = () => {
                 <Typography variant="body2" className="mb-2 font-medium">
                   Choose new avatar
                 </Typography>
-                <TextField
+                <Input
                   type="file"
                   name="fileAttachment"
                   fullWidth
                   inputProps={{
+                    className:
+                      "cursor-pointer file:rounded file:py-2 file:px-4 py-4 file:cursor-pointer  file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200",
                     accept: ".jpg,.jpeg,.png,.gif,.webp",
                   }}
                   onChange={handleFileChange}
-                  variant="outlined"
                 />
                 <Typography variant="caption" className="text-gray-500 mt-1">
                   Supported formats: JPG, JPEG, PNG, GIF, WEBP (max 5MB)
@@ -331,7 +332,11 @@ const Dashboard: React.FC = () => {
               onClick={handleSaveAvatar}
               variant="contained"
               disabled={!selectedFile || uploading}
-              className="bg-gray-800 hover:bg-gray-900 text-white"
+              className={`${
+                !selectedFile || uploading
+                  ? "bg-gray-400"
+                  : "bg-gray-800 hover:bg-gray-900"
+              } text-white`}
             >
               {uploading ? "Uploading..." : "Save Avatar"}
             </Button>

@@ -8,14 +8,3 @@ export const STATUS_BLOG = [
     value: "PENDING",
   },
 ];
-
-export const TAG_BLOG = [
-  {
-    label: "Hà Nội",
-    value: "Hà Nội",
-  },
-  {
-    label: "Hưng Yên",
-    value: "Hưng Yên",
-  },
-];

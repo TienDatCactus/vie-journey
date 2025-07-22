@@ -6,7 +6,6 @@ import {
 } from "@mui/icons-material";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import {
   AppBar,
   Avatar,
@@ -107,7 +106,11 @@ const Header = () => {
               to={"/"}
               className="flex items-center gap-2 hover:scale-110 transition-all duration-200 ease-in-out"
             >
-              <TravelExploreIcon />
+              <img
+                src="/icons/icons8-around-the-globe-50.png"
+                alt="Logo"
+                className="h-8"
+              />
               <h1 className="text-[20px]">VieJourney</h1>
             </Link>
             <Stack direction={"row"} gap={2} className="h-full mx-4 ">
@@ -150,11 +153,9 @@ const Header = () => {
                 },
               }}
             />
-            <NotificationsActiveOutlinedIcon className="cursor-pointer hover:text-[#727272]" />
             <IconButton
               onClick={handleClick}
               size="small"
-              sx={{ ml: 2 }}
               aria-controls={open ? "account-menu" : undefined}
               aria-haspopup="true"
               aria-expanded={open ? "true" : undefined}

@@ -263,7 +263,7 @@ const BlogDetail = () => {
 
       <div className="my-4">
         <div
-          className="prose max-w-none"
+          className="prose tiptap-preview max-w-none"
           dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(currentBlog?.content || ""),
           }}

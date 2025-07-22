@@ -38,6 +38,7 @@ import dayjs from "dayjs";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import useBlogDetail from "./container/hook";
+import DOMPurify from "dompurify";
 
 export default function Blog() {
   const { id } = useParams<{ id: string }>();
@@ -165,6 +166,14 @@ export default function Blog() {
                 </div>
               </CardContent>
             </Card>
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div
+                className="prose tiptap-preview  max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(blog?.content || ""),
+                }}
+              />
+            </div>
           </div>
 
           <div className="space-y-6">

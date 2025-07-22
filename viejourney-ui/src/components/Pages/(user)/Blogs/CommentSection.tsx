@@ -36,7 +36,7 @@ interface CommentSectionProps {
 }
 
 const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
-  const { user } = useAuthStore();
+  const { user, info } = useAuthStore();
   const {
     handleGetComment,
     handleCreateComment,
@@ -45,7 +45,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
     handleEditComment,
     handleDeleteComment,
   } = useComment();
-
   // Local state
   const [comments, setComments] = useState<IComment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -64,7 +63,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
     open: boolean;
     commentId: string;
   }>({ open: false, commentId: "" });
-  const { info } = useAuthStore();
   // Load comments when component mounts
   useEffect(() => {
     if (blogId) {
@@ -161,12 +159,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
         enqueueSnackbar("Comment deleted successfully!", {
           variant: "success",
         });
-      } else {
-        enqueueSnackbar("Failed to delete comment", { variant: "error" });
       }
     } catch (error) {
       console.error("Failed to delete comment:", error);
-      enqueueSnackbar("Failed to delete comment", { variant: "error" });
     }
   };
 
@@ -402,16 +397,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
                           )}
                         </div>
 
-                        {user &&
-                          (comment.commentBy?._id === user._id ||
-                            user.role != "USER") && (
-                            <IconButton
-                              size="small"
-                              onClick={(e) => handleMenuClick(e, comment._id)}
-                            >
-                              <MoreVert className="w-4 h-4" />
-                            </IconButton>
-                          )}
+                        {info && comment.commentBy?._id == info?._id && (
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleMenuClick(e, comment._id)}
+                          >
+                            <MoreVert className="w-4 h-4" />
+                          </IconButton>
+                        )}
                       </div>
                       <p className="text-gray-700 whitespace-pre-wrap">
                         {comment.content}
@@ -448,6 +441,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
       </div>
 
       {/* Comment Menu */}
+
       <Menu
         anchorEl={menuAnchor?.element}
         open={Boolean(menuAnchor)}
