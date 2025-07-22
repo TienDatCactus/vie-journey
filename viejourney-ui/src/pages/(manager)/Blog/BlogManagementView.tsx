@@ -23,7 +23,7 @@ import {
 } from "@mui/icons-material";
 import { useParams } from "react-router-dom";
 import useBlogDetail from "../BlogDetail/container/hook";
-
+import DOMPurify from "dompurify";
 interface AuthorInfo {
   name: string;
   avatar: string;
@@ -119,16 +119,19 @@ export default function BlogManagementView() {
                 </div>
 
                 {/* Post Content */}
-                <div className="prose max-w-none">
-                  <Typography
-                    variant="body1"
-                    className="text-gray-700 mb-4 leading-relaxed"
-                  >
-                    {blog?.summary}
-                  </Typography>
+                <Typography
+                  variant="body1"
+                  className="text-gray-700 mb-4 leading-relaxed"
+                >
+                  {blog?.summary}
+                </Typography>
 
-                  {blog?.content}
-                </div>
+                <div
+                  className="prose tiptap-preview  max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(blog?.content || ""),
+                  }}
+                />
               </CardContent>
             </Card>
           </div>

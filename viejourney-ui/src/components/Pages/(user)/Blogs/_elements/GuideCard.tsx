@@ -27,10 +27,9 @@ const BlogCard = (props: IRelatedBlogs) => {
 
   return (
     <Card
-      sx={{ maxWidth: 345 }}
       elevation={0}
       key={props._id}
-      className="border border-dashed border-neutral-300 hover:border-neutral-500 transition-all"
+      className="border border-dashed h-90 w-auto flex flex-col border-neutral-300 hover:border-neutral-500 transition-all"
     >
       <div className="overflow-hidden ">
         <CardMedia
@@ -41,7 +40,7 @@ const BlogCard = (props: IRelatedBlogs) => {
           onClick={handleNavigate}
         />
       </div>
-      <CardContent className="p-2">
+      <CardContent className=" flex-1 flex flex-col justify-between p-2">
         <Typography
           gutterBottom
           variant="h5"
@@ -56,7 +55,7 @@ const BlogCard = (props: IRelatedBlogs) => {
           sx={{ color: "text.secondary" }}
           className="truncate"
         >
-          {props.summary}
+          {props.summary || "No summary available."}
         </Typography>
         <Stack className="mt-2" direction={"row"} alignItems={"center"} gap={1}>
           <Avatar className="w-[30px] h-[30px] text-[12px]">J</Avatar>

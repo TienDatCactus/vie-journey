@@ -23,12 +23,16 @@ import { Types } from 'mongoose';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Patch('edit-profile/:id')
+  @Patch('edit-profile')
   async updateUserInfo(
-    @Param('id') id: string,
+    @Req() req,
     @Body() updateUserInfoDto: UpdateUserInfoDto,
   ) {
-    return this.userService.updateUserInfo(id, updateUserInfoDto);
+    const userId = req.user?.['userId'];
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+    return this.userService.updateUserInfo(userId, updateUserInfoDto);
   }
   @Get()
   async getUserInfo(@Req() req) {

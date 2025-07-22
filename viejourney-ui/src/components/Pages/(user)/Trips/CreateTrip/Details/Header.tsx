@@ -36,6 +36,7 @@ import { DateRangePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
 import { useAssetsStore } from "../../../../../../services/stores/useAssets";
 import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
+import { useBlogStore } from "../../../../../../services/stores/useBlogStore";
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -84,7 +85,7 @@ const Header: React.FC = () => {
   const trip = useTripDetailStore((state) => state.trip);
   const { handleUpdateTripCover } = useTripDetailStore();
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
-
+  const { relatedBlogs } = useBlogStore();
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -101,7 +102,6 @@ const Header: React.FC = () => {
     if (files && files.length > 0) {
       const file = files[0];
       setImage(file);
-      // useAssetsStore.getState().doAddUserAsset(file);
     }
   };
   const handleSaveAsset = async () => {
@@ -125,7 +125,6 @@ const Header: React.FC = () => {
       setLoading(true);
       const startDate = dayjs(date[0]).toISOString();
       const endDate = dayjs(date[1]).toISOString();
-      console.log("Selected dates:", startDate, endDate);
       if (startDate && endDate) {
         await useTripDetailStore
           .getState()
@@ -167,9 +166,9 @@ const Header: React.FC = () => {
         </div>
         <IconButton
           onClick={handleClickOpen}
-          className="absolute top-4 right-4 group hover:bg-neutral-200 bg-neutral-50/20"
+          className="absolute hover:animate-spin top-4 right-4 group bg-neutral-200 "
         >
-          <Edit className="text-neutral-200 group-hover:text-neutral-900" />
+          <Edit className="text-neutral-900" />
         </IconButton>
         <div className="absolute -bottom-10 left-1/2 -translate-x-1/2  lg:w-3/4 lg:h-[12rem] rounded-2xl shadow-md bg-white *:text-neutral-800 p-4 flex flex-col justify-between itemce">
           <div className="hover:bg-neutral-300 w-fit p-2 rounded-md transition-all duration-200">
@@ -254,86 +253,62 @@ const Header: React.FC = () => {
           </AccordionSummary>
           <AccordionDetails>
             <div className="grid *:bg-neutral-100 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card elevation={0} className="max-w-[240px] flex flex-col">
-                <CardMedia
-                  component="img"
-                  className="w-full  object-cover"
-                  image="/images/ocean-beach-mountains-ud.jpg"
-                  alt="name"
-                />
-                <CardContent className="p-0 lg:py-1">
-                  <h1 className="text-lg font-semibold text-dark-900">
-                    Sights in Chiapas and Tabasco
-                  </h1>
-                  <p className="text-sm text-neutral-600 font-medium text-ellipsis line-clamp-2">
-                    Explore the natural beauty and cultural richness of Chiapas
-                    and Tabasco, two states in southern Mexico.
+              {!!relatedBlogs &&
+                relatedBlogs?.length > 0 &&
+                relatedBlogs.map((item, index) => (
+                  <Card
+                    elevation={0}
+                    className="max-w-[240px] flex flex-col"
+                    key={index}
+                  >
+                    <CardMedia
+                      component="img"
+                      className="w-full  object-cover"
+                      image={
+                        item?.coverImage ||
+                        "/images/placeholders/main-placeholder.jpg"
+                      }
+                      alt={item?.title}
+                    />
+                    <CardContent className="p-0 lg:py-1">
+                      <h1 className="text-lg font-semibold text-dark-900">
+                        {item?.title}
+                      </h1>
+                      <p className="text-sm text-neutral-600 font-medium text-ellipsis line-clamp-2">
+                        {item?.summary}
+                      </p>
+                    </CardContent>
+                    <CardActions className="flex items-center gap-1 p-0 py-2">
+                      <Avatar
+                        className="lg:w-8 lg:h-8"
+                        src={item?.author?.name}
+                      />
+                      <h2 className="text-sm text-neutral-800 font-medium">
+                        {item?.author?.name}
+                      </h2>
+                    </CardActions>
+                  </Card>
+                ))}
+              {relatedBlogs?.length === 0 && (
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3 flex items-center justify-center p-4">
+                  <p className="text-neutral-600 text-lg">
+                    No related blogs found.
                   </p>
-                </CardContent>
-                <CardActions className="flex items-center gap-1 p-0 py-2">
-                  <Avatar className="lg:w-8 lg:h-8" />
-                  <h2 className="text-sm text-neutral-800 font-medium">
-                    Fodors
-                  </h2>
-                </CardActions>
-              </Card>
-              <Card elevation={0} className="max-w-[240px] flex flex-col">
-                <CardMedia
-                  component="img"
-                  className="w-full  object-cover"
-                  image="/images/ocean-beach-mountains-ud.jpg"
-                  alt="name"
-                />
-                <CardContent className="p-0 lg:py-1">
-                  <h1 className="text-lg font-semibold text-dark-900">
-                    Sights in Chiapas and Tabasco
-                  </h1>
-                  <p className="text-sm text-neutral-600 font-medium text-ellipsis line-clamp-2">
-                    Explore the natural beauty and cultural richness of Chiapas
-                    and Tabasco, two states in southern Mexico.
-                  </p>
-                </CardContent>
-                <CardActions className="flex items-center gap-1 p-0 py-2">
-                  <Avatar className="lg:w-8 lg:h-8" />
-                  <h2 className="text-sm text-neutral-800 font-medium">
-                    Fodors
-                  </h2>
-                </CardActions>
-              </Card>
-              <Card elevation={0} className="max-w-[240px] flex flex-col">
-                <CardMedia
-                  component="img"
-                  className="w-full  object-cover"
-                  image="/images/ocean-beach-mountains-ud.jpg"
-                  alt="name"
-                />
-                <CardContent className="p-0 lg:py-1">
-                  <h1 className="text-lg font-semibold text-dark-900">
-                    Sights in Chiapas and Tabasco
-                  </h1>
-                  <p className="text-sm text-neutral-600 font-medium text-ellipsis line-clamp-2">
-                    Explore the natural beauty and cultural richness of Chiapas
-                    and Tabasco, two states in southern Mexico.
-                  </p>
-                </CardContent>
-                <CardActions className="flex items-center gap-1 p-0 py-2">
-                  <Avatar className="lg:w-8 lg:h-8" />
-                  <h2 className="text-sm text-neutral-800 font-medium">
-                    Fodors
-                  </h2>
-                </CardActions>
-              </Card>
+                </div>
+              )}
             </div>
-            <div className="flex justify-end py-2">
-              <Button
-                variant="contained"
-                className="bg-dark-800"
-                color="primary"
-                endIcon={<Explore />}
-              >
-                Explore More
-              </Button>
-            </div>
+            {relatedBlogs?.length > 0 && (
+              <div className="flex justify-end py-2">
+                <Button
+                  variant="contained"
+                  className="bg-dark-800"
+                  color="primary"
+                  endIcon={<Explore />}
+                >
+                  Explore More
+                </Button>
+              </div>
+            )}
           </AccordionDetails>
         </Accordion>
       </div>

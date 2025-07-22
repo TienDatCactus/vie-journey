@@ -206,7 +206,6 @@ export const CreateTripForm: React.FC = () => {
                 <TextField
                   {...params}
                   value={destination}
-                  className=""
                   size="small"
                   fullWidth
                   placeholder="e.g Ta xua, Sapa, Da Nang"

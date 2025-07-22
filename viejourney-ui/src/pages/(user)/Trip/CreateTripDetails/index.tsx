@@ -19,16 +19,22 @@ import { useAuthStore } from "../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 import { useDirectionStore } from "../../../../services/stores/useDirectionStore";
 import { useAssetsStore } from "../../../../services/stores/useAssets";
+import { useBlogStore } from "../../../../services/stores/useBlogStore";
 
 const CreateTripDetails: React.FC = () => {
   const { doGetUserAssets } = useAssetsStore();
   const { user, info } = useAuthStore();
   const { setTrip } = useTripDetailStore();
   const { id } = useParams<{ id: string }>();
-  const { setSocket, socketLoading, setSocketLoading, socketDisconnected } =
-    useSocket();
+  const {
+    setSocket,
+    socketLoading,
+    setSocketLoading,
+    setSocketDisconnected,
+    socketDisconnected,
+  } = useSocket();
   const [reason, setReason] = useState<string | null>(null);
-
+  const { fetchRelatedBlogs, relatedBlogs } = useBlogStore();
   const location = useLocation();
   const isFromInvite = location.state?.invite === true;
   const [open, setOpen] = React.useState(isFromInvite);
@@ -79,6 +85,7 @@ const CreateTripDetails: React.FC = () => {
     socket.on("connect", () => {
       console.log("Connected:", socket.id);
       setSocketLoading(false);
+      setSocketDisconnected(false);
       socket.emit("ping", { hello: "server" });
     });
     socket.on("unauthorizedJoin", (data) => {
@@ -88,6 +95,7 @@ const CreateTripDetails: React.FC = () => {
     socket.on("disconnect", (reason) => {
       if (!socket.active) {
         console.log("Disconnected:", reason);
+        setSocketDisconnected(true);
       }
     });
     socket.on("onPlanItemAdded", (data) => {
@@ -197,6 +205,13 @@ const CreateTripDetails: React.FC = () => {
     fetchTripDetails();
   }, [id]);
   useEffect(() => {
+    (async () => {
+      if (!relatedBlogs) {
+        await fetchRelatedBlogs();
+      }
+    })();
+  }, [relatedBlogs, fetchRelatedBlogs]);
+  useEffect(() => {
     if (socketDisconnected == true) {
       console.log("Socket disconnected");
     }
@@ -230,18 +245,9 @@ const CreateTripDetails: React.FC = () => {
           <p>Initializing connections ...</p>
         </div>
       )}
-      {socketDisconnected == true &&
-        React.createElement(() => {
-          const [shown, setShown] = React.useState(true);
 
-          React.useEffect(() => {
-            if (socketDisconnected == true && !shown) {
-              setShown(true);
-            }
-          }, [socketDisconnected]);
+      <DisconnectedDialog />
 
-          return !shown ? <DisconnectedDialog /> : null;
-        })}
       {reason && (
         <div className="fixed inset-0 flex flex-col gap-2 items-center justify-center bg-gray-200/50 z-50 text-center backdrop-blur-md">
           <Warning className="text-red-500 size-20" />

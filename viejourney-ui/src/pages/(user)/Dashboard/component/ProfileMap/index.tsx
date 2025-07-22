@@ -17,8 +17,8 @@ const index: React.FC = () => {
           <div className="h-100 relative">
             <Map
               position="static"
-              defaultCenter={{ lat: 48.8566, lng: 2.3522 }}
-              defaultZoom={10}
+              defaultCenter={{ lat: 0, lng: 0 }}
+              defaultZoom={5}
               className="w-full h-full"
               detailed={false}
             />

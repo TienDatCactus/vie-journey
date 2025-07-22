@@ -21,7 +21,7 @@ const HomeTestimonial: React.FC<{ imgs?: any[] }> = ({ imgs = [] }) => {
       <ul className="flex justify-center items-center gap-8 mt-6">
         <li>
           <img
-            src= {imgs[0].url ?? "/images/pexels-elletakesphotos-1680172.jpg"}
+            src={imgs[0].url ?? "/images/pexels-elletakesphotos-1680172.jpg"}
             alt="testimonial 1"
             className=" w-40 h-40 object-cover shadow-lg grayscale"
           />

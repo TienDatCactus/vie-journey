@@ -24,6 +24,7 @@ import { StartBlogDto } from 'src/common/dtos/start-blog.dto';
 import { UpdateBlogDraftDto } from 'src/common/dtos/update-blog-draft.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { OptionalJwtAuthGuard } from 'src/common/guards/optional-auth.guard';
 
 @Controller('blogs')
 export class BlogController {
@@ -59,11 +60,9 @@ export class BlogController {
   async getRelatedBlogs(
     @Body('tags') tags: string[],
     @Body('blogId') blogId: string,
+    @Body('destination') destination: string,
   ) {
-    if (!tags || tags.length === 0) {
-      throw new BadRequestException('Tags are required');
-    }
-    return this.blogService.getRelatedBlogs(blogId, tags);
+    return this.blogService.getRelatedBlogs(blogId, tags, destination);
   }
 
   // Get user's blogs - MOVED THIS BEFORE @Get(':id')
@@ -78,7 +77,7 @@ export class BlogController {
   }
 
   @Get(':id')
-  async getBlogById(@Param('id') id: string) {
+  async getBlogById(@Param('id') id: string, @Req() req: Request) {
     return this.blogService.findOneBlogById(id);
   }
 
@@ -119,7 +118,8 @@ export class BlogController {
   @Post('publish/:id')
   async publishBlog(@Param('id') id: string, @Req() req: Request) {
     const userId = req.user?.['userId'];
-    return this.blogService.publishBlog(id, userId);
+    const role = req.user?.['role'];
+    return this.blogService.publishBlog(id, userId, role);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -259,12 +259,6 @@ export class BlogController {
       throw new BadRequestException('Reason is required');
     }
     return this.blogService.createFlag(id, reason, req);
-  }
-
-  @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  async updateMetrics(@Param('id') blogId: string, @Req() req: Request) {
-    return this.blogService.updateMetrics(blogId, req);
   }
 
   @UseGuards(JwtAuthGuard)

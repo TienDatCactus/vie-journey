@@ -186,7 +186,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ placeNote, isLoading }) => {
       transition: {
         x: {
           repeat: Infinity,
-          repeatType: "loop",
           duration: duration,
           ease: "linear",
         },

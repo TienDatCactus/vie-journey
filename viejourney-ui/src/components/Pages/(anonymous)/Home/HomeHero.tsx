@@ -9,7 +9,7 @@ const HomeHero: React.FC<{ img: string }> = ({ img }) => {
       <img
         src={img && bg}
         alt="banner"
-        className="w-full h-[80vh] object-cover object-center"
+        className="w-full h-140 object-cover object-center"
       />
       <Stack
         direction={"row"}

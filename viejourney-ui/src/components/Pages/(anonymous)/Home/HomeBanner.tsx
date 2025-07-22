@@ -74,7 +74,7 @@ const HomeBanner: React.FC<{ imgs?: any[] }> = ({ imgs = [] }) => {
     {
       id: 3,
       number: "03",
-      image:imgs[2]?.url ?? "/images/ocean-beach-mountains-ud.jpg",
+      image: imgs[2]?.url ?? "/images/ocean-beach-mountains-ud.jpg",
       title: "Experience authentic adventures beyond",
       description:
         "the typical tourist path with our carefully curated local experiences.",
@@ -83,7 +83,7 @@ const HomeBanner: React.FC<{ imgs?: any[] }> = ({ imgs = [] }) => {
     {
       id: 4,
       number: "04",
-      image:imgs[1]?.url ?? "/images/ocean-beach-mountains-ud.jpg",
+      image: imgs[1]?.url ?? "/images/ocean-beach-mountains-ud.jpg",
       title: "Create memories that last a lifetime",
       description:
         "with personalized itineraries designed just for you and your loved ones.",
@@ -133,7 +133,6 @@ const HomeBanner: React.FC<{ imgs?: any[] }> = ({ imgs = [] }) => {
       <div className="flex flex-col-reverse py-10">
         <Swiper
           ref={swiperRef}
-          loop={true}
           modules={[Navigation, Pagination]}
           slidesPerView={2}
           centeredSlides={true}

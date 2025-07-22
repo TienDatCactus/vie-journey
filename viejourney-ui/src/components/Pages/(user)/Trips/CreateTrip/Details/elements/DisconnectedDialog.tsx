@@ -5,9 +5,27 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import * as React from "react";
+import { useSocket } from "../../../../../../../services/context/socketContext";
 
-const DisconnectedDialog: React.FC = () => {
-  const [open, setOpen] = React.useState(true);
+const DisconnectedDialog = () => {
+  const { socketDisconnected, socket } = useSocket();
+  const [open, setOpen] = React.useState(false);
+  const [everConnected, setEverConnected] = React.useState(false);
+  console.log("DisconnectedDialog rendered", {
+    socketDisconnected,
+    everConnected,
+  });
+  React.useEffect(() => {
+    if (socket && socket.connected) {
+      setEverConnected(true);
+    }
+  }, [socket]);
+
+  React.useEffect(() => {
+    if (socketDisconnected == true && everConnected) {
+      setOpen(true);
+    }
+  }, [socketDisconnected, everConnected]);
   const handleClose = () => {
     window.location.reload();
     setOpen(false);
