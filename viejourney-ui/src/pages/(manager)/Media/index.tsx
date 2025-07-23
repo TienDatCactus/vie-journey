@@ -23,6 +23,7 @@ import {
   CardMedia,
   Checkbox,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -221,18 +222,22 @@ const MediaDashboard = () => {
     }
   }, [listImg]);
 
-  if (!listImg) {
+  if (!listImg || listImg.length === 0 || loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <Typography>Loading...</Typography>
-      </Box>
+      <DashboardLayout>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            gap: 1,
+          }}
+        >
+          <CircularProgress size={48} />
+          <Typography>Loading...</Typography>
+        </Box>
+      </DashboardLayout>
     );
   }
 

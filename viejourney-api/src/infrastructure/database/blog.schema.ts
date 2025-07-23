@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
-import { UserInfos } from './userinfo.schema';
-import { Trip } from './trip.schema';
 import { Like } from './like.schema';
+import { UserInfos } from './userinfo.schema';
 @Schema({ _id: false })
 export class PlaceData {
   @Prop({ required: true })

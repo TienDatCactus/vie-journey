@@ -15,12 +15,11 @@ import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import { RouterProvider } from "react-router-dom";
-import TypebotChat from "./components/TypeBotChat";
 import "./index.css";
+import ScreenGuard from "./layouts/ScreenGuard";
 import { SocketProvider } from "./services/context/socketContext";
 import Fallback from "./utils/handlers/loading/Fallback";
 import router from "./utils/router/routes";
-import ScreenGuard from "./layouts/ScreenGuard";
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement!);
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
@@ -76,9 +75,7 @@ root.render(
                   </HelmetProvider>
                 </SocketProvider>
               </APIProvider>
-              <TypebotChat />
             </LocalizationProvider>
-            <TypebotChat />
           </React.Suspense>
           {/* </ScrollProvider> */}
         </SnackbarProvider>

@@ -209,6 +209,18 @@ export interface IRelatedBlogs {
     likeCount: number;
     commentCount: number;
   };
+  createdBy: {
+    _id: string;
+    userId: {
+      _id: string;
+      email: string;
+    };
+    fullName: string;
+    avatar: {
+      _id: string;
+      url: string;
+    };
+  };
   summary: string;
   tags: string[];
   title: string;

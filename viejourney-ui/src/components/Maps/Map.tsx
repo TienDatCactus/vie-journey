@@ -157,17 +157,25 @@ const Map: React.FC<MapProps> = ({
   }, [selected, fetchPlaceDetail]);
 
   useEffect(() => {
+    const targetLocation = selected?.location || selectedLocation;
+
     if (
-      (selected && selected?.location && mapInstance && selected.location) ||
-      (selectedLocation && mapInstance && selectedLocation)
+      mapInstance &&
+      targetLocation &&
+      targetLocation.lat !== undefined &&
+      targetLocation.lng !== undefined
     ) {
-      console.log(selected?.location);
-      console.log(selectedLocation);
-      mapInstance?.panTo({
-        lat: selected?.location?.lat || selectedLocation.lat || 0,
-        lng: selected?.location?.lng || selectedLocation.long || 0,
-      });
-      mapInstance.setZoom(10);
+      if (targetLocation.lat !== 0 && targetLocation.lng !== 0) {
+        mapInstance.panTo({
+          lat: targetLocation.lat,
+          lng: targetLocation.lng,
+        });
+        mapInstance.setZoom(16);
+      } else {
+        console.warn(
+          "Attempted to pan to 0,0. Check selected/selectedLocation data."
+        );
+      }
     }
   }, [selected, selectedLocation, mapInstance]);
 

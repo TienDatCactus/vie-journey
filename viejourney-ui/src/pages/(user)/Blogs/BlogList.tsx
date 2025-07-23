@@ -132,7 +132,7 @@ const BlogList: React.FC = () => {
           direction={"column"}
           justifyContent={"center"}
           alignItems={"center"}
-          className="mx-auto"
+          className="mx-auto mt-10"
           gap={1}
         >
           <h1 className="font-bold my-2 text-[40px]">

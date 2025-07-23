@@ -78,18 +78,7 @@ export class CommentService {
   }
 
   async editComment(commentId: string, userId: string, content: string) {
-    const comment = await this.commentModel.findById(commentId);
-    if (!comment) throw new NotFoundException('Comment not found');
-    const userInfos = await this.userInfosModel.findOne({
-      userId: new Types.ObjectId(userId),
-    });
-    if (comment.commentBy.toString() !== userInfos?._id.toString())
-      throw new ForbiddenException('No permission');
-    comment.content = content;
-    comment.edited = true;
-    comment.editedAt = new Date();
-    await comment.save();
-    return comment.populate({
+    const comment = await this.commentModel.findById(commentId).populate({
       path: 'commentBy',
       select: 'fullName avatar',
       populate: {
@@ -98,6 +87,12 @@ export class CommentService {
         select: 'url',
       },
     });
+    if (!comment) throw new NotFoundException('Comment not found');
+    comment.content = content;
+    comment.edited = true;
+    comment.editedAt = new Date();
+    await comment.save();
+    return comment;
   }
 
   async deleteComment(commentId: string, userId: string) {

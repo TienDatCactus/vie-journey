@@ -144,13 +144,11 @@ const CreateTripDetails: React.FC = () => {
     });
 
     socket.on("onPlanItemUpdated", (data) => {
-      console.log(data);
       if (data.section == "notes") {
         updateNote(data.item.id, data.item.text);
       } else if (data.section == "transits") {
         updateTransit(data.item.id, data.item);
       } else if (data.section == "places") {
-        console.log("place updated:", data);
         updatePlaceNote(data.item.id, data.item.note, data.item.visited);
       } else if (data.section == "itineraries") {
         console.log("itinerary updated:", data);

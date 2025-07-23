@@ -273,7 +273,6 @@ export class BlogController {
     return this.blogService.unlikeBlog(req, blogId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id/like')
   async checkUserLikedBlog(@Param('id') blogId: string, @Req() req) {
     const userId = req.user?.['userId'] as string;

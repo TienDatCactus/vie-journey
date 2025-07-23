@@ -15,7 +15,13 @@ const index: React.FC = () => {
           className="relative shadow-sm bg-neutral-50 overflow-hidden"
         >
           <div className="h-100 relative">
-            <Map position="static" className="w-full h-full" detailed={false} />
+            <Map
+              defaultCenter={{ lat: 15.9753, lng: 105.7451 }}
+              defaultZoom={5}
+              position="static"
+              className="w-full h-full"
+              detailed={false}
+            />
 
             {/* Stats Chips */}
             <div className="absolute top-4 left-4 flex gap-2">
@@ -79,7 +85,7 @@ const index: React.FC = () => {
                       onClick={() =>
                         setSelectedLocation({
                           lat: place.location.lat,
-                          long: place.location.lng,
+                          lng: place.location.lng,
                         })
                       }
                       key={index}

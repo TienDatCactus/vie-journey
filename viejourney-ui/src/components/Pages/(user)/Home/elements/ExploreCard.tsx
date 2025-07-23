@@ -33,7 +33,7 @@ const ExploreCard: React.FC<{ item: IRelatedBlogs }> = ({ item }) => {
                 ?.split(" ")
                 ?.join("+")}`
             }
-            alt="green iguana"
+            alt={item?.title}
           />
         </div>
         <CardContent className="p-2 pb-0">

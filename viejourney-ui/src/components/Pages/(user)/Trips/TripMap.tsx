@@ -27,10 +27,10 @@ const TripMap: React.FC = () => {
       <Map
         position="relative"
         defaultCenter={{
-          lat: trip.destination?.location.lat || 15.9753,
-          lng: trip.destination?.location.lng || 105.7451,
+          lat: trip.destination?.location.lat,
+          lng: trip.destination?.location.lng,
         }}
-        defaultZoom={20}
+        defaultZoom={10}
         containerStyle={{ width: "100%", height: "100%" }}
         detailed={true}
       />

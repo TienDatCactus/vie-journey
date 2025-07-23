@@ -72,12 +72,19 @@ export class BlogService {
     if (destination && destination.trim() !== '') {
       query.destination = { $regex: destination, $options: 'i' };
     }
-    const relatedBlogs = await this.blogModel.find(query).limit(5).exec();
+    const relatedBlogs = await this.blogModel
+      .find(query)
+      .populate({
+        path: 'createdBy',
+        select: 'fullName avatar',
+        populate: [{ path: 'userId', model: 'Account', select: 'email' }],
+      })
+      .limit(3)
+      .exec();
     if (relatedBlogs.length === 0) {
       console.warn('No related blogs found for the given criteria');
       return [];
     }
-    console.log(relatedBlogs);
     return relatedBlogs;
   }
   async unlikeBlog(req: Request, blogId: string) {

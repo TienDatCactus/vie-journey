@@ -67,7 +67,7 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
     cost: itinerary.place?.cost || undefined,
     time: itinerary.place?.time || "",
   });
-
+  console.log(itinerary);
   const handleUpdateItinerary = () => {
     socket?.emit("planItemUpdated", {
       section: "itineraries",
@@ -561,6 +561,11 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
           },
           time: "",
           cost: "",
+          createdBy: {
+            id: "",
+            fullName: "",
+            email: "",
+          },
         },
         isEditing: false,
       };
@@ -711,14 +716,14 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
                 },
               },
             }}
-            value={
+            defaultValue={
               trip?.startDate && trip?.endDate
                 ? [dayjs(trip.startDate), dayjs(trip.endDate)]
                 : [null, null]
             }
           />
         </Stack>
-        <ul className="list-none py-2 ">
+        <ul className="list-none py-2 max-h-200 overflow-y-scroll">
           {!!generatedDates?.length &&
             generatedDates?.map((date, index) => (
               <>

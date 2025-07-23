@@ -51,9 +51,9 @@ export class PlanStateService {
     section: T,
     item: AddPayload<T>,
     user?: {
-      id: string;
-      email: string;
-      fullName: string;
+      id?: string;
+      email?: string;
+      fullName?: string;
     },
   ): string {
     const plan = this.getOrCreatePlan(tripId);
@@ -71,8 +71,16 @@ export class PlanStateService {
       (item as any).by = user.fullName || user.email;
     }
     if (section === 'itineraries' && user) {
-      (item as any).createdBy = user.fullName || user.email;
+      if ((item as any).place) {
+        (item as any).place.createdBy = {
+          id: user.id,
+          email: user?.email || '',
+          fullname: user?.fullName || '',
+        };
+      }
       (item as any).createdAt = new Date().toISOString();
+      delete (item as any).createdBy;
+      delete (item as any).isEditing;
     }
 
     if (!Array.isArray(plan[section])) {
@@ -145,6 +153,7 @@ export class PlanStateService {
   }
 
   async savePlan(tripId: string) {
+    console.log(`Saving plan for trip: ${tripId}`);
     const state = this.planStates.get(tripId);
     if (!state) return;
     console.log(JSON.stringify(state.plan, null, 1));
@@ -157,9 +166,7 @@ export class PlanStateService {
       this.emitSaveStatus(tripId, 'saved');
     } catch (error) {
       this.savingStatus.set(tripId, false);
-
       console.error(`Failed to save plan for trip: ${tripId}`, error);
-
       this.emitSaveStatus(tripId, 'error', error.message);
     }
   }
@@ -168,6 +175,7 @@ export class PlanStateService {
     status: 'saving' | 'saved' | 'error',
     errorMessage?: string,
   ) => void;
+
   private emitSaveStatus(
     tripId: string,
     status: 'saving' | 'saved' | 'error',

@@ -607,7 +607,6 @@ const InsightsDialog = () => {
     expensesByPerson,
     topCategories,
   } = useExpenseInsights(expenses, totalBudget);
-
   return (
     <React.Fragment>
       <Button
@@ -670,7 +669,7 @@ const InsightsDialog = () => {
                         series={[
                           {
                             arcLabel: (item) =>
-                              `${((item.value / totalBudget) * 100).toFixed(
+                              `${((+item.value / +totalBudget) * 100).toFixed(
                                 0
                               )}%`,
                             arcLabelMinAngle: 45,
@@ -715,7 +714,7 @@ const InsightsDialog = () => {
                         variant="h4"
                         className="font-bold text-green-700"
                       >
-                        {formatCurrency(totalBudget, "en-US")}
+                        {formatCurrency(+totalBudget, "en-US")}
                       </Typography>
 
                       <Box sx={{ mt: 2 }}>
@@ -725,7 +724,7 @@ const InsightsDialog = () => {
                         <Typography
                           variant="h5"
                           className={
-                            totalSpent > totalBudget
+                            +totalSpent > +totalBudget
                               ? "text-red-600 font-semibold"
                               : "text-gray-800 font-semibold"
                           }
@@ -734,7 +733,7 @@ const InsightsDialog = () => {
                           {totalSpent > totalBudget && (
                             <span className="text-xs ml-2">
                               (
-                              {((totalSpent / totalBudget - 1) * 100).toFixed(
+                              {((+totalSpent / +totalBudget - 1) * 100).toFixed(
                                 0
                               )}
                               % over budget)
@@ -750,9 +749,9 @@ const InsightsDialog = () => {
                         <Typography
                           variant="h5"
                           className="font-semibold"
-                          sx={{ color: budgetRemaining > 0 ? "green" : "red" }}
+                          sx={{ color: +budgetRemaining > 0 ? "green" : "red" }}
                         >
-                          {formatCurrency(budgetRemaining, "en-US")}
+                          {formatCurrency(+budgetRemaining, "en-US")}
                         </Typography>
                       </Box>
                     </Box>
@@ -837,7 +836,9 @@ const InsightsDialog = () => {
                               )}
                             />
                             <Typography variant="body2" color="text.secondary">
-                              {((category.value / totalSpent) * 100).toFixed(1)}
+                              {((+category.value / +totalSpent) * 100).toFixed(
+                                1
+                              )}
                               %
                             </Typography>
                           </ListItem>

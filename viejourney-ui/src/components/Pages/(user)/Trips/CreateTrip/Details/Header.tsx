@@ -149,7 +149,7 @@ const Header: React.FC = () => {
   };
   return (
     <section>
-      <div className="z-10 relative w-full lg:h-[17.5rem]">
+      <div className="z-10 relative w-full h-70">
         <div>
           <img
             src={
@@ -160,9 +160,9 @@ const Header: React.FC = () => {
               e.currentTarget.src = "/images/placeholders/main-placeholder.jpg";
             }}
             alt=""
-            className="w-full h-[17.5rem] object-cover"
+            className="w-full h-70 object-cover"
           />
-          <div className="absolute bottom-0 left-0 w-full h-[10rem] bg-gradient-to-t from-neutral-900 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-neutral-900 to-transparent"></div>
         </div>
         <IconButton
           onClick={handleClickOpen}
@@ -170,7 +170,7 @@ const Header: React.FC = () => {
         >
           <Edit className="text-neutral-900" />
         </IconButton>
-        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2  lg:w-3/4 lg:h-[12rem] rounded-2xl shadow-md bg-white *:text-neutral-800 p-4 flex flex-col justify-between itemce">
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 h-40 w-120 rounded-2xl shadow-md bg-white *:text-neutral-800 p-4 flex flex-col justify-between itemce">
           <div className="hover:bg-neutral-300 w-fit p-2 rounded-md transition-all duration-200">
             <h1 className="text-4xl font-bold">{trip?.title}</h1>
           </div>
@@ -206,7 +206,7 @@ const Header: React.FC = () => {
                     },
                   },
                 }}
-                value={
+                defaultValue={
                   trip?.startDate && trip?.endDate
                     ? [dayjs(trip.startDate), dayjs(trip.endDate)]
                     : [null, null]

@@ -131,12 +131,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
         enqueueSnackbar("Comment updated successfully!", {
           variant: "success",
         });
-      } else {
-        enqueueSnackbar("Failed to update comment", { variant: "error" });
       }
     } catch (error) {
       console.error("Failed to edit comment:", error);
-      enqueueSnackbar("Failed to update comment", { variant: "error" });
     }
   };
 
@@ -362,12 +359,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
                       <Button
                         size="small"
                         variant="contained"
+                        className="bg-gray-900 hover:bg-gray-800 text-white rounded-sm"
                         onClick={handleEditCommentSubmit}
                         disabled={!editingComment.content.trim()}
                       >
                         Save
                       </Button>
                       <Button
+                        className="rounded-sm"
                         size="small"
                         onClick={() => setEditingComment(null)}
                       >
@@ -397,14 +396,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
                           )}
                         </div>
 
-                        {info && comment.commentBy?._id == info?._id && (
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleMenuClick(e, comment._id)}
-                          >
-                            <MoreVert className="w-4 h-4" />
-                          </IconButton>
-                        )}
+                        {info &&
+                          (comment.commentBy?._id?.toString() ===
+                            info._id?.toString() ||
+                            (user &&
+                              ["ADMIN", "MANAGER"].includes(user?.role))) && (
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleMenuClick(e, comment._id)}
+                            >
+                              <MoreVert className="w-4 h-4" />
+                            </IconButton>
+                          )}
                       </div>
                       <p className="text-gray-700 whitespace-pre-wrap">
                         {comment.content}
@@ -493,11 +496,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
         </DialogContent>
         <DialogActions>
           <Button
+            className="rounded-sm"
             onClick={() => setDeleteDialog({ open: false, commentId: "" })}
           >
             Cancel
           </Button>
           <Button
+            className="rounded-sm"
             onClick={handleDeleteCommentConfirm}
             color="error"
             variant="contained"

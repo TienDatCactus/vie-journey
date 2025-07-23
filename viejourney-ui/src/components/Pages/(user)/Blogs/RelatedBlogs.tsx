@@ -21,15 +21,19 @@ const RelatedBlogs: React.FC = () => {
                 <img
                   src={article.coverImage || "/placeholder.svg"}
                   alt={article.title}
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover group-hover:scale-105 w-full h-48 transition-transform duration-300"
                 />
               </div>
               <CardContent className="p-4">
-                <h4 className="font-medium text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                <h4 className="font-medium text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
                   {article.title}
                 </h4>
                 <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>by {article.author?.name}</span>
+                  <span>
+                    by{" "}
+                    {article.createdBy?.fullName ||
+                      article.createdBy?.userId?.email}
+                  </span>
                   <span>8 mins read</span>
                 </div>
               </CardContent>

@@ -64,7 +64,15 @@ const BlogSider: React.FC = () => {
                 <Close />
               </IconButton>
 
-              <Map position="relative" className="w-full h-160" />
+              <Map
+                defaultCenter={{
+                  lat: currentBlog?.places[0]?.latitude || 0,
+                  lng: currentBlog?.places[0]?.longitude || 0,
+                }}
+                defaultZoom={10}
+                position="relative"
+                className="w-full h-160"
+              />
             </div>
           </DialogContent>
           <div className="flex flex-wrap p-4 gap-2">

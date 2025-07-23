@@ -1,12 +1,33 @@
 import { Add, Public } from "@mui/icons-material";
-import { Box, Button, Grid2, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid2,
+  Typography,
+} from "@mui/material";
 import type React from "react";
-import { useTripDetailStore } from "../../../../../services/stores/useTripDetailStore";
-import TripCard from "./Card";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTripDetailStore } from "../../../../../services/stores/useTripDetailStore";
+import CardSkeleton from "../../../../../utils/handlers/loading/CardSkeleton";
+import TripCard from "./Card";
 
 const TripPlans: React.FC = () => {
-  const { trips } = useTripDetailStore();
+  const { trips, handleGetUserTrips } = useTripDetailStore();
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        await handleGetUserTrips();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
   if (trips.length === 0) {
     return (
       <Box
@@ -142,9 +163,18 @@ const TripPlans: React.FC = () => {
       </Box>
     );
   }
-  console.log(trips);
+  if (loading) {
+    <div className="relative w-full  flex flex-col justify-center items-center">
+      <div className="inset-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute  w-full h-full flex justify-center items-center ">
+        <CircularProgress size={48} />
+      </div>
+      <div className="w-full max-w-[75rem] mx-auto flex justify-center items-center">
+        <CardSkeleton count={3} />
+      </div>
+    </div>;
+  }
   return (
-    <Box className="max-w-[125rem] mx-auto bg-gray-50  my-4">
+    <Box className="max-w-[125rem] mx-auto  my-4">
       <Box className="">
         <Box className="flex justify-between items-start mb-8">
           <Box>

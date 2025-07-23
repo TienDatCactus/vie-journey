@@ -182,7 +182,7 @@ export const getRelatedBlogs = async (
     tags,
     destination,
   });
-  return res.data.data?.blogs || [];
+  return res.data || [];
 };
 
 export const clearFlag = async (id: string) => {

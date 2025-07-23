@@ -17,9 +17,9 @@ const BlogCard = (props: IRelatedBlogs) => {
 
   useEffect(() => {
     (async () => {
-      await checkLikeStatus(props._id);
+      await checkLikeStatus(props?._id);
     })();
-  }, [props._id]);
+  }, [props?._id]);
 
   const handleNavigate = () => {
     navigate(`/blogs/${props._id}`);
@@ -28,14 +28,14 @@ const BlogCard = (props: IRelatedBlogs) => {
   return (
     <Card
       elevation={0}
-      key={props._id}
+      key={props?._id}
       className="border border-dashed h-90 w-auto flex flex-col border-neutral-300 hover:border-neutral-500 transition-all"
     >
       <div className="overflow-hidden ">
         <CardMedia
           component="img"
-          image={props.coverImage || "https://placehold.co/600x400"}
-          alt="green iguana"
+          image={props?.coverImage || "https://placehold.co/600x400"}
+          alt={props?.title}
           className="duration-200 ease-in-out lg:h-60  hover:scale-105 cursor-pointer  transition-all"
           onClick={handleNavigate}
         />
@@ -48,18 +48,18 @@ const BlogCard = (props: IRelatedBlogs) => {
           className="my-0 truncate"
           onClick={handleNavigate}
         >
-          {props.title}
+          {props?.title}
         </Typography>
         <Typography
           variant="body2"
           sx={{ color: "text.secondary" }}
           className="truncate"
         >
-          {props.summary || "No summary available."}
+          {props?.summary || "No summary available."}
         </Typography>
         <Stack className="mt-2" direction={"row"} alignItems={"center"} gap={1}>
           <Avatar className="w-[30px] h-[30px] text-[12px]">J</Avatar>
-          <h5 className="truncate">{props.author.name}</h5>
+          <h5 className="truncate">{props?.author.name}</h5>
           <Stack direction={"row"} gap={1}>
             <Stack direction={"row"} alignItems={"center"}>
               <IconButton>
@@ -72,13 +72,13 @@ const BlogCard = (props: IRelatedBlogs) => {
                   <FavoriteBorder className="text-base" />
                 )}
               </IconButton>
-              <p className="m-0">{props.metrics.likeCount} </p>
+              <p className="m-0">{props?.metrics.likeCount} </p>
             </Stack>
             <Stack direction={"row"} alignItems={"center"}>
               <IconButton>
                 <VisibilityIcon className="text-base" />
               </IconButton>
-              <p className="m-0">{props.metrics.viewCount} </p>
+              <p className="m-0">{props?.metrics.viewCount} </p>
             </Stack>
           </Stack>
         </Stack>

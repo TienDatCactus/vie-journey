@@ -42,10 +42,17 @@ const BlogLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     if (currentBlog?._id && currentBlog?.tags) {
       (async () => {
-        await fetchRelatedBlogs(
-          currentBlog?._id || "",
-          currentBlog?.tags || []
-        );
+        try {
+          setLoading(true);
+          await fetchRelatedBlogs(
+            currentBlog?._id || "",
+            currentBlog?.tags || []
+          );
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
       })();
     }
   }, [currentBlog, fetchRelatedBlogs]);
@@ -90,13 +97,13 @@ const BlogLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <MainLayout>
       <Container maxWidth="xl" className="py-4">
-        <div className="my-4 justify-start flex w-full">
-          <Link to="/">
+        <div className="mt-10 justify-start flex w-full">
+          <Link to="/blogs">
             <Button
               className="text-gray-600 hover:text-gray-900"
               startIcon={<ArrowBack />}
             >
-              Back to Home
+              Back to Blogs
             </Button>
           </Link>
         </div>

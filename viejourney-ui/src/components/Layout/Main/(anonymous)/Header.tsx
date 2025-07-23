@@ -10,21 +10,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 const headerNav: Array<{ name: string; link: string }> = [
   {
-    name: "Home",
-    link: "/home",
-  },
-  {
-    name: "Travel guides",
-    link: "/guides",
+    name: "Travel blogs",
+    link: "/blogs",
   },
   {
     name: "Hotels",
     link: "/hotels",
-  },
-
-  {
-    name: "Profile",
-    link: "/profile",
   },
 ];
 const Header = () => {

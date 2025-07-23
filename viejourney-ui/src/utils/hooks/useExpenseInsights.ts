@@ -4,10 +4,7 @@ import { getTypeColor } from "../handlers/utils";
 
 // hooks/useExpenseInsights.ts
 export function useExpenseInsights(expenses: Expense[], totalBudget: number) {
-  const totalSpent = useMemo(
-    () => expenses.reduce((sum, e) => sum + e.amount, 0),
-    [expenses]
-  );
+  const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
 
   const budgetRemaining = Math.max(totalBudget - totalSpent, 0);
 

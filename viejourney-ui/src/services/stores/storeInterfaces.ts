@@ -83,10 +83,13 @@ export interface Itinerary {
     }; // Location coordinates
     time?: string;
     cost?: number;
-    createdBy?: Partial<UserInfo>; // User who created this place
+    createdBy?: {
+      id?: string;
+      fullName?: string;
+      email?: string;
+    } | null;
   };
   note: string;
-
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
   isEditing?: boolean;
