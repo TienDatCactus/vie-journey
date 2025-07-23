@@ -1,19 +1,27 @@
 import { useEffect, useState } from "react";
-import { banAuthor, clearFlag, getBlogDetail, updateStatusBlog } from "../../../../services/api/blog";
+import {
+  banAuthor,
+  clearFlag,
+  getBlogDetail,
+  updateStatusBlog,
+} from "../../../../services/api/blog";
 import { IBlogDetail } from "../../../../utils/interfaces/blog";
 import { enqueueSnackbar } from "notistack";
 
 function useBlogDetail({ id }: { id: string }) {
   const [blog, setBlog] = useState<IBlogDetail>();
-
+  const [loading, setLoading] = useState(false);
   const handleGetBlogDetail = async () => {
     try {
+      setLoading(true);
       const res = await getBlogDetail(id);
       if (res) {
         setBlog(res);
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,7 +41,7 @@ function useBlogDetail({ id }: { id: string }) {
     }
   };
 
-  const handleBanAuthor = async(id: string, reason: string) => {
+  const handleBanAuthor = async (id: string, reason: string) => {
     try {
       const res = await banAuthor(id, reason);
       if (res) {
@@ -43,10 +51,9 @@ function useBlogDetail({ id }: { id: string }) {
       }
     } catch (error) {
       console.log(error);
-      
     }
-  }
-    const handleClearFlag = async (id: string) => {
+  };
+  const handleClearFlag = async (id: string) => {
     try {
       const res = await clearFlag(id);
       if (res) {
@@ -61,9 +68,14 @@ function useBlogDetail({ id }: { id: string }) {
   };
   useEffect(() => {
     handleGetBlogDetail();
-    
   }, []);
-  return { blog, handleUpdateStatus, handleBanAuthor, handleClearFlag};
+  return {
+    blog,
+    handleUpdateStatus,
+    handleBanAuthor,
+    handleClearFlag,
+    loading,
+  };
 }
 
 export default useBlogDetail;

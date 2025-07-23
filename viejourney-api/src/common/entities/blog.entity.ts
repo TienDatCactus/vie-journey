@@ -16,7 +16,6 @@ export class PlaceData {
 
 export class Blog extends Document {
   declare _id: string;
-
   title: string;
   slug?: string;
   content: string;

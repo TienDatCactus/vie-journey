@@ -32,9 +32,8 @@ const MapConfiguration: React.FC<{
   const coreLib = useMapsLibrary("core");
   const placesLib = useMapsLibrary("places");
   useEffect(() => {
-    if (!mapInstance || !coreLib || !placesLib) return; // Disable Google Maps analytics collection to prevent CSP errors
+    if (!mapInstance || !coreLib || !placesLib) return;
     if (window.google && window.google.maps) {
-      // Apply settings that disable analytics and tracking that cause CSP issues
       (window.google.maps as any).disablePostfixUnitsRequests = true;
       (window.google.maps as any).disableCommunitiesLogging = true;
       (window.google.maps as any).disableAttributionPrefixRequests = true;

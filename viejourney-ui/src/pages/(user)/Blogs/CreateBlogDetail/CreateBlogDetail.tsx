@@ -163,7 +163,6 @@ const CreateBlogDetail: React.FC = () => {
       await publishBlog(id);
     } catch (error) {
       console.error("Publish blog error:", error);
-      enqueueSnackbar("Failed to publish blog", { variant: "error" });
     } finally {
       setLoading(false);
     }

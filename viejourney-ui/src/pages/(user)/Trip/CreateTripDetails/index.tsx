@@ -1,7 +1,7 @@
 import { Warning } from "@mui/icons-material";
 import { Backdrop, Button, CircularProgress } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -63,7 +63,7 @@ const CreateTripDetails: React.FC = () => {
     handleGetPlanByTripId,
   } = useTripDetailStore();
   const { addPlaceId } = useDirectionStore();
-
+  const navigate = useNavigate();
   useEffect(() => {
     setSocketLoading(true);
 
@@ -257,7 +257,7 @@ const CreateTripDetails: React.FC = () => {
             color="error"
             onClick={() => {
               setReason(null);
-              window.location.href = "/";
+              navigate("/");
             }}
           >
             Return to Home

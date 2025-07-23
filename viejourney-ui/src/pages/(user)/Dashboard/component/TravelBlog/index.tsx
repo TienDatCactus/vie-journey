@@ -215,10 +215,12 @@ export default function TravelBlog() {
               {myBlogs.length} {myBlogs.length === 1 ? "blog" : "blogs"} found
             </p>
           </div>
-          <Button href="/blogs/create">
-            <ImagePlusIcon className="w-4 h-4 mr-2" />
-            Create Blog
-          </Button>
+          <Link to="/blogs/create">
+            <Button>
+              <ImagePlusIcon className="w-4 h-4 mr-2" />
+              Create Blog
+            </Button>
+          </Link>
         </div>
       </Box>
 

@@ -131,10 +131,7 @@ const ResetPassword: React.FC = () => {
       </div>
       <div className="my-4  z-20">
         <span>Need help?</span>
-        <a
-          href=""
-          className="text-primary-700 font-semibold hover:underline ms-1"
-        >
+        <a className="text-primary-700 font-semibold hover:underline ms-1">
           Contact support
         </a>
       </div>

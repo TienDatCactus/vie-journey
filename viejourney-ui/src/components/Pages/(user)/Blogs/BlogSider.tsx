@@ -36,8 +36,11 @@ const BlogSider: React.FC = () => {
         <h1 className="text-lg font-medium">Locations Mentioned</h1>
         <div className="relative">
           <Map
-            defaultCenter={{ lat: 0, lng: 0 }}
-            defaultZoom={2}
+            defaultCenter={{
+              lat: currentBlog?.places[0]?.latitude || 0,
+              lng: currentBlog?.places[0]?.longitude || 0,
+            }}
+            defaultZoom={5}
             detailed={false}
             position="relative"
             className="w-full h-90 shadow-md border border-dashed border-gray-400 hover:shadow-md duration-200 transition-all drop-shadow-md"
@@ -61,12 +64,7 @@ const BlogSider: React.FC = () => {
                 <Close />
               </IconButton>
 
-              <Map
-                position="relative"
-                defaultCenter={{ lat: 0, lng: 0 }}
-                defaultZoom={6}
-                className="w-full h-160"
-              />
+              <Map position="relative" className="w-full h-160" />
             </div>
           </DialogContent>
           <div className="flex flex-wrap p-4 gap-2">

@@ -10,9 +10,10 @@ const HomeBanner: React.FC = () => {
     <div className="max-w-[75rem] py-10 relative flex flex-col items-center justify-center w-full ">
       <div className="w-full h-100 mb-4  relative">
         <Map
+          disableDefaultUI
+          defaultCenter={{ lat: 15.9753, lng: 105.7451 }}
+          zoom={2}
           mapTypeControl={false}
-          defaultCenter={{ lat: 0, lng: 0 }} // Example coordinates for Paris
-          defaultZoom={5}
           position="relative"
           detailed={false}
           className="w-full h-full rounded-xl shadow-md drop-shadow-md"

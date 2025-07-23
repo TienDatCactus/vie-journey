@@ -13,8 +13,8 @@ import { enqueueSnackbar } from "notistack";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { doValidateAccessToken } from "../../../services/api";
-import { useAuthStore } from "../../../services/stores/useAuthStore";
 import { setToken } from "../../../services/api/token";
+import { useAuthStore } from "../../../services/stores/useAuthStore";
 const OauthSuccess: React.FC = () => {
   const { setCredential, user, info } = useAuthStore();
   const [loading, setLoading] = useState(false);

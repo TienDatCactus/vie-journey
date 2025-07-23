@@ -55,11 +55,15 @@ export class BlogService {
     }
   }
 
-  async getRelatedBlogs(blogId: string, tags: string[], destination: string) {
+  async getRelatedBlogs(
+    blogId?: string,
+    tags?: string[],
+    destination?: string,
+  ) {
     const query: any = {
       status: 'APPROVED',
     };
-    if (tags.length > 0) {
+    if (tags && tags.length > 0) {
       query.tags = { $in: tags };
     }
     if (blogId) {
@@ -132,11 +136,18 @@ export class BlogService {
         .populate('createdBy')
         .populate({
           path: 'createdBy',
-          populate: {
-            path: 'avatar',
-            model: 'Asset',
-            select: 'url',
-          },
+          populate: [
+            {
+              path: 'avatar',
+              model: 'Asset',
+              select: 'url',
+            },
+            {
+              path: 'userId',
+              model: 'Account',
+              select: 'email',
+            },
+          ],
         })
         .exec(),
       this.blogModel.countDocuments(filter).exec(),
@@ -170,7 +181,11 @@ export class BlogService {
       return {
         _id: blog._id,
         title: blog.title,
-        createdBy: blog?.createdBy,
+        createdBy: {
+          _id: blog.createdBy._id,
+          fullName: blog.createdBy.fullName,
+          email: blog.createdBy.userId?.email,
+        },
         avatarUser: blog?.createdBy?.avatar?.url || null,
         summary: blog.summary,
         destination: blog?.destination || null,

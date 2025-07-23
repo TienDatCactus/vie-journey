@@ -270,64 +270,69 @@ const BlogDetail = () => {
         />
       </div>
 
-      <Divider className="my-6" />
-
-      <div className="space-y-4">
-        <h2 className="font-semibold text-xl">Mentions places</h2>
-        <ul className="list-disc">
-          {currentBlog?.places?.map((place, index) => {
-            const placePhoto = place.photos?.[0] ? place.photos[0] : null;
-            return (
-              <React.Fragment key={place.placeId || index}>
-                <li
-                  onClick={() => handlePlaceSelect(place)}
-                  className="hover:bg-gray-100 rounded-xl cursor-pointer mb-2 gap-4 grid grid-cols-12"
-                >
-                  <div className="col-span-8 flex items-center gap-2 overflow-hidden">
-                    <div>
-                      <IconButton>
-                        <Place className="text-gray-500" />
-                      </IconButton>
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <h1 className="font-semibold">
-                        {place.displayName || "Unnamed Place"}
-                      </h1>
-                      {place.types && (
-                        <dl className="text-sm flex flex-wrap gap-2 text-gray-500">
-                          {place.types[0]?.split(",").map((type, typeIndex) => (
-                            <Chip key={typeIndex} label={type} />
-                          ))}
-                        </dl>
-                      )}
-                      <p className="text-sm text-gray-500">
-                        {place.editorialSummary || "No summary available"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="col-span-4 space-y-2">
-                    {placePhoto ? (
-                      <img
-                        src={placePhoto}
-                        alt={place.displayName}
-                        className="w-full h-52 object-cover rounded-md"
-                      />
-                    ) : (
-                      <div className="w-full h-52 flex items-center justify-center font-semibold text-xl rounded-md bg-gray-200">
-                        No image available
+      {!!currentBlog?.places && currentBlog?.places.length > 0 && (
+        <>
+          <Divider className="my-6" />
+          <div className="space-y-4">
+            <h2 className="font-semibold text-xl">Mentions places</h2>
+            <ul className="list-disc">
+              {currentBlog?.places?.map((place, index) => {
+                const placePhoto = place.photos?.[0] ? place.photos[0] : null;
+                return (
+                  <React.Fragment key={place.placeId || index}>
+                    <li
+                      onClick={() => handlePlaceSelect(place)}
+                      className="hover:bg-gray-100 rounded-xl cursor-pointer mb-2 gap-4 grid grid-cols-12"
+                    >
+                      <div className="col-span-8 flex items-center gap-2 overflow-hidden">
+                        <div>
+                          <IconButton>
+                            <Place className="text-gray-500" />
+                          </IconButton>
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <h1 className="font-semibold">
+                            {place.displayName || "Unnamed Place"}
+                          </h1>
+                          {place.types && (
+                            <dl className="text-sm flex flex-wrap gap-2 text-gray-500">
+                              {place.types[0]
+                                ?.split(",")
+                                .map((type, typeIndex) => (
+                                  <Chip key={typeIndex} label={type} />
+                                ))}
+                            </dl>
+                          )}
+                          <p className="text-sm text-gray-500">
+                            {place.editorialSummary || "No summary available"}
+                          </p>
+                        </div>
                       </div>
+
+                      <div className="col-span-4 space-y-2">
+                        {placePhoto ? (
+                          <img
+                            src={placePhoto}
+                            alt={place.displayName}
+                            className="w-full h-52 object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="w-full h-52 flex items-center justify-center font-semibold text-xl rounded-md bg-gray-200">
+                            No image available
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                    {index < (currentBlog?.places?.length || 0) - 1 && (
+                      <Divider className="my-4 border-gray-300" />
                     )}
-                  </div>
-                </li>
-                {index < (currentBlog?.places?.length || 0) - 1 && (
-                  <Divider className="my-4 border-gray-300" />
-                )}
-              </React.Fragment>
-            );
-          })}
-        </ul>
-      </div>
+                  </React.Fragment>
+                );
+              })}
+            </ul>
+          </div>
+        </>
+      )}
 
       {/* Flag Dialog */}
       <Dialog

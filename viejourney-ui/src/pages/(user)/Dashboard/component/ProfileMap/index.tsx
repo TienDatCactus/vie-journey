@@ -15,13 +15,7 @@ const index: React.FC = () => {
           className="relative shadow-sm bg-neutral-50 overflow-hidden"
         >
           <div className="h-100 relative">
-            <Map
-              position="static"
-              defaultCenter={{ lat: 0, lng: 0 }}
-              defaultZoom={5}
-              className="w-full h-full"
-              detailed={false}
-            />
+            <Map position="static" className="w-full h-full" detailed={false} />
 
             {/* Stats Chips */}
             <div className="absolute top-4 left-4 flex gap-2">

@@ -37,7 +37,7 @@ import {
 } from "@mui/x-data-grid-premium";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "../../../layouts";
 import BlogStatusChip from "./component/BlogStatusChip";
 import StatCard from "./component/Card";
@@ -63,7 +63,7 @@ export default function BlogManagementList() {
     page: params.page - 1,
     pageSize: params.pageSize,
   });
-
+  const navigate = useNavigate();
   const handlePaginationModelChange = (newModel: GridPaginationModel) => {
     try {
       setLoading(true);
@@ -110,8 +110,7 @@ export default function BlogManagementList() {
               "&:hover": { textDecoration: "underline" },
             }}
             onClick={() => {
-              // Navigate to blog detail
-              window.location.href = `/manager/blogs/${params.row._id}`;
+              navigate(`/manager/blogs/${params.row._id}`);
             }}
           >
             {params.row.title}
@@ -197,7 +196,7 @@ export default function BlogManagementList() {
           icon={<ViewList />}
           label="View"
           onClick={() => {
-            window.location.href = `/manager/blogs/${params.row._id}`;
+            navigate(`/manager/blogs/${params.row._id}`);
           }}
         />,
         <GridActionsCellItem

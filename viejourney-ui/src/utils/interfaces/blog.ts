@@ -115,7 +115,9 @@ export interface IBlogDetail {
   slug: string;
   tags: string[];
   places: PlaceData[];
-  createdBy: IUser; // nếu bạn chưa resolve populated user
+  createdBy: {
+    email: string;
+  } & IUser; // nếu bạn chưa resolve populated user
   updatedBy: IUser | string;
   likes: string[];
   status: "APPROVED" | "PENDING" | "REJECTED" | "DRAFT";

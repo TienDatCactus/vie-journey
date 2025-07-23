@@ -268,7 +268,6 @@ export const useBlogStore = create<BlogStore>()(
         }
       } catch (error) {
         console.error("publishBlog error:", error);
-        enqueueSnackbar("Failed to publish blog", { variant: "error" });
       }
     },
 
