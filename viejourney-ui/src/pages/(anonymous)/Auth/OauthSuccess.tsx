@@ -16,17 +16,17 @@ import { doValidateAccessToken } from "../../../services/api";
 import { setToken } from "../../../services/api/token";
 import { useAuthStore } from "../../../services/stores/useAuthStore";
 const OauthSuccess: React.FC = () => {
-  const { setCredential, user, info } = useAuthStore();
+  const { setCredential, user, info, loadCurrentUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = React.useState<number>(5);
   const [params] = useSearchParams();
 
   const navigate = useNavigate();
   const processedTokenRef = useRef(false);
+  const token = params.get("accessToken");
 
   useEffect(() => {
     const handleCallback = async () => {
-      const token = params.get("accessToken");
       if (!token || processedTokenRef.current) return;
 
       try {
@@ -40,6 +40,7 @@ const OauthSuccess: React.FC = () => {
           });
           setCredential({ userId: tokenData.userId, token });
         }
+        await loadCurrentUser();
       } catch (error) {
         console.error("Error processing OAuth callback:", error);
         enqueueSnackbar("Authentication failed. Please try again.", {
@@ -51,7 +52,7 @@ const OauthSuccess: React.FC = () => {
     };
 
     handleCallback();
-  }, [params, setCredential]);
+  }, [token]);
   useEffect(() => {
     if (loading) return;
     if (timer <= 0) {

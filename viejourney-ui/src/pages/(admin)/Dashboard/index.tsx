@@ -41,7 +41,9 @@ function AdminPage() {
   const [timeRange, setTimeRangeLocal] = useState("30d");
 
   useEffect(() => {
-    fetchAnalytics();
+    (async () => {
+      await fetchAnalytics();
+    })();
   }, [fetchAnalytics]);
 
   if (loading) {

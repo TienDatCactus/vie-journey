@@ -57,11 +57,11 @@ export const PlaceNodeViewComponent: React.FC<PlaceNodeViewProps> = ({
 
   const { suggestions, isLoading } = useAutocompleteSuggestions(inputValue, {
     includedPrimaryTypes: [
-      "restaurant",
-      "cafe",
-      "bar",
-      "lodging",
       "tourist_attraction",
+      "point_of_interest",
+      "natural_feature",
+      "locality",
+      "establishment",
     ],
   });
 

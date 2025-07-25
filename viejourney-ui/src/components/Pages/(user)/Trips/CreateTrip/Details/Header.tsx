@@ -34,9 +34,10 @@ import * as React from "react";
 
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
+import { Link } from "react-router-dom";
 import { useAssetsStore } from "../../../../../../services/stores/useAssets";
-import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
 import { useBlogStore } from "../../../../../../services/stores/useBlogStore";
+import { useTripDetailStore } from "../../../../../../services/stores/useTripDetailStore";
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -271,7 +272,7 @@ const Header: React.FC = () => {
                       alt={item?.title}
                     />
                     <CardContent className="p-0 lg:py-1">
-                      <h1 className="text-lg font-semibold text-dark-900">
+                      <h1 className="text-lg font-semibold text-dark-900 line-clamp-2">
                         {item?.title}
                       </h1>
                       <p className="text-sm text-neutral-600 font-medium text-ellipsis line-clamp-2">
@@ -279,12 +280,8 @@ const Header: React.FC = () => {
                       </p>
                     </CardContent>
                     <CardActions className="flex items-center gap-1 p-0 py-2">
-                      <Avatar
-                        className="lg:w-8 lg:h-8"
-                        src={item?.author?.name}
-                      />
                       <h2 className="text-sm text-neutral-800 font-medium">
-                        {item?.author?.name}
+                        {item?.author?.name || item?.author?.email}
                       </h2>
                     </CardActions>
                   </Card>
@@ -299,14 +296,16 @@ const Header: React.FC = () => {
             </div>
             {relatedBlogs?.length > 0 && (
               <div className="flex justify-end py-2">
-                <Button
-                  variant="contained"
-                  className="bg-dark-800"
-                  color="primary"
-                  endIcon={<Explore />}
-                >
-                  Explore More
-                </Button>
+                <Link to="/blogs">
+                  <Button
+                    variant="contained"
+                    className="bg-dark-800"
+                    color="primary"
+                    endIcon={<Explore />}
+                  >
+                    Explore More
+                  </Button>
+                </Link>
               </div>
             )}
           </AccordionDetails>

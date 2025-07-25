@@ -5,9 +5,13 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateAccountDto } from 'src/common/dtos/create-account.dto';
 
+import {
+  DashboardAnalyticsDto,
+  DashboardQueryDto,
+} from 'src/common/dtos/dashboard-analytics.dto';
 import { Account } from 'src/common/entities/account.entity';
 import { Asset } from 'src/common/entities/asset.entity';
 import { Blog } from 'src/common/entities/blog.entity';
@@ -15,10 +19,6 @@ import { UserInfos } from 'src/common/entities/userInfos.entity';
 import { Status } from 'src/common/enums/status.enum';
 import { Trip } from 'src/infrastructure/database/trip.schema';
 import { AssetsService } from '../assets/assets.service';
-import {
-  DashboardQueryDto,
-  DashboardAnalyticsDto,
-} from 'src/common/dtos/dashboard-analytics.dto';
 
 @Injectable()
 export class AdminService {
@@ -32,7 +32,35 @@ export class AdminService {
     private readonly assetsService: AssetsService,
   ) {}
 
-  // getBlogReport
+  async getUserInfo(id: string) {
+    try {
+      const userInfo = await this.userInfosModel
+        .findOne({ userId: new Types.ObjectId(id) })
+        .populate([
+          {
+            path: 'userId',
+            model: 'Account',
+            select: 'email role status createdAt',
+          },
+          {
+            path: 'avatar',
+            model: 'Asset',
+            select: 'url',
+          },
+        ])
+        .exec();
+      if (!userInfo) {
+        throw new NotFoundException(`UserInfo for Account ID ${id} not found`);
+      }
+
+      return {
+        ...userInfo.toObject(),
+      };
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   async getBlogsReport(minViews?: number) {
     const query = minViews ? { views: { $gte: minViews } } : {};
     const totalBlogs = await this.blogModel.countDocuments(query);

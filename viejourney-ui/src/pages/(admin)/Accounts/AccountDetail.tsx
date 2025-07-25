@@ -11,8 +11,8 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Divider,
-  Grid,
   Grid2,
   IconButton,
   Paper,
@@ -22,7 +22,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { DashboardLayout } from "../../../layouts";
 import {
   doDeleteUser,
@@ -31,6 +31,7 @@ import {
 } from "../../../services/api";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditAccountDialog from "./EditAccountDialog";
+import { ArrowBack } from "@mui/icons-material";
 
 const tabList = ["Overview", "Activity"];
 
@@ -161,22 +162,50 @@ const formatDate = (dateString?: string) => {
 
 const AccountDetail = () => {
   const [tab, setTab] = React.useState(0);
-  const [user, setUser] = useState<Record<string, any> | null>(null);
+  const [user, setUser] = useState<{
+    _id: string;
+    userId: {
+      _id: string;
+      email: string;
+      role: string;
+      status: string;
+      createdAt: string;
+    };
+    fullName: string;
+    dob: string;
+    phone: string;
+    address: string;
+    avatar: {
+      _id: string;
+      url: string;
+    } | null;
+    lastLoginAt: string | null;
+    flaggedCount: number;
+    banReason: string | null;
+    bannedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>();
   const { id } = useParams();
   const [openDelete, setOpenDelete] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(false);
   const navigate = useNavigate();
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const fetchAccountDetail = async () => {
       try {
+        setLoading(true);
         if (!id) return;
         const data = await doGetUserDetail(id);
-        setUser(data);
-      } catch (err) {
-        console.log("ERROR: " + err);
+        if (data !== null) {
+          setUser(data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchAccountDetail();
@@ -215,27 +244,51 @@ const AccountDetail = () => {
       setLoadingEdit(false);
     }
   };
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <Box
+          sx={{ p: 2 }}
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          height={"100vh"}
+        >
+          <CircularProgress />
+          <Typography variant="h6">Loading...</Typography>
+        </Box>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
       <Box sx={{ p: 2 }}>
+        <Link to="/admin/accounts">
+          <Button
+            variant="text"
+            startIcon={<ArrowBack />}
+            className="rounded-sm mb-4"
+          >
+            Back
+          </Button>
+        </Link>
         <Grid2 container spacing={2}>
-          {/* Left Side */}
-          <Grid2 size={{ xs: 12, md: 4 }}>
+          <Grid2 size={4}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
               <Stack alignItems="center" spacing={1}>
                 <Box sx={{ position: "relative" }}>
                   <Avatar
-                    src={user?.avatar || undefined}
+                    src={user?.avatar?.url || undefined}
                     alt={user?.fullName || undefined}
                     sx={{ width: 100, height: 100, mb: 1 }}
                   />
                 </Box>
                 <Typography variant="h6" fontWeight={600}>
-                  {user?.fullName}
+                  {user?.fullName || user?.userId?.email || "Unknown User"}
                 </Typography>
                 <Typography color="text.secondary" fontSize={15}>
-                  {user?.userId}
+                  {user?._id}
                 </Typography>
               </Stack>
               <Divider sx={{ my: 2 }} />
@@ -246,7 +299,9 @@ const AccountDetail = () => {
                     Address
                   </Typography>
                   <Box flex={1} />
-                  <Typography fontSize={15}>{user?.address}</Typography>
+                  <Typography fontSize={15}>
+                    {user?.address || "Unknown Address"}
+                  </Typography>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <PhoneIcon fontSize="small" color="action" />
@@ -254,7 +309,9 @@ const AccountDetail = () => {
                     Phone
                   </Typography>
                   <Box flex={1} />
-                  <Typography fontSize={15}>{user?.phone}</Typography>
+                  <Typography fontSize={15}>
+                    {user?.phone || "Unknown Phone"}
+                  </Typography>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <EmailIcon fontSize="small" color="action" />
@@ -286,174 +343,180 @@ const AccountDetail = () => {
             </Paper>
           </Grid2>
           {/* Right Side */}
-          <Grid item xs={12} md={8}>
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Tabs
-                value={tab}
-                onChange={(_, v) => setTab(v)}
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{
-                  borderBottom: 1,
-                  borderColor: "divider",
-                  mb: 2,
-                  "& .MuiTab-root": { fontWeight: 600, fontSize: 16 },
-                }}
-              >
-                {tabList.map((label) => (
-                  <Tab key={label} label={label} />
-                ))}
-              </Tabs>
-              {tab === 0 && (
-                <Box>
-                  <Typography fontWeight={600} fontSize={18} mb={1}>
-                    Profile Details:
+          <Grid2 size={8}>
+            <Tabs
+              value={tab}
+              onChange={(_, v) => setTab(v)}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                borderBottom: 1,
+                borderColor: "divider",
+                mb: 2,
+                "& .MuiTab-root": { fontWeight: 600, fontSize: 16 },
+              }}
+            >
+              {tabList.map((label) => (
+                <Tab key={label} label={label} />
+              ))}
+            </Tabs>
+            {tab === 0 && (
+              <Box sx={{ width: "100%" }}>
+                <Typography fontWeight={600} fontSize={18} mb={1}>
+                  Profile Details:
+                </Typography>
+                <Grid2 container spacing={1}>
+                  <Grid2 size={4}>
+                    <Stack spacing={1}>
+                      <Typography color="text.secondary" fontWeight={600}>
+                        Full Name:
+                      </Typography>
+                      <Typography color="text.secondary" fontWeight={600}>
+                        Date of Birth:
+                      </Typography>
+                      <Typography color="text.secondary" fontWeight={600}>
+                        Mobile Number:
+                      </Typography>
+                      <Typography color="text.secondary" fontWeight={600}>
+                        Email Address:
+                      </Typography>
+                      <Typography color="text.secondary" fontWeight={600}>
+                        Address:
+                      </Typography>
+                      <Typography color="text.secondary" fontWeight={600}>
+                        Joining Date:
+                      </Typography>
+                    </Stack>
+                  </Grid2>
+                  <Grid2 size={8}>
+                    <Stack spacing={1}>
+                      <Typography>
+                        {user?.fullName || "Unknown User"}
+                      </Typography>
+                      <Typography>
+                        {formatDate(user?.dob) || "Unknown Date"}
+                      </Typography>
+                      <Typography>{user?.phone || "Unknown Phone"}</Typography>
+                      <Typography>
+                        {user?.userId.email || "Unknown Email"}
+                      </Typography>
+                      <Typography>
+                        {user?.address || "Unknown Address"}
+                      </Typography>
+                      <Typography>
+                        {user?.createdAt
+                          ? new Date(user.createdAt).toLocaleDateString()
+                          : ""}
+                      </Typography>
+                    </Stack>
+                  </Grid2>
+                </Grid2>
+              </Box>
+            )}
+            {tab === 1 && (
+              <Box>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={2}
+                >
+                  <Typography fontWeight={600} fontSize={18}>
+                    Recent Activity:
                   </Typography>
-                  <Grid container spacing={1}>
-                    <Grid item xs={5} md={4}>
-                      <Stack spacing={1}>
-                        <Typography color="text.secondary" fontWeight={600}>
-                          Full Name:
-                        </Typography>
-                        <Typography color="text.secondary" fontWeight={600}>
-                          Date of Birth:
-                        </Typography>
-                        <Typography color="text.secondary" fontWeight={600}>
-                          Mobile Number:
-                        </Typography>
-                        <Typography color="text.secondary" fontWeight={600}>
-                          Email Address:
-                        </Typography>
-                        <Typography color="text.secondary" fontWeight={600}>
-                          Address:
-                        </Typography>
-                        <Typography color="text.secondary" fontWeight={600}>
-                          Joining Date:
-                        </Typography>
-                      </Stack>
-                    </Grid>
-                    <Grid item xs={7} md={8}>
-                      <Stack spacing={1}>
-                        <Typography>{user?.fullName}</Typography>
-                        <Typography>{formatDate(user?.dob)}</Typography>
-                        <Typography>{user?.phone}</Typography>
-                        <Typography>{user?.userId.email}</Typography>
-                        <Typography>{user?.address}</Typography>
-                        <Typography>
-                          {user?.updatedAt
-                            ? new Date(user.updatedAt).toLocaleDateString()
-                            : ""}
-                        </Typography>
-                      </Stack>
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
-              {tab === 1 && (
-                <Box>
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    mb={2}
-                  >
-                    <Typography fontWeight={600} fontSize={18}>
-                      Recent Activity:
-                    </Typography>
-                    <Button variant="outlined" size="small">
-                      VIEW ALLS
-                    </Button>
-                  </Stack>
-                  <Stack spacing={3} sx={{ position: "relative" }}>
-                    {activities.map((act, idx) => (
-                      <Stack
-                        key={act.id}
-                        direction="row"
-                        alignItems="flex-start"
-                        spacing={2}
-                        sx={{ position: "relative" }}
+                  <Button variant="outlined" size="small">
+                    VIEW ALLS
+                  </Button>
+                </Stack>
+                <Stack spacing={3} sx={{ position: "relative" }}>
+                  {activities.map((act, idx) => (
+                    <Stack
+                      key={act.id}
+                      direction="row"
+                      alignItems="flex-start"
+                      spacing={2}
+                      sx={{ position: "relative" }}
+                    >
+                      {/* Timeline dot and line */}
+                      <Box
+                        sx={{
+                          position: "relative",
+                          minWidth: 24,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
                       >
-                        {/* Timeline dot and line */}
-                        <Box
-                          sx={{
-                            position: "relative",
-                            minWidth: 24,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                          }}
-                        >
-                          <FiberManualRecordIcon
-                            sx={{ color: act.color, fontSize: 18, zIndex: 1 }}
+                        <FiberManualRecordIcon
+                          sx={{ color: act.color, fontSize: 18, zIndex: 1 }}
+                        />
+                        {idx < activities.length - 1 && (
+                          <Box
+                            sx={{
+                              width: 2,
+                              flex: 1,
+                              bgcolor: "#e0e0e0",
+                              position: "absolute",
+                              top: 18,
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              zIndex: 0,
+                            }}
                           />
-                          {idx < activities.length - 1 && (
-                            <Box
-                              sx={{
-                                width: 2,
-                                flex: 1,
-                                bgcolor: "#e0e0e0",
-                                position: "absolute",
-                                top: 18,
-                                left: "50%",
-                                transform: "translateX(-50%)",
-                                zIndex: 0,
-                              }}
+                        )}
+                      </Box>
+                      {/* Activity content */}
+                      <Box flex={1}>
+                        <Typography fontSize={15} color="text.secondary">
+                          {act.title}{" "}
+                          <Typography
+                            component="span"
+                            fontSize={13}
+                            color="text.disabled"
+                          >
+                            [{act.date}]
+                          </Typography>
+                        </Typography>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={1}
+                          mt={0.5}
+                        >
+                          <Typography fontWeight={500} fontSize={16}>
+                            {act.content}
+                          </Typography>
+                          {/* Ví dụ nút Conform, Join... */}
+                          {act.id === 3 && (
+                            <Chip
+                              label="Conform"
+                              color="success"
+                              size="small"
                             />
                           )}
-                        </Box>
-                        {/* Activity content */}
-                        <Box flex={1}>
-                          <Typography fontSize={15} color="text.secondary">
-                            {act.title}{" "}
-                            <Typography
-                              component="span"
-                              fontSize={13}
-                              color="text.disabled"
-                            >
-                              [{act.date}]
-                            </Typography>
-                          </Typography>
-                          <Stack
-                            direction="row"
-                            alignItems="center"
-                            spacing={1}
-                            mt={0.5}
-                          >
-                            <Typography fontWeight={500} fontSize={16}>
-                              {act.content}
-                            </Typography>
-                            {/* Ví dụ nút Conform, Join... */}
-                            {act.id === 3 && (
-                              <Chip
-                                label="Conform"
-                                color="success"
-                                size="small"
-                              />
-                            )}
-                            {act.id === 7 && (
-                              <Chip label="Join" color="warning" size="small" />
-                            )}
-                          </Stack>
-                        </Box>
-                        {/* Actions */}
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <IconButton size="small">
-                            <CheckCircleIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton size="small">
-                            <VisibilityIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton size="small">
-                            <MoreVertIcon fontSize="small" />
-                          </IconButton>
+                          {act.id === 7 && (
+                            <Chip label="Join" color="warning" size="small" />
+                          )}
                         </Stack>
+                      </Box>
+                      {/* Actions */}
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <IconButton size="small">
+                          <CheckCircleIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small">
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small">
+                          <MoreVertIcon fontSize="small" />
+                        </IconButton>
                       </Stack>
-                    ))}
-                  </Stack>
-                </Box>
-              )}
-            </Paper>
-          </Grid>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Box>
+            )}
+          </Grid2>
         </Grid2>
         <ConfirmDeleteDialog
           open={openDelete}

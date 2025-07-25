@@ -285,11 +285,11 @@ function Accounts() {
   const handleStatusChange = async (userInfoId: string, newStatus: string) => {
     try {
       // Find the user to get both IDs
-      const user = users.find((u: any) => u._id === userInfoId);
+      const user: any = users.find((u: any) => u._id === userInfoId);
       if (!user) return;
 
-      const accountId = user.userId._id; // Account ID for ban/unban APIs
-      const userInfoIdForUpdate = user._id; // UserInfo ID for edit APIs
+      const accountId = user?.userId?._id; // Account ID for ban/unban APIs
+      const userInfoIdForUpdate = user?._id; // UserInfo ID for edit APIs
 
       // Handle Ban action - open dialog to get reason
       if (newStatus === "Ban") {

@@ -93,7 +93,6 @@ export class AdminController {
             pageSize: parseInt(query.pageSize),
           }
         : undefined;
-    const resp = await this.userService.getAllUser(filter, pagination);
     return this.userService.getAllUser(filter, pagination);
   }
 
@@ -123,7 +122,7 @@ export class AdminController {
 
   @Get('users/:id')
   async getUser(@Param('id') id: string) {
-    return this.userService.getUserByID(id);
+    return this.adminService.getUserInfo(id);
   }
 
   @Patch('userInfo/:id')

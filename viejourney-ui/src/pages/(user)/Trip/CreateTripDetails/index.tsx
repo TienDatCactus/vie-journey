@@ -67,7 +67,7 @@ const CreateTripDetails: React.FC = () => {
   useEffect(() => {
     setSocketLoading(true);
 
-    const socket = io("https://vie-journey.site/trip", {
+    const socket = io("http://localhost:5000/trip", {
       transports: ["websocket"],
       auth: {
         tripId: `${id}`,

@@ -40,7 +40,7 @@ const ExploreCard: React.FC<{ item: IRelatedBlogs }> = ({ item }) => {
           <Typography
             gutterBottom
             variant="h5"
-            className="text-lg line-clamp-2"
+            className="text-lg line-clamp-1"
           >
             {item.title}
           </Typography>
