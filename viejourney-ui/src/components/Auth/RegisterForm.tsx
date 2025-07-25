@@ -50,7 +50,7 @@ const RegisterForm: React.FC = () => {
       <FormGroup>
         <InputLabel className="font-bold text-sm">Email</InputLabel>
         <OutlinedInput
-          className="w-full *:text-sm rounded-sm"
+          className="w-full rounded-sm"
           error={!!errors.email}
           size="small"
           placeholder="Enter your email address"
@@ -62,6 +62,28 @@ const RegisterForm: React.FC = () => {
             },
           })}
           type="email"
+          sx={{
+            "& .MuiOutlinedInput-input": {
+              color: "#000000 !important", // Ensure text is black
+              fontSize: "14px",
+              "&:-webkit-autofill": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+              "&:-webkit-autofill:hover": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+              "&:-webkit-autofill:focus": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+              "&:-webkit-autofill:active": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+            },
+          }}
         />
         {errors.email && (
           <FormHelperText error={!!errors.email}>
@@ -76,8 +98,30 @@ const RegisterForm: React.FC = () => {
           size="small"
           error={!!errors.password}
           {...register("password", { required: true, minLength: 6 })}
-          className="w-full *:text-sm rounded-sm"
+          className="w-full rounded-sm"
           placeholder="Enter your password"
+          sx={{
+            "& .MuiOutlinedInput-input": {
+              color: "#000000 !important", // Ensure text is black
+              fontSize: "14px",
+              "&:-webkit-autofill": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+              "&:-webkit-autofill:hover": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+              "&:-webkit-autofill:focus": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+              "&:-webkit-autofill:active": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+            },
+          }}
         />
         {errors.password && (
           <FormHelperText error={!!errors.password}>
@@ -96,8 +140,30 @@ const RegisterForm: React.FC = () => {
             validate: (value) =>
               value === watch("password") || "Passwords do not match",
           })}
-          className="w-full *:text-sm rounded-sm"
+          className="w-full rounded-sm"
           placeholder="Re-enter your password"
+          sx={{
+            "& .MuiOutlinedInput-input": {
+              color: "#000000 !important", // Ensure text is black
+              fontSize: "14px",
+              "&:-webkit-autofill": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+              "&:-webkit-autofill:hover": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+              "&:-webkit-autofill:focus": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+              "&:-webkit-autofill:active": {
+                WebkitTextFillColor: "#000000 !important",
+                WebkitBoxShadow: "0 0 0 1000px white inset !important",
+              },
+            },
+          }}
         />
         {errors.rePassword && (
           <FormHelperText error={!!errors.rePassword}>

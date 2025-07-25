@@ -14,6 +14,10 @@ import {
   Card,
   CardContent,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   Grid2,
   IconButton,
@@ -35,6 +39,8 @@ import {
   doGetAllUsers,
   doUpdateAccountStatus,
   doUpdateUserInfo,
+  doBanUser,
+  doUnbanUser,
 } from "../../../services/api";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import EditAccountDialog from "./EditAccountDialog";
@@ -128,6 +134,9 @@ function Accounts() {
   const [loadingEdit, setLoadingEdit] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [openBanDialog, setOpenBanDialog] = useState(false);
+  const [banUserId, setBanUserId] = useState<string>("");
+  const [banReason, setBanReason] = useState<string>("");
 
   // Debounce hook
   const useDebounce = (value: string, delay: number) => {
@@ -190,8 +199,8 @@ function Accounts() {
 
       if (res.status === "success" && res.data?.users) {
         const transformedUsers = res.data.users.map((user: any) => ({
-          _id: user.userId,
-          fullName: user.userName,
+          _id: user.userId || user._id, // UserInfo ID - fallback to _id if userId not available
+          fullName: user.userName || user.fullName,
           userId: {
             _id: user.accountId,
             email: user.email,
@@ -273,11 +282,46 @@ function Accounts() {
   ];
 
   // Handle status change
-  const handleStatusChange = async (accountId: string, newStatus: string) => {
+  const handleStatusChange = async (userInfoId: string, newStatus: string) => {
     try {
+      // Find the user to get both IDs
+      const user = users.find((u: any) => u._id === userInfoId);
+      if (!user) return;
+
+      const accountId = user.userId._id; // Account ID for ban/unban APIs
+      const userInfoIdForUpdate = user._id; // UserInfo ID for edit APIs
+
+      // Handle Ban action - open dialog to get reason
+      if (newStatus === "Ban") {
+        setBanUserId(userInfoIdForUpdate); // Ban API needs UserInfo ID
+        setOpenBanDialog(true);
+        return;
+      }
+
+      // Handle Unban action
+      if (newStatus === "Unban") {
+        await doUnbanUser(userInfoIdForUpdate); // Unban API needs UserInfo ID
+        // Update local state
+        setUsers((prev) =>
+          prev.map((u: any) =>
+            u._id === userInfoId
+              ? {
+                  ...u,
+                  userId: {
+                    ...u.userId,
+                    status: "ACTIVE",
+                  },
+                }
+              : u
+          )
+        );
+        return;
+      }
+
+      // Handle regular status changes (Active/Inactive)
       setUsers((prev) =>
         prev.map((u: any) =>
-          u.userId._id === accountId
+          u._id === userInfoId
             ? {
                 ...u,
                 userId: {
@@ -290,9 +334,44 @@ function Accounts() {
       );
 
       const active = newStatus === "Active";
-      await doUpdateAccountStatus(accountId, active);
+      await doUpdateAccountStatus(accountId, active); // Account status API needs Account ID
     } catch (err) {
       console.error("Error updating status:", err);
+      fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
+    }
+  };
+
+  // Handle ban user with reason
+  const handleBanUser = async () => {
+    if (!banReason.trim()) {
+      alert("Please provide a reason for banning this user.");
+      return;
+    }
+
+    try {
+      await doBanUser(banUserId, banReason);
+
+      // Update local state
+      setUsers((prev) =>
+        prev.map((u: any) =>
+          u._id === banUserId
+            ? {
+                ...u,
+                userId: {
+                  ...u.userId,
+                  status: "BANNED",
+                },
+              }
+            : u
+        )
+      );
+
+      // Close dialog and reset state
+      setOpenBanDialog(false);
+      setBanUserId("");
+      setBanReason("");
+    } catch (err) {
+      console.error("Error banning user:", err);
       fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
     }
   };
@@ -386,11 +465,13 @@ function Accounts() {
         <FormControl size="small" sx={{ minWidth: 130 }}>
           <Select
             value={
-              params.row.userId?.status === "ACTIVE" ? "Active" : "Inactive"
+              params.row.userId?.status === "ACTIVE"
+                ? "Active"
+                : params.row.userId?.status === "BANNED"
+                ? "Banned"
+                : "Inactive"
             }
-            onChange={(e) =>
-              handleStatusChange(params.row.userId._id, e.target.value)
-            }
+            onChange={(e) => handleStatusChange(params.row._id, e.target.value)}
             sx={{
               fontWeight: 500,
               "& .MuiSelect-select": {
@@ -406,7 +487,11 @@ function Accounts() {
                     height: 8,
                     borderRadius: "50%",
                     bgcolor:
-                      selected === "Active" ? "success.main" : "error.main",
+                      selected === "Active"
+                        ? "success.main"
+                        : selected === "Banned"
+                        ? "warning.main"
+                        : "error.main",
                     mr: 1,
                   }}
                 />
@@ -442,6 +527,40 @@ function Accounts() {
                 Inactive
               </Box>
             </MenuItem>
+            {/* Show Ban option for Active users */}
+            {params.row.userId?.status === "ACTIVE" && (
+              <MenuItem value="Ban">
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      bgcolor: "warning.main",
+                      mr: 1,
+                    }}
+                  />
+                  Ban
+                </Box>
+              </MenuItem>
+            )}
+            {/* Show Unban option for Banned users */}
+            {params.row.userId?.status === "BANNED" && (
+              <MenuItem value="Unban">
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      bgcolor: "info.main",
+                      mr: 1,
+                    }}
+                  />
+                  Unban
+                </Box>
+              </MenuItem>
+            )}
           </Select>
         </FormControl>
       ),
@@ -498,7 +617,8 @@ function Accounts() {
     const user = users[editIdx] as Record<string, any>;
     setLoadingEdit(true);
     try {
-      await doUpdateUserInfo(user._id, data);
+      // Use user.userId._id (Account ID) for edit user info API
+      await doUpdateUserInfo(user.userId._id, data);
       fetchAccounts({ search: debouncedSearch, roleFilter, statusFilter });
       setLoadingEdit(false);
       setOpenEdit(false);
@@ -740,6 +860,45 @@ function Accounts() {
             : undefined
         }
       />
+
+      {/* Ban User Dialog */}
+      <Dialog
+        open={openBanDialog}
+        onClose={() => setOpenBanDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Ban User</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Please provide a reason for banning this user. This action will
+            prevent the user from accessing the system.
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Ban Reason"
+            fullWidth
+            multiline
+            rows={3}
+            variant="outlined"
+            value={banReason}
+            onChange={(e) => setBanReason(e.target.value)}
+            placeholder="Enter the reason for banning this user..."
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenBanDialog(false)}>Cancel</Button>
+          <Button
+            onClick={handleBanUser}
+            variant="contained"
+            color="warning"
+            disabled={!banReason.trim()}
+          >
+            Ban User
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardLayout>
   );
 }

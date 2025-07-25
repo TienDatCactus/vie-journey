@@ -376,6 +376,28 @@ export const doBulkUpdateUserRoles = async (
   }
 };
 
+export const doBanUser = async (userId: string, reason: string) => {
+  try {
+    const resp = await http.patch(ADMIN.BAN_USER.replace(":id", userId), {
+      reason,
+    });
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to ban user:", error);
+    throw error;
+  }
+};
+
+export const doUnbanUser = async (userId: string) => {
+  try {
+    const resp = await http.patch(ADMIN.UNBAN_USER.replace(":id", userId));
+    return resp.data;
+  } catch (error) {
+    console.error("Failed to unban user:", error);
+    throw error;
+  }
+};
+
 export const doGetUserDetail = async (userId: string) => {
   try {
     const resp = await http.get(
