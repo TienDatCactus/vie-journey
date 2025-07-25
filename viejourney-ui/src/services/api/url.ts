@@ -48,6 +48,8 @@ export const ADMIN = {
   DELETE_ASSET: "/assets/delete",
   UPDATE_USER_ROLE: "/admin/users/:id/role",
   BULK_UPDATE_USER_ROLES: "/admin/users/bulk-update-roles",
+  BAN_USER: "/admin/users/:id/ban",
+  UNBAN_USER: "/admin/users/:id/unban",
 };
 export const TRIP = {
   UPDATE_TRIP_DATES: "/trip/update-dates",

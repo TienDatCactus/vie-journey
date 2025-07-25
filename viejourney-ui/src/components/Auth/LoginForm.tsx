@@ -112,7 +112,7 @@ const LoginForm: React.FC = () => {
           <InputLabel className="font-bold text-sm">Email</InputLabel>
           <OutlinedInput
             disabled={loading}
-            className="w-full *:text-sm rounded-sm"
+            className="w-full rounded-sm"
             error={!!errors.email}
             size="small"
             placeholder="Enter your email address"
@@ -125,6 +125,28 @@ const LoginForm: React.FC = () => {
             })}
             type="email"
             autoComplete="email"
+            sx={{
+              "& .MuiOutlinedInput-input": {
+                color: "#000000 !important", // Ensure text is black
+                fontSize: "14px",
+                "&:-webkit-autofill": {
+                  WebkitTextFillColor: "#000000 !important",
+                  WebkitBoxShadow: "0 0 0 1000px white inset !important",
+                },
+                "&:-webkit-autofill:hover": {
+                  WebkitTextFillColor: "#000000 !important",
+                  WebkitBoxShadow: "0 0 0 1000px white inset !important",
+                },
+                "&:-webkit-autofill:focus": {
+                  WebkitTextFillColor: "#000000 !important",
+                  WebkitBoxShadow: "0 0 0 1000px white inset !important",
+                },
+                "&:-webkit-autofill:active": {
+                  WebkitTextFillColor: "#000000 !important",
+                  WebkitBoxShadow: "0 0 0 1000px white inset !important",
+                },
+              },
+            }}
           />
           {errors.email && (
             <FormHelperText error={!!errors.email}>
@@ -140,9 +162,31 @@ const LoginForm: React.FC = () => {
             size="small"
             error={!!errors.password}
             {...register("password", { required: true, minLength: 6 })}
-            className="w-full *:text-sm rounded-sm"
+            className="w-full rounded-sm"
             placeholder="Enter your password"
             autoComplete="current-password"
+            sx={{
+              "& .MuiOutlinedInput-input": {
+                color: "#000000 !important", // Ensure text is black
+                fontSize: "14px",
+                "&:-webkit-autofill": {
+                  WebkitTextFillColor: "#000000 !important",
+                  WebkitBoxShadow: "0 0 0 1000px white inset !important",
+                },
+                "&:-webkit-autofill:hover": {
+                  WebkitTextFillColor: "#000000 !important",
+                  WebkitBoxShadow: "0 0 0 1000px white inset !important",
+                },
+                "&:-webkit-autofill:focus": {
+                  WebkitTextFillColor: "#000000 !important",
+                  WebkitBoxShadow: "0 0 0 1000px white inset !important",
+                },
+                "&:-webkit-autofill:active": {
+                  WebkitTextFillColor: "#000000 !important",
+                  WebkitBoxShadow: "0 0 0 1000px white inset !important",
+                },
+              },
+            }}
           />
           {errors.password && (
             <FormHelperText error={!!errors.password}>

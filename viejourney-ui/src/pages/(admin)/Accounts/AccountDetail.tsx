@@ -201,10 +201,11 @@ const AccountDetail = () => {
     phone: string;
     address: string;
   }) => {
-    if (!id) return;
+    if (!id || !user?.userId?._id) return;
     setLoadingEdit(true);
     try {
-      await doUpdateUserInfo(id, data);
+      // Use user.userId._id (Account ID) for edit user info API
+      await doUpdateUserInfo(user.userId._id, data);
       setLoadingEdit(false);
       setOpenEdit(false);
       // Reload lại user
