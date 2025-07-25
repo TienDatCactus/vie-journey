@@ -13,12 +13,15 @@ import { useTripDetailStore } from "../../../services/stores/useTripDetailStore"
 const Home: React.FC = () => {
   const { handleGetUserTrips } = useTripDetailStore();
   const { fetchMyBlogs, fetchBlogs } = useBlogStore();
-
   useEffect(() => {
     const fetchData = async () => {
-      await fetchMyBlogs();
-      await handleGetUserTrips();
-      await fetchBlogs();
+      try {
+        await fetchMyBlogs();
+        await handleGetUserTrips();
+        await fetchBlogs();
+      } catch (error) {
+        console.error(error);
+      }
     };
     fetchData();
   }, [fetchMyBlogs, handleGetUserTrips]);

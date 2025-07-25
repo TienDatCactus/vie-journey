@@ -1,4 +1,5 @@
 import { Document, Types } from 'mongoose';
+import { UserInfos } from './userInfos.entity';
 
 export interface Note {
   id: string;
@@ -114,12 +115,15 @@ export interface Itinerary {
     }; // Location coordinates
     time?: string; // ISO time string
     cost?: number;
-    by?: string;
+    createdBy?: {
+      id: string;
+      email?: string;
+      fullname?: string;
+    };
   };
   note: string;
-  createdBy?: string; // User ID of the creator
-  createdAt?: string; // ISO date string
-  updatedAt?: string; // ISO date string
+  createdAt?: string;
+  updatedAt?: string;
 }
 export interface Split {
   splitWith: string[];

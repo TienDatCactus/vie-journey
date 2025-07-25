@@ -36,7 +36,7 @@ interface CommentSectionProps {
 }
 
 const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
-  const { user } = useAuthStore();
+  const { user, info } = useAuthStore();
   const {
     handleGetComment,
     handleCreateComment,
@@ -45,7 +45,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
     handleEditComment,
     handleDeleteComment,
   } = useComment();
-
   // Local state
   const [comments, setComments] = useState<IComment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -64,7 +63,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
     open: boolean;
     commentId: string;
   }>({ open: false, commentId: "" });
-  const { info } = useAuthStore();
   // Load comments when component mounts
   useEffect(() => {
     if (blogId) {
@@ -133,12 +131,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
         enqueueSnackbar("Comment updated successfully!", {
           variant: "success",
         });
-      } else {
-        enqueueSnackbar("Failed to update comment", { variant: "error" });
       }
     } catch (error) {
       console.error("Failed to edit comment:", error);
-      enqueueSnackbar("Failed to update comment", { variant: "error" });
     }
   };
 
@@ -161,12 +156,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
         enqueueSnackbar("Comment deleted successfully!", {
           variant: "success",
         });
-      } else {
-        enqueueSnackbar("Failed to delete comment", { variant: "error" });
       }
     } catch (error) {
       console.error("Failed to delete comment:", error);
-      enqueueSnackbar("Failed to delete comment", { variant: "error" });
     }
   };
 
@@ -367,12 +359,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
                       <Button
                         size="small"
                         variant="contained"
+                        className="bg-gray-900 hover:bg-gray-800 text-white rounded-sm"
                         onClick={handleEditCommentSubmit}
                         disabled={!editingComment.content.trim()}
                       >
                         Save
                       </Button>
                       <Button
+                        className="rounded-sm"
                         size="small"
                         onClick={() => setEditingComment(null)}
                       >
@@ -402,9 +396,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
                           )}
                         </div>
 
-                        {user &&
-                          (comment.commentBy?._id === user._id ||
-                            user.role != "USER") && (
+                        {info &&
+                          (comment.commentBy?._id?.toString() ===
+                            info._id?.toString() ||
+                            (user &&
+                              ["ADMIN", "MANAGER"].includes(user?.role))) && (
                             <IconButton
                               size="small"
                               onClick={(e) => handleMenuClick(e, comment._id)}
@@ -448,6 +444,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
       </div>
 
       {/* Comment Menu */}
+
       <Menu
         anchorEl={menuAnchor?.element}
         open={Boolean(menuAnchor)}
@@ -499,11 +496,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
         </DialogContent>
         <DialogActions>
           <Button
+            className="rounded-sm"
             onClick={() => setDeleteDialog({ open: false, commentId: "" })}
           >
             Cancel
           </Button>
           <Button
+            className="rounded-sm"
             onClick={handleDeleteCommentConfirm}
             color="error"
             variant="contained"

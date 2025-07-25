@@ -509,7 +509,9 @@ const BlogCreateToolbar = ({
             slotProps={{
               input: {
                 startAdornment: (
-                  <span className="bg-gray-300 text-gray-500">/blogs/</span>
+                  <span className="bg-gray-300 text-gray-500 w-100">
+                    vie-journey/blogs/
+                  </span>
                 ),
               },
             }}

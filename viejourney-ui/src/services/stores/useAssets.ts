@@ -13,7 +13,7 @@ interface AssetsState {
 }
 
 export const useAssetsStore = create<AssetsState>((set) => ({
-  landingAssets: [],
+  landingAssets: {} as LandingAssets,
   userAssets: [],
 
   doGetAssets: async () => {

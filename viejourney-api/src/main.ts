@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
+import * as bodyParser from 'body-parser';
 const allowedOrigins = ['http://localhost:5173', 'https://vie-journey.site'];
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -22,8 +23,6 @@ async function bootstrap() {
     credentials: true,
   });
   app.use(cookieParser());
-
-  // Add session middleware
   app.use(
     session({
       secret: process.env.SESSION_SECRET || 'vie-journey-secret',
@@ -37,6 +36,7 @@ async function bootstrap() {
   );
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.set('strict routing', true);
+  app.use(bodyParser.json({ limit: '10mb' }));
   app.use(passport.initialize());
   app.use(passport.session());
   await app.listen(process.env.PORT ?? 5000);

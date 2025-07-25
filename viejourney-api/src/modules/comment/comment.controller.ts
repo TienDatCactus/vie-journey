@@ -33,7 +33,6 @@ export class CommentController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   async getComments(
     @Query('blogId') blogId: string,
     @Query('limit') limit?: string,

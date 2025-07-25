@@ -2,8 +2,8 @@ import { IUserInfoUpdate } from "../../utils/interfaces";
 import http from "../axios/index";
 import { USER } from "./url";
 
-export const updateUserInfo = async (id: string, data: IUserInfoUpdate) => {
-  const res = await http.patch(`${USER.UPDATE}/${id}`, data);
+export const updateUserInfo = async (data: IUserInfoUpdate) => {
+  const res = await http.patch(`${USER.UPDATE}`, data);
   return res.data;
 };
 

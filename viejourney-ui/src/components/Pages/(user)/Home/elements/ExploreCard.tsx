@@ -22,7 +22,7 @@ const ExploreCard: React.FC<{ item: IRelatedBlogs }> = ({ item }) => {
         <div className="relative z-20">
           <Chip
             className="absolute top-2 left-2 z-10 bg-gray-50"
-            label={item?.tags[0]}
+            label={item?.tags[0] || "General"}
           />
           <CardMedia
             component="img"
@@ -33,11 +33,15 @@ const ExploreCard: React.FC<{ item: IRelatedBlogs }> = ({ item }) => {
                 ?.split(" ")
                 ?.join("+")}`
             }
-            alt="green iguana"
+            alt={item?.title}
           />
         </div>
         <CardContent className="p-2 pb-0">
-          <Typography gutterBottom variant="h5" className="text-xl ">
+          <Typography
+            gutterBottom
+            variant="h5"
+            className="text-lg line-clamp-2"
+          >
             {item.title}
           </Typography>
         </CardContent>

@@ -42,7 +42,7 @@ const HotelHeader: React.FC = () => {
                 VieJourney's <span className="">Hotel</span>
               </h1>
             </div>
-            <ul className="gap-8 *:text-sm *:hover:underline *:cursor-pointer ">
+            <ul className="gap-8 *:text-sm ">
               <li>
                 <Link to={"/"}>Home</Link>
               </li>
@@ -53,13 +53,15 @@ const HotelHeader: React.FC = () => {
               <li>Blog</li>
             </ul>
             <div>
-              <Button
-                className="border-[#e8e8e8] text-[#ffffff] bg-transparent"
-                variant="outlined"
-                endIcon={<UndoOutlinedIcon />}
-              >
-                Back to Main
-              </Button>
+              <Link to={"/"}>
+                <Button
+                  className="rounded-sm border-[#e8e8e8] text-[#ffffff] bg-transparent"
+                  variant="outlined"
+                  endIcon={<UndoOutlinedIcon />}
+                >
+                  Back to Main
+                </Button>
+              </Link>
             </div>
           </Toolbar>
         </Container>

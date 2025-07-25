@@ -4,7 +4,6 @@ import {
   KeyboardCommandKey,
   Logout,
 } from "@mui/icons-material";
-import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   AppBar,
@@ -153,11 +152,9 @@ const Header = () => {
                 },
               }}
             />
-            <NotificationsActiveOutlinedIcon className="cursor-pointer hover:text-[#727272]" />
             <IconButton
               onClick={handleClick}
               size="small"
-              sx={{ ml: 2 }}
               aria-controls={open ? "account-menu" : undefined}
               aria-haspopup="true"
               aria-expanded={open ? "true" : undefined}

@@ -1,7 +1,7 @@
 import { Warning } from "@mui/icons-material";
 import { Backdrop, Button, CircularProgress } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -19,16 +19,22 @@ import { useAuthStore } from "../../../../services/stores/useAuthStore";
 import { useTripDetailStore } from "../../../../services/stores/useTripDetailStore";
 import { useDirectionStore } from "../../../../services/stores/useDirectionStore";
 import { useAssetsStore } from "../../../../services/stores/useAssets";
+import { useBlogStore } from "../../../../services/stores/useBlogStore";
 
 const CreateTripDetails: React.FC = () => {
   const { doGetUserAssets } = useAssetsStore();
   const { user, info } = useAuthStore();
   const { setTrip } = useTripDetailStore();
   const { id } = useParams<{ id: string }>();
-  const { setSocket, socketLoading, setSocketLoading, socketDisconnected } =
-    useSocket();
+  const {
+    setSocket,
+    socketLoading,
+    setSocketLoading,
+    setSocketDisconnected,
+    socketDisconnected,
+  } = useSocket();
   const [reason, setReason] = useState<string | null>(null);
-
+  const { fetchRelatedBlogs, relatedBlogs } = useBlogStore();
   const location = useLocation();
   const isFromInvite = location.state?.invite === true;
   const [open, setOpen] = React.useState(isFromInvite);
@@ -57,11 +63,11 @@ const CreateTripDetails: React.FC = () => {
     handleGetPlanByTripId,
   } = useTripDetailStore();
   const { addPlaceId } = useDirectionStore();
-
+  const navigate = useNavigate();
   useEffect(() => {
     setSocketLoading(true);
 
-    const socket = io("http://18.136.84.184:5000/trip", {
+    const socket = io("https://vie-journey.site/trip", {
       transports: ["websocket"],
       auth: {
         tripId: `${id}`,
@@ -79,6 +85,7 @@ const CreateTripDetails: React.FC = () => {
     socket.on("connect", () => {
       console.log("Connected:", socket.id);
       setSocketLoading(false);
+      setSocketDisconnected(false);
       socket.emit("ping", { hello: "server" });
     });
     socket.on("unauthorizedJoin", (data) => {
@@ -88,6 +95,7 @@ const CreateTripDetails: React.FC = () => {
     socket.on("disconnect", (reason) => {
       if (!socket.active) {
         console.log("Disconnected:", reason);
+        setSocketDisconnected(true);
       }
     });
     socket.on("onPlanItemAdded", (data) => {
@@ -136,13 +144,11 @@ const CreateTripDetails: React.FC = () => {
     });
 
     socket.on("onPlanItemUpdated", (data) => {
-      console.log(data);
       if (data.section == "notes") {
         updateNote(data.item.id, data.item.text);
       } else if (data.section == "transits") {
         updateTransit(data.item.id, data.item);
       } else if (data.section == "places") {
-        console.log("place updated:", data);
         updatePlaceNote(data.item.id, data.item.note, data.item.visited);
       } else if (data.section == "itineraries") {
         console.log("itinerary updated:", data);
@@ -197,6 +203,13 @@ const CreateTripDetails: React.FC = () => {
     fetchTripDetails();
   }, [id]);
   useEffect(() => {
+    (async () => {
+      if (!relatedBlogs) {
+        await fetchRelatedBlogs();
+      }
+    })();
+  }, [relatedBlogs, fetchRelatedBlogs]);
+  useEffect(() => {
     if (socketDisconnected == true) {
       console.log("Socket disconnected");
     }
@@ -230,18 +243,9 @@ const CreateTripDetails: React.FC = () => {
           <p>Initializing connections ...</p>
         </div>
       )}
-      {socketDisconnected == true &&
-        React.createElement(() => {
-          const [shown, setShown] = React.useState(true);
 
-          React.useEffect(() => {
-            if (socketDisconnected == true && !shown) {
-              setShown(true);
-            }
-          }, [socketDisconnected]);
+      <DisconnectedDialog />
 
-          return !shown ? <DisconnectedDialog /> : null;
-        })}
       {reason && (
         <div className="fixed inset-0 flex flex-col gap-2 items-center justify-center bg-gray-200/50 z-50 text-center backdrop-blur-md">
           <Warning className="text-red-500 size-20" />
@@ -251,7 +255,7 @@ const CreateTripDetails: React.FC = () => {
             color="error"
             onClick={() => {
               setReason(null);
-              window.location.href = "/";
+              navigate("/");
             }}
           >
             Return to Home

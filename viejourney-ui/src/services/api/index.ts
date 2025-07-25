@@ -554,7 +554,6 @@ export const doAddContentAsset = async (file: File) => {
     }
   } catch (error) {
     console.error(error);
-    enqueueSnackbar("Failed to upload asset", { variant: "error" });
   }
 };
 
@@ -618,4 +617,29 @@ export const doGetRoleBasedCounts = async () => {
   } catch (error) {
     console.error(error);
   }
+};
+
+export const doUploadSystemAsset = async (file: File, subsection: string) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", "BANNER");
+    formData.append("subsection", subsection);
+
+    const response = await http.post(ASSET.UPLOAD, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      enqueueSnackbar("System asset uploaded successfully", {
+        variant: "success",
+      });
+      return response.data;
+    }
+  } catch (error) {
+    console.error("Failed to upload system asset:", error);
+  }
+  return null;
 };

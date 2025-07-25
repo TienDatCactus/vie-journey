@@ -59,19 +59,22 @@ const BlogCreateHeader: React.FC<BlogCreateHeaderProps> = ({
   const handlePublicBlog = async () => {
     if (isLoading) return;
 
+    setLoading(true);
     try {
-      setLoading(true);
+      await onSaveDraft();
 
       if (type === "draft" && id) {
         await publishBlog(id);
-        setTimeout(() => {
-          navigate("/home");
-        }, 1000);
       } else {
         await onPublic();
       }
+
+      setTimeout(() => {
+        navigate("/home");
+      }, 1000);
     } catch (error) {
       console.error("Publish blog error:", error);
+      // Có thể hiển thị thông báo lỗi ở đây nếu cần
     } finally {
       setLoading(false);
     }
@@ -148,7 +151,7 @@ const BlogCreateHeader: React.FC<BlogCreateHeaderProps> = ({
           {type === "draft" ? (
             <>
               <Button
-                disabled={isLoading}
+                loading={isLoading}
                 startIcon={<SaveAs />}
                 variant="outlined"
                 className="border-gray-300 text-gray-800 hover:border-gray-400 hover:bg-gray-50 normal-case"
@@ -159,10 +162,10 @@ const BlogCreateHeader: React.FC<BlogCreateHeaderProps> = ({
               </Button>
 
               <Button
-                disabled={isLoading}
+                loading={isLoading}
                 variant="contained"
                 startIcon={<EmergencyShare />}
-                className="bg-blue-600 hover:bg-blue-700 text-white normal-case"
+                className="bg-black/80 hover:bg-black/60 text-white normal-case"
                 onClick={handlePublicBlog}
                 size="medium"
               >

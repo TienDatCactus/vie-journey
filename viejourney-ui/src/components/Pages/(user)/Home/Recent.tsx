@@ -41,7 +41,7 @@ const HomeRecent: React.FC = () => {
             <Grid2 size={trips.length > 1 ? 4 : 6} key={index}>
               <RecentCard
                 tripId={item?._id}
-                img={""}
+                img={item?.coverImage?.url || ""}
                 place={item?.destination.name}
                 from={dayjs(item?.startDate).format("MMM D, YYYY")}
                 title={item?.title}

@@ -17,6 +17,7 @@ import { MainAuthHeader, MainUnAuthHeader } from "../components/Layout";
 import Footer from "../components/Layout/Main/Footer";
 import { useAuthStore } from "../services/stores/useAuthStore";
 import { smoothScrollTo } from "../utils/handlers/utils";
+import TypebotChat from "../components/TypeBotChat";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, loadCurrentUser, loadUserInfo, credential, info } =
@@ -24,14 +25,19 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const run = async () => {
-      if (!credential?.token || user) return;
-      if (!info) {
-        await loadUserInfo();
+      try {
+        if (!credential?.token || user) return;
+        if (!info) {
+          await loadUserInfo();
+        }
+        await loadCurrentUser();
+      } catch (error) {
+        console.error("Failed to load user info:", error);
       }
-      await loadCurrentUser();
     };
     run();
-  }, [credential?.token, user, loadCurrentUser, loadUserInfo]);
+  }, []);
+
   const navigate = useNavigate();
   const actions = [
     {
@@ -96,6 +102,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           />
         ))}
       </SpeedDial>
+      <TypebotChat />
+
       <Divider className="w-full bg-neutral-800" />
       <Footer />
     </>

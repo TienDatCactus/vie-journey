@@ -204,7 +204,7 @@ export default function TravelBlog() {
   }
 
   return (
-    <Box className="max-w-[125rem] mx-auto bg-gray-50  my-4">
+    <Box className="max-w-[125rem] mx-auto my-4">
       <Box className="mb-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -215,10 +215,22 @@ export default function TravelBlog() {
               {myBlogs.length} {myBlogs.length === 1 ? "blog" : "blogs"} found
             </p>
           </div>
-          <Button href="/blogs/create">
-            <ImagePlusIcon className="w-4 h-4 mr-2" />
-            Create Blog
-          </Button>
+          <Link to="/blogs/create">
+            <Button
+              className="bg-gray-800 rounded-sm hover:bg-gray-900 text-white px-4 py-2  shadow-md"
+              sx={{
+                backgroundColor: "#1f2937",
+                "&:hover": {
+                  backgroundColor: "#111827",
+                },
+                textTransform: "none",
+                fontWeight: 500,
+              }}
+            >
+              <ImagePlusIcon className="w-4 h-4 mr-2" />
+              Create Blog
+            </Button>
+          </Link>
         </div>
       </Box>
 

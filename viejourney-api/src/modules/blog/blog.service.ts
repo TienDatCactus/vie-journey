@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { PaginationDto } from 'src/common/dtos/pagination-userlist.dto';
 import { Request } from 'express';
 import { Like } from 'src/common/entities/like.entity';
+import { Role } from 'src/common/enums/role.enum';
 @Injectable()
 export class BlogService {
   constructor(
@@ -54,19 +55,36 @@ export class BlogService {
     }
   }
 
-  async getRelatedBlogs(blogId: string, tags: string[]): Promise<Blog[]> {
-    if (!tags || tags.length === 0) {
-      throw new BadRequestException('Tags are required to find related blogs');
+  async getRelatedBlogs(
+    blogId?: string,
+    tags?: string[],
+    destination?: string,
+  ) {
+    const query: any = {
+      status: 'APPROVED',
+    };
+    if (tags && tags.length > 0) {
+      query.tags = { $in: tags };
     }
-
+    if (blogId) {
+      query._id = { $ne: blogId };
+    }
+    if (destination && destination.trim() !== '') {
+      query.destination = { $regex: destination, $options: 'i' };
+    }
     const relatedBlogs = await this.blogModel
-      .find({
-        _id: { $ne: blogId },
-        tags: { $in: tags },
-        status: 'APPROVED',
+      .find(query)
+      .populate({
+        path: 'createdBy',
+        select: 'fullName avatar',
+        populate: [{ path: 'userId', model: 'Account', select: 'email' }],
       })
-      .limit(5) // Limit to 5 related blogs
+      .limit(3)
       .exec();
+    if (relatedBlogs.length === 0) {
+      console.warn('No related blogs found for the given criteria');
+      return [];
+    }
     return relatedBlogs;
   }
   async unlikeBlog(req: Request, blogId: string) {
@@ -125,11 +143,18 @@ export class BlogService {
         .populate('createdBy')
         .populate({
           path: 'createdBy',
-          populate: {
-            path: 'avatar',
-            model: 'Asset',
-            select: 'url',
-          },
+          populate: [
+            {
+              path: 'avatar',
+              model: 'Asset',
+              select: 'url',
+            },
+            {
+              path: 'userId',
+              model: 'Account',
+              select: 'email',
+            },
+          ],
         })
         .exec(),
       this.blogModel.countDocuments(filter).exec(),
@@ -163,7 +188,11 @@ export class BlogService {
       return {
         _id: blog._id,
         title: blog.title,
-        createdBy: blog?.createdBy,
+        createdBy: {
+          _id: blog.createdBy._id,
+          fullName: blog.createdBy.fullName,
+          email: blog.createdBy.userId?.email,
+        },
         avatarUser: blog?.createdBy?.avatar?.url || null,
         summary: blog.summary,
         destination: blog?.destination || null,
@@ -279,33 +308,6 @@ export class BlogService {
     }
   }
 
-  async updateMetrics(blogId: string, req: Request) {
-    const reqUserId = req.user?.['userId'] as string;
-    const blog = await this.blogModel.findById(blogId).exec();
-
-    if (!blog) throw new NotFoundException('Blog not found');
-
-    // Đếm lại số lượng like và comment
-    const likeCount = blog.likes ? blog.likes.length : 0;
-    const commentCount = blog.comments ? blog.comments.length : 0;
-
-    // Xử lý viewCount: chỉ tăng nếu người xem không phải là người tạo blog
-    let viewCount = blog.metrics?.viewCount || 0;
-    if (reqUserId && blog.createdBy.toString() !== reqUserId) {
-      viewCount++;
-    }
-
-    blog.metrics = {
-      likeCount,
-      commentCount,
-      viewCount,
-    };
-
-    await blog.save();
-
-    return blog.metrics;
-  }
-
   // view blog detail by id
   async findOneBlogById(blogId: string) {
     const blog = await this.blogModel
@@ -319,9 +321,8 @@ export class BlogService {
         },
       })
       .exec();
-    const [userBlogCount, blogLikesCount, userEmail] = await Promise.all([
+    const [userBlogCount, userEmail] = await Promise.all([
       this.blogModel.countDocuments({ createdBy: blog?.createdBy._id }),
-      blog?.metrics?.likeCount ?? 0,
       this.userInfosModel
         .findById(blog?.createdBy._id)
         .populate({
@@ -330,14 +331,18 @@ export class BlogService {
         })
         .exec(),
     ]);
-
+    await this.blogModel.updateOne(
+      { _id: blogId },
+      { $inc: { 'metrics.viewCount': 1 } },
+    );
+    const plainBlog = blog?.toObject();
     const blogWithMetrics = {
-      ...blog?.toObject(),
+      ...plainBlog,
       createdBy: {
         ...blog?.toObject().createdBy,
         email: userEmail?.userId?.email || 'Unknown',
         totalBlogs: userBlogCount,
-        likesCount: blogLikesCount,
+        likesCount: blog?.metrics?.likeCount || 0,
       },
     };
     if (!blogWithMetrics) throw new NotFoundException('Blog not found');
@@ -735,7 +740,7 @@ export class BlogService {
   }
 
   // Publish blog (change status from DRAFT to PENDING)
-  async publishBlog(blogId: string, userId: string) {
+  async publishBlog(blogId: string, userId: string, role: string) {
     try {
       const user = await this.userInfosModel
         .findOne({ userId: new Types.ObjectId(userId) })
@@ -766,10 +771,15 @@ export class BlogService {
         );
       }
 
-      blog.status = 'PENDING';
-      blog.updatedBy = user._id;
-      blog.updatedAt = new Date();
-
+      if (role === 'USER') {
+        blog.status = 'PENDING';
+        blog.updatedBy = user._id;
+        blog.updatedAt = new Date();
+      } else {
+        blog.status = 'APPROVED';
+        blog.updatedBy = user._id;
+        blog.updatedAt = new Date();
+      }
       const publishedBlog = await blog.save();
 
       return {

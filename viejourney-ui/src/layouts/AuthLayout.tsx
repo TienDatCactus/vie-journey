@@ -28,13 +28,18 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const run = async () => {
       if (!credential?.token || user) return;
-      if (!info) {
-        await loadUserInfo();
+
+      try {
+        if (!info) {
+          await loadUserInfo();
+        }
+        await loadCurrentUser();
+      } catch (error) {
+        console.error("Error while loading user:", error);
       }
-      await loadCurrentUser();
     };
     run();
-  }, [credential?.token, user, loadCurrentUser, loadUserInfo]);
+  }, []);
 
   return (
     <>

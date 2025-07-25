@@ -39,7 +39,6 @@ export class AssetsService {
       );
     }
   }
-
   async addAssetSystem(
     file: Express.Multer.File,
     req: Request,
@@ -54,15 +53,15 @@ export class AssetsService {
     }
 
     // Kiểm tra role
-    const isAdmin = Array.isArray(roles)
-      ? roles.includes('ADMIN')
-      : roles === 'ADMIN';
+    const isManager = Array.isArray(roles)
+      ? roles.includes('MANAGER')
+      : roles === 'MANAGER';
 
-    let assetOwner = isAdmin ? 'SYSTEM' : 'USER';
-    let publicIdPrefix = isAdmin ? 'system' : 'user';
+    let assetOwner = isManager ? 'SYSTEM' : 'USER';
+    let publicIdPrefix = isManager ? 'system' : 'user';
 
     // Nếu là asset của hệ thống (cần subsection)
-    if (type.toUpperCase() === 'BANNER' && isAdmin) {
+    if (type.toUpperCase() === 'BANNER' && isManager) {
       if (!subsection) {
         throw new BadRequestException('Subsection is required');
       }
@@ -79,7 +78,7 @@ export class AssetsService {
         (subsection.toLowerCase() === 'creator' && count >= 3)
       ) {
         throw new BadRequestException(
-          `Số lượng asset cho subsection ${subsection} đã vượt quá giới hạn!`,
+          `The number of assets for subsection:${subsection} has exceeded the limit!`,
         );
       }
     }
@@ -106,7 +105,6 @@ export class AssetsService {
 
     return newAsset.save();
   }
-
   //updateAsset by id
   async updateAssetById(publicId: string, file: Express.Multer.File) {
     if (!file) {

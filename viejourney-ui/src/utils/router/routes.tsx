@@ -317,11 +317,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/blogs",
-    element: (
-      <AuthLayout>
-        <Outlet />
-      </AuthLayout>
-    ),
+    element: <Outlet />,
     errorElement: <ErrorBoundary />,
     children: [
       {

@@ -41,7 +41,7 @@ function useBlog() {
       const res = await createBlog(data);
       if (res) {
         enqueueSnackbar("Create blog successful", { variant: "success" });
-        getBlogs(params);
+        await getBlogs(params);
       }
     } catch (error) {
       console.log(error);
@@ -55,7 +55,7 @@ function useBlog() {
         enqueueSnackbar("Delete blog successful", {
           variant: "success",
         });
-        getBlogs(params);
+        await getBlogs(params);
       }
     } catch (error) {
       console.log(error);
@@ -68,37 +68,39 @@ function useBlog() {
       page: page,
     };
     setParams(newParams);
-    getBlogs(newParams);
+    await getBlogs(newParams);
   };
 
-  const handleSearchChange = (search: string) => {
+  const handleSearchChange = async (search: string) => {
     const newParams = {
       ...params,
       search,
     };
     setParams(newParams);
-    getBlogs(newParams);
+    await getBlogs(newParams);
   };
 
-  const handleChangeStatus = (status: string) => {
+  const handleChangeStatus = async (status: string) => {
     const newParams = {
       ...params,
       status,
     };
     setParams(newParams);
-    getBlogs(newParams);
+    await getBlogs(newParams);
   };
-  const handleSort = (sort: string) => {
+  const handleSort = async (sort: string) => {
     const newParams = {
       ...params,
       sort,
     };
     setParams(newParams);
-    getBlogs(newParams);
+    await getBlogs(newParams);
   };
 
   useEffect(() => {
-    getBlogs(params);
+    (async () => {
+      await getBlogs(params);
+    })();
   }, []);
   return {
     blogs,
@@ -110,7 +112,8 @@ function useBlog() {
     handleChangePage,
     handleSearchChange,
     handleChangeStatus,
-    handleSort
+    handleSort,
+    getBlogs,
   };
 }
 

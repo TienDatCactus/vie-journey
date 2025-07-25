@@ -65,7 +65,7 @@ const AccountSetting: React.FC = () => {
   // Form submission handler
   const onSubmit = async (data: ProfileFormInputs) => {
     try {
-      const res = await updateUserInfo(info?._id || "", data);
+      const res = await updateUserInfo(data);
       if (res) {
         await loadCurrentUser();
         enqueueSnackbar("Profile updated successfully", {
@@ -74,9 +74,6 @@ const AccountSetting: React.FC = () => {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      enqueueSnackbar("Failed to update profile. Please try again.", {
-        variant: "error",
-      });
     }
   };
 

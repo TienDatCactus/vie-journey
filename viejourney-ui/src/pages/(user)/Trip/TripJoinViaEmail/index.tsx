@@ -57,22 +57,20 @@ const TripJoinViaEmail: React.FC = () => {
   // Check if user is already authenticated
   useEffect(() => {
     const validateInviteToken = async () => {
+      setLoading(true);
       if (!tripId || !token) {
         setStatus(JoinStatus.INVALID_TOKEN);
         setLoading(false);
         return;
       }
-
       try {
         const response = await doValidateInvite(tripId, token);
         if (response) {
           setTripInfo(response);
+          console.log(response);
         }
 
-        // Set token valid status
         setStatus(JoinStatus.TOKEN_VALID);
-
-        // If user is already authenticated, they'll be redirected by the auth effect
       } catch (error) {
         console.error("Error validating invite token:", error);
         setStatus(JoinStatus.INVALID_TOKEN);
@@ -90,11 +88,9 @@ const TripJoinViaEmail: React.FC = () => {
         await loadCurrentUser();
       })();
     }
-    console.log(user);
-    console.log(tripInfo);
     if (
       credential?.userId &&
-      user?.email == tripInfo?.tripmateExists &&
+      user?.email == tripInfo?.userExists &&
       status === JoinStatus.TOKEN_VALID
     ) {
       setStatus(JoinStatus.SUCCESS);
@@ -106,7 +102,6 @@ const TripJoinViaEmail: React.FC = () => {
     }
   }, [credential, user, status, tripId]);
 
-  // Validate the invitation token
   useEffect(() => {
     if (status === JoinStatus.SUCCESS) {
       setTimeout(() => {
@@ -128,6 +123,17 @@ const TripJoinViaEmail: React.FC = () => {
       description: "Join the trip and view details",
     },
   ];
+
+  if (loading) {
+    return (
+      <Box className="flex flex-col items-center justify-center min-h-screen">
+        <CircularProgress size={60} />
+        <Typography variant="h6" className="mt-4">
+          Validating your invitation...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <div className="relative min-h-screen w-full">
@@ -238,7 +244,7 @@ const TripJoinViaEmail: React.FC = () => {
                       variant="h5"
                       className="text-start text-base font-bold"
                     >
-                      {tripInfo.trip.title}
+                      {tripInfo?.trip?.title}
                     </Typography>
                     <Box
                       sx={{
@@ -262,12 +268,12 @@ const TripJoinViaEmail: React.FC = () => {
                         className="text-sm"
                       >
                         {tripInfo.trip.startDate &&
-                          dayjs(tripInfo.trip.startDate).format(
+                          dayjs(tripInfo?.trip?.startDate).format(
                             "MMM D, YYYY"
                           )}{" "}
                         -{" "}
                         {tripInfo.trip.endDate &&
-                          dayjs(tripInfo.trip.endDate).format("MMM D, YYYY")}
+                          dayjs(tripInfo?.trip?.endDate).format("MMM D, YYYY")}
                       </Typography>
                     </Box>
 
@@ -294,7 +300,7 @@ const TripJoinViaEmail: React.FC = () => {
                         fontWeight={500}
                         className="text-sm"
                       >
-                        {tripInfo.trip.destination?.name || "Not specified"}
+                        {tripInfo?.trip?.destination?.name || "Not specified"}
                       </Typography>
                     </Box>
                     <Box
@@ -320,7 +326,7 @@ const TripJoinViaEmail: React.FC = () => {
                         fontWeight={500}
                         className="text-sm"
                       >
-                        {tripInfo.trip.tripmates.length || "Not specified"}{" "}
+                        {tripInfo?.trip?.tripmates?.length || "Not specified"}{" "}
                         people
                       </Typography>
                     </Box>

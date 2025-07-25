@@ -52,7 +52,11 @@ interface BlogActions {
   // Blog list actions
   fetchBlogs: (params?: any) => Promise<void>;
   fetchMyBlogs: () => Promise<void>;
-  fetchRelatedBlogs: (blogId: string, tags: string[]) => Promise<void>;
+  fetchRelatedBlogs: (
+    blogId?: string,
+    tags?: string[],
+    destination?: string
+  ) => Promise<void>;
 
   // Single blog actions
   fetchBlogDetail: (id: string) => Promise<void>;
@@ -156,15 +160,18 @@ export const useBlogStore = create<BlogStore>()(
     },
 
     // Fetch related blogs
-    fetchRelatedBlogs: async (blogId: string, tags: string[]) => {
+    fetchRelatedBlogs: async (
+      blogId?: string,
+      tags?: string[],
+      destination?: string
+    ) => {
       try {
-        const response = await getRelatedBlogs(blogId, tags);
+        const response = await getRelatedBlogs(blogId, tags, destination);
         if (response) {
           set({ relatedBlogs: response });
         }
       } catch (error) {
         console.error("fetchRelatedBlogs error:", error);
-        enqueueSnackbar("Failed to fetch related blogs", { variant: "error" });
       }
     },
 
@@ -179,7 +186,6 @@ export const useBlogStore = create<BlogStore>()(
         }
       } catch (error) {
         console.error("fetchBlogDetail error:", error);
-        enqueueSnackbar("Failed to fetch blog details", { variant: "error" });
       }
     },
 
@@ -262,7 +268,6 @@ export const useBlogStore = create<BlogStore>()(
         }
       } catch (error) {
         console.error("publishBlog error:", error);
-        enqueueSnackbar("Failed to publish blog", { variant: "error" });
       }
     },
 

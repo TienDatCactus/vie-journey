@@ -67,7 +67,7 @@ const DaySectionCard: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
     cost: itinerary.place?.cost || undefined,
     time: itinerary.place?.time || "",
   });
-
+  console.log(itinerary);
   const handleUpdateItinerary = () => {
     socket?.emit("planItemUpdated", {
       section: "itineraries",
@@ -561,6 +561,11 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
           },
           time: "",
           cost: "",
+          createdBy: {
+            id: "",
+            fullName: "",
+            email: "",
+          },
         },
         isEditing: false,
       };
@@ -655,7 +660,26 @@ const DaySection: React.FC<DaySectionProps> = (props) => {
 
 const ItinerarySection: React.FC<ItineraryProps> = () => {
   const trip = useTripDetailStore((state) => state.trip);
-
+  const [loading, setLoading] = useState(false);
+  const handleAccept = async (
+    date: [dayjs.Dayjs | null, dayjs.Dayjs | null]
+  ) => {
+    try {
+      setLoading(true);
+      const startDate = dayjs(date[0]).toISOString();
+      const endDate = dayjs(date[1]).toISOString();
+      console.log("Selected dates:", startDate, endDate);
+      if (startDate && endDate) {
+        await useTripDetailStore
+          .getState()
+          .handleUpdateTripDates(startDate, endDate);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const generatedDates = getDatesBetween(trip?.startDate, trip?.endDate);
   return (
     <section className="pt-10" id="itinerary">
@@ -667,6 +691,8 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
         >
           <h1 className="text-3xl font-bold">Itinerary</h1>
           <DateRangePicker
+            loading={loading}
+            onAccept={handleAccept}
             slotProps={{
               textField: {
                 variant: "standard",
@@ -682,6 +708,7 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
                     },
                     boxShadow: "none",
                     border: "none",
+
                     "&:hover": {
                       backgroundColor: "rgba(0, 0, 0, 0.04)",
                     },
@@ -689,14 +716,14 @@ const ItinerarySection: React.FC<ItineraryProps> = () => {
                 },
               },
             }}
-            value={
+            defaultValue={
               trip?.startDate && trip?.endDate
                 ? [dayjs(trip.startDate), dayjs(trip.endDate)]
                 : [null, null]
             }
           />
         </Stack>
-        <ul className="list-none py-2 ">
+        <ul className="list-none py-2 max-h-200 overflow-y-scroll">
           {!!generatedDates?.length &&
             generatedDates?.map((date, index) => (
               <>

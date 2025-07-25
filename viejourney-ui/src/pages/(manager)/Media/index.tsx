@@ -23,17 +23,22 @@ import {
   CardMedia,
   Checkbox,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  FormHelperText,
   Grid2,
   IconButton,
   InputAdornment,
+  InputLabel,
   Menu,
   MenuItem,
   Modal,
   Paper,
+  Select,
   Stack,
   Tab,
   Tabs,
@@ -47,6 +52,7 @@ import { useEffect, useState } from "react";
 import { DashboardLayout } from "../../../layouts";
 import { ASSET_TYPE } from "../../../utils/interfaces/admin";
 import useHook from "./container/hook";
+import { doUploadSystemAsset } from "../../../services/api";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -54,6 +60,13 @@ interface TabPanelProps {
   value: number;
 }
 
+const BANNER_SUBSECTIONS = [
+  { value: "hero", label: "Hero" },
+  { value: "intro", label: "Intro" },
+  { value: "destination", label: "Destination" },
+  { value: "hotel", label: "Hotel" },
+  { value: "creator", label: "Creator" },
+];
 const TabPanel = (props: TabPanelProps) => {
   const { children, value, index, ...other } = props;
   return (
@@ -94,6 +107,27 @@ const MediaDashboard = () => {
   const [selectedImageForMenu, setSelectedImageForMenu] = useState<
     string | null
   >(null);
+  const [selectedSubsection, setSelectedSubsection] = useState("");
+  const [pickedImage, setPickedImage] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setPickedImage(file);
+  };
+  const handleSubmitUpload = async () => {
+    try {
+      setLoading(true);
+      if (!pickedImage) return;
+      await doUploadSystemAsset(pickedImage, selectedSubsection);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleImageRemove = () => {
+    setPickedImage(null);
+  };
 
   // Filter data based on search
   const filteredData = currentData.filter(
@@ -188,18 +222,22 @@ const MediaDashboard = () => {
     }
   }, [listImg]);
 
-  if (!listImg) {
+  if (!listImg || listImg.length === 0 || loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <Typography>Loading...</Typography>
-      </Box>
+      <DashboardLayout>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            gap: 1,
+          }}
+        >
+          <CircularProgress size={48} />
+          <Typography>Loading...</Typography>
+        </Box>
+      </DashboardLayout>
     );
   }
 
@@ -296,12 +334,7 @@ const MediaDashboard = () => {
                 onClick={() => setUploadDialogOpen(true)}
                 sx={{ bgcolor: "grey.900", "&:hover": { bgcolor: "grey.800" } }}
               >
-                Upload{" "}
-                {tabValue === 0
-                  ? "Avatar"
-                  : tabValue === 1
-                  ? "Banner"
-                  : "Content"}
+                Upload Banner
               </Button>
             </Stack>
 
@@ -709,11 +742,43 @@ const MediaDashboard = () => {
           fullWidth
         >
           <DialogTitle>
-            Upload{" "}
-            {tabValue === 0 ? "Avatar" : tabValue === 1 ? "Banner" : "Content"}{" "}
-            Images
+            <div>
+              <h1>Upload Banner Images </h1>
+              <Typography variant="body2" className="text-sm text-neutral-800">
+                Drag and drop your images here or click the button below to
+                browse files.
+              </Typography>
+              <Alert severity="info" sx={{ mt: 2 }}>
+                Supported formats: JPG, PNG, GIF
+              </Alert>
+            </div>
           </DialogTitle>
           <DialogContent>
+            <FormControl fullWidth size="small" className="my-4">
+              <InputLabel id="banner-subsection-label">
+                Banner Subsection
+              </InputLabel>
+              <Select
+                labelId="banner-subsection-label"
+                value={selectedSubsection}
+                label="Banner Subsection"
+                MenuProps={{
+                  disablePortal: true,
+                }}
+                onChange={(e) => setSelectedSubsection(e.target.value)}
+              >
+                {BANNER_SUBSECTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              {!selectedSubsection && (
+                <FormHelperText error>
+                  Please select a banner subsection
+                </FormHelperText>
+              )}
+            </FormControl>
             <Paper
               sx={{
                 border: "2px dashed",
@@ -722,7 +787,9 @@ const MediaDashboard = () => {
                 p: 6,
                 textAlign: "center",
                 bgcolor: "grey.50",
+                cursor: "pointer",
               }}
+              onClick={() => document.getElementById("upload-input")?.click()}
             >
               <ImageIcon sx={{ fontSize: 48, color: "grey.400", mb: 2 }} />
               <Typography variant="body1" sx={{ color: "grey.600", mb: 1 }}>
@@ -732,11 +799,64 @@ const MediaDashboard = () => {
                 or click to browse files
               </Typography>
               <Button variant="outlined">Choose Files</Button>
+              <input
+                id="upload-input"
+                type="file"
+                hidden
+                accept="image/*"
+                multiple
+                onChange={handleFileSelect}
+              />
             </Paper>
+
+            {/* Preview section */}
+            {pickedImage && (
+              <>
+                <Typography variant="h6" sx={{ mt: 4 }}>
+                  Preview
+                </Typography>
+
+                <Paper
+                  variant="outlined"
+                  sx={{ position: "relative", p: 1, textAlign: "center" }}
+                >
+                  <img
+                    src={URL.createObjectURL(pickedImage as any)}
+                    alt="preview"
+                    style={{
+                      width: "100%",
+                      height: 300,
+                      objectFit: "cover",
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => handleImageRemove()}
+                    sx={{ position: "absolute", top: 4, right: 4 }}
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+                  <Typography noWrap variant="caption">
+                    {/* {file?.name} */}
+                  </Typography>
+                </Paper>
+              </>
+            )}
+            <legend className="text-sm italic text-neutral-600 mt-2">
+              *Other content types (AVATAR, CONTENT) are not currently
+              supported.
+            </legend>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
-            <Button variant="contained">Upload</Button>
+            <Button
+              disabled={!pickedImage}
+              loading={loading}
+              onClick={handleSubmitUpload}
+              variant="contained"
+            >
+              Upload
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>

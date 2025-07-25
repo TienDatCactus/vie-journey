@@ -28,14 +28,13 @@ export const createBlog = async (data: IBlogQuery): Promise<IBlogRes> => {
   formData.append("slug", data.slug);
   formData.append("content", data.content);
   formData.append("summary", data.summary);
-  formData.append("location", data.location);
+  formData.append("location", data.destination);
 
-  formData.append("userId", data.userId);
-  if (data.file) {
-    formData.append("file", data.file);
+  if (data.coverImage) {
+    formData.append("coverImage", data.coverImage);
   }
 
-  data.tags.forEach((tag) => {
+  data?.tags?.forEach((tag) => {
     formData.append("tags", tag);
   });
 
@@ -174,11 +173,16 @@ export const getBlogList = async (params: any): Promise<IRelatedBlogs[]> => {
 };
 
 export const getRelatedBlogs = async (
-  blogId: string,
-  tags: string[]
+  blogId?: string,
+  tags?: string[],
+  destination?: string
 ): Promise<IRelatedBlogs[]> => {
-  const res = await http.post(`${BLOG.BLOGS_RELATED}`, { blogId, tags });
-  return res.data.data?.blogs || [];
+  const res = await http.post(`${BLOG.BLOGS_RELATED}`, {
+    blogId,
+    tags,
+    destination,
+  });
+  return res.data || [];
 };
 
 export const clearFlag = async (id: string) => {

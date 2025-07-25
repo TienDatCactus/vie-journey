@@ -20,6 +20,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Skeleton,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -36,9 +37,8 @@ import {
 } from "@mui/x-data-grid-premium";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "../../../layouts";
-import type { IBlogQuery } from "../../../utils/interfaces/blog";
-import NewPostDialog from "./component/AddPopup";
 import BlogStatusChip from "./component/BlogStatusChip";
 import StatCard from "./component/Card";
 import useBlog from "./component/Container/hook";
@@ -46,7 +46,6 @@ import useBlog from "./component/Container/hook";
 export default function BlogManagementList() {
   const {
     blogs,
-    handleCreateBlog,
     handleDeleteBlog,
     params,
     totalBlog,
@@ -58,15 +57,13 @@ export default function BlogManagementList() {
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isNewPostDialogOpen, setIsNewPostDialogOpen] = useState(false);
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowId[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
-    page: params.page - 1, // DataGrid uses 0-based indexing
+    page: params.page - 1,
     pageSize: params.pageSize,
   });
-
+  const navigate = useNavigate();
   const handlePaginationModelChange = (newModel: GridPaginationModel) => {
     try {
       setLoading(true);
@@ -113,8 +110,7 @@ export default function BlogManagementList() {
               "&:hover": { textDecoration: "underline" },
             }}
             onClick={() => {
-              // Navigate to blog detail
-              window.location.href = `/manager/blogs/${params.row._id}`;
+              navigate(`/manager/blogs/${params.row._id}`);
             }}
           >
             {params.row.title}
@@ -200,7 +196,7 @@ export default function BlogManagementList() {
           icon={<ViewList />}
           label="View"
           onClick={() => {
-            window.location.href = `/manager/blogs/${params.row._id}`;
+            navigate(`/manager/blogs/${params.row._id}`);
           }}
         />,
         <GridActionsCellItem
@@ -229,18 +225,6 @@ export default function BlogManagementList() {
     try {
       setLoading(true);
       handleSort(event.target.value);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleNewPostSubmit = (postData: IBlogQuery) => {
-    try {
-      setLoading(true);
-      handleCreateBlog(postData);
-      setIsNewPostDialogOpen(false);
     } catch (error) {
       console.error(error);
     } finally {
@@ -336,55 +320,96 @@ export default function BlogManagementList() {
             >
               Export
             </Button>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => setIsNewPostDialogOpen(true)}
-              sx={{
-                bgcolor: "rgba(0,0,0,0.8)",
-                color: "white",
-                borderRadius: 0.5,
-              }}
-            >
-              New Post
-            </Button>
+            <Link to="/blogs/create">
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                sx={{
+                  bgcolor: "rgba(0,0,0,0.8)",
+                  color: "white",
+                  borderRadius: 0.5,
+                }}
+              >
+                New Post
+              </Button>
+            </Link>
           </Box>
         </Box>
 
         {/* Stats Cards */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr",
-              md: "repeat(2, 1fr)",
-              lg: "repeat(4, 1fr)",
-            },
-            gap: 4,
-            mb: 2,
-          }}
-        >
-          <StatCard
-            title="Total Posts"
-            value={totalBlog + ""}
-            icon={<MenuBook sx={{ color: "grey.600" }} />}
-          />
-          <StatCard
-            title="Published"
-            value="3"
-            icon={<CheckCircle sx={{ color: "grey.600" }} />}
-          />
-          <StatCard
-            title="Pending Review"
-            value="1"
-            icon={<Schedule sx={{ color: "grey.600" }} />}
-          />
-          <StatCard
-            title="Flagged"
-            value="2"
-            icon={<Flag sx={{ color: "grey.600" }} />}
-          />
-        </Box>
+        {!loading ? (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, 1fr)",
+                lg: "repeat(4, 1fr)",
+              },
+              gap: 4,
+              mb: 2,
+            }}
+          >
+            <StatCard
+              title="Total Posts"
+              value={totalBlog + ""}
+              icon={<MenuBook sx={{ color: "grey.600" }} />}
+            />
+            <StatCard
+              title="Published"
+              value="3"
+              icon={<CheckCircle sx={{ color: "grey.600" }} />}
+            />
+            <StatCard
+              title="Pending Review"
+              value="1"
+              icon={<Schedule sx={{ color: "grey.600" }} />}
+            />
+            <StatCard
+              title="Flagged"
+              value="2"
+              icon={<Flag sx={{ color: "grey.600" }} />}
+            />
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, 1fr)",
+                lg: "repeat(4, 1fr)",
+              },
+              gap: 4,
+              mb: 2,
+            }}
+          >
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={100}
+              sx={{ borderRadius: 1 }}
+            />
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={100}
+              sx={{ borderRadius: 1 }}
+            />{" "}
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={100}
+              sx={{ borderRadius: 1 }}
+            />{" "}
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={100}
+              sx={{ borderRadius: 1 }}
+            />
+          </Box>
+        )}
 
         {/* Filters and Search */}
         <Card elevation={0} className="shadow-sm" sx={{ mb: 2, p: 4 }}>
@@ -526,7 +551,6 @@ export default function BlogManagementList() {
             columns={columns}
             getRowId={(row) => row._id}
             loading={loading}
-            // Pagination
             pagination
             paginationMode="server"
             paginationModel={paginationModel}
@@ -569,12 +593,6 @@ export default function BlogManagementList() {
           />
         </Card>
       </Box>
-
-      <NewPostDialog
-        open={isNewPostDialogOpen}
-        onClose={() => setIsNewPostDialogOpen(false)}
-        onSubmit={handleNewPostSubmit}
-      />
     </DashboardLayout>
   );
 }

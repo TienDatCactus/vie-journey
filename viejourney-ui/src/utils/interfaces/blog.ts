@@ -70,10 +70,9 @@ export interface IBlogQuery {
   slug: string;
   content: string;
   summary: string;
-  tags: string[];
-  location: string;
-  file: File | null;
-  userId: string;
+  tags?: string[];
+  destination: string;
+  coverImage?: File | null;
 }
 
 export interface IBlogRes {
@@ -116,7 +115,9 @@ export interface IBlogDetail {
   slug: string;
   tags: string[];
   places: PlaceData[];
-  createdBy: IUser; // nếu bạn chưa resolve populated user
+  createdBy: {
+    email: string;
+  } & IUser; // nếu bạn chưa resolve populated user
   updatedBy: IUser | string;
   likes: string[];
   status: "APPROVED" | "PENDING" | "REJECTED" | "DRAFT";
@@ -207,6 +208,18 @@ export interface IRelatedBlogs {
     viewCount: number;
     likeCount: number;
     commentCount: number;
+  };
+  createdBy: {
+    _id: string;
+    userId: {
+      _id: string;
+      email: string;
+    };
+    fullName: string;
+    avatar: {
+      _id: string;
+      url: string;
+    };
   };
   summary: string;
   tags: string[];

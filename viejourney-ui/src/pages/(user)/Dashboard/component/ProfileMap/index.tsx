@@ -16,9 +16,9 @@ const index: React.FC = () => {
         >
           <div className="h-100 relative">
             <Map
+              defaultCenter={{ lat: 15.9753, lng: 105.7451 }}
+              defaultZoom={5}
               position="static"
-              defaultCenter={{ lat: 48.8566, lng: 2.3522 }}
-              defaultZoom={10}
               className="w-full h-full"
               detailed={false}
             />
@@ -85,7 +85,7 @@ const index: React.FC = () => {
                       onClick={() =>
                         setSelectedLocation({
                           lat: place.location.lat,
-                          long: place.location.lng,
+                          lng: place.location.lng,
                         })
                       }
                       key={index}

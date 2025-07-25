@@ -1,11 +1,4 @@
-import {
-  MoreHoriz,
-  PhoneAndroid,
-  Redo,
-  Save,
-  TravelExplore,
-  Undo,
-} from "@mui/icons-material";
+import { MoreHoriz, PhoneAndroid, Redo, Save, Undo } from "@mui/icons-material";
 import {
   AppBar,
   Button,
@@ -38,6 +31,7 @@ const TripHeader: React.FC = () => {
   };
   useEffect(() => {
     socket?.on("savePlanStatus", (data) => {
+      console.log("Save status received:", data);
       setSaveStatus(data.status);
       setError(data.error || "");
       if (data.status === "saved") {
@@ -59,9 +53,10 @@ const TripHeader: React.FC = () => {
           alignItems="center"
         >
           <Stack direction="row" alignItems="center" gap={2}>
-            <div>
-              <TravelExplore className="text-dark-700 lg:text-4xl mb-2 font-semibold uppercase" />
-            </div>
+            <img
+              src="/icons/icons8-around-the-globe-50.png"
+              className="object-cover w-10 h-10 rounded-full"
+            />
             <div>
               <div className="text-dark-700 lg:text-xs mb-2 font-semibold uppercase">
                 {saveStatus === "saved" && (
@@ -72,7 +67,7 @@ const TripHeader: React.FC = () => {
                   </p>
                 )}
                 {saveStatus === "error" && (
-                  <div>
+                  <div className="line-clamp-2 w-80">
                     <p> Failed to save changes: {error || "Unknown error"}</p>
                   </div>
                 )}

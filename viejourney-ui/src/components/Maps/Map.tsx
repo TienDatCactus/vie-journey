@@ -32,9 +32,8 @@ const MapConfiguration: React.FC<{
   const coreLib = useMapsLibrary("core");
   const placesLib = useMapsLibrary("places");
   useEffect(() => {
-    if (!mapInstance || !coreLib || !placesLib) return; // Disable Google Maps analytics collection to prevent CSP errors
+    if (!mapInstance || !coreLib || !placesLib) return;
     if (window.google && window.google.maps) {
-      // Apply settings that disable analytics and tracking that cause CSP issues
       (window.google.maps as any).disablePostfixUnitsRequests = true;
       (window.google.maps as any).disableCommunitiesLogging = true;
       (window.google.maps as any).disableAttributionPrefixRequests = true;
@@ -158,17 +157,25 @@ const Map: React.FC<MapProps> = ({
   }, [selected, fetchPlaceDetail]);
 
   useEffect(() => {
+    const targetLocation = selected?.location || selectedLocation;
+
     if (
-      (selected && selected?.location && mapInstance && selected.location) ||
-      (selectedLocation && mapInstance && selectedLocation)
+      mapInstance &&
+      targetLocation &&
+      targetLocation.lat !== undefined &&
+      targetLocation.lng !== undefined
     ) {
-      console.log(selected?.location);
-      console.log(selectedLocation);
-      mapInstance?.panTo({
-        lat: selected?.location?.lat || selectedLocation.lat || 0,
-        lng: selected?.location?.lng || selectedLocation.long || 0,
-      });
-      mapInstance.setZoom(10);
+      if (targetLocation.lat !== 0 && targetLocation.lng !== 0) {
+        mapInstance.panTo({
+          lat: targetLocation.lat,
+          lng: targetLocation.lng,
+        });
+        mapInstance.setZoom(16);
+      } else {
+        console.warn(
+          "Attempted to pan to 0,0. Check selected/selectedLocation data."
+        );
+      }
     }
   }, [selected, selectedLocation, mapInstance]);
 

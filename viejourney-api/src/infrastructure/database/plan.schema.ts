@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document, ObjectId, Types } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 // Define sub-schemas for each plan section
 @Schema({ _id: false })
@@ -91,6 +91,17 @@ class Place {
   @Prop({ required: false })
   visited: Boolean;
 }
+@Schema({ _id: false })
+class PlaceCreatedBySchema {
+  @Prop({ required: true })
+  id: string;
+
+  @Prop({ required: false })
+  email?: string;
+
+  @Prop({ required: false })
+  fullname?: string;
+}
 
 @Schema({ _id: false })
 class PlaceDetails {
@@ -118,8 +129,8 @@ class PlaceDetails {
   @Prop()
   cost?: number;
 
-  @Prop()
-  createdBy?: string;
+  @Prop({ type: PlaceCreatedBySchema, required: false })
+  createdBy?: PlaceCreatedBySchema;
 }
 
 @Schema({ _id: false })
